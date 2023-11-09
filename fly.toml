@@ -1,4 +1,4 @@
-app = "social-network-1890"
+app = "sn"
 primary_region = "cdg"
 kill_signal = "SIGINT"
 kill_timeout = 5
