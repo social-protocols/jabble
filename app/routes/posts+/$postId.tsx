@@ -23,7 +23,7 @@ export async function loader({ params }: DataFunctionArgs) {
 			parentId: true,
 			content: true,
 			authorId: true,
-			created: true,
+			createdAt: true,
 			// question_id: true,
 		},
 		where: {

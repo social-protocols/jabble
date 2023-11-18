@@ -7,10 +7,10 @@ with latest as (
       , tag_id
       , post_id
 
-      -- NOTE: direction will be the value of direction pulled from the same row that has max(created)
+      -- NOTE: direction will be the value of direction pulled from the same row that has max(created_at)
       -- https://www.sqlite.org/lang_select.html#bareagg
       , direction
-      , max(created) AS created
+      , max(created_at) AS created_at
     FROM vote_history
     GROUP BY user_id, post_id, tag_id
 )
@@ -48,10 +48,10 @@ with current_informed_votes as (
       , post_id
       , note_id
 
-      -- NOTE: direction will be the value of direction pulled from the same row that has max(created)
+      -- NOTE: direction will be the value of direction pulled from the same row that has max(created_at)
       -- https://www.sqlite.org/lang_select.html#bareagg
       , direction
-      , max(created) AS created
+      , max(created_at) AS created_at
     FROM vote_history
     where note_id is not null
     GROUP BY 
@@ -125,10 +125,10 @@ first_votes_on_notes as (
         , p_note_id as note_id
         , user_id
         , direction
-        , created
+        , created_at
         , upvotes_given_shown_this_note
         , votes_given_shown_this_note
-        , max(created)
+        , max(created_at)
     from  votes_before_note
     where
     before_note
