@@ -18,21 +18,44 @@ async function seed() {
 	await prisma.user.create({
 		select: { id: true },
 		data: {
-			email: 'kody@kcd.dev',
-			username: 'kody',
-			name: 'Kody',
-			password: { create: createPassword('kodylovesyou') },
+			email: 'user1@nowhere.dev',
+			username: 'user1',
+			name: 'User 1',
+			// password: { create: createPassword('kodylovesyou') },
+			id: 100,
 			posts: {
 				create: [
 					{
 						id: 1,
 						content:
-							'Koalas are found in the eucalyptus forests of eastern Australia. They have grey fur with a cream-coloured chest, and strong, clawed feet, perfect for living in the branches of trees!',
+							'So, pregnant people can\’t cross state lines to get abortions but guys like Kyle Rittenhouse can cross state lines to murder people. Seems fair.',
 					},
 				],
 			},
 		},
 	})
+
+	await prisma.user.create({
+		select: { id: true },
+		data: {
+			email: 'user2@nowhere.dev',
+			username: 'user2',
+			name: 'User 2',
+			// password: { create: createPassword('kodylovesyou') },
+			id: 101,
+			posts: {
+				create: [
+					{
+						id: 2,
+						content:
+							'Kyle Rittenhouse was acquitted of murder charges. Clear video evidence showed he acted in self defense.',
+						parentId: 1,
+					},
+				],
+			},
+		},
+	})
+
 
 	console.timeEnd(`🌱 Database has been seeded`)
 }

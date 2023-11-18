@@ -8,16 +8,16 @@ datasource db {
 }
 
 model User {
-  id           Int            @id @default(autoincrement())
-  email        String         @unique
-  username     String         @unique
-  name         String?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  password     Password?
-  sessions     Session[]
-  posts        posts[]
-  vote_history vote_history[]
+  id          Int           @id @default(autoincrement())
+  email       String        @unique
+  username    String        @unique
+  name        String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  password    Password?
+  sessions    Session[]
+  posts        Post[]
+  voteHistory VoteHistory[]
 }
 
 model Password {
@@ -60,39 +60,38 @@ model Verification {
   @@unique([target, type])
 }
 
-model posts {
-  id                                       Int            @id @default(autoincrement())
-  parent_id                                Int?
-  content                                  String
-  question_id                              Int?
-  author_id                                Int
-  created                                  DateTime       @default(now())
-  User                                     User           @relation(fields: [author_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  posts_posts_question_idToposts           posts?         @relation("posts_question_idToposts", fields: [question_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  other_posts_posts_question_idToposts     posts[]        @relation("posts_question_idToposts")
-  posts_posts_parent_idToposts             posts?         @relation("posts_parent_idToposts", fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  other_posts_posts_parent_idToposts       posts[]        @relation("posts_parent_idToposts")
-  vote_history_vote_history_note_idToposts vote_history[] @relation("vote_history_note_idToposts")
-  vote_history_vote_history_post_idToposts vote_history[] @relation("vote_history_post_idToposts")
+model Post {
+  id       Int      @id @default(autoincrement())
+  parentId Int?
+  content  String
+  // questionId                           Int?
+  authorId Int
+  created  DateTime @default(now())
+  user     User     @relation(fields: [authorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  // Post_Post_questionIDToPost           Post?         @relation("Post_questionIDToPost", fields: [questionID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  // other_Post_Post_questionIDToPost     Post[]        @relation("Post_questionIDToPost")
+  parent   Post?    @relation("post_notes", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  notes    Post[]   @relation("post_notes")
+  // voteHistory VoteHistory[] @relation("VoteHistory_noteIdToPost")
+  // VoteHistory_VoteHistory_postIdToPost VoteHistory[] @relation("VoteHistory_postIdToPost")
 }
 
-model tags {
-  id           Int            @id @default(autoincrement())
-  tag          String         @unique(map: "sqlite_autoindex_tags_1")
-  vote_history vote_history[]
+model Tag {
+  id          Int           @id @default(autoincrement())
+  tag         String        @unique(map: "sqlite_autoindex_tags_1")
+  VoteHistory VoteHistory[]
 }
 
-model vote_history {
-  rowid                             Int      @id @default(autoincrement())
-  user_id                           Int
-  tag_id                            Int
-  post_id                           Int
-  note_id                           Int?
-  direction                         Int
-  created                           DateTime @default(now())
-  posts_vote_history_note_idToposts posts?   @relation("vote_history_note_idToposts", fields: [note_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  posts_vote_history_post_idToposts posts    @relation("vote_history_post_idToposts", fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  tags                              tags     @relation(fields: [tag_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  User                              User     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+model VoteHistory {
+  rowid     Int      @id @default(autoincrement())
+  userId    Int
+  tagId     Int
+  postId    Int
+  noteId    Int?
+  direction Int
+  created   DateTime @default(now())
+  // Post_VoteHistory_noteIdToPost Post?    @relation("VoteHistory_noteIdToPost", fields: [noteId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  // Post_VoteHistory_postIdToPost Post     @relation("VoteHistory_postIdToPost", fields: [postId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user      User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
-
