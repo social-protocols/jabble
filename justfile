@@ -10,4 +10,5 @@ prisma-client:
 dev:
 	npm run dev
 
-
+sqlite:
+	sqlite3 ./prisma/data.db
