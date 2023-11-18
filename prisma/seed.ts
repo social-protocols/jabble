@@ -1,12 +1,12 @@
 import { prisma } from '#app/utils/db.server.ts'
-import { cleanupDb, createPassword, createUser } from '#tests/db-utils.ts'
+// import { cleanupDb, createPassword, createUser } from '#tests/db-utils.ts'
 
 async function seed() {
 	console.log('🌱 Seeding...')
 	console.time(`🌱 Database has been seeded`)
 
 	console.time('🧹 Cleaned up the database...')
-	await cleanupDb(prisma)
+	// await cleanupDb(prisma)
 	console.timeEnd('🧹 Cleaned up the database...')
 
 	if (process.env.MINIMAL_SEED) {
