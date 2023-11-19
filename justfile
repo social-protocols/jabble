@@ -1,23 +1,31 @@
 migrate:
 	npx prisma migrate dev
 
-# This command should not be used once we have data in production.
-# It deletes and recreates the database based on schema.prisma and seed.ts,
-# then deletes all migrations and creates a new migration that creates the DB from scratch.
-reset-schema:
+# Reset database to match schema.prisma nd reseed
+reset-db:
 	npx prisma generate
-
-	# delete all the migrations
-	rm -rf prisma/migrations/*
 
 	# make the dev DB schema match schema.prisma
 	npx prisma db push --force-reset
 
-	# create a new migration init migration that matches the dev db
-	npx prisma migrate dev --name init
+	# Create views
+	sqlite3 ./prisma/data.db < ./prisma/views.sql
 
 	# delete database, recreate, and reseed
-	npx prisma migrate reset --force
+	npx prisma db seed
+
+
+# This command should not be used once we have data in production.
+# It deletes and recreates the database based on schema.prisma and seed.ts,
+# then deletes all migrations and creates a new migration that creates the DB from scratch.
+initial-migration:
+	just reset-schema
+
+	# delete all the migrations
+	rm -rf prisma/migrations/*
+
+	# create a new migration init migration that matches the dev db
+	npx prisma migrate dev --name init
 
 	# create a second migration for the views
 	npx prisma migrate dev --create-only --name views
@@ -25,6 +33,7 @@ reset-schema:
 	
 	# apply the views migration to the dev db
 	npx prisma migrate dev
+
 
 reseed:
 	npx prisma migrate reset --force
