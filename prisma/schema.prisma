@@ -13,7 +13,7 @@ model User {
   username    String        @unique
   name        String?
   createdAt   DateTime      @default(now()) @map("created_at")
-  updatedAt   DateTime      @updatedAt @map("updated_at")
+  // updatedAt   DateTime      @updatedAt @map("updated_at")
   password    Password?
   posts       Post[]
   sessions    Session[]

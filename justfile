@@ -1,7 +1,7 @@
 migrate:
 	npx prisma migrate dev
 
-# Reset database to match schema.prisma nd reseed
+# Reset database to match schema.prisma and views.sql, and reseed
 reset-db:
 	npx prisma generate
 
@@ -11,15 +11,16 @@ reset-db:
 	# Create views
 	sqlite3 ./prisma/data.db < ./prisma/views.sql
 
-	# delete database, recreate, and reseed
+	# reseed
 	npx prisma db seed
 
 
 # This command should not be used once we have data in production.
-# It deletes and recreates the database based on schema.prisma and seed.ts,
+# It deletes and recreates the database based on schema.prisma, seed.ts, and views.sql,
 # then deletes all migrations and creates a new migration that creates the DB from scratch.
 initial-migration:
-	just reset-schema
+	# make database match 
+	just reset-db
 
 	# delete all the migrations
 	rm -rf prisma/migrations/*
