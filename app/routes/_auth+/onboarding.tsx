@@ -1,10 +1,10 @@
 import { conform, useForm } from '@conform-to/react'
 import { getFieldsetConstraint, parse } from '@conform-to/zod'
 import {
-	json,
-	redirect,
 	type DataFunctionArgs,
+	json,
 	type MetaFunction,
+	redirect,
 } from '@remix-run/node'
 import {
 	Form,
@@ -20,7 +20,6 @@ import { CheckboxField, ErrorList, Field } from '#app/components/forms.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { requireAnonymous, sessionKey, signup } from '#app/utils/auth.server.ts'
-import { redirectWithConfetti } from '#app/utils/confetti.server.ts'
 import { validateCSRF } from '#app/utils/csrf.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { checkHoneypot } from '#app/utils/honeypot.server.ts'
@@ -120,7 +119,7 @@ export async function action({ request }: DataFunctionArgs) {
 		await verifySessionStorage.destroySession(verifySession),
 	)
 
-	return redirectWithConfetti(safeRedirect(redirectTo), { headers })
+	return redirect(safeRedirect(redirectTo), { headers })
 }
 
 export async function handleVerification({ submission }: VerifyFunctionArgs) {

@@ -1,17 +1,17 @@
 import { conform, useForm } from '@conform-to/react'
 import { getFieldsetConstraint, parse } from '@conform-to/zod'
 import {
-	json,
-	redirect,
 	type DataFunctionArgs,
+	json,
 	type MetaFunction,
+	redirect,
 } from '@remix-run/node'
 import {
 	Form,
+	type Params,
 	useActionData,
 	useLoaderData,
 	useSearchParams,
-	type Params,
 } from '@remix-run/react'
 import { safeRedirect } from 'remix-utils/safe-redirect'
 import { z } from 'zod'
@@ -24,7 +24,6 @@ import {
 	sessionKey,
 	signupWithConnection,
 } from '#app/utils/auth.server.ts'
-import { redirectWithConfetti } from '#app/utils/confetti.server.ts'
 import { ProviderNameSchema } from '#app/utils/connections.tsx'
 import { prisma } from '#app/utils/db.server.ts'
 import { invariant, useIsPending } from '#app/utils/misc.tsx'
@@ -162,7 +161,7 @@ export async function action({ request, params }: DataFunctionArgs) {
 		await verifySessionStorage.destroySession(verifySession),
 	)
 
-	return redirectWithConfetti(safeRedirect(redirectTo), { headers })
+	return redirect(safeRedirect(redirectTo), { headers })
 }
 
 export async function handleVerification({ submission }: VerifyFunctionArgs) {
