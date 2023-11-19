@@ -26,6 +26,8 @@ reset-schema:
 	# apply the views migration to the dev db
 	npx prisma migrate dev
 
+reseed:
+	npx prisma migrate reset --force
 
 prisma-client:
 	npx prisma generate
