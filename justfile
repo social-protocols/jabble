@@ -1,10 +1,10 @@
 migrate:
 	npx prisma migrate dev
 
-# This command should not be used once we have anything in production.
+# This command should not be used once we have data in production.
 # It deletes and recreates the database based on schema.prisma and seed.ts,
-# and creates new migration to create the DB from scratch.
-reset-db:
+# then deletes all migrations and creates a new migration that creates the DB from scratch.
+reset-schema:
 	npx prisma generate
 
 	# delete all the migrations
@@ -15,6 +15,8 @@ reset-db:
 
 	# create a new migration init migration that matches the dev db
 	npx prisma migrate dev --name init
+
+	# delete database, recreate, and reseed
 	npx prisma migrate reset --force
 
 	# create a second migration for the views
