@@ -4,7 +4,10 @@
 
 @layer base {
 	:root {
-		--font-sans: Nunito Sans, Nunito Sans Fallback;
+		/* https://systemfontstack.com/ */
+		--font-sans: -apple-system, BlinkMacSystemFont, avenir next, avenir,
+			segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto,
+			arial, sans-serif;
 		/* --font-mono: here if you got it... */
 
 		/* prefixed with foreground because it should look good on the background */
