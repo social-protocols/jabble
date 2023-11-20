@@ -17,10 +17,9 @@ model User {
   createdAt DateTime @default(now())
   // updatedAt DateTime @updatedAt
 
-  image       UserImage?
-  password    Password?
-  sessions    Session[]
-  connections Connection[]
+  image    UserImage?
+  password Password?
+  sessions Session[]
 
   posts       Post[]
   voteHistory VoteHistory[]
@@ -87,20 +86,6 @@ model Verification {
   expiresAt DateTime?
 
   @@unique([target, type])
-}
-
-model Connection {
-  id           String @id @default(cuid())
-  providerName String
-  providerId   String
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  userId String
-
-  @@unique([providerName, providerId])
 }
 
 model Post {
