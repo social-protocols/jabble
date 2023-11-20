@@ -1,4 +1,4 @@
-import { prisma } from '#app/utils/db.server.ts';
+import { prisma } from '#app/utils/db.server.ts'
 // import { cleanupDb, createPassword, createUser } from '#tests/db-utils.ts'
 
 // async function seed() {
@@ -14,7 +14,6 @@ import { prisma } from '#app/utils/db.server.ts';
 // 		console.timeEnd(`🌱 Database has been seeded`)
 // 		return
 // 	}
-
 
 // 	await prisma.tag.create({
 // 		select: { id: true },
@@ -48,7 +47,7 @@ import { prisma } from '#app/utils/db.server.ts';
 // 					{
 // 						tagId: 0,
 // 						postId: 1,
-// 						direction: 1,	
+// 						direction: 1,
 // 					},
 // 				]
 // 			}
@@ -80,19 +79,18 @@ import { prisma } from '#app/utils/db.server.ts';
 // 					{
 // 						tagId: 0,
 // 						postId: 2,
-// 						direction: 1,	
+// 						direction: 1,
 // 					},
 // 					// downvote original post
 // 					{
 // 						tagId: 0,
 // 						postId: 1,
-// 						direction: -1,	
+// 						direction: -1,
 // 					},
 // 				]
 // 			}
 // 		},
 // 	})
-
 
 // 	await prisma.post.create({
 // 		select: { id: true },
@@ -105,8 +103,6 @@ import { prisma } from '#app/utils/db.server.ts';
 // 		}
 // 	})
 
-	
-
 // 	console.timeEnd(`🌱 Database has been seeded`)
 
 // }
@@ -115,10 +111,17 @@ async function seed() {
 	// const { PrismaClient } = require('@prisma/client');
 	// const prisma = new PrismaClient();
 
-	const insertStatements = `
-insert into user(id, username, email) values (100, "user100", "user100@test.com");
-insert into user(id, username, email) values (101, "user101", "user101@test.com");
+	// since prisma provides the cuid() function (not supported by sqlite), we use prisma statements instead of sql to create users
+	// insert into user(idInt, username, email) values (100, "user100", "user100@test.com");
+	// insert into user(idInt, username, email) values (101, "user101", "user101@test.com");
+	await prisma.user.create({
+		data: { idInt: 100, username: 'user100', email: 'user100@test.com' },
+	})
+	await prisma.user.create({
+		data: { idInt: 101, username: 'user101', email: 'user101@test.com' },
+	})
 
+	const insertStatements = `
 insert into tag(id, tag) values (0, 'global');
 
 
@@ -154,20 +157,19 @@ insert into vote_history(tag_id, post_id, note_id, user_id, direction) values (0
 
 insert into vote_history(tag_id, post_id, note_id, user_id, direction) values (0, 1, 3, 101, -1);
 insert into vote_history(tag_id, post_id, note_id, user_id, direction) values (0, 1, 3, 101, 1);
-	                              `; 
+	                              `
 
 	// Split the string into individual statements
-	const statements = insertStatements.split(";\n").filter(statement => statement.trim() !== '');
+	const statements = insertStatements
+		.split(';\n')
+		.filter(statement => statement.trim() !== '')
 
 	// Execute each statement
 	for (const statement of statements) {
 		// console.log("Executing", statement)
-		await prisma.$executeRawUnsafe(statement.trim());
+		await prisma.$executeRawUnsafe(statement.trim())
 	}
 }
-
-
-
 
 seed()
 	.catch(e => {
