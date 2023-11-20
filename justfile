@@ -37,7 +37,8 @@ initial-migration:
 
 
 reseed:
-	npx prisma migrate reset --force
+	npx prisma db push --force-reset
+	npx prisma db seed
 
 prisma-client:
 	npx prisma generate
