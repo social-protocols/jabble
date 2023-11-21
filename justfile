@@ -19,7 +19,10 @@ reset-db:
 # It deletes and recreates the database based on schema.prisma, seed.ts, and views.sql,
 # then deletes all migrations and creates a new migration that creates the DB from scratch.
 initial-migration:
-	# make database match 
+	# Generate prisma schema
+	npx prisma generate
+
+	# make database match prisma schea
 	just reset-db
 
 	# delete all the migrations

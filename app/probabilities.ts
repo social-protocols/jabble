@@ -1,8 +1,9 @@
 import { prisma } from '#app/utils/db.server.ts';
 import { Result } from "@badrap/result";
-// import { Prisma } from '@prisma/client';
 
 import { type CurrentInformedTally, type CurrentTally, type Post, type Tag } from '@prisma/client';
+
+import { getOrInsertTagId } from './tag.ts';
 
 import assert from 'assert';
 
@@ -128,41 +129,25 @@ export async function get_current_tallies(tagId: number, postId: number, map: Ma
 }
 
 
-export async function get_or_insert_tag_id(tag: string): Promise<number> {
 
-    let t: Tag | null = await prisma.tag.findUnique({ where: { tag: tag } })
+export async function find_top_note(tag: string, postId: number): Promise<Post | null> {
 
-    if (t == null) {
-        await prisma.tag.create({
-            data: {
-                tag: tag,
-            },
-        })
-    }
+    let tagId = await getOrInsertTagId(tag)
 
-    t = await prisma.tag.findUnique({ where: { tag: tag } })
-    assert(t != null)
-    return t.id
-}
+    let talliesMap = new Map<number, InformedTally[]>()
+    await get_current_tallies(tagId, postId, talliesMap)
 
-export async function find_top_note(tag: string, postId: number): Promise<[Post, number, number] | null> {
-
-    let tagId = await get_or_insert_tag_id(tag)
-
-    let tallies_map = new Map<number, InformedTally[]>()
-    await get_current_tallies(tagId, postId, tallies_map)
-
-    console.log("Current tallies", tallies_map)
+    console.log("Current tallies", talliesMap)
 
     let tally = await current_tally(tagId, postId)
 
-    const [noteId, p, q] = find_top_note_given_tallies(postId, tally, tallies_map);
+    const [noteId, p, q] = find_top_note_given_tallies(postId, tally, talliesMap);
 
     console.log("Top note", noteId, p, q)
 
     let note: Post = await prisma.post.findUniqueOrThrow({ where: { id: noteId } })
 
-    return [note, p, q];
+    return note;
 } 
 
 

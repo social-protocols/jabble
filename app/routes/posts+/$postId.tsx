@@ -2,6 +2,7 @@
 // import { Icon } from '#app/components/ui/icon.tsx'
 import { json, type DataFunctionArgs } from '@remix-run/node'
 // import { Form, Link, useLoaderData, type MetaFunction } from '@remix-run/react'
+import { Location, logImpression } from "#app/attention.ts"
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { find_top_note } from '#app/probabilities.ts'
 import { prisma } from '#app/utils/db.server.ts'
@@ -14,6 +15,8 @@ import { z } from 'zod'
 const GLOBAL_TAG = "global";
 
 const postIdSchema = z.coerce.number()
+
+
 
 export async function loader({ params }: DataFunctionArgs) {
 	invariant(params.postId, 'Missing postid param')
@@ -38,7 +41,11 @@ export async function loader({ params }: DataFunctionArgs) {
 
 	const tag = GLOBAL_TAG;
 	const note = await find_top_note(tag, postId)
-	// const note: Post | null = null
+
+	const noteId = note != null ? note.id : 0
+
+	await logImpression(tag, postId, Location.POST_PAGE, 0)
+	await logImpression(tag, noteId, Location.TOP_NOTE_ON_POST_PAGE, 0)
 
 	return json({ post, note })
 }
