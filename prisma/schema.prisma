@@ -1,10 +1,43 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["views"]
 }
 
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
+}
+
+// view InformedTallyQueryResult {
+//   id    Int    @unique
+//   email String
+//   name  String
+//   bio   String
+// }
+
+view CurrentInformedTally {
+  tagId                        Int @map("tag_id")
+  postId                       Int @map("post_id")
+  noteId                       Int @map("note_id")
+  upvotesGivenShownThisNote    Int @map("upvotes_given_shown_this_note")
+  votesGivenShownThisNote      Int @map("votes_given_shown_this_note")
+  upvotesGivenNotShownThisNote Int @map("upvotes_given_not_shown_this_note")
+  votesGivenNotShownThisNote   Int @map("votes_given_not_shown_this_note")
+  // upvotes_for_note Int
+  // votes_for_note Int
+
+  @@unique([tagId, postId, noteId])
+  @@map("current_informed_tally")
+}
+
+view CurrentTally {
+  tagId   Int @map("tag_id")
+  postId  Int @map("post_id")
+  upvotes Int @map("upvotes")
+  total   Int @map("votes")
+
+  @@unique([tagId, postId])
+  @@map("current_tally")
 }
 
 model User {

@@ -1,13 +1,38 @@
 import { prisma } from '#app/utils/db.server.ts';
-// import { cleanupDb, createPassword, createUser } from '#tests/db-utils.ts'
+import { Result } from "@badrap/result";
+// import { Prisma } from '@prisma/client';
 
-// import { z } from 'zod';
+import { type CurrentInformedTally, type CurrentTally, type Post, type Tag } from '@prisma/client';
+
+import assert from 'assert';
 
 
-// const postIdSchema = z.coerce.number()
-// const postId: number = postIdSchema.parse(params.postId)
+function from_alpha_beta(alpha: number, beta: number): BetaDistribution {
+    return new BetaDistribution(
+        alpha / (alpha + beta),
+        alpha + beta,
+    )
+}
 
-import { type Post } from '@prisma/client';
+
+class BetaDistribution {
+    constructor(public average: number = 0, public weight: number = 0) {}
+
+    update(tally: Tally): BetaDistribution {
+        return new BetaDistribution(
+            bayesian_average(this.average, this.weight, tally),
+            this.weight + tally.total,        
+        )
+    }
+} 
+
+function bayesian_average(prior_average: number, weight: number, tally: Tally): number {
+    return (prior_average * weight + tally.upvotes) / (weight + tally.total)
+}
+
+const WEIGHT_CONSTANT: number = 2.3
+
+const GLOBAL_PRIOR = new BetaDistribution(0.875, WEIGHT_CONSTANT)
 
 
 export type Tally = {
@@ -15,334 +40,213 @@ export type Tally = {
     readonly total: number,
 }
 
-// type InformedTally struct {
-//     postID int64
-//     noteID int64
-//     votes  int64
-// }
+const EMPTY_TALLY = {
+    upvotes: 0,
+    total: 0,
+}
+
+type InformedTally = {
+    postId: number,
+    noteId: number,
+
+    givenNotShownThisNote: Tally,
+    givenShownThisNote: Tally,
+    forNote: Tally,
+}
 
 
-export type BetaDistribution = {
-    readonly average: number;
-    readonly weight: number;
-} 
-
-
-function from_alpha_beta(alpha: number, beta: number): BetaDistribution {
+function to_informed_tally(result: CurrentInformedTally, forNote: Tally): InformedTally {
     return {
-        average: alpha / (alpha + beta),
-        weight: alpha + beta,
+        postId: result.postId,
+        noteId: result.noteId,
+        givenNotShownThisNote: {
+            upvotes: result.upvotesGivenNotShownThisNote,
+            total: result.votesGivenNotShownThisNote,
+        },
+        givenShownThisNote: {
+            upvotes: result.upvotesGivenShownThisNote,
+            total: result.votesGivenShownThisNote,
+        },
+        forNote: {
+            upvotes: forNote.upvotes,
+            total: forNote.total,
+        },
     }
 }
 
-export function update(self: BetaDistribution, tally: Tally): BetaDistribution {
-    return {
-        average: bayesian_average(self.average, self.weight, tally),
-        weight: self.weight + tally.total as number,        
+export async function get_current_tallies(tagId: number, postId: number, map: Map<number, InformedTally[]>) {
+    const results: CurrentInformedTally[] = await prisma.currentInformedTally.findMany({
+        where: {
+            tagId: tagId,
+            postId: postId,
+        },
+    })
+
+    let tallies = await Promise.all(results.map(async result => {
+        await get_current_tallies(tagId, result.noteId, map)
+        let for_note = (await current_tally(tagId, result.noteId))
+
+        return to_informed_tally(result, for_note)
+    }))
+
+    if (tallies.length > 0) {
+        map.set(postId, tallies)
     }
+
+    // This recursive function code is an alternative to the above recursive query.
+    // The Typescript code is both simpler than the SQL and avoids using executeRaw statements
+    // Which can not guarantee type safety.
+    //     WITH children AS
+    //     (
+    //         SELECT
+    //           postId
+    //         , noteId
+    //         , votes_given_shown_this_note
+    //         , upvotes_given_shown_this_note
+    //         , votes_given_not_shown_this_note
+    //         , upvotes_given_not_shown_this_note
+    //       FROM current_informed_tally p
+    //       WHERE postId = ${postId}
+    //         UNION ALL
+    //       SELECT 
+    //           p.postId
+    //         , p.noteId
+    //         , p.votes_given_not_shown_this_note
+    //         , p.upvotes_given_not_shown_this_note
+    //         , p.votes_given_not_shown_this_note
+    //         , p.upvotes_given_not_shown_this_note
+    //       FROM children c
+    //       INNER JOIN current_informed_tally p ON p.postId = c.noteId
+    //     )
+    //     SELECT 
+    //         children.*
+    //         , current_tally.votes as votes_for_note 
+    //         , current_tally.upvotes as upvotes_for_note
+    //     FROM children join current_tally on(current_tally.postId = children.noteId);
+
+    return
 }
 
-function bayesian_average(prior_average: number, weight: number, tally: Tally): number {
-    (prior_average * weight + tally.upvotes as number) / (weight + tally.total as number)
+
+export async function get_or_insert_tag_id(tag: string): Promise<number> {
+
+    let t: Tag | null = await prisma.tag.findUnique({ where: { tag: tag } })
+
+    if (t == null) {
+        await prisma.tag.create({
+            data: {
+                tag: tag,
+            },
+        })
+    }
+
+    t = await prisma.tag.findUnique({ where: { tag: tag } })
+    assert(t != null)
+    return t.id
 }
 
+export async function find_top_note(tag: string, postId: number): Promise<[Post, number, number] | null> {
 
-const WEIGHT_CONSTANT = 2.3
+    let tagId = await get_or_insert_tag_id(tag)
 
-const GLOBAL_PRIOR: BetaDistribution = {
-    average: 0.875,
-    weight: WEIGHT_CONSTANT,
+    let tallies_map = new Map<number, InformedTally[]>()
+    await get_current_tallies(tagId, postId, tallies_map)
 
-    // define an update function
-}
+    console.log("Current tallies", tallies_map)
 
-export async function find_top_note(_tag: string, post_id: number): Promise<Post | null> {
-    // const note: Post | null = await prisma.queryRaw("select * from post")
+    let tally = await current_tally(tagId, postId)
 
-    const note: Post | null = await prisma.$queryRaw<readonly [Post]>`
-        WITH children AS
-        (
-            SELECT
-              post_id
-            , note_id
-            , votes_given_shown_this_note
-            , upvotes_given_shown_this_note
-            , votes_given_not_shown_this_note
-            , upvotes_given_not_shown_this_note
-          FROM current_informed_tally p
-          WHERE post_id = ?
-            UNION ALL
-          SELECT 
-              p.post_id
-            , p.note_id
-            , p.votes_given_not_shown_this_note
-            , p.upvotes_given_not_shown_this_note
-            , p.votes_given_not_shown_this_note
-            , p.upvotes_given_not_shown_this_note
-          FROM children c
-          INNER JOIN current_informed_tally p ON p.post_id = c.note_id
-        )
-        SELECT 
-            children.*
-            , current_tally.votes as votes_for_note 
-            , current_tally.upvotes as upvotes_for_note
-        FROM children join current_tally on(current_tally.post_id = children.note_id);
-    `;
+    const [noteId, p, q] = find_top_note_given_tallies(postId, tally, tallies_map);
 
+    console.log("Top note", noteId, p, q)
 
+    let note: Post = await prisma.post.findUniqueOrThrow({ where: { id: noteId } })
 
-    console.log("NOte", note)
-    return note;
+    return [note, p, q];
 } 
 
 
+async function current_tally(tagId: number, postId: number): Promise<Tally> {
 
-// export async function find_top_note(post_id: i64, pool: & SqlitePool): Result<Option<(i64, number, number)>> {
-//     // first, get table which has stats for this note, all subnotes, and all subnotes
-//     let query = r#"
-//         WITH children AS
-//         (
-//             SELECT
-//               post_id
-//             , note_id
-//             , votes_given_shown_this_note
-//             , upvotes_given_shown_this_note
-//             , votes_given_not_shown_this_note
-//             , upvotes_given_not_shown_this_note
-//           FROM current_informed_tally p
-//           WHERE post_id = ?
-//             UNION ALL
-//           SELECT 
-//               p.post_id
-//             , p.note_id
-//             , p.votes_given_not_shown_this_note
-//             , p.upvotes_given_not_shown_this_note
-//             , p.votes_given_not_shown_this_note
-//             , p.upvotes_given_not_shown_this_note
-//           FROM children c
-//           INNER JOIN current_informed_tally p ON p.post_id = c.note_id
-//         )
-//     SELECT 
-//     children.*
-//           , current_tally.votes as votes_for_note 
-//         , current_tally.upvotes as upvotes_for_note
-//         FROM children join current_tally on(current_tally.post_id = children.note_id);
-//     "#;
+    const tally: CurrentTally | null = await prisma.currentTally.findFirst({
+        where: {
+            tagId: tagId,
+            postId: postId,
+        },
+    })
 
-//     // execute the query and get a vector of InformedTally
-//     let tallies: Vec<InformedTally> = sqlx:: query_as::<_, InformedTallyQueryResult > (query)
-//         .bind(post_id)
-//         .fetch_all(pool)
-//         .await ?
-//         .iter()
-//             .map(| result | result.informed_tally())
-//             .collect();
+    if (tally == null) {
+        return EMPTY_TALLY
+    }
 
-//     let subnote_tallies: HashMap<i64, Vec<& InformedTally>> =
-//         tallies.iter().into_group_map_by(| tally | tally.post_id);
-
-//     let t = current_tally(post_id, pool).await ?;
-
-//     let(note_id, p, q) = find_top_note_given_tallies(post_id, t, & subnote_tallies);
-
-//     Ok(if note_id == 0 {
-//         None
-//     } else {
-//         Some((note_id, p, q))
-//     })
-// }
+    return tally;
+}
 
 
-// const EMPTY_TALLY: Tally = Tally {
-//     upvotes: 0,
-//     total: 0,
-// };
+// In the context of this function, we always have two posts in scope: A post along with a
+// note that is attached to it. Here, we call those "A" and "B" (or "a" and "b" in variable
+// and function names).
+// The function recurses through the tree of a conversation started by the post `postId`,
+// always looking at post/note combinations.
+export function find_top_note_given_tallies(
+    postId: number,
+    postTally: Tally,
+    subnoteTallies: Map<number, InformedTally[]>,
+): [number, number, number] {
+    let pOfAGivenNotShownTopNote = GLOBAL_PRIOR.update(postTally).average;
 
+    let pOfAGivenShownTopNote = pOfAGivenNotShownTopNote;
 
-// #[derive(sqlx::FromRow, sqlx::Decode, Debug, Clone)]
-// pub struct InformedTallyQueryResult {
-//     pub post_id: i64,
-//     pub note_id: i64,
-//     upvotes_given_shown_this_note: i64,
-//     votes_given_shown_this_note: i64,
-//     upvotes_given_not_shown_this_note: i64,
-//     votes_given_not_shown_this_note: i64,
-//     upvotes_for_note: i64,
-//     votes_for_note: i64,
-// }
+    let topNoteId: number = 0;
 
-// impl InformedTallyQueryResult {
-//     function informed_tally(&self): InformedTally {
-//         InformedTally {
-//             post_id: self.post_id,
-//             note_id: self.note_id,
-//             given_not_shown_this_note: Tally {
-//                 upvotes: self.upvotes_given_not_shown_this_note,
-//                 total: self.votes_given_not_shown_this_note,
-//             },
-//             given_shown_this_note: Tally {
-//                 upvotes: self.upvotes_given_shown_this_note,
-//                 total: self.votes_given_shown_this_note,
-//             },
-//             for_note: Tally {
-//                 upvotes: self.upvotes_for_note,
-//                 total: self.votes_for_note,
-//             },
-//         }
-//     }
-// }
+    let tallies = subnoteTallies.get(postId);
 
-// #[derive(sqlx::FromRow, sqlx::Decode, Debug, Clone)]
-// pub struct InformedTally {
-//     pub post_id: i64,
-//     pub note_id: i64,
+    if (tallies == null) {
+        console.log(
+            `top note for post ${postId} is note ${topNoteId} with p=${pOfAGivenShownTopNote} and q=${pOfAGivenNotShownTopNote}`,
+        );
+        // Bit of a hack. Should just get overall tally
+        return [
+            topNoteId,
+            pOfAGivenShownTopNote,
+            pOfAGivenNotShownTopNote,
+        ];
+    }
 
-//     given_not_shown_this_note: Tally,
-//     given_shown_this_note: Tally,
-//     for_note: Tally,
-// }
+    // loop over tallies
+    for (let tally of tallies) {
 
-// pub async function find_top_note(post_id: i64, pool: &SqlitePool): Result<Option<(i64, number, number)>> {
-//     // first, get table which has stats for this note, all subnotes, and all subnotes
-//     let query = r#"
-//         WITH children AS
-//         (
-//           SELECT
-//               post_id
-//             , note_id
-//             , votes_given_shown_this_note
-//             , upvotes_given_shown_this_note
-//             , votes_given_not_shown_this_note
-//             , upvotes_given_not_shown_this_note
-//           FROM current_informed_tally p
-//           WHERE post_id = ?
-//           UNION ALL
-//           SELECT 
-//               p.post_id
-//             , p.note_id
-//             , p.votes_given_not_shown_this_note
-//             , p.upvotes_given_not_shown_this_note
-//             , p.votes_given_not_shown_this_note
-//             , p.upvotes_given_not_shown_this_note
-//           FROM children c
-//           INNER JOIN current_informed_tally p ON p.post_id = c.note_id
-//         )
-//         SELECT 
-//           children.*
-//           , current_tally.votes as votes_for_note 
-//           , current_tally.upvotes as upvotes_for_note
-//         FROM children join current_tally on (current_tally.post_id = children.note_id);
-//     "#;
+        let [_, p_of_b_given_shown_top_subnote, pOfBGivenNotShownTopSubnote] =
+            find_top_note_given_tallies(tally.noteId, tally.forNote, subnoteTallies);
+        let support = p_of_b_given_shown_top_subnote / pOfBGivenNotShownTopSubnote;
 
-//     // execute the query and get a vector of InformedTally
-//     let tallies: Vec<InformedTally> = sqlx::query_as::<_, InformedTallyQueryResult>(query)
-//         .bind(post_id)
-//         .fetch_all(pool)
-//         .await?
-//         .iter()
-//         .map(|result| result.informed_tally())
-//         .collect();
+        let pOfAGivenNotShownThisNote = GLOBAL_PRIOR
+            .update(tally.givenNotShownThisNote)
+            .average;
+        let pOfAGivenShownThisNote = GLOBAL_PRIOR
+            .update(tally.givenNotShownThisNote)
+            .update(tally.givenShownThisNote)
+            .average;
+        let delta = pOfAGivenShownThisNote - pOfAGivenNotShownThisNote;
 
-//     let subnote_tallies: HashMap<i64, Vec<&InformedTally>> =
-//         tallies.iter().into_group_map_by(|tally| tally.post_id);
+        let pOfAGivenShownThisNoteAndTopSubnote =
+            pOfAGivenNotShownThisNote + delta * support;
 
-//     let t = current_tally(post_id, pool).await?;
+        console.log(`\tFor post ${postId} and note ${tally.noteId}, pOfAGivenShownThisNote=${pOfAGivenShownThisNote}, pOfAGivenNotShownThisNote=${pOfAGivenNotShownThisNote}, delta=${delta}, support=${support}`);
 
-//     let (note_id, p, q) = find_top_note_given_tallies(post_id, t, &subnote_tallies);
+        if (Math.abs(pOfAGivenShownThisNoteAndTopSubnote - pOfAGivenNotShownThisNote)
+            > Math.abs(pOfAGivenShownTopNote - pOfAGivenNotShownTopNote)) {
+            pOfAGivenShownTopNote = pOfAGivenShownThisNoteAndTopSubnote;
+            pOfAGivenNotShownTopNote = pOfAGivenNotShownThisNote;
+            topNoteId = tally.noteId;
+        }
+    }
 
-//     Ok(if note_id == 0 {
-//         None
-//     } else {
-//         Some((note_id, p, q))
-//     })
-// }
+    console.log(`top note for post ${postId} is note ${topNoteId} with p=${pOfAGivenShownTopNote} and q=${pOfAGivenNotShownTopNote}`);
 
-// /// In the context of this function, we always have two posts in scope: A post along with a
-// /// note that is attached to it. Here, we call those "A" and "B" (or "a" and "b" in variable
-// /// and function names).
-// /// The function recurses through the tree of a conversation started by the post `post_id`,
-// /// always looking at post/note combinations.
-// function find_top_note_given_tallies(
-//     post_id: i64,
-//     post_tally: Tally,
-//     subnote_tallies: &HashMap<i64, Vec<&InformedTally>>,
-// ): (i64, number, number) {
-//     let mut p_of_a_given_not_shown_top_note = global_prior().update(post_tally).average;
-
-//     println!(
-//         "p_of_a_given_not_shown_top_note for post {} = {}",
-//         post_id, p_of_a_given_not_shown_top_note
-//     );
-
-//     let mut p_of_a_given_shown_top_note = p_of_a_given_not_shown_top_note;
-
-//     let mut top_note_id: i64 = 0;
-
-//     let tallies = subnote_tallies.get(&post_id);
-//     if tallies.is_none() {
-//         println!(
-//             "top note for post {} is note {} with p={} and q={}",
-//             post_id, top_note_id, p_of_a_given_shown_top_note, p_of_a_given_not_shown_top_note
-//         );
-//         // Bit of a hack. Should just get overall tally
-//         return (
-//             top_note_id,
-//             p_of_a_given_shown_top_note,
-//             p_of_a_given_not_shown_top_note,
-//         );
-//     }
-
-//     for tally in tallies.unwrap().iter() {
-//         let (_, p_of_b_given_shown_top_subnote, p_of_b_given_not_shown_top_subnote) =
-//             find_top_note_given_tallies(tally.note_id, tally.for_note, &subnote_tallies);
-//         let support = p_of_b_given_shown_top_subnote / p_of_b_given_not_shown_top_subnote;
-
-//         let p_of_a_given_not_shown_this_note = global_prior()
-//             .update(tally.given_not_shown_this_note)
-//             .average;
-//         let p_of_a_given_shown_this_note = global_prior()
-//             .update(tally.given_not_shown_this_note)
-//             .update(tally.given_shown_this_note)
-//             .average;
-//         let delta = p_of_a_given_shown_this_note - p_of_a_given_not_shown_this_note;
-
-//         let p_of_a_given_shown_this_note_and_top_subnote =
-//             p_of_a_given_not_shown_this_note + delta * support;
-
-//         println!("\tFor post {} and note {}, p_of_a_given_shown_this_note={}, p_of_a_given_not_shown_this_note={}, delta={}, support={}", post_id, tally.note_id, p_of_a_given_shown_this_note, p_of_a_given_not_shown_this_note, delta, support);
-
-//         if (p_of_a_given_shown_this_note_and_top_subnote - p_of_a_given_not_shown_this_note).abs()
-//             > (p_of_a_given_shown_top_note - p_of_a_given_not_shown_top_note).abs()
-//         {
-//             p_of_a_given_shown_top_note = p_of_a_given_shown_this_note_and_top_subnote;
-//             p_of_a_given_not_shown_top_note = p_of_a_given_not_shown_this_note;
-//             top_note_id = tally.note_id;
-//         }
-//     }
-
-//     println!(
-//         "top note for post {} is note {} with p={} and q={}",
-//         post_id, top_note_id, p_of_a_given_shown_top_note, p_of_a_given_not_shown_top_note
-//     );
-
-//     (
-//         top_note_id,
-//         p_of_a_given_shown_top_note,
-//         p_of_a_given_not_shown_top_note,
-//     )
-// }
-
-// async function current_tally(post_id: i64, pool: &SqlitePool): Result<Tally> {
-//     // first, get table which has stats for this note, all subnotes, and all subnotes
-//     let query = r#"
-//         select upvotes, votes as total from current_tally where post_id = ? 
-//     "#;
-
-//     // execute the query and get a vector of InformedTally
-//     let tally: Option<Tally> = sqlx::query_as::<_, Tally>(query)
-//         .bind(post_id)
-//         .fetch_optional(pool)
-//         .await?;
-
-//     Ok(tally.unwrap_or(EMPTY_TALLY))
-// }
+    return [
+        topNoteId,
+        pOfAGivenShownTopNote,
+        pOfAGivenNotShownTopNote,
+    ]
+}

@@ -3,13 +3,15 @@
 import { json, type DataFunctionArgs } from '@remix-run/node'
 // import { Form, Link, useLoaderData, type MetaFunction } from '@remix-run/react'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-// import { find_top_note } from '#app/probabilities.ts'
+import { find_top_note } from '#app/probabilities.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
 import { type Post } from '@prisma/client'
 import { useLoaderData } from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
+
+const GLOBAL_TAG = "global";
 
 const postIdSchema = z.coerce.number()
 
@@ -34,9 +36,9 @@ export async function loader({ params }: DataFunctionArgs) {
 
 	invariantResponse(post, 'Post not found', { status: 404 })
 
-	// const tag = "GLOBAL";
-	// const note = await find_top_note(tag, postId)
-	const note: Post | null = null
+	const tag = GLOBAL_TAG;
+	const note = await find_top_note(tag, postId)
+	// const note: Post | null = null
 
 	return json({ post, note })
 }
