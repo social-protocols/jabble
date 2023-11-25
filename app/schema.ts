@@ -1,5 +1,5 @@
-import { InferModel, sql } from "drizzle-orm";
-import { AnySQLiteColumn, blob, foreignKey, index, integer, numeric, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { InferInsertModel, InferSelectModel, sql } from "drizzle-orm";
+import { blob, foreignKey, index, integer, numeric, sqliteTable, sqliteView, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 
 export const user = sqliteTable("user", {
@@ -17,7 +17,8 @@ export const user = sqliteTable("user", {
 		}
 	});
 
-export type User = InferModel<typeof user>;
+export type SelectUser = InferSelectModel<typeof user>; 
+export type InsertUser = InferInsertModel<typeof user>;
 
 export const userImage = sqliteTable("user_image", {
 	id: text("id").primaryKey().notNull(),
@@ -34,7 +35,8 @@ export const userImage = sqliteTable("user_image", {
 		}
 	});
 
-export type UserImage = InferModel<typeof userImage>;
+export type SelectUserImage = InferSelectModel<typeof userImage>; 
+export type InsertUserImage = InferInsertModel<typeof userImage>;
 
 export const password = sqliteTable("password", {
 	hash: text("hash").notNull(),
@@ -46,7 +48,8 @@ export const password = sqliteTable("password", {
 		}
 	});
 
-export type Password = InferModel<typeof password>;
+export type SelectPassword = InferSelectModel<typeof password>; 
+export type InsertPassword = InferInsertModel<typeof password>;
 
 export const session = sqliteTable("session", {
 	id: text("id").primaryKey().notNull(),
@@ -61,7 +64,8 @@ export const session = sqliteTable("session", {
 		}
 	});
 
-export type Session = InferModel<typeof session>;
+export type SelectSession = InferSelectModel<typeof session>; 
+export type InsertSession = InferInsertModel<typeof session>;
 
 export const verification = sqliteTable("verification", {
 	id: text("id").primaryKey().notNull(),
@@ -81,7 +85,8 @@ export const verification = sqliteTable("verification", {
 		}
 	});
 
-export type Verification = InferModel<typeof verification>;
+export type SelectVerificationSelect = InferSelectModel<typeof verification>; 
+export type InsertVerificationInsert = InferInsertModel<typeof verification>;
 
 export const post = sqliteTable("post", {
 	id: integer("id").primaryKey({ autoIncrement: true }).notNull(),
@@ -100,7 +105,8 @@ export const post = sqliteTable("post", {
 		}
 	});
 
-export type Post = InferModel<typeof post>;
+export type SelectPost = InferSelectModel<typeof post>; 
+export type InsertPost = InferInsertModel<typeof post>;
 
 export const tag = sqliteTable("tag", {
 	id: integer("id").primaryKey({ autoIncrement: true }).notNull(),
@@ -112,7 +118,8 @@ export const tag = sqliteTable("tag", {
 		}
 	});
 
-export type Tag = InferModel<typeof tag>;
+export type SelectTag = InferSelectModel<typeof tag>; 
+export type InsertTag = InferInsertModel<typeof tag>;
 
 export const voteHistory = sqliteTable("vote_history", {
 	rowid: integer("rowid").primaryKey({ autoIncrement: true }).notNull(),
@@ -124,7 +131,8 @@ export const voteHistory = sqliteTable("vote_history", {
 	createdAt: numeric("created_at").default(sql`(unixepoch(CURRENT_TIMESTAMP))`).notNull(),
 });
 
-export type VoteHistory = InferModel<typeof voteHistory>;
+export type SelectVoteHistory = InferSelectModel<typeof voteHistory>; 
+export type InsertVoteHistory = InferInsertModel<typeof voteHistory>;
 
 export const cumulativeStats = sqliteTable("cumulative_stats", {
 	tagId: integer("tag_id").notNull(),
@@ -138,4 +146,11 @@ export const cumulativeStats = sqliteTable("cumulative_stats", {
 		}
 	});
 
-export type CumulativeStats = InferModel<typeof cumulativeStats>;
+export type SelectCumulativeStats = InferSelectModel<typeof cumulativeStats>; 
+export type InsertCumulativeStats = InferInsertModel<typeof cumulativeStats>;
+
+
+ 
+
+// export const currentVote = sqliteView("current_vote").as((qb) => qb.select().from(user));
+// export const customersView = sqliteView("customers_view").as((qb) => qb.select().from(user).where(eq(user.role, "customer")));
