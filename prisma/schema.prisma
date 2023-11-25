@@ -161,8 +161,17 @@ model CumulativeStats {
   postId      Int    @map("post_id")
   // updatedAt DateTime
   attention   Int
-  uniqueUsers String
+  uniqueUsers String @map("unique_users")
 
   @@unique([postId])
   @@map("cumulative_stats")
+}
+
+model ExplorationStats {
+  rank  Int
+  views Int
+  votes Int
+
+  @@unique([rank])
+  @@map("exploration_stats")
 }
