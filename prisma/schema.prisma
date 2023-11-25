@@ -160,7 +160,8 @@ model CumulativeStats {
   tagId       Int    @map("tag_id")
   postId      Int    @map("post_id")
   // updatedAt DateTime
-  attention Float
+  attention   Int
+  uniqueUsers String
 
   @@unique([postId])
   @@map("cumulative_stats")
