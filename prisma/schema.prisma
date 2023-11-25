@@ -3,45 +3,47 @@ generator client {
   previewFeatures = ["views"]
 }
 
+generator kysely {
+  provider = "prisma-kysely"
+
+  // Optionally provide a destination directory for the generated file
+  // and a filename of your choice
+  output          = "../app/db"
+  fileName        = "kysely-types.ts"
+  // Optionally generate runtime enums to a separate file
+  enumFileName    = "kysely-enums.ts"
+  previewFeatures = ["views"]
+}
+
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-// view InformedTallyQueryResult {
-//   id    Int    @unique
-//   email String
-//   name  String
-//   bio   String
-// }
-
 view CurrentInformedTally {
-  tagId                      Int @map("tag_id")
-  postId                     Int @map("post_id")
-  noteId                     Int @map("note_id")
-  countGivenShownThisNote    Int @map("count_given_shown_this_note")
-  totalGivenShownThisNote    Int @map("total_given_shown_this_note")
-  countGivenNotShownThisNote Int @map("count_given_not_shown_this_note")
-  totalGivenNotShownThisNote Int @map("total_given_not_shown_this_note")
+  tagId                      Int
+  postId                     Int
+  noteId                     Int
+  countGivenShownThisNote    Int
+  totalGivenShownThisNote    Int
+  countGivenNotShownThisNote Int
+  totalGivenNotShownThisNote Int
   // count_for_note Int
   // total_for_note Int
 
   @@unique([tagId, postId, noteId])
-  @@map("current_informed_tally")
 }
 
 view CurrentTally {
-  tagId  Int @map("tag_id")
-  postId Int @map("post_id")
-  count  Int @map("count")
-  total  Int @map("total")
+  tagId  Int
+  postId Int
+  count  Int
+  total  Int
 
   @@unique([tagId, postId])
-  @@map("current_tally")
 }
 
 model User {
-  idInt    Int     @id @default(autoincrement())
   id       String  @unique @default(cuid())
   email    String  @unique
   username String  @unique
@@ -123,48 +125,41 @@ model Verification {
 
 model Post {
   id        Int      @id @default(autoincrement())
-  parentId  Int?     @map("parent_id")
+  parentId  Int?
   content   String
-  authorId  Int      @map("author_id")
-  createdAt DateTime @default(now()) @map("created_at")
+  authorId  String
+  createdAt DateTime @default(now())
   parent    Post?    @relation("post_notes", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   notes     Post[]   @relation("post_notes")
-  user      User     @relation(fields: [authorId], references: [idInt], onDelete: NoAction, onUpdate: NoAction)
-
-  @@map("post")
+  user      User     @relation(fields: [authorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model Tag {
   id          Int           @id @default(autoincrement())
   tag         String        @unique
   VoteHistory VoteHistory[]
-
-  @@map("tag")
 }
 
 model VoteHistory {
   rowid     Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  tagId     Int      @map("tag_id")
-  postId    Int      @map("post_id")
-  noteId    Int?     @map("note_id")
+  userId    String
+  tagId     Int
+  postId    Int
+  noteId    String?
   direction Int
-  createdAt DateTime @default(now()) @map("created_at")
-  user      User     @relation(fields: [userId], references: [idInt], onDelete: NoAction, onUpdate: NoAction)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   tag       Tag      @relation(fields: [tagId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@map("vote_history")
 }
 
 model CumulativeStats {
-  tagId       Int    @map("tag_id")
-  postId      Int    @map("post_id")
+  tagId       Int
+  postId      Int
   // updatedAt DateTime
   attention   Int
-  uniqueUsers String @map("unique_users")
+  uniqueUsers String
 
   @@unique([postId])
-  @@map("cumulative_stats")
 }
 
 model ExplorationStats {
@@ -173,5 +168,4 @@ model ExplorationStats {
   votes Int
 
   @@unique([rank])
-  @@map("exploration_stats")
 }

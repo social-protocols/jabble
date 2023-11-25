@@ -4,11 +4,8 @@ import { BetaDistribution, type Tally } from '#app/beta-distribution.ts';
 import { getOrInsertTagId } from './tag.ts';
 
 import { db } from "#app/db.ts";
-import * as schema from "#app/schema.ts";
-import { SelectPost } from "#app/schema.ts";
-
-import { and, eq } from 'drizzle-orm';
-
+import { CurrentInformedTally, CurrentTally, Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
+// import { Selectable } from 'kysely';
 
 
 //Import data structures
@@ -33,7 +30,7 @@ type InformedTally = {
     forNote: Tally,
 }
 
-function toInformedTally(result: any, forNote: Tally): InformedTally {
+function toInformedTally(result: CurrentInformedTally, forNote: Tally): InformedTally {
     return {
         postId: result.postId,
         noteId: result.noteId,
@@ -77,7 +74,7 @@ export async function informedProbability(tag: string, postId: number): Promise<
 }
 
 
-export async function topNote(tag: string, postId: number): Promise<SelectPost | null> {
+export async function topNote(tag: string, postId: number): Promise<Post | null> {
 
     let tagId = await getOrInsertTagId(tag)
 
@@ -87,11 +84,7 @@ export async function topNote(tag: string, postId: number): Promise<SelectPost |
         return null
     }
 
-
-    const tallies = await db.select().from(schema.post)
-        .where(and(
-            eq(schema.post.id, noteId),
-        ))
+    const tallies = await db.selectFrom("Post").where("id", "=", noteId).selectAll().execute()
 
     return tallies[0]
 }
@@ -187,11 +180,7 @@ export function findTopNoteGivenTallies(
 
 async function currentTally(tagId: number, postId: number): Promise<Tally> {
 
-    const tally = await db.select().from(schema.currentTally)
-        .where(and(
-            eq(schema.currentTally.tagId, tagId),
-            eq(schema.currentTally.postId, postId)
-        ))
+    const tally: CurrentTally[] = await db.selectFrom("CurrentTally").where("tagId", "=", tagId).where("postId", "=", postId).selectAll().execute()
 
     if (tally.length == 0) {
         return EMPTY_TALLY
@@ -203,11 +192,7 @@ async function currentTally(tagId: number, postId: number): Promise<Tally> {
 
 async function cumulativeAttention(tagId: number, postId: number): Promise<number> {
 
-    const stats = await db.select().from(schema.cumulativeStats)
-        .where(and(
-            eq(schema.cumulativeStats.tagId, tagId),
-            eq(schema.cumulativeStats.postId, postId)
-        ))
+    const stats = await db.selectFrom("CumulativeStats").where("tagId", "=", tagId).where("postId", "=", postId).selectAll().execute()
 
     if (stats.length == 0) {
         return 0
@@ -220,12 +205,9 @@ async function cumulativeAttention(tagId: number, postId: number): Promise<numbe
 
 export async function getCurrentTallies(tagId: number, postId: number, map: Map<number, InformedTally[]>) {
     // use dribble to select current informed tally
-    const results = await db.select().from(schema.currentInformedTally)
-        .where(and(
-            eq(schema.currentInformedTally.tagId, tagId),
-            eq(schema.currentInformedTally.postId, postId)
-        ))
+    const results = await db.selectFrom("CurrentInformedTally").where("tagId", "=", tagId).where("postId", "=", postId).selectAll().execute()
 
+    console.log("Got tallies", results)
 
     let tallies = await Promise.all(results.map(async result => {
         await getCurrentTallies(tagId, result.noteId, map)
@@ -250,16 +232,16 @@ export async function getCurrentTallies(tagId: number, postId: number, map: Map<
     //         , upvotes_given_shown_this_note
     //         , votes_given_not_shown_this_note
     //         , upvotes_given_not_shown_this_note
-    //       FROM current_informed_tally p
+    //       FROM currentInformedTally p
     //       WHERE postId = ${postId}
     //         UNION ALL
     //       SELECT 
     //           p.postId
     //         , p.noteId
-    //         , p.count_given_not_shown_this_note
-    //         , p.count_given_not_shown_this_note
+    //         , p.countGivenNotShownThisNote
+    //         , p.countGivenNotShownThisNote
     //       FROM children c
-    //       INNER JOIN current_informed_tally p ON p.postId = c.noteId
+    //       INNER JOIN currentInformedTally p ON p.postId = c.noteId
     //     )
     //     SELECT 
     //         children.*

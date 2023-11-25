@@ -1,6 +1,6 @@
-import { prisma } from '#app/utils/db.server.ts';
 
-import { type Tag } from '@prisma/client';
+import { db } from "#app/db.ts";
+import { CumulativeStats } from "#app/db/types.ts";
 
 import assert from 'assert';
 
@@ -13,31 +13,27 @@ export enum Location {
 	TAG_PAGE,
 }
 
-
-
-
 import bloomFilters from 'bloom-filters';
 
-// import { BloomFilter } from 'bloom-filters';
-
-//Import hash functions
-// import { JSHash, SDBMHash, DJBHash, DEKHash, APHash, wrapperHashFunction } from 'count-min-sketch-ts'
-
-
 export async function cumulativeAttention(tagId: number, postId: number): Promise<number> {
+	// the following code but kysely version
+	const stats: CumulativeStats | undefined = await db
+		.selectFrom('CumulativeStats')
+		.where('tagId', '=', tagId)
+		.where('postId', '=', postId)
+		.selectAll()
+		.executeTakeFirst();
 
-	let stats = await prisma.cumulativeStats.findUnique({
-		where: { tagId: tagId, postId: postId },
-	})
-
-	assert(stats != null)
+	if (stats == undefined) {
+		return 0
+	}
 
 	return stats.attention
 }
 
 export async function logImpression(userId: number, tag: string, postId: number, location: Location, rank: number) {
 
-	userId =100
+	userId = 100
 	const hashcount = 4
 	const size = 75 
 
@@ -45,10 +41,12 @@ export async function logImpression(userId: number, tag: string, postId: number,
 
 	let tagId = await getOrInsertTagId(tag)
 
-	let stats = await prisma.cumulativeStats.findUnique({
-		where: { tagId: tagId, postId: postId },
-	})
-
+	const stats: CumulativeStats | undefined = await db
+		.selectFrom('CumulativeStats')
+		.where('tagId', '=', tagId)
+		.where('postId', '=', postId)
+		.selectAll()
+		.executeTakeFirst();
 
 	let deltaAttention = 1
 
@@ -75,17 +73,15 @@ export async function logImpression(userId: number, tag: string, postId: number,
 			let filterJSON: string = JSON.stringify(filter.saveAsJSON())
 			// console.log("New filter -- updating", filterJSON)
 
-			let result = await prisma.cumulativeStats.update({
-				where: {
-					tagId: tagId,
-					postId: postId,
-					// noteId: noteId,
-				},
-				data: {
-					attention: stats.attention + deltaAttention,
-					uniqueUsers: filterJSON,
-				}
-			})
+			const result = await db
+				.updateTable('CumulativeStats')
+				.set((eb) => ({
+					attention: eb.bxp('attention', '+', deltaAttention),
+					uniqueUsers: filterJSON
+				}))
+				.where('tagId', '=', tagId)
+				.where('postId', '=', postId)
+				.execute();
 			console.log("Result of update is", result)
 
 		} else {
@@ -101,14 +97,15 @@ export async function logImpression(userId: number, tag: string, postId: number,
 		let filterJSON: string = JSON.stringify(filter.saveAsJSON())
 		// console.log("New Filter is", filterJSON)
 
-		let result = await prisma.cumulativeStats.create({
-			data: {
+		let result = await db
+			.insertInto('CumulativeStats')
+			.values({
 				tagId: tagId,
 				postId: postId,
 				attention: deltaAttention,
-				uniqueUsers: filterJSON,
-			}
-		})
+				uniqueUsers: filterJSON
+			})
+			.execute();
 		// console.log("Result of create is", result)
 	}
 

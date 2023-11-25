@@ -9,19 +9,16 @@ async function seed() {
 	// insert into user(idInt, username, email) values (100, "user100", "user100@test.com");
 	// insert into user(idInt, username, email) values (101, "user101", "user101@test.com");
 	await prisma.user.create({
-		data: { idInt: 100, username: 'user100', email: 'user100@test.com' },
+		data: { id: '100', username: 'user100', email: 'user100@test.com' },
 	})
 	await prisma.user.create({
-		data: { idInt: 101, username: 'user101', email: 'user101@test.com' },
+		data: { id: '101', username: 'user101', email: 'user101@test.com' },
 	})
 
-	const insertStatements = fs.readFileSync('prisma/seed.sql', 'utf8');
+	const insertStatements = fs.readFileSync('sql/seed.sql', 'utf8');
 
 	// First, remove inline comments that are on the same line as a semicolon
 	const cleanedStatements = insertStatements.replace(/\s*--.*?(?:\n|\Z)/g, ';\n');
-
-	console.log("Cleaned", cleanedStatements)
-
 
 	// Then split the cleaned string into individual statements
 	const statements = cleanedStatements.split(";\n")

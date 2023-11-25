@@ -1,22 +1,25 @@
 import { db } from "#app/db.ts";
-import * as schema from "#app/schema.ts";
-import { type SelectTag } from "#app/schema.ts";
-
-import { eq, sql } from 'drizzle-orm';
+import { Post, Tag } from '#app/db/types.ts'; // this is the Database interface we defined earlier
+import { Kysely, Selectable, sql } from 'kysely';
 
 import assert from 'assert';
  
-
 export async function getOrInsertTagId(tag: string): Promise<number> {
+    // let t: Selectable<Tag>[] = await db.selectFrom("tag").where("tag", "=", tag).selectAll().execute()
 
-    let t: SelectTag[] = await db.select().from(schema.tag).where(eq(schema.tag.tag, tag))
+    let t: Selectable<Tag>[] = (await sql<Selectable<Tag>>`select * from tag where tag = ${tag}`.execute(db)).rows
+
+    console.log("Got tag", tag, t, t[0])
 
     if (t.length == 0) {
         // use drizzle to create new tag
-        let newTag = await db.insert(schema.tag).values({ tag: tag }).execute()
+        let newTag = await db.insertInto("Tag").values({ tag: tag }).execute()
+        console.log("Newtag", newTag)
+
     }
 
-    t = await db.select().from(schema.tag).where(eq(schema.tag.tag, tag))
+    t = await db.selectFrom("Tag").where("tag", "=", tag).selectAll().execute()
     assert(t.length == 1)
+    console.log("Got tag", tag, t, t[0])
     return t[0].id
 }
