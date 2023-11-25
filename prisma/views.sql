@@ -30,13 +30,12 @@ select
         when 1 then 1
         else 0
       end
-    ) as upvotes
-  , count(*) as votes
-  -- , sum(case when note_id is null and direction = 1 then 1 else 0 end) as upvotes_given_not_seen_any_note
-  -- , sum(case when note_id is null then 1 else 0 end) as votes_given_not_seen_any_note
+    ) as count
+  , count(*) as total
+  -- , sum(case when note_id is null and direction = 1 then 1 else 0 end) as count_given_not_seen_any_note
+  -- , sum(case when note_id is null then 1 else 0 end) as total_given_not_seen_any_note
 from current_vote
 group by tag_id, post_id;
-
 
 
 drop view if exists current_informed_tally;
@@ -70,8 +69,8 @@ with current_informed_votes as (
         when direction = 1 then 1
         else 0
       end
-    ) as upvotes
-    , count(*) as votes
+    ) as count
+    , count(*) as total
   from current_informed_votes
   -- The latest vote might be zero, so in that case we don't return a record for this user and post
   where direction != 0
@@ -106,8 +105,8 @@ first_votes_on_notes as (
         then true
         else null end before_note
     
-      , params.upvotes as upvotes_given_shown_this_note
-      , params.votes as votes_given_shown_this_note
+      , params.count as count_given_shown_this_note
+      , params.total as total_given_shown_this_note
     FROM 
        informed_tally params
        join vote_history using (tag_id, post_id)
@@ -126,8 +125,8 @@ first_votes_on_notes as (
         , user_id
         , direction
         , created_at
-        , upvotes_given_shown_this_note
-        , votes_given_shown_this_note
+        , count_given_shown_this_note
+        , total_given_shown_this_note
         , max(created_at)
     from  votes_before_note
     where
@@ -143,10 +142,10 @@ select
       when 1 then 1
       else 0
     end 
-  ) as upvotes_given_not_shown_this_note
-  , count(*) as votes_given_not_shown_this_note
+  ) as count_given_not_shown_this_note
+  , count(*) as total_given_not_shown_this_note
 
-  , upvotes_given_shown_this_note
-  , votes_given_shown_this_note
+  , count_given_shown_this_note
+  , total_given_shown_this_note
 from last_votes_before_note
 group by tag_id, post_id, note_id;
