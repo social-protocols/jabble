@@ -1,12 +1,14 @@
-import { prisma } from '#app/utils/db.server.ts';
-import { Result } from "@badrap/result";
-
-import { type CumulativeStats, type CurrentInformedTally, type CurrentTally, type Post } from '@prisma/client';
-
-import assert from 'assert';
+// import assert from 'assert';
 
 import { BetaDistribution, type Tally } from '#app/beta-distribution.ts';
 import { getOrInsertTagId } from './tag.ts';
+
+import { db } from "#app/db.ts";
+import * as schema from "#app/schema.ts";
+import { SelectPost } from "#app/schema.ts";
+
+import { and, eq } from 'drizzle-orm';
+
 
 
 //Import data structures
@@ -31,7 +33,7 @@ type InformedTally = {
     forNote: Tally,
 }
 
-function toInformedTally(result: CurrentInformedTally, forNote: Tally): InformedTally {
+function toInformedTally(result: any, forNote: Tally): InformedTally {
     return {
         postId: result.postId,
         noteId: result.noteId,
@@ -75,17 +77,23 @@ export async function informedProbability(tag: string, postId: number): Promise<
 }
 
 
-export async function topNote(tag: string, postId: number): Promise<Post | null> {
+export async function topNote(tag: string, postId: number): Promise<SelectPost | null> {
 
     let tagId = await getOrInsertTagId(tag)
 
-    const [noteId, p, q] = await findTopNoteId(tagId, postId);
+    const [noteId, _p, _q] = await findTopNoteId(tagId, postId);
 
     if (noteId == 0) {
         return null
     }
 
-    return await prisma.post.findUniqueOrThrow({ where: { id: noteId } })
+
+    const tallies = await db.select().from(schema.post)
+        .where(and(
+            eq(schema.post.id, noteId),
+        ))
+
+    return tallies[0]
 }
 
 
@@ -98,7 +106,7 @@ async function findTopNoteId(tagId: number, postId: number): Promise<[number, nu
 
     let tally = await currentTally(tagId, postId)
 
-    let result = await findTopNoteGivenTallies(postId, tally, talliesMap);
+    let result = findTopNoteGivenTallies(postId, tally, talliesMap);
     if (result == null) {
         return [0, 0, 0]
     }
@@ -179,46 +187,45 @@ export function findTopNoteGivenTallies(
 
 async function currentTally(tagId: number, postId: number): Promise<Tally> {
 
-    const tally: CurrentTally | null = await prisma.currentTally.findFirst({
-        where: {
-            tagId: tagId,
-            postId: postId,
-        },
-    })
+    const tally = await db.select().from(schema.currentTally)
+        .where(and(
+            eq(schema.currentTally.tagId, tagId),
+            eq(schema.currentTally.postId, postId)
+        ))
 
-    if (tally == null) {
+    if (tally.length == 0) {
         return EMPTY_TALLY
     }
 
-    return tally;
+    return tally[0];
 }
 
 
 async function cumulativeAttention(tagId: number, postId: number): Promise<number> {
 
-    const stats: CumulativeStats | null = await prisma.cumulativeStats.findFirst({
-        where: {
-            tagId: tagId,
-            postId: postId,
-        },
-    })
+    const stats = await db.select().from(schema.cumulativeStats)
+        .where(and(
+            eq(schema.cumulativeStats.tagId, tagId),
+            eq(schema.cumulativeStats.postId, postId)
+        ))
 
-    if (stats == null) {
+    if (stats.length == 0) {
         return 0
     }
 
-    return stats.attention;
+    return stats[0].attention
 }
 
 
 
 export async function getCurrentTallies(tagId: number, postId: number, map: Map<number, InformedTally[]>) {
-    const results: CurrentInformedTally[] = await prisma.currentInformedTally.findMany({
-        where: {
-            tagId: tagId,
-            postId: postId,
-        },
-    })
+    // use dribble to select current informed tally
+    const results = await db.select().from(schema.currentInformedTally)
+        .where(and(
+            eq(schema.currentInformedTally.tagId, tagId),
+            eq(schema.currentInformedTally.postId, postId)
+        ))
+
 
     let tallies = await Promise.all(results.map(async result => {
         await getCurrentTallies(tagId, result.noteId, map)

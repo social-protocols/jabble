@@ -10,8 +10,6 @@ import { useLoaderData } from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 
-import { testDrizzle } from '#app/drizzle-test.ts'
-
 import { db, getPost } from "#app/db.ts"
 // import { post } from "#app/schema.ts"
 

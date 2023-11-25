@@ -1,4 +1,4 @@
-import { InferInsertModel, InferSelectModel, sql } from "drizzle-orm";
+import { InferInsertModel, InferSelectModel, InferModel, sql } from "drizzle-orm";
 import { blob, foreignKey, index, integer, numeric, sqliteTable, sqliteView, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 
@@ -150,7 +150,41 @@ export type SelectCumulativeStats = InferSelectModel<typeof cumulativeStats>;
 export type InsertCumulativeStats = InferInsertModel<typeof cumulativeStats>;
 
 
+// export const currentVote = sqliteView("current_vote", {
+// 	userId: integer("user_id"),
+// 	tagId: integer("tag_id"),
+// 	postId: integer("post_id"),
+// 	direction: integer("direction"),
+// 	createdAt: numeric("created_at"),
+// }).existing();
  
+// export type SelectCurrentVote = InferSelectModel<typeof currentVote>; 
+
+
+
+export const currentTally = sqliteView("current_tally", {
+	tagId: integer("tag_id").notNull(),
+	postId: integer("post_id").notNull(),
+	count: integer("count").notNull(),
+	total: integer("total").notNull(),
+}).existing();
+ 
+// export type SelectCurrentTally = InferModel<typeof currentTally>; 
+
+
+export const currentInformedTally = sqliteView("current_informed_tally", {
+	tagId: integer("tag_id").notNull(),
+	postId: integer("post_id").notNull(),
+	noteId: integer("note_id").notNull(),
+	countGivenNotShownThisNote: integer("count_given_not_shown_this_note").notNull(),
+	totalGivenNotShownThisNote: integer("total_given_not_shown_this_note").notNull(),
+	countGivenShownThisNote: integer("count_given_shown_this_note").notNull(),
+	totalGivenShownThisNote: integer("total_given_shown_this_note").notNull(),
+}).existing();
+ 
+// export type SelectCurrentInformedTally = InferModel<typeof currentInformedTally>; 
+
+
 
 // export const currentVote = sqliteView("current_vote").as((qb) => qb.select().from(user));
 // export const customersView = sqliteView("customers_view").as((qb) => qb.select().from(user).where(eq(user.role, "customer")));

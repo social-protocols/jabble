@@ -15,14 +15,12 @@ export const db: BetterSQLite3Database<typeof schema> = drizzle(sqlite, {
 	schema,
 });
 
-import { post, Post } from "#app/schema.ts";
+import { post, type SelectPost } from "#app/schema.ts";
 import { eq } from 'drizzle-orm';
  
 
-export async function getPost(id: number): Promise<Post> {
-	let p: Post[] = await db.select().from(post).where(eq(post.id, id))
-	console.log("DB Path", databasePath)
-	console.log("Selected Post", p)
+export async function getPost(id: number): Promise<SelectPost> {
+	let p: SelectPost[] = await db.select().from(post).where(eq(post.id, id))
 
 	return p[0]
 }
