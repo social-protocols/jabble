@@ -2,59 +2,58 @@ import { InferModel, sql } from "drizzle-orm";
 import { AnySQLiteColumn, blob, foreignKey, index, integer, numeric, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 
-export const user = sqliteTable("User", {
-	idInt: integer("idInt").primaryKey({ autoIncrement: true }).notNull(),
-	id: text("id").notNull(),
+export const user = sqliteTable("user", {
+	id: integer("id").primaryKey({ autoIncrement: true }).notNull(),
 	email: text("email").notNull(),
 	username: text("username").notNull(),
 	name: text("name"),
-	createdAt: numeric("createdAt").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+	createdAt: numeric("created_at").default(sql`(unixepoch(CURRENT_TIMESTAMP))`).notNull(),
 },
 	(table) => {
 		return {
-			usernameKey: uniqueIndex("User_username_key").on(table.username),
-			emailKey: uniqueIndex("User_email_key").on(table.email),
-			idKey: uniqueIndex("User_id_key").on(table.id),
+			usernameKey: uniqueIndex("user_username_key").on(table.username),
+			emailKey: uniqueIndex("user_email_key").on(table.email),
+			idKey: uniqueIndex("user_id_key").on(table.id),
 		}
 	});
 
 export type User = InferModel<typeof user>;
 
-export const userImage = sqliteTable("UserImage", {
+export const userImage = sqliteTable("user_image", {
 	id: text("id").primaryKey().notNull(),
-	altText: text("altText"),
-	contentType: text("contentType").notNull(),
+	altText: text("alt_text"),
+	contentType: text("content_Type").notNull(),
 	blob: blob("blob").notNull(),
-	createdAt: numeric("createdAt").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
-	updatedAt: numeric("updatedAt").notNull(),
-	userId: text("userId").notNull().references(() => user.id, { onDelete: "cascade", onUpdate: "cascade" }),
+	createdAt: numeric("created_at").default(sql`(unixepoch(CURRENT_TIMESTAMP))`).notNull(),
+	updatedAt: numeric("updated_at").notNull(),
+	userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade", onUpdate: "cascade" }),
 },
 	(table) => {
 		return {
-			userIdKey: uniqueIndex("UserImage_userId_key").on(table.userId),
+			userIdKey: uniqueIndex("user_image_user_id_key").on(table.userId),
 		}
 	});
 
 export type UserImage = InferModel<typeof userImage>;
 
-export const password = sqliteTable("Password", {
+export const password = sqliteTable("password", {
 	hash: text("hash").notNull(),
-	userId: text("userId").notNull().references(() => user.id, { onDelete: "cascade", onUpdate: "cascade" }),
+	userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade", onUpdate: "cascade" }),
 },
 	(table) => {
 		return {
-			userIdKey: uniqueIndex("Password_userId_key").on(table.userId),
+			userIdKey: uniqueIndex("password_user_id_key").on(table.userId),
 		}
 	});
 
 export type Password = InferModel<typeof password>;
 
-export const session = sqliteTable("Session", {
+export const session = sqliteTable("session", {
 	id: text("id").primaryKey().notNull(),
-	expirationDate: numeric("expirationDate").notNull(),
-	createdAt: numeric("createdAt").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
-	updatedAt: numeric("updatedAt").notNull(),
-	userId: text("userId").notNull().references(() => user.id, { onDelete: "cascade", onUpdate: "cascade" }),
+	expirationDate: numeric("expiration_date").notNull(),
+	createdAt: numeric("created_at").default(sql`(unixepoch(CURRENT_TIMESTAMP))`).notNull(),
+	updatedAt: numeric("updated_at").notNull(),
+	userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade", onUpdate: "cascade" }),
 },
 	(table) => {
 		return {
@@ -64,9 +63,9 @@ export const session = sqliteTable("Session", {
 
 export type Session = InferModel<typeof session>;
 
-export const verification = sqliteTable("Verification", {
+export const verification = sqliteTable("verification", {
 	id: text("id").primaryKey().notNull(),
-	createdAt: numeric("createdAt").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+	createdAt: numeric("created_at").default(sql`(unixepoch(CURRENT_TIMESTAMP))`).notNull(),
 	type: text("type").notNull(),
 	target: text("target").notNull(),
 	secret: text("secret").notNull(),
@@ -78,7 +77,7 @@ export const verification = sqliteTable("Verification", {
 },
 	(table) => {
 		return {
-			targetTypeKey: uniqueIndex("Verification_target_type_key").on(table.target, table.type),
+			targetTypeKey: uniqueIndex("verification_target_type_key").on(table.target, table.type),
 		}
 	});
 
@@ -88,8 +87,8 @@ export const post = sqliteTable("post", {
 	id: integer("id").primaryKey({ autoIncrement: true }).notNull(),
 	parentId: integer("parent_id"),
 	content: text("content").notNull(),
-	authorId: integer("author_id").notNull().references(() => user.idInt),
-	createdAt: numeric("created_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+	authorId: integer("author_id").notNull().references(() => user.id),
+	createdAt: numeric("created_at").default(sql`(unixepoch(CURRENT_TIMESTAMP))`).notNull(),
 },
 	(table) => {
 		return {
@@ -117,12 +116,12 @@ export type Tag = InferModel<typeof tag>;
 
 export const voteHistory = sqliteTable("vote_history", {
 	rowid: integer("rowid").primaryKey({ autoIncrement: true }).notNull(),
-	userId: integer("user_id").notNull().references(() => user.idInt),
+	userId: integer("user_id").notNull().references(() => user.id),
 	tagId: integer("tag_id").notNull().references(() => tag.id),
 	postId: integer("post_id").notNull(),
 	noteId: integer("note_id"),
 	direction: integer("direction").notNull(),
-	createdAt: numeric("created_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+	createdAt: numeric("created_at").default(sql`(unixepoch(CURRENT_TIMESTAMP))`).notNull(),
 });
 
 export type VoteHistory = InferModel<typeof voteHistory>;
@@ -131,7 +130,7 @@ export const cumulativeStats = sqliteTable("cumulative_stats", {
 	tagId: integer("tag_id").notNull(),
 	postId: integer("post_id").notNull(),
 	attention: integer("attention").notNull(),
-	uniqueUsers: text("uniqueUsers").notNull(),
+	uniqueUsers: text("unique_users").notNull(),
 },
 	(table) => {
 		return {
