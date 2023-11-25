@@ -16,25 +16,25 @@ datasource db {
 // }
 
 view CurrentInformedTally {
-  tagId                        Int @map("tag_id")
-  postId                       Int @map("post_id")
-  noteId                       Int @map("note_id")
-  upvotesGivenShownThisNote    Int @map("upvotes_given_shown_this_note")
-  votesGivenShownThisNote      Int @map("votes_given_shown_this_note")
-  upvotesGivenNotShownThisNote Int @map("upvotes_given_not_shown_this_note")
-  votesGivenNotShownThisNote   Int @map("votes_given_not_shown_this_note")
-  // upvotes_for_note Int
-  // votes_for_note Int
+  tagId                      Int @map("tag_id")
+  postId                     Int @map("post_id")
+  noteId                     Int @map("note_id")
+  countGivenShownThisNote    Int @map("count_given_shown_this_note")
+  totalGivenShownThisNote    Int @map("total_given_shown_this_note")
+  countGivenNotShownThisNote Int @map("count_given_not_shown_this_note")
+  totalGivenNotShownThisNote Int @map("total_given_not_shown_this_note")
+  // count_for_note Int
+  // total_for_note Int
 
   @@unique([tagId, postId, noteId])
   @@map("current_informed_tally")
 }
 
 view CurrentTally {
-  tagId   Int @map("tag_id")
-  postId  Int @map("post_id")
-  upvotes Int @map("upvotes")
-  total   Int @map("votes")
+  tagId  Int @map("tag_id")
+  postId Int @map("post_id")
+  count  Int @map("count")
+  total  Int @map("total")
 
   @@unique([tagId, postId])
   @@map("current_tally")
@@ -157,8 +157,8 @@ model VoteHistory {
 }
 
 model CumulativeStats {
-  tagId     Int   @map("tag_id")
-  postId    Int   @map("post_id")
+  tagId       Int    @map("tag_id")
+  postId      Int    @map("post_id")
   // updatedAt DateTime
   attention Float
 
