@@ -1,18 +1,15 @@
+set dotenv-load := true
+
 migrate:
 	npx prisma migrate dev
 
 # Reset database to match schema.prisma and views.sql, and reseed
 reset-db:
-	npx prisma generate
-
-	# make the dev DB schema match schema.prisma
-	npx prisma db push --force-reset
-
+	rm -f $DATABASE_PATH
+	npx drizzle-kit push:sqlite
 	# Create views
-	sqlite3 ./prisma/data.db < ./prisma/views.sql
-
-	# reseed
-	npx prisma db seed
+	sqlite3 $DATABASE_PATH < sql/views.sql
+	sqlite3 $DATABASE_PATH < sql/seed.sql
 
 
 # This command should not be used once we have data in production.
@@ -47,7 +44,7 @@ dev:
 	npm run dev
 
 sqlite:
-	sqlite3 ./prisma/data.db
+	sqlite3 $DATABASE_PATH
 
 typecheck:
 	npm run typecheck
