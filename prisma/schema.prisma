@@ -44,7 +44,7 @@ view CurrentTally {
 }
 
 model User {
-  id       String  @unique @default(cuid())
+  id       String  @id @default(cuid())
   email    String  @unique
   username String  @unique
   name     String?
@@ -58,6 +58,7 @@ model User {
 
   posts       Post[]
   voteHistory VoteHistory[]
+  roles       Role[]
 }
 
 model UserImage {
@@ -90,6 +91,33 @@ model Session {
 
   // non-unique foreign key
   @@index([userId])
+}
+
+model Permission {
+  id          String @id @default(cuid())
+  action      String // e.g. create, read, update, delete
+  entity      String // e.g. note, user, etc.
+  access      String // e.g. own or any
+  description String @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  roles Role[]
+
+  @@unique([action, entity, access])
+}
+
+model Role {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users       User[]
+  permissions Permission[]
 }
 
 model Verification {
