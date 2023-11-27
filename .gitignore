@@ -4,6 +4,7 @@ node_modules
 /build
 /public/build
 /server-build
+/data
 
 /test-results/
 /playwright-report/
