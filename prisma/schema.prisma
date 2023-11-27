@@ -150,7 +150,7 @@ model VoteHistory {
   userId    String
   tagId     Int
   postId    Int
-  noteId    String?
+  noteId    Int?
   direction Int
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)

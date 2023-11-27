@@ -10,7 +10,8 @@ with latest as (
       -- NOTE: direction will be the value of direction pulled from the same row that has max(createdAt)
       -- https://www.sqlite.org/lang_select.html#bareagg
       , direction
-      , max(createdAt) AS createdAt
+      , max(rowid) AS latest
+      , createdAt AS createdAt
     FROM voteHistory
     GROUP BY userId, postId, tagId
 )

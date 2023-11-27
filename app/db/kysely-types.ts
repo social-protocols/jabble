@@ -132,7 +132,7 @@ export type VoteHistory = {
 	userId: string
 	tagId: number
 	postId: number
-	noteId: string | null
+	noteId: number | null
 	direction: number
 	createdAt: Generated<string>
 }
