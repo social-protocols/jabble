@@ -11,7 +11,6 @@ export function fromAlphaBeta(alpha: number, beta: number): BetaDistribution {
     )
 }
 
-
 export class BetaDistribution {
     constructor(public average: number = 0, public weight: number = 0) {}
 

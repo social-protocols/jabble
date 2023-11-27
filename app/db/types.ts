@@ -1,6 +1,6 @@
-import * as schema from "#app/db/kysely-types.ts";
+import { type Selectable } from 'kysely';
+import type * as schema from "#app/db/kysely-types.ts";
 
-import { Selectable } from 'kysely';
 
 
 // The types exported from kysely-types (which are generated from prisma.schema) are not used directly in app code.

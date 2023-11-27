@@ -1,8 +1,5 @@
-import { prisma } from '#app/utils/db.server.ts';
 import * as fs from 'fs';
-// import * as path from 'path';
-
-// import { fileURLToPath } from 'url';
+import { prisma } from '#app/utils/db.server.ts';
 
 import {
 	// cleanupDb,
@@ -66,7 +63,7 @@ async function seed() {
 	const insertStatements = fs.readFileSync('sql/seed.sql', 'utf8');
 
 	// First, remove inline comments that are on the same line as a semicolon
-	const cleanedStatements = insertStatements.replace(/\s*--.*?(?:\n|\Z)/g, ';\n');
+	const cleanedStatements = insertStatements.replace(/\s*--.*?(?:\n|$)/g, ';\n');
 
 	// Then split the cleaned string into individual statements
 	const statements = cleanedStatements.split(";\n")

@@ -2,15 +2,15 @@
 // import { Icon } from '#app/components/ui/icon.tsx'
 import { json, type DataFunctionArgs } from '@remix-run/node'
 // import { Form, Link, useLoaderData, type MetaFunction } from '@remix-run/react'
-import { Location, logImpression } from "#app/attention.ts"
-import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { topNote, voteRate } from '#app/probabilities.ts'
-import { invariantResponse } from '#app/utils/misc.tsx'
 import { useLoaderData } from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
-
+import { Location, logImpression } from "#app/attention.ts"
+import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { db, getPost } from "#app/db.ts"
+import { topNote, voteRate } from '#app/probabilities.ts'
+import { invariantResponse } from '#app/utils/misc.tsx'
+
 // import { post } from "#app/schema.ts"
 
 const GLOBAL_TAG = "global";

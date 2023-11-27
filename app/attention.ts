@@ -1,8 +1,7 @@
 
+import bloomFilters from 'bloom-filters';
+import { type CumulativeStats, type Post } from "#app/db/types.ts";
 import { db } from "#app/db.ts";
-import { CumulativeStats } from "#app/db/types.ts";
-
-import assert from 'assert';
 
 import { getOrInsertTagId } from './tag.ts';
 
@@ -13,7 +12,6 @@ export enum Location {
 	TAG_PAGE,
 }
 
-import bloomFilters from 'bloom-filters';
 
 export async function cumulativeAttention(tagId: number, postId: number): Promise<number> {
 	// the following code but kysely version

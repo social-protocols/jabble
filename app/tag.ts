@@ -1,8 +1,8 @@
-import { db } from "#app/db.ts";
-import { Post, Tag } from '#app/db/types.ts'; // this is the Database interface we defined earlier
-import { Kysely, Selectable, sql } from 'kysely';
 
 import assert from 'assert';
+import { type Selectable, sql } from 'kysely';
+import { type Tag } from '#app/db/types.ts'; // this is the Database interface we defined earlier
+import { db } from "#app/db.ts";
  
 export async function getOrInsertTagId(tag: string): Promise<number> {
     // let t: Selectable<Tag>[] = await db.selectFrom("tag").where("tag", "=", tag).selectAll().execute()

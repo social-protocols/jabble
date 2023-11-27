@@ -1,10 +1,10 @@
 // import assert from 'assert';
 
 import { BetaDistribution, type Tally } from '#app/beta-distribution.ts';
+import { type CurrentInformedTally, type CurrentTally, type Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
+import { db } from "#app/db.ts";
 import { getOrInsertTagId } from './tag.ts';
 
-import { db } from "#app/db.ts";
-import { CurrentInformedTally, CurrentTally, Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
 // import { Selectable } from 'kysely';
 
 
