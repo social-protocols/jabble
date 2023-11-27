@@ -19,3 +19,9 @@ sqlite:
 
 typecheck:
 	npm run typecheck
+
+lint:
+	npm run lint
+
+validate:
+	npm run validate	

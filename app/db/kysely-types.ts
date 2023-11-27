@@ -27,7 +27,6 @@ export type CurrentTally = {
 }
 export type ExplorationStats = {
 	rank: number
-	views: number
 	votes: number
 }
 export type Password = {

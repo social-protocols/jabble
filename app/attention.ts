@@ -31,15 +31,24 @@ export async function cumulativeAttention(tagId: number, postId: number): Promis
 	return stats.attention
 }
 
-export async function logImpression(userId: number, tag: string, postId: number, location: Location, rank: number) {
+export async function logPageView(userId: string, tag: string, posts: Post[]) {
 
-	userId = 100
+	let tagId = await getOrInsertTagId(tag)
+
+	posts.map((post, i) => {
+		logImpression(userId, tagId, post.id, i + 1)
+	})
+
+}
+
+
+async function logImpression(userId: string, tagId: number, postId: number, oneBasedRank: number) {
+
 	const hashcount = 4
 	const size = 75 
 
 	console.log("User id in logImpression", userId)
 
-	let tagId = await getOrInsertTagId(tag)
 
 	const stats: CumulativeStats | undefined = await db
 		.selectFrom('CumulativeStats')
@@ -106,7 +115,7 @@ export async function logImpression(userId: number, tag: string, postId: number,
 				uniqueUsers: filterJSON
 			})
 			.execute();
-		// console.log("Result of create is", result)
+		console.log("Result of create is", result)
 	}
 
 	// if (!filter.has(userId)) {
@@ -155,7 +164,7 @@ export async function logImpression(userId: number, tag: string, postId: number,
 
 }
 
-export async function informationRate(tag: string, postId: number): Promise<number> {
+// export async function informationRate(tag: string, postId: number): Promise<number> {
 
-	return 0
-}
+// 	return 0
+// }

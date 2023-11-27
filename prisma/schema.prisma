@@ -20,29 +20,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-view CurrentInformedTally {
-  tagId                      Int
-  postId                     Int
-  noteId                     Int
-  countGivenShownThisNote    Int
-  totalGivenShownThisNote    Int
-  countGivenNotShownThisNote Int
-  totalGivenNotShownThisNote Int
-  // count_for_note Int
-  // total_for_note Int
-
-  @@unique([tagId, postId, noteId])
-}
-
-view CurrentTally {
-  tagId  Int
-  postId Int
-  count  Int
-  total  Int
-
-  @@unique([tagId, postId])
-}
-
 model User {
   id       String  @id @default(cuid())
   email    String  @unique
@@ -192,8 +169,32 @@ model CumulativeStats {
 
 model ExplorationStats {
   rank  Int
-  views Int
   votes Int
 
   @@unique([rank])
 }
+
+
+view CurrentInformedTally {
+  tagId                      Int
+  postId                     Int
+  noteId                     Int
+  countGivenShownThisNote    Int
+  totalGivenShownThisNote    Int
+  countGivenNotShownThisNote Int
+  totalGivenNotShownThisNote Int
+  // count_for_note Int
+  // total_for_note Int
+
+  @@unique([tagId, postId, noteId])
+}
+
+view CurrentTally {
+  tagId  Int
+  postId Int
+  count  Int
+  total  Int
+
+  @@unique([tagId, postId])
+}
+
