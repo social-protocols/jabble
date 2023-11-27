@@ -14,23 +14,25 @@ export enum Direction {
 
 // TODO: if a new post is untagged, do we post in in #global?
 export async function vote(
+    tag: string,
     userId: string,
-    tagId: number,
     postId: number,
     noteId: number | null,
     direction: Direction,
 ) {
 
-    console.log("Direction", direction)
+    const tagId = await getOrInsertTagId(tag)
 
-    let query =  sql`
+    const direction_int = direction as number
+
+    let query = sql`
         with parameters as (
                 select
                     ${userId} as userId,
                     ${tagId} as tagId,
                     ${postId} as postId,
                     ${noteId} as noteId,
-                    ${direction} as direction
+                    ${direction_int} as direction
             )
             , duplicates as (
                 select
@@ -45,23 +47,22 @@ export async function vote(
                  userId 
                 , tagId
                 , postId
+                , noteId
                 , direction
             )
             select
                   parameters.userId
                 , parameters.tagId
                 , parameters.postId
+                , parameters.noteId
                 , parameters.direction
             from parameters
             join duplicates
             where not duplicate
     `
 
-    console.log("Query", postId, query.toString())
-
     let result = await query.execute(db)
-
-    console.log("Vote result", result)
+    // console.log("Vote result", result)
 
     // await db
     //     .insertInto('voteHistory')

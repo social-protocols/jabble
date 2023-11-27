@@ -24,9 +24,9 @@ export async function createPost(
 
     const createdPostId = results[0].id;
 
-    const tagId = await getOrInsertTagId(tag);
+    const tagId: number = await getOrInsertTagId(tag);
     const direction: Direction = Direction.Up;
-    await vote(authorId, tagId, createdPostId, null, direction);
+    await vote(tag, authorId, createdPostId, null, direction);
 
     return createdPostId;
 }
