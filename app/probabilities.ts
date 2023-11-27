@@ -90,7 +90,7 @@ export async function topNote(tag: string, postId: number): Promise<Post | null>
 }
 
 
-async function findTopNoteId(tagId: number, postId: number): Promise<[number, number, number]> {
+export async function findTopNoteId(tagId: number, postId: number): Promise<[number, number, number]> {
 
     let talliesMap = new Map<number, InformedTally[]>()
     await getCurrentTallies(tagId, postId, talliesMap)

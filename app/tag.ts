@@ -9,17 +9,13 @@ export async function getOrInsertTagId(tag: string): Promise<number> {
 
     let t: Selectable<Tag>[] = (await sql<Selectable<Tag>>`select * from tag where tag = ${tag}`.execute(db)).rows
 
-    console.log("Got tag", tag, t, t[0])
-
     if (t.length == 0) {
         // use drizzle to create new tag
         let newTag = await db.insertInto("Tag").values({ tag: tag }).execute()
-        console.log("Newtag", newTag)
 
     }
 
     t = await db.selectFrom("Tag").where("tag", "=", tag).selectAll().execute()
     assert(t.length == 1)
-    console.log("Got tag", tag, t, t[0])
     return t[0].id
 }

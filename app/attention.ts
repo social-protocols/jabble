@@ -1,15 +1,23 @@
 
-import bloomFilters from 'bloom-filters';
-import { type CumulativeStats, type Post } from "#app/db/types.ts";
 import { db } from "#app/db.ts";
+import { type CumulativeStats, type Post } from "#app/db/types.ts";
+import bloomFilters from 'bloom-filters';
 
 import { getOrInsertTagId } from './tag.ts';
 
+import assert from 'assert';
 
-export enum Location {
-	POST_PAGE,
-	TOP_NOTE_ON_POST_PAGE,
-	TAG_PAGE,
+export enum PageType {
+	// POST_PAGE,
+	// TOP_NOTE_ON_POST_PAGE,
+	Tag,
+	Feed,
+	NewPost,
+}
+
+export type Location = {
+	pageType: PageType,
+	oneBasedRank: number,
 }
 
 
@@ -29,18 +37,37 @@ export async function cumulativeAttention(tagId: number, postId: number): Promis
 	return stats.attention
 }
 
-export async function logPageView(userId: string, tag: string, posts: Post[]) {
+export async function logTagPageView(userId: string, tag: string, posts: Post[]) {
 
 	let tagId = await getOrInsertTagId(tag)
 
 	posts.map((post, i) => {
-		logImpression(userId, tagId, post.id, i + 1)
+		logImpression(userId, tagId, post.id, {pageType: PageType.Tag, oneBasedRank: i + 1})
 	})
 
 }
 
+// Guesses for now
+const pageTypeCoefficients: Map<PageType, number> = new Map([
+	[PageType.Tag, 0.1],
+	[PageType.Feed, 0.1],
+	[PageType.NewPost, 1],
+])
 
-async function logImpression(userId: string, tagId: number, postId: number, oneBasedRank: number) {
+async function logImpression(userId: string, tagId: number, postId: number, location: Location) {
+	let pageTypeC = pageTypeCoefficients.get(location.pageType);
+	assert(pageTypeC !== undefined)
+	accumulateAttention(userId, tagId, postId, pageTypeC / location.oneBasedRank)
+}
+
+
+export async function logAuthorImpression(userId: string, tagId: number, postId: number) {
+	let pageTypeC = pageTypeCoefficients.get(PageType.NewPost);
+	assert(pageTypeC !== undefined)
+	accumulateAttention(userId, tagId, postId, pageTypeC)	
+}
+
+async function accumulateAttention(userId: string, tagId: number, postId: number, deltaAttention: number) {
 
 	const hashcount = 4
 	const size = 75 
@@ -55,15 +82,9 @@ async function logImpression(userId: string, tagId: number, postId: number, oneB
 		.selectAll()
 		.executeTakeFirst();
 
-	let deltaAttention = 1
 
 	if (stats != null) {
-		console.log("Have stats", stats)
-
-		// let filter = new bloomFilters.BloomFilter(size, hashcount)
-
-		// filter.seed = stats.uniqueUsers
-
+		
 		// console.log("UNique users", stats.uniqueUsers)
 		let j: JSON = JSON.parse(stats.uniqueUsers) as JSON
 		// console.log("Parsed json", j)
@@ -83,7 +104,7 @@ async function logImpression(userId: string, tagId: number, postId: number, oneB
 			const result = await db
 				.updateTable('CumulativeStats')
 				.set((eb) => ({
-					attention: eb.bxp('attention', '+', deltaAttention),
+					attention: eb('attention', '+', deltaAttention),
 					uniqueUsers: filterJSON
 				}))
 				.where('tagId', '=', tagId)

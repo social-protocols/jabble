@@ -1,14 +1,25 @@
 // import assert from 'assert';
 
-import { QueryResult, sql } from 'kysely';
-import { type Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
 import { db } from "#app/db.ts";
+import { type Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
+import { QueryResult, sql } from 'kysely';
 import { cumulativeAttention } from './attention.ts';
-import { informedProbability } from './probabilities.ts';
+import { findTopNoteId } from './probabilities.ts';
 import { getOrInsertTagId } from './tag.ts';
 
+
+type ScoreData = {
+	a: number,
+	p: number,
+	q: number,
+	score: number
+}
+
 type PostWithAttention = Post & { attention: number }
-type RankedPost = PostWithAttention & { score: number, explorationPool: boolean, oneBasedRank: number }
+type RankedPost = PostWithAttention & ScoreData & { explorationPool: boolean, oneBasedRank: number }
+
+const fatigueFactor = .9
+
 
 export async function getRankedPosts(tag: string): Promise<PostWithAttention[]> {
 	// first, select candidate posts (e.g. less than a certain age, greater than a certain p, greater than a certain attention)
@@ -35,18 +46,26 @@ export async function getRankedPosts(tag: string): Promise<PostWithAttention[]> 
 	// `.execute(db)).rows
 
 
-	let candidatePosts: PostWithAttention[] = await db
+	let query = db
 		.selectFrom('Post')
 		.innerJoin('CurrentTally', 'CurrentTally.postId', 'Post.id')
 		.where('CurrentTally.tagId', '=', tagId)
-		.leftJoin('CumulativeStats', 'CumulativeStats.postId', 'Post.id')
-		.where('CumulativeStats.tagId', '=', tagId)
+		.leftJoin(
+			'CumulativeStats',
+			(join) => join
+				.onRef('CumulativeStats.postId', '=', 'Post.id')
+				.on('CumulativeStats.tagId', '=', tagId)
+		)
 		.select(
 			sql<number>`COALESCE(CumulativeStats.attention, 0)`.as('attention')
 		)
 		.selectAll('Post')
-		.execute()
+		;
 
+
+	console.log("Query is", query.compile())
+	
+	let candidatePosts: PostWithAttention[] = await query.execute()
 
 
 	console.log("Result", candidatePosts)
@@ -56,7 +75,8 @@ export async function getRankedPosts(tag: string): Promise<PostWithAttention[]> 
 	// // then sort by score
 	// // let sortedPosts = candidatePosts.sort((a, b) => await score(tagId, a.id) - await score(tagId, b.id))
 	let RankedPosts = await Promise.all(candidatePosts.map(async post => {
-		let s = { score: await score(tag, post.id), explorationPool: false }
+		let s = await score(tag, post.id)
+
 		return {
 			...post, ...s
 		}
@@ -65,7 +85,7 @@ export async function getRankedPosts(tag: string): Promise<PostWithAttention[]> 
 	let sortedPosts = RankedPosts
 		.sort((a, b) => { return a.score - b.score })
 		.map((post, i) => {
-			let s = { oneBasedRank: i + 1 }
+			let s = { oneBasedRank: i + 1, explorationPool: false }
 			return { ...post, ...s }
 		})
 
@@ -100,26 +120,29 @@ export async function getRankedPosts(tag: string): Promise<PostWithAttention[]> 
 
 
 
-// then, choose exploration post
-// insert into list and select post data
-
-
-async function score(tag: string, postId: number): Promise<number> {
+async function score(tag: string, postId: number): Promise<ScoreData> {
 	// find informed probability
 
 	let tagId = await getOrInsertTagId(tag)
 
-	let q = await informedProbability(tag, postId)
+	// let q = await informedProbability(tag, postId)
+
+	const [_topNoteId, p, q] = await findTopNoteId(tagId, postId);
+
 
 	let a = await cumulativeAttention(tagId, postId)
-	let fatigueFactor = .9
 	// The formula below gives us attention adjusted for fatigue. 
 	// Our decay model says that effective attention (e.g. the vote rate) decays exponentially, so the *derivative* of the formula below
 	// should be e**(-fatigueFactor*a). So the function below starts at being roughly equal to a but then as a increases
 	// it levels off.
 	let adjustedAttention = (1 - Math.exp(-fatigueFactor * a)) / fatigueFactor
 
-	return Math.log2(q) / adjustedAttention
+	return {
+		a: a,
+		p: p,
+		q: q,
+		score: Math.log2(q) / adjustedAttention
+	}
 }
 
 
