@@ -176,11 +176,14 @@ export function findTopNoteGivenTallies(
     ]
 }
 
-
-
 async function currentTally(tagId: number, postId: number): Promise<Tally> {
 
-    const tally: CurrentTally[] = await db.selectFrom("CurrentTally").where("tagId", "=", tagId).where("postId", "=", postId).selectAll().execute()
+    const tally: CurrentTally[] = await db
+        .selectFrom("CurrentTally")
+        .where("tagId", "=", tagId)
+        .where("postId", "=", postId)
+        .selectAll()
+        .execute()
 
     if (tally.length == 0) {
         return EMPTY_TALLY
@@ -203,7 +206,7 @@ async function cumulativeAttention(tagId: number, postId: number): Promise<numbe
 
 
 
-export async function getCurrentTallies(tagId: number, postId: number, map: Map<number, InformedTally[]>) {
+async function getCurrentTallies(tagId: number, postId: number, map: Map<number, InformedTally[]>) {
     // use dribble to select current informed tally
     const results = await db.selectFrom("CurrentInformedTally").where("tagId", "=", tagId).where("postId", "=", postId).selectAll().execute()
 
