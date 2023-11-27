@@ -5,9 +5,10 @@ import { json, type DataFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
-import { Location, logImpression } from "#app/attention.ts"
+import { Location } from "#app/attention.ts"
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { db, getPost } from "#app/db.ts"
+import { db } from "#app/db.ts"
+import { getPost } from "#app/post.ts"
 import { topNote, voteRate } from '#app/probabilities.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
 
