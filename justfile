@@ -23,5 +23,10 @@ typecheck:
 lint:
 	npm run lint
 
-validate:
-	npm run validate	
+test:
+	npm run test 
+
+e2e-test:
+	npm run test:e2e:dev 
+
+
