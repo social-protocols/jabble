@@ -75,6 +75,7 @@ export type Session = {
 }
 export type SiteStats = {
 	rowid: Generated<number>
+	views: number
 	votes: number
 }
 export type Tag = {

@@ -1,9 +1,8 @@
 
 import { db } from "#app/db.ts";
 // import { type Post, type PostStats } from "#app/db/types.ts";
-import bloomFilters from 'bloom-filters';
+// import bloomFilters from 'bloom-filters';
 
-import { getOrInsertTagId } from './tag.ts';
 
 import assert from 'assert';
 
@@ -43,44 +42,36 @@ expected votes per impression at each location -- or the deltaAttention
 The logExplorationVote function below updates this aggregate given a
 location.
 
+
 */
+
+// This needs to be quite small. We want to use an exponentially weighted moving average to detect the gradual changes in user behavior over time
+// But we want the moving average window to be quite big so as to have more accurate data. Especially for locations/ranks where we don't get
+// a lot of data. 
+const alpha = .9999
+const windowSize = 1 / (1 - alpha)
+
 
 
 export async function logExplorationVote(location: Location) {
 	// console.log("Logging exploration vote here", location);
 
-	await db
-		.updateTable('SiteStats')
-		.set(eb => ({
-			votes: eb('votes', '+', 1)
-			// votes: sql<number>`excluded.votes + 1`  // increment votes by 1
-		}))
-		.execute();
-
 	// Todo have increment statement return updated value
-	const siteStats = (await db.selectFrom('SiteStats').selectAll().executeTakeFirst())
-	assert(siteStats != undefined)
-	const sitewideVotes = siteStats.votes
 
-	// location.oneBasedRank = 1
+	// const siteStats = (await db.selectFrom('SiteStats').selectAll().executeTakeFirst())
+	// assert(siteStats != undefined)
+	// const sitewideVotes = siteStats.votes
 
-	// await db
-	// 	.insertInto('LocationStats') // replace with your actual table name
-	// 	.values({
-	// 		locationType: location.locationType as number,
-	// 		oneBasedRank: location.oneBasedRank,
-	// 		attention: 0, // Initial attention share for new entry
-	// 		lastSitewideVotes: sitewideVotes
-	// 	})
-	// 	.onConflict((oc) => oc.doNothing())
-	// 	.execute()
+    const result = await db
+       .updateTable('SiteStats')
+       .set(eb => ({
+               votes: eb('votes', '+', 1)
+               // votes: sql<number>`excluded.votes + 1`  // increment votes by 1
+       }))
+       .returning('votes')
+       .execute();
 
-
-	// This needs to be quite small. We want to use an exponentially weighted moving average to detect the gradual changes in user behavior over time
-	// But we want the moving average window to be quite big so as to have more accurate data. Especially for locations/ranks where we don't get
-	// a lot of data. 
-	const alpha = .9999
-	const windowSize = 1 / (1 - alpha)
+    const sitewideVotes: number = result[0].votes
 
 	const query = db
 		.updateTable('LocationStats')

@@ -5,9 +5,9 @@ import bloomFilters from 'bloom-filters';
 
 import { getOrInsertTagId } from './tag.ts';
 
-import assert from 'assert';
+// import assert from 'assert';
 
-import { sql } from 'kysely';
+// import { sql } from 'kysely';
 
 
 export enum LocationType {
@@ -22,9 +22,6 @@ export type Location = {
 	locationType: LocationType,
 	oneBasedRank: number,
 }
-
-
-
 
 export async function cumulativeAttention(tagId: number, postId: number): Promise<number> {
 	// the following code but kysely version
@@ -44,24 +41,33 @@ export async function cumulativeAttention(tagId: number, postId: number): Promis
 
 export async function logTagPageView(userId: string, tag: string, posts: Post[]) {
 
+	// todo transaction
+
 	let tagId = await getOrInsertTagId(tag)
 
 	posts.map((post, i) => {
-		logImpression(userId, tagId, post.id, { locationType: LocationType.TagPage, oneBasedRank: i + 1 })
+		logPostView(userId, tagId, post.id, { locationType: LocationType.TagPage, oneBasedRank: i + 1 })
 	})
+
+	await db
+		.updateTable('SiteStats')
+		.set(eb => ({
+			votes: eb('votes', '+', 1)
+		}))
+		.execute();
 }
 
 
-export async function logAuthorImpression(userId: string, tagId: number, postId: number) {
-	logImpression(userId, tagId, postId, { locationType: LocationType.NewPost, oneBasedRank: 1 })	
+export async function logAuthorView(userId: string, tagId: number, postId: number) {
+	logPostView(userId, tagId, postId, { locationType: LocationType.NewPost, oneBasedRank: 1 })	
 }
 
-async function logImpression(userId: string, tagId: number, postId: number, location: Location) {
+async function logPostView(userId: string, tagId: number, postId: number, location: Location) {
 
 	const hashcount = 4
 	const size = 75 
 
-	console.log("User id in logImpression", userId)
+	console.log("User id in logPostView", userId)
 
 
 	const stats: PostStats | undefined = await db
@@ -196,18 +202,18 @@ export async function seedStats() {
 	await db.deleteFrom('SiteStats').execute()
 	await db.deleteFrom('LocationStats').execute()
 
-
-	db.insertInto('SiteStats').values({ votes: 0 }).onConflict(oc => oc.doNothing()).execute()
+	const startingSitewideVotes = 1000 
+	const startingSitewideViews = 1000
+	db.insertInto('SiteStats').values({ votes: startingSitewideVotes, views: startingSitewideViews }).onConflict(oc => oc.doNothing()).execute()
 
 	// Rough guess of vote share at position 1 just for seeding.
-	const startingVotes = .08
+	const rankOneVoteShare = .08
 	let locationType = LocationType.TagPage
 
 	// loop i from 1 to 90
 	for (let i = 1; i <= 90; i++) {
 		let oneBasedRank = i
-		let voteShare = startingVotes / oneBasedRank
-
+		let voteShare = rankOneVoteShare / oneBasedRank
 
 		await db
 			.insertInto('LocationStats') // replace with your actual table name
@@ -215,7 +221,7 @@ export async function seedStats() {
 				locationType: locationType as number,
 				oneBasedRank: oneBasedRank,
 				voteShare: voteShare, // Initial vote count for a new entry
-				latestSitewideVotes: 100,
+				latestSitewideVotes: startingSitewideVotes, // Indicates strength of our prior about the voteShare per location
 			})
 			// .onConflict(oc => oc
 			// 	.column('locationType') // assuming 'locationType' and 'rank' are your unique columns

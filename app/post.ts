@@ -8,7 +8,7 @@ import { getOrInsertTagId } from './tag.ts';
 
 import assert from 'assert';
 
-import { logAuthorImpression } from './attention.ts';
+import { logAuthorView } from './attention.ts';
 
 import { LocationType } from './attention.ts';
 
@@ -31,7 +31,7 @@ export async function createPost(
     const direction: Direction = Direction.Up;
     await vote(tag, authorId, createdPostId, null, direction, null)
 
-    await logAuthorImpression(authorId, tagId, createdPostId)
+    await logAuthorView(authorId, tagId, createdPostId)
 
     return createdPostId;
 }

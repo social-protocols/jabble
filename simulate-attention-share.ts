@@ -3,9 +3,7 @@ import { db } from "#app/db.ts";
 import { type Post, type PostStats } from "#app/db/types.ts";
 import bloomFilters from 'bloom-filters';
 
-// import { getOrInsertTagId } from './tag.ts';
-
-import { LocationType, type Location } from "#app/attention.ts";
+import { LocationType, type Location, logTagPageView } from "#app/attention.ts";
 
 import { logExplorationVote } from '#app/exploration.ts';
 
@@ -16,6 +14,8 @@ import { sql } from 'kysely';
 import { seedStats } from "#app/attention.ts";
 
 import jStat from 'jstat';
+
+
 
 // import { logExplorationVote } from './attention.ts'
 
@@ -52,13 +52,25 @@ is .004.
 */
 
 const oneBasedRankFactor = .63
-const actuallocationTypeFactor = .1
+// const actualLocationTypeFactor = .1
+const votesPerImpression = 200
 
+function rankFactor(oneBasedRank: number): number {
+	return Math.pow(oneBasedRank, -oneBasedRankFactor)
+}
 
+const m = 100
+const n = 200;
+const nRanks = 90
+let normalizationConstant = 0
+const locationType = LocationType.TagPage
 
-function locationFactor(location: Location): number {
-	let c = 1.0
-	return c * Math.pow(location.oneBasedRank, -oneBasedRankFactor)
+// Get a normalization constant that converts the rank factor to a share of votes at each rank
+for (let i = 0; i < nRanks; i++) {
+	// let location = { locationType: locationType, oneBasedRank: i + 1 }
+	let oneBasedRank = i + 1
+	let l = rankFactor(oneBasedRank)
+	normalizationConstant = normalizationConstant + l
 }
 
 
@@ -66,31 +78,11 @@ await simulateAttentionShare()
 
 async function simulateAttentionShare() {
 	await seedStats()
-	// return
-
-	// Thoughts on explorationStats
-	// one -- keep a count of total site votes
-	// use that as the 'clock'
-	// store the latest clock time in the explorationStats table
-	// when a vote comes in:
-	//   take elapsed time
-	//   decay current value by alpha^elapsedTime
-	//   add (1 - alpha)
-	//   this should give us a moving average of votes / elapsedTime
-	//   since elapsedTime is total sitewide votes, this should give us a vote share
-	//   total should add up ....
-
-
-	const month = 60 * 24 * 30
-	const m = 2000
-	const n = 200;
-	const nRanks = 90
 
 	assert(n >= nRanks)
 
 	const posts = Array.from(Array(n).keys())
-	const logVoteRates = posts.map(post => jStat.normal.sample(0, .7))
-	const locationType = LocationType.TagPage
+	const logVoteRates = posts.map(post => jStat.normal.sample(0, .3))
 
 	// for each minute
 	for (let t = 0; t < m; t++) {
@@ -104,21 +96,29 @@ async function simulateAttentionShare() {
 
 			let postNumber = posts[i]
 			let oneBasedRank = i + 1
-			let location = { locationType: locationType, oneBasedRank: oneBasedRank }
 
 			// get the actual vote rate for this post at this location
-			let postVoteRate = Math.exp(logVoteRates[postNumber])
-			let l = locationFactor(location)
-			let actualVoteRate = l * postVoteRate
+			let postFactor = Math.exp(logVoteRates[postNumber])
+			let rf = rankFactor(oneBasedRank)
+			let voteShare = rf/normalizationConstant
+			// console.log("Rf", oneBasedRank, rf, voteShare)
+			let actualVoteRate = votesPerImpression * voteShare * postFactor
 
-			// console.log("Vote rate", postNumber, logVoteRates[postNumber], postVoteRate, l, actualVoteRate)
 			assert(postNumber != undefined)
 
-			// get a random number of votes from a poisson distribution with the actual vote rate
-			let votes = jStat.poisson.sample(actualVoteRate)
+			// call this function just to update the sitewide view stats
+			// but we don't need to accumulate attention for posts for this simulation
+			await logTagPageView("foo", "global", [])
 
-			// console.log("Logging votes", location, votes, actualVoteRate)
+			// get a random number of votes from a poisson distribution with the actual vote rate
+			let votes = jStat.poisson.sample(voteShare * votesPerImpression)
+
+			// if(oneBasedRank == 1) {
+			// 	console.log("Vote rate", oneBasedRank, postNumber, postFactor, voteShare, normalizationConstant, actualVoteRate)
+			// 	console.log("Logging votes", oneBasedRank, votes, actualVoteRate)
+			// }
 			for (let j = 0; j < votes; j++) {
+				let location = { locationType: locationType, oneBasedRank: oneBasedRank }
 				await logExplorationVote(location)	
 			}
 
@@ -127,13 +127,6 @@ async function simulateAttentionShare() {
 		}
 	}
 
-	let total = 0
-	for (let i = 0; i < nRanks; i++) {
-		let location = { locationType: locationType, oneBasedRank: i + 1 }
-		let l = locationFactor(location)
-		total = total + l
-		// console.log("L at rank ", i, l)
-	}
 
 
 	let voteShares = await db.selectFrom("LocationStats").selectAll().orderBy("oneBasedRank").execute()
@@ -142,13 +135,12 @@ async function simulateAttentionShare() {
 
 	let squareError = 0
 	for (let i = 0; i < nRanks; i++) {
-		let location = { locationType: locationType, oneBasedRank: i + 1 }
-		let l = locationFactor(location)
-		let actualShare = l / total
+		let l = rankFactor(i + 1)
+		let actualShare = l / normalizationConstant
 		// total = total + l
 		let estimatedShare = voteShares[i].voteShare
 		let error = (actualShare - estimatedShare) / actualShare
-		// console.log("Actual location share at rank ", i, actualShare, estimatedShare, error * error)
+		console.log("Actual location share at rank ", i, actualShare, estimatedShare, error * error)
 		squareError += error * error
 	}
 	console.log("Mean Square error", squareError / nRanks)
@@ -161,5 +153,7 @@ function shuffleArray<T>(array: T[]) {
 		[array[i], array[j]] = [array[j], array[i]];
 	}
 }
+
+
 
 

@@ -178,6 +178,7 @@ model LocationStats {
 
 model SiteStats {
   rowid Int @id @default(autoincrement())
+  views Int
   votes Int
 }
 
