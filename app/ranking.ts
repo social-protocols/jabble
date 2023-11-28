@@ -33,15 +33,15 @@ export async function getRankedPosts(tag: string): Promise<PostWithAttention[]> 
 
 	// let candidatePosts: PostWithAttention[] = (await sql<PostWithAttention>`
 	// 	select 
-	// 		COALESCE(CumulativeStats.attention, 0) as "attention"
+	// 		COALESCE(PostStats.attention, 0) as "attention"
 	// 		, "Post".* 
 	// 		from "Post" 
 	// 		inner join "CurrentTally" 
 	// 			on "CurrentTally"."postId" = "Post"."id" 
 	// 	 		and "CurrentTally"."tagId" = 0 
-	// 		left join "CumulativeStats" 
-	// 			on "CumulativeStats"."postId" = "Post"."id"
-	// 			and "CumulativeStats"."tagId" = 0
+	// 		left join "PostStats" 
+	// 			on "PostStats"."postId" = "Post"."id"
+	// 			and "PostStats"."tagId" = 0
 	// 		where Post.parentID is null;
 	// `.execute(db)).rows
 
@@ -51,19 +51,19 @@ export async function getRankedPosts(tag: string): Promise<PostWithAttention[]> 
 		.innerJoin('CurrentTally', 'CurrentTally.postId', 'Post.id')
 		.where('CurrentTally.tagId', '=', tagId)
 		.leftJoin(
-			'CumulativeStats',
+			'PostStats',
 			(join) => join
-				.onRef('CumulativeStats.postId', '=', 'Post.id')
-				.on('CumulativeStats.tagId', '=', tagId)
+				.onRef('PostStats.postId', '=', 'Post.id')
+				.on('PostStats.tagId', '=', tagId)
 		)
 		.select(
-			sql<number>`COALESCE(CumulativeStats.attention, 0)`.as('attention')
+			sql<number>`COALESCE(PostStats.attention, 0)`.as('attention')
 		)
 		.selectAll('Post')
 		;
 
 
-	console.log("Query is", query.compile())
+	console.log("getRankedPosts Query is", query.compile())
 	
 	let candidatePosts: PostWithAttention[] = await query.execute()
 
@@ -91,7 +91,7 @@ export async function getRankedPosts(tag: string): Promise<PostWithAttention[]> 
 
 
 	// // Now, choose one random post that has no attention (cumulative_stats.attention == 0)
-	// // Use a DB query that does a negative join against the cumulativeStats table
+	// // Use a DB query that does a negative join against the PostStats table
 	// let explorationPool = RankedPosts.filter(post => post.attention == 0)
 
 	// // then, randomly choose one of the posts in that rank as exploration post

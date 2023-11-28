@@ -4,12 +4,6 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 	: ColumnType<T, T | undefined, T>
 export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
-export type CumulativeStats = {
-	tagId: number
-	postId: number
-	attention: number
-	uniqueUsers: string
-}
 export type CurrentInformedTally = {
 	tagId: number
 	postId: number
@@ -25,9 +19,11 @@ export type CurrentTally = {
 	count: number
 	total: number
 }
-export type ExplorationStats = {
-	rank: number
-	votes: number
+export type LocationStats = {
+	locationType: number
+	oneBasedRank: number
+	voteShare: number
+	latestSitewideVotes: number
 }
 export type Password = {
 	hash: string
@@ -53,6 +49,12 @@ export type Post = {
 	authorId: string
 	createdAt: Generated<string>
 }
+export type PostStats = {
+	tagId: number
+	postId: number
+	attention: number
+	uniqueUsers: string
+}
 export type Role = {
 	id: string
 	name: string
@@ -70,6 +72,10 @@ export type Session = {
 	createdAt: Generated<string>
 	updatedAt: string
 	userId: string
+}
+export type SiteStats = {
+	rowid: Generated<number>
+	votes: number
 }
 export type Tag = {
 	id: Generated<number>
@@ -139,15 +145,16 @@ export type VoteHistory = {
 export type DB = {
 	_PermissionToRole: PermissionToRole
 	_RoleToUser: RoleToUser
-	CumulativeStats: CumulativeStats
 	CurrentInformedTally: CurrentInformedTally
 	CurrentTally: CurrentTally
-	ExplorationStats: ExplorationStats
+	LocationStats: LocationStats
 	Password: Password
 	Permission: Permission
 	Post: Post
+	PostStats: PostStats
 	Role: Role
 	Session: Session
+	SiteStats: SiteStats
 	Tag: Tag
 	User: User
 	UserImage: UserImage

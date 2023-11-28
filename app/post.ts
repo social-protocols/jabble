@@ -8,8 +8,9 @@ import { getOrInsertTagId } from './tag.ts';
 
 import assert from 'assert';
 
-import { logAuthorImpression } from './attention.ts'
+import { logAuthorImpression } from './attention.ts';
 
+import { LocationType } from './attention.ts';
 
 // express the above fn in typescript with kysely queries
 export async function createPost(
@@ -28,7 +29,7 @@ export async function createPost(
 
     const tagId: number = await getOrInsertTagId(tag);
     const direction: Direction = Direction.Up;
-    await vote(tag, authorId, createdPostId, null, direction);
+    await vote(tag, authorId, createdPostId, null, direction, null)
 
     await logAuthorImpression(authorId, tagId, createdPostId)
 

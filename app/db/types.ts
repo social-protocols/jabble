@@ -1,5 +1,5 @@
-import { type Selectable } from 'kysely';
 import type * as schema from "#app/db/kysely-types.ts";
+import { type Selectable } from 'kysely';
 
 
 
@@ -15,4 +15,6 @@ export type CurrentTally = Selectable<schema.CurrentTally>
 export type CurrentInformedTally = Selectable<schema.CurrentInformedTally>
 export type Tag = Selectable<schema.Tag>
 export type Password = Selectable<schema.Password>
-export type CumulativeStats = Selectable<schema.CumulativeStats>
+export type PostStats = Selectable<schema.PostStats>
+export type LocationStats = Selectable<schema.LocationStats>
+export type SiteStats = Selectable<schema.SiteStats>

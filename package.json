@@ -83,6 +83,7 @@
     "helmet": "^7.0.0",
     "intl-parse-accept-language": "^1.0.0",
     "isbot": "^3.7.0",
+    "jstat": "^1.9.6",
     "kysely": "^0.26.3",
     "litefs-js": "^1.1.2",
     "lru-cache": "^10.0.1",

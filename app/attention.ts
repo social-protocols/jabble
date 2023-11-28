@@ -1,30 +1,35 @@
 
 import { db } from "#app/db.ts";
-import { type CumulativeStats, type Post } from "#app/db/types.ts";
+import { type Post, type PostStats } from "#app/db/types.ts";
 import bloomFilters from 'bloom-filters';
 
 import { getOrInsertTagId } from './tag.ts';
 
 import assert from 'assert';
 
-export enum PageType {
+import { sql } from 'kysely';
+
+
+export enum LocationType {
 	// POST_PAGE,
 	// TOP_NOTE_ON_POST_PAGE,
-	Tag,
-	Feed,
-	NewPost,
+	NewPost = 0,
+	TagPage = 1,
+	UserFeed = 2,
 }
 
 export type Location = {
-	pageType: PageType,
+	locationType: LocationType,
 	oneBasedRank: number,
 }
 
 
+
+
 export async function cumulativeAttention(tagId: number, postId: number): Promise<number> {
 	// the following code but kysely version
-	const stats: CumulativeStats | undefined = await db
-		.selectFrom('CumulativeStats')
+	const stats: PostStats | undefined = await db
+		.selectFrom('PostStats')
 		.where('tagId', '=', tagId)
 		.where('postId', '=', postId)
 		.selectAll()
@@ -42,32 +47,16 @@ export async function logTagPageView(userId: string, tag: string, posts: Post[])
 	let tagId = await getOrInsertTagId(tag)
 
 	posts.map((post, i) => {
-		logImpression(userId, tagId, post.id, {pageType: PageType.Tag, oneBasedRank: i + 1})
+		logImpression(userId, tagId, post.id, { locationType: LocationType.TagPage, oneBasedRank: i + 1 })
 	})
-
-}
-
-// Guesses for now
-const pageTypeCoefficients: Map<PageType, number> = new Map([
-	[PageType.Tag, 0.1],
-	[PageType.Feed, 0.1],
-	[PageType.NewPost, 1],
-])
-
-async function logImpression(userId: string, tagId: number, postId: number, location: Location) {
-	let pageTypeC = pageTypeCoefficients.get(location.pageType);
-	assert(pageTypeC !== undefined)
-	accumulateAttention(userId, tagId, postId, pageTypeC / location.oneBasedRank)
 }
 
 
 export async function logAuthorImpression(userId: string, tagId: number, postId: number) {
-	let pageTypeC = pageTypeCoefficients.get(PageType.NewPost);
-	assert(pageTypeC !== undefined)
-	accumulateAttention(userId, tagId, postId, pageTypeC)	
+	logImpression(userId, tagId, postId, { locationType: LocationType.NewPost, oneBasedRank: 1 })	
 }
 
-async function accumulateAttention(userId: string, tagId: number, postId: number, deltaAttention: number) {
+async function logImpression(userId: string, tagId: number, postId: number, location: Location) {
 
 	const hashcount = 4
 	const size = 75 
@@ -75,67 +64,82 @@ async function accumulateAttention(userId: string, tagId: number, postId: number
 	console.log("User id in logImpression", userId)
 
 
-	const stats: CumulativeStats | undefined = await db
-		.selectFrom('CumulativeStats')
+	const stats: PostStats | undefined = await db
+		.selectFrom('PostStats')
 		.where('tagId', '=', tagId)
 		.where('postId', '=', postId)
 		.selectAll()
 		.executeTakeFirst();
 
 
-	if (stats != null) {
-		
-		// console.log("UNique users", stats.uniqueUsers)
-		let j: JSON = JSON.parse(stats.uniqueUsers) as JSON
-		// console.log("Parsed json", j)
-		let filter = bloomFilters.BloomFilter.fromJSON(j)
-	
-		// console.log("Existing Filter is", filter.saveAsJSON())
+	let filter = new bloomFilters.BloomFilter(size, hashcount)
 
-		let key = userId.toString()
+	let key = userId.toString()
 
-		if (!filter.has(key)) {
-			// console.log("Doesn't have key", key)
-
-			filter.add(key)
-			let filterJSON: string = JSON.stringify(filter.saveAsJSON())
-			// console.log("New filter -- updating", filterJSON)
-
-			const result = await db
-				.updateTable('CumulativeStats')
-				.set((eb) => ({
-					attention: eb('attention', '+', deltaAttention),
-					uniqueUsers: filterJSON
-				}))
-				.where('tagId', '=', tagId)
-				.where('postId', '=', postId)
-				.execute();
-			console.log("Result of update is", result)
-
-		} else {
-			console.log("Has key", key)
-
-		}
-
-
-	} else {
+	if (stats == null) {
 		// console.log("No stats")
-		let filter = new bloomFilters.BloomFilter(size, hashcount)
-		filter.add(userId.toString())
+		// filter = new bloomFilters.BloomFilter(size, hashcount)
 		let filterJSON: string = JSON.stringify(filter.saveAsJSON())
 		// console.log("New Filter is", filterJSON)
 
 		let result = await db
-			.insertInto('CumulativeStats')
+			.insertInto('PostStats')
 			.values({
 				tagId: tagId,
 				postId: postId,
-				attention: deltaAttention,
+				// initial attention is 1, because each post automatically gets 1 upvote from the author
+				// and so the expectedVotes (attention) for a new post is equal to 1.
+				attention: 1,
 				uniqueUsers: filterJSON
 			})
 			.execute();
 		console.log("Result of create is", result)
+		
+	} else {
+		// console.log("UNique users", stats.uniqueUsers)
+		let j: JSON = JSON.parse(stats.uniqueUsers) as JSON
+		// console.log("Parsed json", j)
+		filter = bloomFilters.BloomFilter.fromJSON(j)
 	}
+
+
+
+	// console.log("Existing Filter is", filter.saveAsJSON())
+
+	if (!filter.has(key)) {
+		// console.log("Doesn't have key", key)
+
+		filter.add(key)
+		let filterJSON: string = JSON.stringify(filter.saveAsJSON())
+		// console.log("New filter -- updating", filterJSON)
+
+		const result = await db
+			.updateTable('PostStats')
+			.from(
+				'LocationStats',
+			)
+			.set(({ eb, ref }) => ({
+				attention: eb('attention', '+', ref('voteShare')),
+				uniqueUsers: filterJSON
+			}))
+			.where('LocationStats.locationType', '=', location.locationType)
+			.where('LocationStats.oneBasedRank', '=', location.oneBasedRank)
+			.where('tagId', '=', tagId)
+			.where('postId', '=', postId)
+			.execute();
+
+
+
+
+
+		console.log("Result of update is", result)
+
+	} else {
+		console.log("Has key", key)
+
+	}
+
+
 
 	// if (!filter.has(userId)) {
 	// 	console.log("Missed userId in bloom filter", userID)
@@ -145,7 +149,7 @@ async function accumulateAttention(userId: string, tagId: number, postId: number
 	// 	let filterJSON = filter.saveAsJSON()
 
 	// 	// console.log("Logging impression", tag, postId, location, rank)
-	// 	let result = await prisma.cumulativeStats.upsert({
+	// 	let result = await prisma.PostStats.upsert({
 	// 		where: {
 	// 			tagId: tagId,
 	// 			postId: postId,
@@ -156,7 +160,7 @@ async function accumulateAttention(userId: string, tagId: number, postId: number
 	// 		},
 	// 		update: {
 	// 			attention: {
-	// 				increment: deltaAttention,
+	// 				increment: voteShare,
 	// 			},
 	// 			uniqueUsers: {
 	// 				// set value of uniqueUsers to be the JSON of the bloom filter
@@ -169,7 +173,7 @@ async function accumulateAttention(userId: string, tagId: number, postId: number
 	// 	filter.add(userId)
 	// }
 
-	// let result = await prisma.cumulativeStats.update({
+	// let result = await prisma.PostStats.update({
 	// 	where: { tagId: tagId, postId: postId },
 	// 	update: {
 	// 		uniqueUsers: {
@@ -183,7 +187,57 @@ async function accumulateAttention(userId: string, tagId: number, postId: number
 
 }
 
-// export async function informationRate(tag: string, postId: number): Promise<number> {
 
-// 	return 0
-// }
+
+// Seed locationStats with a good guess about the relative number of votes at each location
+export async function seedStats() {
+
+
+	await db.deleteFrom('SiteStats').execute()
+	await db.deleteFrom('LocationStats').execute()
+
+
+	db.insertInto('SiteStats').values({ votes: 0 }).onConflict(oc => oc.doNothing()).execute()
+
+	// Rough guess of vote share at position 1 just for seeding.
+	const startingVotes = .08
+	let locationType = LocationType.TagPage
+
+	// loop i from 1 to 90
+	for (let i = 1; i <= 90; i++) {
+		let oneBasedRank = i
+		let voteShare = startingVotes / oneBasedRank
+
+
+		await db
+			.insertInto('LocationStats') // replace with your actual table name
+			.values({
+				locationType: locationType as number,
+				oneBasedRank: oneBasedRank,
+				voteShare: voteShare, // Initial vote count for a new entry
+				latestSitewideVotes: 100,
+			})
+			// .onConflict(oc => oc
+			// 	.column('locationType') // assuming 'locationType' and 'rank' are your unique columns
+			// 	.column('oneBasedRank')
+			// 	.doUpdateSet({
+			// 		voteShare: sql<number>`excluded.voteShare + 1`  // increment votes by 1
+			// 	})
+			// )
+			.execute();
+	
+
+		// set sitewideUpvotes
+	}
+
+	// console.log("Set sitewide votes", sitewideVotes)
+	// await db.updateTable('LocationStats').set(eb => ({
+	// 	latestSitewideVotes: sitewideVotes
+	// })).execute();
+
+
+}
+
+
+
+

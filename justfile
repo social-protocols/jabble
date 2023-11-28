@@ -29,4 +29,8 @@ test:
 e2e-test:
 	npm run test:e2e:dev 
 
+reseed:
+	npx prisma db seed
 
+sim:
+	npx tsx simulate-attention-share.ts

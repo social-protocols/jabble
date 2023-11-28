@@ -195,7 +195,7 @@ async function currentTally(tagId: number, postId: number): Promise<Tally> {
 
 async function cumulativeAttention(tagId: number, postId: number): Promise<number> {
 
-    const stats = await db.selectFrom("CumulativeStats").where("tagId", "=", tagId).where("postId", "=", postId).selectAll().execute()
+    const stats = await db.selectFrom("PostStats").where("tagId", "=", tagId).where("postId", "=", postId).selectAll().execute()
 
     if (stats.length == 0) {
         return 0

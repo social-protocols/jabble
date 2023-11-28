@@ -157,7 +157,7 @@ model VoteHistory {
   tag       Tag      @relation(fields: [tagId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model CumulativeStats {
+model PostStats {
   tagId       Int
   postId      Int
   // updatedAt DateTime
@@ -167,13 +167,19 @@ model CumulativeStats {
   @@unique([postId])
 }
 
-model ExplorationStats {
-  rank  Int
-  votes Int
+model LocationStats {
+  locationType Int
+  oneBasedRank     Int
+  voteShare    Int
+  latestSitewideVotes Int
 
-  @@unique([rank])
+  @@unique([locationType, oneBasedRank])
 }
 
+model SiteStats {
+  rowid Int @id @default(autoincrement())
+  votes Int
+}
 
 view CurrentInformedTally {
   tagId                      Int
@@ -197,4 +203,3 @@ view CurrentTally {
 
   @@unique([tagId, postId])
 }
-

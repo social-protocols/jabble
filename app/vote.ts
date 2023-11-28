@@ -1,8 +1,9 @@
 
 import { db } from "#app/db.ts";
-import { type Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
 import { sql } from "kysely";
 
+import {  type Location } from './attention.ts';
+import { logExplorationVote } from './exploration.ts';
 import { getOrInsertTagId } from './tag.ts';
 
 export enum Direction {
@@ -19,7 +20,10 @@ export async function vote(
     postId: number,
     noteId: number | null,
     direction: Direction,
+    explorationLocation: Location | null
 ) {
+
+    // TODO: transaction
 
     const tagId = await getOrInsertTagId(tag)
 
@@ -62,6 +66,15 @@ export async function vote(
     `
 
     let result = await query.execute(db)
+
+    // console.log("Vote result", result)
+
+    // Todo: dedupe in case user toggles vote multiple times
+    if (result.rows.length > 0 && explorationLocation != null) {
+        console.log("Logging exploration vote")
+        logExplorationVote(explorationLocation)
+    }
+
     // console.log("Vote result", result)
 
     // await db

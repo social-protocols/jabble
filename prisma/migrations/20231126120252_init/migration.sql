@@ -81,7 +81,7 @@ CREATE TABLE "VoteHistory" (
 );
 
 -- CreateTable
-CREATE TABLE "CumulativeStats" (
+CREATE TABLE "PostStats" (
     "tagId" INTEGER NOT NULL,
     "postId" INTEGER NOT NULL,
     "attention" INTEGER NOT NULL,
@@ -89,7 +89,7 @@ CREATE TABLE "CumulativeStats" (
 );
 
 -- CreateTable
-CREATE TABLE "ExplorationStats" (
+CREATE TABLE "LocationStats" (
     "rank" INTEGER NOT NULL,
     "views" INTEGER NOT NULL,
     "votes" INTEGER NOT NULL
@@ -120,7 +120,7 @@ CREATE UNIQUE INDEX "Verification_target_type_key" ON "Verification"("target", "
 CREATE UNIQUE INDEX "Tag_tag_key" ON "Tag"("tag");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "CumulativeStats_postId_key" ON "CumulativeStats"("postId");
+CREATE UNIQUE INDEX "PostStats_postId_key" ON "PostStats"("postId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ExplorationStats_rank_key" ON "ExplorationStats"("rank");
+CREATE UNIQUE INDEX "LocationStats_rank_key" ON "LocationStats"("rank");
