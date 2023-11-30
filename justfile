@@ -33,4 +33,4 @@ reseed:
 	npx prisma db seed
 
 sim:
-	npx tsx simulate-attention-share.ts
+	time IN_MEMORY_DB=true npx tsx simulate-attention-share.ts

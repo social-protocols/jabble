@@ -29,7 +29,7 @@ export async function loader({ params }: DataFunctionArgs) {
 
 	const posts = await getRankedPosts(tag)
 	let userId = "100"
-	logTagPageView(userId, tag, posts)
+	logTagPageView(userId, tag, posts.map(p => p.id))
 
 	return json({ posts })
 }

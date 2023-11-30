@@ -210,7 +210,7 @@ async function getCurrentTallies(tagId: number, postId: number, map: Map<number,
     // use dribble to select current informed tally
     const results = await db.selectFrom("CurrentInformedTally").where("tagId", "=", tagId).where("postId", "=", postId).selectAll().execute()
 
-    console.log("Got tallies", results)
+    // console.log("Got tallies", results)
 
     let tallies = await Promise.all(results.map(async result => {
         await getCurrentTallies(tagId, result.noteId, map)

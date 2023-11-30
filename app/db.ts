@@ -9,8 +9,20 @@ import { type Post } from '#app/db/types.ts'; // this is the Database interface 
 
 const databasePath = process.env.DATABASE_PATH
 
+var sqliteInstance = new SQLite(databasePath)
+
+// Neat little trick. If you set this environment variable, the database file
+// will be copied to memory and the in-memory database will be used for this
+// process. So any changes won't persist, but this is just fine for
+// simulations, tests, etc.
+if (process.env.IN_MEMORY_DB) {
+	console.log("Using in-memory DB instance")
+	const buffer = sqliteInstance.serialize()
+	sqliteInstance = new SQLite(buffer)
+}
+
 const dialect = new SqliteDialect({
-	database: new SQLite(databasePath),
+	database: sqliteInstance,
 })
 
 // Database interface is passed to Kysely's constructor, and from now on, Kysely 

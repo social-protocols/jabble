@@ -10,6 +10,8 @@ import { sql } from 'kysely';
 
 import { LocationType, type Location } from "#app/attention.ts";
 
+
+
 /*
 
 logExplorationVote is a key part of to our attention model.
@@ -43,15 +45,14 @@ The logExplorationVote function below updates this aggregate given a
 location.
 
 
+
 */
 
 // This needs to be quite small. We want to use an exponentially weighted moving average to detect the gradual changes in user behavior over time
 // But we want the moving average window to be quite big so as to have more accurate data. Especially for locations/ranks where we don't get
 // a lot of data. 
-const alpha = .9999
-const windowSize = 1 / (1 - alpha)
-
-
+const movingAverageAlpha = .9999
+const windowSize = 1 / (1 - movingAverageAlpha)
 
 export async function logExplorationVote(location: Location) {
 	// console.log("Logging exploration vote here", location);
@@ -71,7 +72,7 @@ export async function logExplorationVote(location: Location) {
        .returning('votes')
        .execute();
 
-    const sitewideVotes: number = result[0].votes
+   const sitewideVotes: number = result[0].votes
 
 	const query = db
 		.updateTable('LocationStats')
@@ -82,7 +83,7 @@ export async function logExplorationVote(location: Location) {
 			// votes: sql<number>`excluded.votes + 1`  // increment votes by 1
 
 			// this calculates an exponentially weighted moving average
-			// voteShare: sql<number>`voteShare * pow(${alpha}, ${sitewideVotes} - latestSitewideVotes) + (1 - ${alpha})`,
+			// voteShare: sql<number>`voteShare * pow(${movingAverageAlpha}, ${sitewideVotes} - latestSitewideVotes) + (1 - ${movingAverageAlpha})`,
 
 			// this calculates an overage average
 			// voteShare: sql<number>`(voteShare * latestSitewideVotes + 1) / ${sitewideVotes}`,
@@ -93,7 +94,7 @@ export async function logExplorationVote(location: Location) {
 				case when ${sitewideVotes} < ${windowSize} then 
 					(voteShare * latestSitewideVotes + 1) / ${sitewideVotes}
 				else 
-					voteShare * pow(${alpha}, ${sitewideVotes} - latestSitewideVotes) + (1 - ${alpha})
+					voteShare * pow(${movingAverageAlpha}, ${sitewideVotes} - latestSitewideVotes) + (1 - ${movingAverageAlpha})
 				end
 				`,
 			latestSitewideVotes: sitewideVotes

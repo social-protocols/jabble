@@ -11,11 +11,9 @@ import { Direction, vote } from '#app/vote.ts';
 
 import { getRankedPosts } from '#app/ranking.ts';
 
-import { logTagPageView, seedStats } from '#app/attention.ts';
+import { seedStats } from '#app/attention.ts';
 
-async function seed() {
-
-	cleanupDb(prisma)
+export async function seed() {
 
 	console.time('🔑 Created permissions...')
 	const entities = ['user', 'note']
@@ -83,7 +81,7 @@ async function seed() {
 
 	// Then, bob views the page
 	let posts = await getRankedPosts(tag)
-	logTagPageView(bob, tag, posts)
+	// logTagPageView(bob, tag, posts)
 
 	// Then bob posts a response to alice's post
 	let post2 = await createPost(tag, post1, 'Kyle Rittenhouse was acquitted of murder charges. Clear video evidence showed he acted in self defense.', bob)	
@@ -93,7 +91,7 @@ async function seed() {
 
 	// bob views home page
 	posts = await getRankedPosts(tag)
-	logTagPageView(alice, tag, posts)
+	// logTagPageView(alice, tag, posts)
 
 	// And responds to bob's response
 	let post3 = await createPost(tag, post1, 'That trial was a sham. They were never going to convict.', alice)
@@ -103,7 +101,7 @@ async function seed() {
 
 	// Bob then views the page again
 	posts = await getRankedPosts(tag)
-	logTagPageView(bob, tag, posts)
+	// logTagPageView(bob, tag, posts)
 
 	// And respond's to Alices's latest post
 	await createPost(tag, post4, 'This is misleading. Regular Benadryl is an antihistamine; it is not a decongestant. There is a Benadryl branded product that is impacted. https://www.nbcnews.com/news/amp/rcna104424', bob)
@@ -113,8 +111,8 @@ async function seed() {
 
 	// Bob then views the page once again
 	posts = await getRankedPosts(tag)
-	console.log("Ranked posts", posts)
-	logTagPageView(bob, tag, posts)
+	// console.log("Ranked posts", posts)
+	// logTagPageView(bob, tag, posts)
 
 	// And respond's to Alice's third post
 	let post7 = await createPost(tag, post6, 'The tweet\'s claim about real wages contains a factual error. On 3/15/20 when US COVID lockdowns began real wages adjusted for inflation (AFI) were $11.15. As of 7/16/23 real wages AFI are $11.05. Real wages AFI remain lower (not higher) than before the pandemic.', bob)

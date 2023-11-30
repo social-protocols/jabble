@@ -45,11 +45,12 @@ export async function getRankedPosts(tag: string): Promise<PostWithAttention[]> 
 	// 		where Post.parentID is null;
 	// `.execute(db)).rows
 
-
+	// TODO: show notes on tag page
 	let query = db
 		.selectFrom('Post')
 		.innerJoin('CurrentTally', 'CurrentTally.postId', 'Post.id')
 		.where('CurrentTally.tagId', '=', tagId)
+		.where('Post.parentId', 'is', null)
 		.leftJoin(
 			'PostStats',
 			(join) => join
@@ -63,18 +64,16 @@ export async function getRankedPosts(tag: string): Promise<PostWithAttention[]> 
 		;
 
 
-	console.log("getRankedPosts Query is", query.compile())
+	// console.log("getRankedPosts Query is", query.compile())
 	
 	let candidatePosts: PostWithAttention[] = await query.execute()
+	let nPosts = candidatePosts.length
 
 
-	console.log("Result", candidatePosts)
-
-	console.log("Candidate posts", candidatePosts)
 
 	// // then sort by score
 	// // let sortedPosts = candidatePosts.sort((a, b) => await score(tagId, a.id) - await score(tagId, b.id))
-	let RankedPosts = await Promise.all(candidatePosts.map(async post => {
+	let scoredPosts = await Promise.all(candidatePosts.map(async post => {
 		let s = await score(tag, post.id)
 
 		return {
@@ -82,13 +81,27 @@ export async function getRankedPosts(tag: string): Promise<PostWithAttention[]> 
 		}
 	}))
 
-	let sortedPosts = RankedPosts
+	let r = 0
+	//TODO exploration pool has to be mutually exclusive from ranked posts pool
+	// based on some attention cutoff.
+
+	let sortedPosts = scoredPosts
 		.sort((a, b) => { return a.score - b.score })
 		.map((post, i) => {
-			let s = { oneBasedRank: i + 1, explorationPool: false }
-			return { ...post, ...s }
+			let ep = false
+			var p = post
+			if (Math.random() <= 1) {
+				let randomPostNum = Math.floor(Math.random() * nPosts) + 1
+				p = scoredPosts[randomPostNum]
+				ep = true
+			}
+
+			let s = { oneBasedRank: i + 1, explorationPool: ep }
+			return { ...p, ...s }
 		})
 
+
+	// console.log("Sorted posts", sortedPosts)
 
 	// // Now, choose one random post that has no attention (cumulative_stats.attention == 0)
 	// // Use a DB query that does a negative join against the PostStats table
@@ -135,13 +148,13 @@ async function score(tag: string, postId: number): Promise<ScoreData> {
 	// Our decay model says that effective attention (e.g. the vote rate) decays exponentially, so the *derivative* of the formula below
 	// should be e**(-fatigueFactor*a). So the function below starts at being roughly equal to a but then as a increases
 	// it levels off.
-	let adjustedAttention = (1 - Math.exp(-fatigueFactor * a)) / fatigueFactor
+	// let adjustedAttention = (1 - Math.exp(-fatigueFactor * a)) / fatigueFactor
 
 	return {
 		a: a,
 		p: p,
 		q: q,
-		score: Math.log2(q) / adjustedAttention
+		score: (1 + Math.log2(q))
 	}
 }
 

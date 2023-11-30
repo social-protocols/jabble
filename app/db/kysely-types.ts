@@ -53,6 +53,7 @@ export type PostStats = {
 	tagId: number
 	postId: number
 	attention: number
+	views: number
 	uniqueUsers: string
 }
 export type Role = {
@@ -75,7 +76,6 @@ export type Session = {
 }
 export type SiteStats = {
 	rowid: Generated<number>
-	views: number
 	votes: number
 }
 export type Tag = {

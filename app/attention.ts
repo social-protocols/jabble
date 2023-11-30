@@ -1,11 +1,11 @@
 
-import { db } from "#app/db.ts";
+import { db, sqliteInstance } from "#app/db.ts";
 import { type Post, type PostStats } from "#app/db/types.ts";
 import bloomFilters from 'bloom-filters';
 
 import { getOrInsertTagId } from './tag.ts';
 
-// import assert from 'assert';
+import assert from 'assert';
 
 // import { sql } from 'kysely';
 
@@ -39,27 +39,51 @@ export async function cumulativeAttention(tagId: number, postId: number): Promis
 	return stats.attention
 }
 
-export async function logTagPageView(userId: string, tag: string, posts: Post[]) {
+
+// const preparedStatement = sqliteInstance.prepare('update SiteStats set votes = votes + 2')
+
+export async function logTagPageView(userId: string, tag: string, posts: number[]) {
 
 	// todo transaction
 
 	let tagId = await getOrInsertTagId(tag)
 
-	posts.map((post, i) => {
-		logPostView(userId, tagId, post.id, { locationType: LocationType.TagPage, oneBasedRank: i + 1 })
-	})
+	// posts.forEach(async (id, i) => {
+	// // Promise.all(posts.map(async (id, i) => {
+	// 	// console.log("LOggint post view", post)
+	// 	assert(id != undefined)
+	// 	await logPostView(userId, tagId, id, { locationType: LocationType.TagPage, oneBasedRank: i + 1 })
+	// })
 
-	await db
-		.updateTable('SiteStats')
-		.set(eb => ({
-			votes: eb('votes', '+', 1)
-		}))
-		.execute();
+
+	for(let i = 0; i < posts.length; i++) {
+		let id = posts[i]
+		assert(id != undefined)
+		// id = 34
+		// console.log("Logging post virew for post", id)
+		await logPostView(userId, tagId, id, { locationType: LocationType.TagPage, oneBasedRank: i + 1 })
+	}
+
+	// posts.forEach((id, i) => {
+
+
+	// })
+
+
+	// let views = await preparedStatement.run()
+	// console.log("Views",views)
+
+	// await db
+	// 	.updateTable('SiteStats')
+	// 	.set(eb => ({
+	// 		votes: eb('view', '+', 1)
+	// 	}))
+	// 	.execute();
 }
 
 
 export async function logAuthorView(userId: string, tagId: number, postId: number) {
-	logPostView(userId, tagId, postId, { locationType: LocationType.NewPost, oneBasedRank: 1 })	
+	await logPostView(userId, tagId, postId, { locationType: LocationType.NewPost, oneBasedRank: 1 })	
 }
 
 async function logPostView(userId: string, tagId: number, postId: number, location: Location) {
@@ -67,28 +91,56 @@ async function logPostView(userId: string, tagId: number, postId: number, locati
 	const hashcount = 4
 	const size = 75 
 
-	console.log("User id in logPostView", userId)
+	// console.log("Logging post view", userId, tagId, postId)
+
+	// console.log("User id in logPostView", userId)
 
 
-	const stats: PostStats | undefined = await db
-		.selectFrom('PostStats')
-		.where('tagId', '=', tagId)
-		.where('postId', '=', postId)
-		.selectAll()
-		.executeTakeFirst();
+	// const stats: PostStats | undefined = await db
+	// 	.selectFrom('PostStats')
+	// 	.where('tagId', '=', tagId)
+	// 	.where('postId', '=', postId)
+	// 	.selectAll()
+	// 	.executeTakeFirst();
+
 
 
 	let filter = new bloomFilters.BloomFilter(size, hashcount)
 
 	let key = userId.toString()
 
-	if (stats == null) {
-		// console.log("No stats")
-		// filter = new bloomFilters.BloomFilter(size, hashcount)
-		let filterJSON: string = JSON.stringify(filter.saveAsJSON())
-		// console.log("New Filter is", filterJSON)
+	let r = Math.random()
 
-		let result = await db
+	// if (stats == undefined) {
+	// console.log("No stats")
+	// filter = new bloomFilters.BloomFilter(size, hashcount)
+	let filterJSON: string = JSON.stringify(filter.saveAsJSON())
+	// filter.add(key)
+	// console.log("New Filter is", filterJSON)
+
+	// console.log("Post id is ", r, postId)
+	// assert(postId != undefined)
+	// let query = db
+	// 	.insertInto('PostStats')
+	// 	.values({
+	// 		tagId: tagId,
+	// 		postId: postId,
+	// 		// initial attention is 1, because each post automatically gets 1 upvote from the author
+	// 		// and so the expectedVotes (attention) for a new post is equal to 1.
+	// 		attention: 1,
+	// 		uniqueUsers: filterJSON
+	// 	})
+	// 	.onConflict(oc => oc.)
+	// 	.returningAll()
+
+	let results = await db.selectFrom('PostStats')
+		.where('tagId', '=', tagId)
+		.where('postId', '=', postId)
+		.selectAll()
+		.execute()
+
+	if(results.length == 0) {
+		let query = db
 			.insertInto('PostStats')
 			.values({
 				tagId: tagId,
@@ -96,28 +148,45 @@ async function logPostView(userId: string, tagId: number, postId: number, locati
 				// initial attention is 1, because each post automatically gets 1 upvote from the author
 				// and so the expectedVotes (attention) for a new post is equal to 1.
 				attention: 1,
+				views: 1,
 				uniqueUsers: filterJSON
 			})
-			.execute();
-		console.log("Result of create is", result)
-		
-	} else {
-		// console.log("UNique users", stats.uniqueUsers)
-		let j: JSON = JSON.parse(stats.uniqueUsers) as JSON
-		// console.log("Parsed json", j)
-		filter = bloomFilters.BloomFilter.fromJSON(j)
+
+		let result = await query.execute()
+		// console.log("REsult of initial insert", tagId, postId, result)
+
+		return;
+	} 
+
+	// let result = await query.execute();
+	// console.log("Result is",postId, result)
+	// } catch (e) {
+	// 	console.log("Caught error", r, e)
+	// 	return;
+	// }
+
+
+	let stats = results[0]
+	// console.log("Stats after insert with conflict", postId, stats)
+
+	if(stats == undefined) {
+		// console.log("Compiled poststats query", r, query.compile(), filterJSON, postId)
+		console.log("Undefined stats.", tagId, postId, stats)
 	}
+	assert(stats !== undefined)	
 
+	let j: JSON = JSON.parse(stats.uniqueUsers) as JSON
+	filter = bloomFilters.BloomFilter.fromJSON(j)
 
-
-	// console.log("Existing Filter is", filter.saveAsJSON())
-
+	// If we already have a stats record
 	if (!filter.has(key)) {
 		// console.log("Doesn't have key", key)
 
-		filter.add(key)
+		// filter.add(key)
 		let filterJSON: string = JSON.stringify(filter.saveAsJSON())
 		// console.log("New filter -- updating", filterJSON)
+
+		// console.log("Updating post stats", postId)
 
 		const result = await db
 			.updateTable('PostStats')
@@ -126,6 +195,7 @@ async function logPostView(userId: string, tagId: number, postId: number, locati
 			)
 			.set(({ eb, ref }) => ({
 				attention: eb('attention', '+', ref('voteShare')),
+				views: eb('views', '+', 1),
 				uniqueUsers: filterJSON
 			}))
 			.where('LocationStats.locationType', '=', location.locationType)
@@ -135,16 +205,8 @@ async function logPostView(userId: string, tagId: number, postId: number, locati
 			.execute();
 
 
-
-
-
-		console.log("Result of update is", result)
-
-	} else {
-		console.log("Has key", key)
-
+		// console.log("Result of update is", postId, result)
 	}
-
 
 
 	// if (!filter.has(userId)) {
@@ -203,8 +265,8 @@ export async function seedStats() {
 	await db.deleteFrom('LocationStats').execute()
 
 	const startingSitewideVotes = 1000 
-	const startingSitewideViews = 1000
-	db.insertInto('SiteStats').values({ votes: startingSitewideVotes, views: startingSitewideViews }).onConflict(oc => oc.doNothing()).execute()
+	// const startingSitewideViews = 1000
+	db.insertInto('SiteStats').values({ votes: startingSitewideVotes }).onConflict(oc => oc.doNothing()).execute()
 
 	// Rough guess of vote share at position 1 just for seeding.
 	const rankOneVoteShare = .08

@@ -155,6 +155,8 @@ model VoteHistory {
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   tag       Tag      @relation(fields: [tagId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([userId, tagId, postId])
 }
 
 model PostStats {
@@ -162,6 +164,7 @@ model PostStats {
   postId      Int
   // updatedAt DateTime
   attention   Int
+  views Int
   uniqueUsers String
 
   @@unique([postId])
@@ -178,7 +181,7 @@ model LocationStats {
 
 model SiteStats {
   rowid Int @id @default(autoincrement())
-  views Int
+  // views Int
   votes Int
 }
 
