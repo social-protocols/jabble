@@ -19,6 +19,10 @@ export type CurrentTally = {
 	count: number
 	total: number
 }
+export type ExplorationStats = {
+	rowid: Generated<number>
+	votes: number
+}
 export type LocationStats = {
 	locationType: number
 	oneBasedRank: number
@@ -73,13 +77,15 @@ export type Session = {
 	updatedAt: string
 	userId: string
 }
-export type SiteStats = {
-	rowid: Generated<number>
-	votes: number
-}
 export type Tag = {
 	id: Generated<number>
 	tag: string
+}
+export type TagStats = {
+	tagId: number
+	views: number
+	votes: number
+	voteRate: number
 }
 export type User = {
 	id: string
@@ -147,6 +153,7 @@ export type DB = {
 	_RoleToUser: RoleToUser
 	CurrentInformedTally: CurrentInformedTally
 	CurrentTally: CurrentTally
+	ExplorationStats: ExplorationStats
 	LocationStats: LocationStats
 	Password: Password
 	Permission: Permission
@@ -154,8 +161,8 @@ export type DB = {
 	PostStats: PostStats
 	Role: Role
 	Session: Session
-	SiteStats: SiteStats
 	Tag: Tag
+	TagStats: TagStats
 	User: User
 	UserImage: UserImage
 	Verification: Verification

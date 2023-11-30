@@ -11,13 +11,15 @@ import assert from 'assert';
 
 import { sql } from 'kysely';
 
-import { seedStats } from "#app/attention.ts";
+import { saveTagPageStats, seedStats } from "#app/attention.ts";
 
 import { createPost } from "#app/post.ts";
 
 import { Direction, vote } from "#app/vote.ts";
 
 import { type Tally } from '#app/beta-distribution.ts';
+
+import { getOrInsertTagId } from '#app/tag.ts';
 
 import jStat from 'jstat';
 
@@ -32,23 +34,23 @@ import * as cliProgress from 'cli-progress';
 This script is used to test and validate the logic for tracking cumulative
 attention for each post.
 
-The first step is to populate the locationStats to calculate delta attention
-for each impression at each Location, where a location is a location type
-(e.g. page or view) and rank (e.g. order on the page).
+The first step is to populate the LocationStats table to calculate delta attention
+for each impression at each Location. Each a location is a location type
+(e.g. page or view) plus rank (e.g. order on the page).
 
 In this simulation, we setup a scenario where the "true" attention
 share(expected votes) at each location is proportional to
 (1 / rank^oneBasedRankFactor), normalized so the total share adds up to one. 
 
-We then simulate a world where we have n
-posts, with postFactor (how much more or likely that post is to be voted than
-average) that is log-normally distributed. At each time step, we randomly
-order the posts, then calculate the true vote rate for each post given
-its location and logVoteRate. Specifically:
+We then simulate a world where we have nPosts posts, each which has a
+postFactor (how much more or likely that post is to be voted than average)
+drawn from a log-normal distribution. We go through m time steps, and at each
+time step, we generate a page with randomly sorted, then calculate the "true" vote rate for
+each post given the rank it is shown at and it's postFactor. Specifically:
 
 	trueVoteRate = postFactor * attentionShare[location]
 
-We then sample from A Poisson distribution with
+We then sample from a Poisson distribution with
 that true vote rate and simulate that number of votes. We then call
 logExplorationVote() to log the votes. Over time, the logic
 in logExplorationVote should update the locationStats table so that
@@ -83,15 +85,21 @@ m=1000, nRanks=90, votesPerPeriod=20, alpha=.99, MSE = 2.548275797826558
 
 */
 
-const oneBasedRankFactor = .63
-// const actualLocationTypeFactor = .1
-
 
 const m = 200
 const nPosts = 100
 const nRanks = 90
 const nUsers = 1000
 const votesPerPeriod = 20
+
+
+// const m = 5
+// const nPosts = 90
+// const nRanks = 90
+// const nUsers = 90
+// const votesPerPeriod = 2
+
+
 let normalizationConstant = 0
 const locationType = LocationType.TagPage
 
@@ -103,17 +111,17 @@ for (let i = 0; i < nRanks; i++) {
 	normalizationConstant = normalizationConstant + l
 }
 
+
+
 function rankFactor(oneBasedRank: number): number {
-	return Math.pow(oneBasedRank, -oneBasedRankFactor)
+	const rankExponent: number = .63
+	return Math.pow(oneBasedRank, -rankExponent)
 }
 
 function voteShareAtRank(oneBasedRank: number): number {
 	return rankFactor(oneBasedRank) / normalizationConstant
 }
 
-
-
-await simulateAttentionShare()
 
 async function simulateAttentionShare() {
 	console.log(`Simulating ${m} impressions, {votesPerPeriod} votes/impression, {nRanks} ranks, randomly selected posts`)
@@ -127,7 +135,7 @@ async function simulateAttentionShare() {
 	const logVoteRates = rankedPosts.map(post => jStat.normal.sample(0, .3))
 
 	console.log("Creating simulated posts")
-	let tag = "global"
+	let tag = "test"
 	let postIds = Array(nPosts)
 	for (let i = 0; i < nPosts; i++) {
 		let postId = await createPost(tag, null, "Post " + i, "101")
@@ -148,8 +156,6 @@ async function simulateAttentionShare() {
 			}).execute()
 	}
 
-	assert("If nusers < m, we get fatigue, which reduces accuracy of estimates....")
-
 	console.log("Running simulation")
 
 	const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
@@ -162,13 +168,17 @@ async function simulateAttentionShare() {
 
 		// rank posts randomly
 		shuffleArray(rankedPosts)
+		let tagPage = rankedPosts.map(postNumber => postIds[postNumber]).slice(0, nRanks)
 		// console.log("First post", rankedPosts[0])
 
-
 		// cycle through users
-		let userId = (1000 + t % nUsers).toString()
+		// let userId = (1000 + t % nUsers).toString()
 
-		await logTagPageView(userId, tag, rankedPosts.map(postNumber => postIds[postNumber]).slice(0, nRanks))
+		// assume all users views the tag page
+		for (let i = 0; i < nUsers; i++) {
+			let userId = (1000 + i).toString()
+			await logTagPageView(userId, tag, tagPage)
+		}
 
 		// for each rank
 		for (let i = 0; i < nRanks; i++) {
@@ -185,24 +195,32 @@ async function simulateAttentionShare() {
 			// console.log("Rf", oneBasedRank, rf, voteShare)
 			let actualVoteRate = votesPerPeriod * voteShare * postFactor
 
-
 			// get a random number of votes from a Poisson distribution with the actual vote rate
 			let votes = jStat.poisson.sample(actualVoteRate)
+			// console.log("Votes for rank", i, votes, actualVoteRate, voteShare, postFactor)
 
 			// Log the votes
 			for (let j = 0; j < votes; j++) {
 				let location = { locationType: locationType, oneBasedRank: oneBasedRank }
-				await vote(tag, userId, postId, null, Direction.Up, null)
-				await logExplorationVote(location)	
+
+				// cycle through the users when choosing a user to vote...
+				let userId = (1000 + t % nUsers).toString()
+
+				await vote(tag, userId, postId, null, Direction.Up, location)
 				totalVotes++
 			}
 		}
 		bar1.update(t);
 
+		// update stats in the DB. logTagPageView just increments counters in memory which
+		// need to be update periodicially.
+		// console.log("totalVotes", totalVotes)
+		await saveTagPageStats(tag, tagPage)	
+
 	}
 	bar1.stop()
 
-	console.log("Total votes", totalVotes, "expected", m * votesPerPeriod)
+	console.log("Total votes", totalVotes, "expected approximately", m * votesPerPeriod)
 
 	let voteShares = await db.selectFrom("LocationStats").selectAll().orderBy("oneBasedRank").execute()
 
@@ -211,22 +229,26 @@ async function simulateAttentionShare() {
 	let squareErrorLocations = 0
 	for (let i = 0; i < nRanks; i++) {
 		let l = rankFactor(i + 1)
-		let actualShare = voteShareAtRank(i+1)
+		let actualShare = voteShareAtRank(i + 1)
 		// total = total + l
 		let estimatedShare = voteShares[i].voteShare
 		let error = (actualShare - estimatedShare) / actualShare
-		console.log("Location share at rank ", i + 1, "actual", actualShare, "estimated", estimatedShare, "error", error)
+		// console.log("Location share at rank ", i + 1, "actual", actualShare, "estimated", estimatedShare, "error", error)
 		squareErrorLocations += error * error
 	}
 
 
+	let tagId = await getOrInsertTagId(tag)
+
 	let postStats = await db.selectFrom("PostStats")
 		// where postId > minPostId
 		.where("postId", ">=", postIds[0])
+		.where("tagId", "=", tagId)
 		.selectAll().orderBy("postId").execute()
 
 	let postTally = await db.selectFrom("CurrentTally")
 		.where("postId", ">=", postIds[0])
+		.where("tagId", "=", tagId)
 		.selectAll().orderBy("postId").execute()
 
 
@@ -238,11 +260,10 @@ async function simulateAttentionShare() {
 		let actualVoteRate = Math.exp(logVoteRates[i])
 		let stats = postStats[i]
 		if (stats == undefined) {
-			console.log("No stats for post", postId)
-			assert(false)
-
+			throw new Error(`No stats for post ${postId}`)
 		}
-		let a = (stats.attention - 1) * votesPerPeriod + 1
+		let a = stats.attention
+		// (stats.attention - 1) * votesPerPeriod + 1
 
 		let tally: Tally = postTally[i]
 		if (tally == undefined) {
@@ -268,6 +289,8 @@ function shuffleArray<T>(array: T[]) {
 		[array[i], array[j]] = [array[j], array[i]];
 	}
 }
+
+await simulateAttentionShare()
 
 
 

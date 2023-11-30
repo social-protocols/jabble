@@ -2,10 +2,10 @@
 import { db } from "#app/db.ts";
 import { sql } from "kysely";
 
-import {  type Location } from './attention.ts';
+import { logTagVote, type Location } from './attention.ts';
 import { logExplorationVote } from './exploration.ts';
 import { getOrInsertTagId } from './tag.ts';
-
+import assert from 'assert'
 export enum Direction {
     Up = 1,
     Down = -1,
@@ -13,7 +13,10 @@ export enum Direction {
 }
 
 
+
 // TODO: if a new post is untagged, do we post in in #global?
+
+// The vote function inserts a vote record in voteHistory, and also updates attention stats
 export async function vote(
     tag: string,
     userId: string,
@@ -23,10 +26,37 @@ export async function vote(
     explorationLocation: Location | null
 ) {
 
-    // TODO: transaction
-
     const tagId = await getOrInsertTagId(tag)
 
+    let added = await insertVoteRecord(tagId, userId, postId, noteId, direction)
+
+    // Todo: dedupe in case user toggles vote multiple times
+    if (added) {
+        // console.log("Logging exploration vote")
+        logTagVote(tag)
+        if (explorationLocation != null) {
+            logExplorationVote(explorationLocation)
+        }
+    }
+
+    // console.log("Vote result", result)
+
+    // await db
+    //     .insertInto('voteHistory')
+    //     .values({ userId, tagId, postId, noteId, direction: direction_i32 })
+    //     .execute();
+}
+
+
+export async function insertVoteRecord(
+    tagId: number,
+    userId: string,
+    postId: number,
+    noteId: number | null,
+    direction: Direction,
+): Promise<boolean> {
+
+    // TODO: transaction
     const direction_int = direction as number
 
     let query = sql`
@@ -67,19 +97,11 @@ export async function vote(
 
     let result = await query.execute(db)
 
-    // console.log("Vote result", result)
 
-    // Todo: dedupe in case user toggles vote multiple times
-    if (result.rows.length > 0 && explorationLocation != null) {
-        console.log("Logging exploration vote")
-        logExplorationVote(explorationLocation)
-    }
-
-    // console.log("Vote result", result)
-
-    // await db
-    //     .insertInto('voteHistory')
-    //     .values({ userId, tagId, postId, noteId, direction: direction_i32 })
-    //     .execute();
+    assert(result !== undefined)
+    assert(result.numUpdatedOrDeletedRows !== undefined)
+    return result.numUpdatedOrDeletedRows > 0
 }
+
+
 

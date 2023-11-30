@@ -55,16 +55,9 @@ const movingAverageAlpha = .9999
 const windowSize = 1 / (1 - movingAverageAlpha)
 
 export async function logExplorationVote(location: Location) {
-	// console.log("Logging exploration vote here", location);
-
-	// Todo have increment statement return updated value
-
-	// const siteStats = (await db.selectFrom('SiteStats').selectAll().executeTakeFirst())
-	// assert(siteStats != undefined)
-	// const sitewideVotes = siteStats.votes
 
     const result = await db
-       .updateTable('SiteStats')
+       .updateTable('ExplorationStats')
        .set(eb => ({
                votes: eb('votes', '+', 1)
                // votes: sql<number>`excluded.votes + 1`  // increment votes by 1

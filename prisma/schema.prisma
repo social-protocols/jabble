@@ -143,6 +143,7 @@ model Tag {
   id          Int           @id @default(autoincrement())
   tag         String        @unique
   VoteHistory VoteHistory[]
+  TagStats    TagStats?
 }
 
 model VoteHistory {
@@ -160,26 +161,35 @@ model VoteHistory {
 }
 
 model PostStats {
-  tagId       Int
-  postId      Int
+  tagId     Int
+  postId    Int
   // updatedAt DateTime
-  attention   Int
-  views Int
+  attention Int
+  views     Int
   // uniqueUsers String
 
   @@unique([postId])
 }
 
 model LocationStats {
-  locationType Int
-  oneBasedRank     Int
-  voteShare    Int
+  locationType        Int
+  oneBasedRank        Int
+  voteShare           Int
   latestSitewideVotes Int
 
   @@unique([locationType, oneBasedRank])
 }
 
-model SiteStats {
+model TagStats {
+  tagId    Int @unique
+  views    Int
+  votes    Int
+  voteRate Int
+
+  tag Tag @relation(fields: [tagId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model ExplorationStats {
   rowid Int @id @default(autoincrement())
   // views Int
   votes Int

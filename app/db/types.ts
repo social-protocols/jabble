@@ -17,4 +17,4 @@ export type Tag = Selectable<schema.Tag>
 export type Password = Selectable<schema.Password>
 export type PostStats = Selectable<schema.PostStats>
 export type LocationStats = Selectable<schema.LocationStats>
-export type SiteStats = Selectable<schema.SiteStats>
+export type ExplorationStats = Selectable<schema.ExplorationStats>
