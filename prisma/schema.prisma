@@ -165,7 +165,7 @@ model PostStats {
   // updatedAt DateTime
   attention   Int
   views Int
-  uniqueUsers String
+  // uniqueUsers String
 
   @@unique([postId])
 }

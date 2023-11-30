@@ -87,7 +87,7 @@ const oneBasedRankFactor = .63
 // const actualLocationTypeFactor = .1
 
 
-const m = 1000
+const m = 200
 const nPosts = 100
 const nRanks = 90
 const nUsers = 1000

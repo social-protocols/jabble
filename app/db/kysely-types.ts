@@ -54,7 +54,6 @@ export type PostStats = {
 	postId: number
 	attention: number
 	views: number
-	uniqueUsers: string
 }
 export type Role = {
 	id: string
