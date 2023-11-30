@@ -68,15 +68,15 @@ export async function insertVoteRecord(
                     ${noteId} as noteId,
                     ${direction_int} as direction
             )
-            , duplicates as (
-                select
-                      parameters.userId
-                    , parameters.tagId
-                    , parameters.postId
-                    , parameters.direction == ifnull(currentVote.direction, 0) as duplicate
-                from parameters
-                left join currentVote using (userId, tagId, postId)
-            )
+--            , duplicates as (
+--                select
+--                      parameters.userId
+--                    , parameters.tagId
+--                    , parameters.postId
+--                    , parameters.direction == ifnull(currentVote.direction, 0) as duplicate
+--                from parameters
+--                left join currentVote using (userId, tagId, postId)
+--            )
             insert into voteHistory (
                  userId 
                 , tagId
@@ -91,8 +91,8 @@ export async function insertVoteRecord(
                 , parameters.noteId
                 , parameters.direction
             from parameters
-            join duplicates
-            where not duplicate
+--            join duplicates
+--            where not duplicate
     `
 
     let result = await query.execute(db)
