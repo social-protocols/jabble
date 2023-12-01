@@ -44,7 +44,7 @@ export async function getPost(id: number): Promise<Post> {
         .selectAll()
         .executeTakeFirst()
 
-    assert(result != null)
+    assert(result != null, "result != null")
     return result
 }
 

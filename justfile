@@ -34,3 +34,7 @@ reseed:
 
 sim:
 	time IN_MEMORY_DB=true npx tsx simulate-attention-share.ts
+
+# Same as sim, but doesn't use in-memory DB so simulated state is persisted
+sim-seed:
+	npx tsx simulate-attention-share.ts

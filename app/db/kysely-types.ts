@@ -84,8 +84,7 @@ export type Tag = {
 export type TagStats = {
 	tagId: number
 	views: number
-	votes: number
-	voteRate: number
+	votesPerView: number
 }
 export type User = {
 	id: string

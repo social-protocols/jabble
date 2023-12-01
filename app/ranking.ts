@@ -1,51 +1,70 @@
-// import assert from 'assert';
-
 import { db } from "#app/db.ts";
 import { type Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
-import { QueryResult, sql } from 'kysely';
-import { cumulativeAttention } from './attention.ts';
-import { findTopNoteId } from './probabilities.ts';
+import { sql } from 'kysely';
+// import { cumulativeAttention } from './attention.ts';
+import { findTopNoteId, GLOBAL_PRIOR_VOTE_RATE } from './probabilities.ts';
 import { getOrInsertTagId } from './tag.ts';
+import { saveTagPageStats } from './attention.ts'
+
+import assert from 'assert';
 
 
 type ScoreData = {
-	a: number,
+	attention: number,
 	p: number,
 	q: number,
-	score: number
+	score: number,
+	voteRate: number,
+	voteTotal: number,
+	voteCount: number,
+	informationValue: number,
+	informationRate: number,
 }
 
-type PostWithAttention = Post & { attention: number }
-type RankedPost = PostWithAttention & ScoreData & { explorationPool: boolean, oneBasedRank: number }
+export type RankedPost = Post & ScoreData & { explorationPool: boolean }
+type PostWithStats = Post & { attention: number, voteCount: number, voteTotal: number }
 
-const fatigueFactor = .9
+// const fatigueFactor = .9
+const explorationPoolSize = .1
+const attentionCutoff = 2 // Note all posts start with 1 unit of attention (from poster)
 
 
-export async function getRankedPosts(tag: string): Promise<PostWithAttention[]> {
-	// first, select candidate posts (e.g. less than a certain age, greater than a certain p, greater than a certain attention)
-	// For now, just select all posts where there has been one vote for this tag.
-	// type RankedPost = Post & { score: number, explorationBool: boolean }
+import { LRUCache } from 'lru-cache'
 
-	console.log("Tag", tag)
+let rankingsCache = new LRUCache<string, RankedPost[]>({
+	max: 100,
+	ttl: 1000 * 60, // one minute
+
+	// automatically purge items from cache when ttl is exceeded
+	// we want to do this so that savePageStats is called to save attention stats in the DB
+	// roughly once a minute.
+
+	ttlAutopurge: true,
+
+	// when we dispose of the page from the cache, call saveTagPageStats to update attention
+	// stats in the DB for each post on the tag page.
+	dispose: (posts, tag, reason) => {
+		saveTagPageStats(tag, posts.map(p => p.id))	
+	},
+}) 
+
+export async function getRankedPosts(tag: string, maxResults: number): Promise<RankedPost[]> {
+
+	let result = rankingsCache.get(tag)
+	if (result == undefined) {
+		result = await getRankedPostsInternal(tag, maxResults)
+		rankingsCache.set(tag, result)
+	} 
+
+	return result
+}
+
+
+async function getRankedPostsInternal(tag: string, maxResults: number): Promise<RankedPost[]> {
+
 	let tagId = await getOrInsertTagId(tag)
-	console.log("TagID", tagId)
 
-
-	// let candidatePosts: PostWithAttention[] = (await sql<PostWithAttention>`
-	// 	select 
-	// 		COALESCE(PostStats.attention, 0) as "attention"
-	// 		, "Post".* 
-	// 		from "Post" 
-	// 		inner join "CurrentTally" 
-	// 			on "CurrentTally"."postId" = "Post"."id" 
-	// 	 		and "CurrentTally"."tagId" = 0 
-	// 		left join "PostStats" 
-	// 			on "PostStats"."postId" = "Post"."id"
-	// 			and "PostStats"."tagId" = 0
-	// 		where Post.parentID is null;
-	// `.execute(db)).rows
-
-	// TODO: show notes on tag page
+	// Select all posts, along with vote tallies and attention
 	let query = db
 		.selectFrom('Post')
 		.innerJoin('CurrentTally', 'CurrentTally.postId', 'Post.id')
@@ -59,108 +78,127 @@ export async function getRankedPosts(tag: string): Promise<PostWithAttention[]> 
 		)
 		.select(
 			sql<number>`COALESCE(PostStats.attention, 0)`.as('attention')
+		).select(
+			sql<number>`COALESCE(CurrentTally.total, 0)`.as('voteTotal')
+		).select(
+			sql<number>`COALESCE(CurrentTally.count, 0)`.as('voteCount'),
 		)
 		.selectAll('Post')
+		.orderBy('attention', 'asc')
 		;
 
+	let allPosts: PostWithStats[] = await query.execute()
+	let nPosts = allPosts.length
 
-	// console.log("getRankedPosts Query is", query.compile())
-	
-	let candidatePosts: PostWithAttention[] = await query.execute()
-	let nPosts = candidatePosts.length
-
-
-
-	// // then sort by score
-	// // let sortedPosts = candidatePosts.sort((a, b) => await score(tagId, a.id) - await score(tagId, b.id))
-	let scoredPosts = await Promise.all(candidatePosts.map(async post => {
-		let s = await score(tag, post.id)
+	// Then score each post
+	let scoredPosts = await Promise.all(allPosts.map(async post => {
+		let s = await score(tag, post)
 
 		return {
 			...post, ...s
 		}
 	}))
 
-	let r = 0
-	//TODO exploration pool has to be mutually exclusive from ranked posts pool
-	// based on some attention cutoff.
 
-	let sortedPosts = scoredPosts
-		.sort((a, b) => { return a.score - b.score })
-		.map((post, i) => {
-			let ep = false
-			var p = post
-			if (Math.random() <= 1) {
-				let randomPostNum = Math.floor(Math.random() * nPosts) + 1
-				p = scoredPosts[randomPostNum]
-				ep = true
-			}
+	// Then split into two pools: rankedPosts, and explorationPosts, based on
+	// whether cumulative attention is above or below the cutoff.
 
-			let s = { oneBasedRank: i + 1, explorationPool: ep }
-			return { ...p, ...s }
-		})
+	let rankedPosts = scoredPosts
+		.filter(p => p.attention >= attentionCutoff)
+		.sort((a, b) => { return b.score - a.score })
+	let nRankedPosts = rankedPosts.length
+
+	let explorationPosts = scoredPosts.filter(p => p.attention < attentionCutoff)
+	let nExplorationPosts = explorationPosts.length
 
 
-	// console.log("Sorted posts", sortedPosts)
+	let nResults = nPosts
+	if (nResults > maxResults) {
+		nResults = maxResults
+	}
 
-	// // Now, choose one random post that has no attention (cumulative_stats.attention == 0)
-	// // Use a DB query that does a negative join against the PostStats table
-	// let explorationPool = RankedPosts.filter(post => post.attention == 0)
+	console.log("Number of posts",nResults, nPosts, nExplorationPosts, nRankedPosts)
 
-	// // then, randomly choose one of the posts in that rank as exploration post
-	// let explorationPost = explorationPool[Math.floor(Math.random() * explorationPool.length)]
-	// explorationPost.explorationPool = true
+	// Finally, create nResults results by iterating through the ranked posts
+	// while randomly inserting posts from the exploration pool (with a
+	// probability of explorationPoolSize) at each rank. When we run out of
+	// ranked posts, return random posts from the exploration pool until we
+	// have nResults total posts.
 
-	// // then, randomly choose one of top 30 ranks as exploration impression
-	// // random number between 1 and 30
-	// let explorationRank = Math.floor(Math.random() * 30) + 1
+	let results: RankedPost[] = Array(nResults)
+	let nInsertions = 0
+	for (let i = 0; i < nResults; i++) {
 
-	// // then splice in explorationPost into sortedPosts before item at explorationPost
-	// sortedPosts.splice(explorationRank, 0, explorationPost)
+		let ep
+		let p = null
 
-	// console.log("Sorted posts", sortedPosts)
+		if (i < nRankedPosts && Math.random() > explorationPoolSize || nExplorationPosts == 0) {
+			p = rankedPosts[i - nInsertions]
+			// console.log("Taking post ranked", i, i - nInsertions)
+			ep = false
+		} else {
+			assert(nExplorationPosts > 0, "nExplorationPosts > 0") // this must be true if my logic is correct. But is my logic correct.
+			let randomPostNum = Math.floor(Math.random() * nExplorationPosts)
+			// console.log("Taking random post", i, nExplorationPosts, randomPostNum)
+			p = explorationPosts[randomPostNum]
+			explorationPosts.splice(randomPostNum, 1)
+			nExplorationPosts--
+			assert(nExplorationPosts == explorationPosts.length, "nExplorationPosts == explorationPosts.length")
+			nInsertions += 1
+			ep = true
+		}
 
-	return sortedPosts
+		let s = { oneBasedRank: i + 1, explorationPool: ep };
 
-	// then, create link that has eRank of eImpression
+		results[i] = { ...p, ...s }
+	}
 
-	// then, log eVote when 
-	// then, weight factors is just average of eVote / eImpression group by rank
-	// then, return list of posts with ranks
+
+	return results
 }
 
 
-
-
-
-async function score(tag: string, postId: number): Promise<ScoreData> {
+async function score(tag: string, post: PostWithStats): Promise<ScoreData> {
 	// find informed probability
 
 	let tagId = await getOrInsertTagId(tag)
 
-	// let q = await informedProbability(tag, postId)
-
-	const [_topNoteId, p, q] = await findTopNoteId(tagId, postId);
 
 
-	let a = await cumulativeAttention(tagId, postId)
+	const [_topNoteId, p, q] = await findTopNoteId(tagId, post.id);
+
+	// https://social-protocols.org/y-docs/information-value.html
+	let informationValue = (1 + Math.log2(q))
+
+	let voteRate = GLOBAL_PRIOR_VOTE_RATE.update({ count: post.voteTotal, total: post.attention }).average
+
+
 	// The formula below gives us attention adjusted for fatigue. 
 	// Our decay model says that effective attention (e.g. the vote rate) decays exponentially, so the *derivative* of the formula below
 	// should be e**(-fatigueFactor*a). So the function below starts at being roughly equal to a but then as a increases
 	// it levels off.
 	// let adjustedAttention = (1 - Math.exp(-fatigueFactor * a)) / fatigueFactor
 
+	// This is our ranking score!
+	let informationRate = voteRate * informationValue
+
+
+	if(post.id == 10) {
+		console.log("Stats for post 10", post, p, q, voteRate, informationValue)
+	}
+
 	return {
-		a: a,
+		attention: post.attention,
 		p: p,
 		q: q,
-		score: (1 + Math.log2(q))
+		voteCount: post.voteCount,
+		voteTotal: post.voteTotal,
+		voteRate: voteRate,
+		informationValue: informationValue,
+		informationRate: informationRate,
+		score: informationRate
 	}
 }
-
-
-// function explorationPosts(tagId: number, explorationPool: number[]): postId {
-
 
 
 // Exploration Pool Logic:

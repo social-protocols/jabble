@@ -183,8 +183,8 @@ model LocationStats {
 model TagStats {
   tagId    Int @unique
   views    Int
-  votes    Int
-  voteRate Int
+  // votes    Int
+  votesPerView Int
 
   tag Tag @relation(fields: [tagId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }

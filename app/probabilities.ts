@@ -1,8 +1,8 @@
 // import assert from 'assert';
 
-import { BetaDistribution, type Tally } from '#app/beta-distribution.ts';
-import { type CurrentInformedTally, type CurrentTally, type Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
+import { BetaDistribution, type Tally } from '#app/beta-gamma-distribution.ts';
 import { db } from "#app/db.ts";
+import { type CurrentInformedTally, type CurrentTally, type Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
 import { getOrInsertTagId } from './tag.ts';
 
 // import { Selectable } from 'kysely';
@@ -12,9 +12,12 @@ import { getOrInsertTagId } from './tag.ts';
 
 export const WEIGHT_CONSTANT: number = 2.3
 
-export const GLOBAL_PRIOR_PROBABILITY = new BetaDistribution(0.875, WEIGHT_CONSTANT)
-export const GLOBAL_PRIOR_VOTE_RATE = new BetaDistribution(1, WEIGHT_CONSTANT)
+// The global prior on the upvote probability (upvotes / votes)
+export const GLOBAL_PRIOR_UPVOTE_PROBABILITY = new BetaDistribution(0.875, WEIGHT_CONSTANT)
 
+// Global prior on the vote rate (votes / attention). By definition the prior average is 1, 
+// because attention is calculated as the expected votes for the average post.
+export const GLOBAL_PRIOR_VOTE_RATE = new BetaDistribution(1, WEIGHT_CONSTANT)
 
 const EMPTY_TALLY = {
     count: 0,
@@ -95,7 +98,7 @@ export async function findTopNoteId(tagId: number, postId: number): Promise<[num
     let talliesMap = new Map<number, InformedTally[]>()
     await getCurrentTallies(tagId, postId, talliesMap)
 
-    console.log("Current tallies", talliesMap)
+    // console.log("Current tallies", talliesMap)
 
     let tally = await currentTally(tagId, postId)
 
@@ -118,7 +121,7 @@ export function findTopNoteGivenTallies(
     postTally: Tally,
     subnoteTallies: Map<number, InformedTally[]>,
 ): [number, number, number] {
-    let pOfAGivenNotShownTopNote = GLOBAL_PRIOR_PROBABILITY.update(postTally).average;
+    let pOfAGivenNotShownTopNote = GLOBAL_PRIOR_UPVOTE_PROBABILITY.update(postTally).average;
 
     let pOfAGivenShownTopNote = pOfAGivenNotShownTopNote;
 
@@ -128,7 +131,7 @@ export function findTopNoteGivenTallies(
 
     if (tallies == null) {
         console.log(
-            `top note for post ${postId} is note ${topNoteId} with p=${pOfAGivenShownTopNote} and q=${pOfAGivenNotShownTopNote}`,
+            // `top note for post ${postId} is note ${topNoteId} with p=${pOfAGivenShownTopNote} and q=${pOfAGivenNotShownTopNote}`,
         );
         // Bit of a hack. Should just get overall tally
         return [
@@ -145,11 +148,12 @@ export function findTopNoteGivenTallies(
             findTopNoteGivenTallies(tally.noteId, tally.forNote, subnoteTallies);
         let support = p_of_b_given_shown_top_subnote / pOfBGivenNotShownTopSubnote;
 
-        let pOfAGivenNotShownThisNote = GLOBAL_PRIOR_PROBABILITY
+        let pOfAGivenNotShownThisNote = GLOBAL_PRIOR_UPVOTE_PROBABILITY
             .update(tally.givenNotShownThisNote)
             .average;
-        let pOfAGivenShownThisNote = GLOBAL_PRIOR_PROBABILITY
+        let pOfAGivenShownThisNote = GLOBAL_PRIOR_UPVOTE_PROBABILITY
             .update(tally.givenNotShownThisNote)
+            .resetWeight(WEIGHT_CONSTANT)
             .update(tally.givenShownThisNote)
             .average;
         let delta = pOfAGivenShownThisNote - pOfAGivenNotShownThisNote;

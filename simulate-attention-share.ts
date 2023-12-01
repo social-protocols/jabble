@@ -17,7 +17,7 @@ import { createPost } from "#app/post.ts";
 
 import { Direction, vote } from "#app/vote.ts";
 
-import { type Tally } from '#app/beta-distribution.ts';
+import { type Tally } from '#app/beta-gamma-distribution.ts';
 
 import { getOrInsertTagId } from '#app/tag.ts';
 
@@ -43,12 +43,12 @@ share(expected votes) at each location is proportional to
 (1 / rank^oneBasedRankFactor), normalized so the total share adds up to one. 
 
 We then simulate a world where we have nPosts posts, each which has a
-postFactor (how much more or likely that post is to be voted than average)
+voteRate (how much more or likely that post is to be voted than average)
 drawn from a log-normal distribution. We go through m time steps, and at each
 time step, we generate a page with randomly sorted, then calculate the "true" vote rate for
-each post given the rank it is shown at and it's postFactor. Specifically:
+each post given the rank it is shown at and it's voteRate. Specifically:
 
-	trueVoteRate = postFactor * attentionShare[location]
+	trueVoteRate = voteRate * attentionShare[location]
 
 We then sample from a Poisson distribution with
 that true vote rate and simulate that number of votes. We then call
@@ -64,7 +64,10 @@ We also track the cumulative attention of each vote, where on each impression
 the delta attention for a post is the total expected votes per impression
 times the vote share for the location the post was shown at.
 
-At the end of the simulation, we compare the estimated voteFactor for each post, calculated as votes / cumulativeAttention (possibly with a constant for Bayesian averaging). We then calculate the total error between the estimated vote factor and the known vote factors for each post.
+At the end of the simulation, we compare the estimated voteRate for each post,
+calculated as votes / cumulativeAttention (possibly with a constant for
+Bayesian averaging). We then calculate the total error between the estimated
+vote factor and the known vote factors for each post.
 
 
 logExplorationVote uses an exponentially weighted moving average in
@@ -128,8 +131,8 @@ async function simulateAttentionShare() {
 
 	await seedStats()
 
-	assert(nPosts >= nRanks)
-	assert(nUsers >= nPosts)
+	assert(nPosts >= nRanks, "nPosts >= nRanks")
+	assert(nUsers >= nPosts, "nUsers >= nPosts")
 
 	const rankedPosts = Array.from(Array(nPosts).keys())
 	const logVoteRates = rankedPosts.map(post => jStat.normal.sample(0, .3))
@@ -138,7 +141,7 @@ async function simulateAttentionShare() {
 	let tag = "test"
 	let postIds = Array(nPosts)
 	for (let i = 0; i < nPosts; i++) {
-		let postId = await createPost(tag, null, "Post " + i, "101")
+		let postId = await createPost(tag, null, "Post " + i + " with true voteRate " + Math.exp(logVoteRates[i]), "101")
 		postIds[i] = postId
 	}
 
@@ -185,19 +188,19 @@ async function simulateAttentionShare() {
 
 			let oneBasedRank = i + 1
 			let postNumber = rankedPosts[i]
-			assert(postNumber != undefined)
+			assert(postNumber != undefined, "postNumber is not undefined")
 			let postId = postIds[postNumber]
 
 			// get the actual vote rate for this post at this rank 
-			let postFactor = Math.exp(logVoteRates[postNumber])
+			let voteRate = Math.exp(logVoteRates[postNumber])
 			// let rf = rankFactor(oneBasedRank)
 			let voteShare = voteShareAtRank(oneBasedRank)
 			// console.log("Rf", oneBasedRank, rf, voteShare)
-			let actualVoteRate = votesPerPeriod * voteShare * postFactor
+			let actualVoteRate = votesPerPeriod * voteShare * voteRate
 
 			// get a random number of votes from a Poisson distribution with the actual vote rate
 			let votes = jStat.poisson.sample(actualVoteRate)
-			// console.log("Votes for rank", i, votes, actualVoteRate, voteShare, postFactor)
+			// console.log("Votes for rank", i, votes, actualVoteRate, voteShare, voteRate)
 
 			// Log the votes
 			for (let j = 0; j < votes; j++) {
@@ -224,7 +227,7 @@ async function simulateAttentionShare() {
 
 	let voteShares = await db.selectFrom("LocationStats").selectAll().orderBy("oneBasedRank").execute()
 
-	assert(voteShares.length == nRanks)
+	assert(voteShares.length == nRanks, "voteShares.length == nRanks")
 
 	let squareErrorLocations = 0
 	for (let i = 0; i < nRanks; i++) {

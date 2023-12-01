@@ -6,11 +6,19 @@ import { getOrInsertTagId } from './tag.ts';
 
 import assert from 'assert';
 
-import bloomFilters from 'bloom-filters';
+import { GammaDistribution } from './beta-gamma-distribution.ts';
+
+// import bloomFilters from 'bloom-filters';
+
 
 import { sql } from 'kysely';
 
 // filter = bloomFilters.BloomFilter.fromJSON(j)
+
+// Global prior votes/view. The TagStats table keeps track of votes/view per tag, but
+// we need to start with some prior. This value is currently just a wild guess.
+const GLOBAL_PRIOR_VOTES_PER_VIEW = new GammaDistribution(.1, 4)
+
 
 export enum LocationType {
 	NewPost = 0,
@@ -39,18 +47,18 @@ export async function cumulativeAttention(tagId: number, postId: number): Promis
 	return stats.attention
 }
 
-type TagStats = { filter: Map<String,boolean>, views: number, votes: number }
+type TagStats = { filter: Map<String, boolean>, views: number, votes: number }
 
 let statsForTag = new Map<string, TagStats>()
 
 // Bloom filter params
 // greater than number of unique users  per minute
-let n = 10000
+// let n = 10000
 // false positive rate
-let p = 0.001  
+// let p = 0.001  
 
-let bits = -n*Math.log(p) / (Math.log(2)^2)
-let hashes =  bits/n * Math.log(2) 
+// let bits = -n * Math.log(p) / (Math.log(2) ^ 2)
+// let hashes = bits / n * Math.log(2) 
 
 
 function getOrCreateStatsForTag(tag: string): TagStats {
@@ -59,7 +67,7 @@ function getOrCreateStatsForTag(tag: string): TagStats {
 	// const hashcount = 4
 	// const size = 4096
 
-// console.log("Params", bits, hashes)
+	// console.log("Params", bits, hashes)
 
 
 	let stats = statsForTag.get(tag)
@@ -67,7 +75,7 @@ function getOrCreateStatsForTag(tag: string): TagStats {
 	if (stats == undefined) {
 		// console.log("Not stats for tag", tag)
 		// let filter = new bloomFilters.BloomFilter(bits, hashes)
-		let filter = new Map<string,boolean>()
+		let filter = new Map<string, boolean>()
 		stats = { filter: filter, views: 0, votes: 0 }
 		statsForTag.set(tag, stats)
 	}
@@ -115,31 +123,34 @@ export async function saveTagPageStats(tag: string, posts: number[]) {
 	// Read total votes. Currently, CurrentTally is a view that sums over entire voteHistory.
 	// This is super inefficient, but simple for now.
 
-	let voteRate = 0
-	// Update tag stats, including total votes, views, and a moving average voteRate
+	let votesPerView = 0
+	// Update tag stats, including total votes, views, and a moving average votesPerView
 	{
 
 		let movingAverageAlpha = .9999
 		let windowSize = 1 / (1 - movingAverageAlpha)
 
 		// console.log("Tag page stats", deltaVotes, deltaViews)
-		// let voteRate = deltaViews == 0 ? 0 : deltaVotes / deltaViews
+		// let votesPerView = deltaViews == 0 ? 0 : deltaVotes / deltaViews
+
 		const query = db
 			.insertInto('TagStats')
-			.values({ tagId: tagId, votes: deltaVotes, views: deltaViews, voteRate: deltaViews == 0 ? 0 : deltaVotes / deltaViews })
+			.values({ 
+				tagId: tagId, 
+				views: deltaViews,
+				votesPerView: GLOBAL_PRIOR_VOTES_PER_VIEW.update({ count: deltaVotes, total: deltaViews }).average,
+			})
 			.onConflict((oc) => oc
 				.column('tagId')
 				.doUpdateSet({
-					votes: eb => eb('votes', '+', deltaVotes),
+					// votes: eb => eb('votes', '+', deltaVotes),
 					views: eb => eb('views', '+', deltaViews),
-					voteRate: sql<number>`
+					votesPerView: sql<number>`
 						case 
-						when ${deltaViews}+views == 0 then
-							0
-						when views < ${windowSize} then 
-							(votes + ${deltaVotes}) / (views + ${deltaViews})
+						when views < ${windowSize} then 							
+							(votesPerView*views + ${deltaVotes}) / (views + ${deltaViews})
 						else 
-							voteRate * pow(${movingAverageAlpha}, ${deltaViews}) + ${deltaVotes}*(1 - ${movingAverageAlpha})
+							votesPerView * pow(${movingAverageAlpha}, ${deltaViews}) + ${deltaVotes}*(1 - ${movingAverageAlpha})
 						end
 					`
 				})
@@ -149,12 +160,12 @@ export async function saveTagPageStats(tag: string, posts: number[]) {
 		const result = await query.execute()
 
 		// console.log("REturned valuefrom udate tag stats", result)
-		voteRate = result[0].voteRate
+		votesPerView = result[0].votesPerView
 	}
 
-	// instead of using actual deltaVotes, use voteRate*deltaViews, which is equal to deltaVotes
+	// instead of using actual deltaVotes, use votesPerView*deltaViews, which is equal to deltaVotes
 	// on average, but will be "smoother".
-	let deltaAttention  = voteRate*deltaViews
+	let deltaAttention = votesPerView * deltaViews
 
 	// Update individual post stats
 	for (let i = 0; i < posts.length; i++) {
@@ -186,22 +197,22 @@ async function savePostStats(tagId: number, postId: number, location: Location, 
 
 
 	// if (results.length == 0) {
-		let query = db
-			.insertInto('PostStats')
-			.values({
-				tagId: tagId,
-				postId: postId,
-				// initial attention is 1 + deltaAttention, because each post automatically gets 1 upvote from the author
-				// and so the expectedVotes (attention) for a new post is equal to 1.
-				attention: 1,
-				views: 1,
-			})
-			// ignore conflict
-			.onConflict((oc) => oc.column('postId').doNothing())
-		await query.execute()
-		// console.log("REsult of initial insert", tagId, postId, result)
+	let query = db
+		.insertInto('PostStats')
+		.values({
+			tagId: tagId,
+			postId: postId,
+			// initial attention is 1 + deltaAttention, because each post automatically gets 1 upvote from the author
+			// and so the expectedVotes (attention) for a new post is equal to 1.
+			attention: 1,
+			views: 1,
+		})
+		// ignore conflict
+		.onConflict((oc) => oc.column('postId').doNothing())
+	await query.execute()
+	// console.log("REsult of initial insert", tagId, postId, result)
 
-		// return;
+	// return;
 	// } 
 	// return
 
