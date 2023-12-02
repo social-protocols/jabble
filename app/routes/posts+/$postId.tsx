@@ -11,6 +11,7 @@ import { invariantResponse } from '#app/utils/misc.tsx'
 import { useLoaderData } from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
+import { PostDetails } from '#app/components/ui/post.tsx'
 
 const GLOBAL_TAG = "global";
 
@@ -43,10 +44,7 @@ export async function loader({ params }: DataFunctionArgs) {
 export default function Post() {
 	const { post, note } = useLoaderData<typeof loader>()
 
-	return <div>
-		<div>This is a post: {post.content}</div>
-		<div>Top Note: {note ? note.content : ""}</div>
-	</div>
+	return <PostDetails post={post} note={note} />
 }
 
 export function ErrorBoundary() {
