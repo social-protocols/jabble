@@ -127,7 +127,7 @@ function voteShareAtRank(oneBasedRank: number): number {
 
 
 async function simulateAttentionShare() {
-	console.log(`Simulating ${m} impressions, {votesPerPeriod} votes/impression, {nRanks} ranks, randomly selected posts`)
+	console.log(`Simulating ${m} time periods, ${nUsers} users, {votesPerPeriod} votes/period, {nRanks} ranks, randomly selected posts`)
 
 	await seedStats()
 
@@ -136,12 +136,13 @@ async function simulateAttentionShare() {
 
 	const rankedPosts = Array.from(Array(nPosts).keys())
 	const logVoteRates = rankedPosts.map(post => jStat.normal.sample(0, .3))
+	const upvoteProbabilities = rankedPosts.map(post => jStat.uniform.sample(0, 1))
 
 	console.log("Creating simulated posts")
 	let tag = "test"
 	let postIds = Array(nPosts)
 	for (let i = 0; i < nPosts; i++) {
-		let postId = await createPost(tag, null, "Post " + i + " with true voteRate " + Math.exp(logVoteRates[i]), "101")
+		let postId = await createPost(tag, null, "Post " + i + " true voteRate=" + Math.exp(logVoteRates[i]) + ", true upvoteProbabilities=" + upvoteProbabilities[i], "101")
 		postIds[i] = postId
 	}
 

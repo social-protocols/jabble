@@ -31,44 +31,13 @@ export type Location = {
 	oneBasedRank: number,
 }
 
-export async function cumulativeAttention(tagId: number, postId: number): Promise<number> {
-	// the following code but kysely version
-	const stats: PostStats | undefined = await db
-		.selectFrom('PostStats')
-		.where('tagId', '=', tagId)
-		.where('postId', '=', postId)
-		.selectAll()
-		.executeTakeFirst();
-
-	if (stats == undefined) {
-		return 0
-	}
-
-	return stats.attention
-}
 
 type TagStats = { filter: Map<String, boolean>, views: number, votes: number }
 
 let statsForTag = new Map<string, TagStats>()
 
-// Bloom filter params
-// greater than number of unique users  per minute
-// let n = 10000
-// false positive rate
-// let p = 0.001  
-
-// let bits = -n * Math.log(p) / (Math.log(2) ^ 2)
-// let hashes = bits / n * Math.log(2) 
-
 
 function getOrCreateStatsForTag(tag: string): TagStats {
-
-
-	// const hashcount = 4
-	// const size = 4096
-
-	// console.log("Params", bits, hashes)
-
 
 	let stats = statsForTag.get(tag)
 
@@ -188,14 +157,6 @@ export async function logAuthorView(userId: string, tagId: number, postId: numbe
 
 async function savePostStats(tagId: number, postId: number, location: Location, deltaAttention: number) {
 
-	// let results = await db.selectFrom('PostStats')
-	// 	.where('tagId', '=', tagId)
-	// 	.where('postId', '=', postId)
-	// 	.selectAll()
-	// 	.execute()
-
-
-
 	// if (results.length == 0) {
 	let query = db
 		.insertInto('PostStats')
@@ -211,19 +172,6 @@ async function savePostStats(tagId: number, postId: number, location: Location, 
 		.onConflict((oc) => oc.column('postId').doNothing())
 	await query.execute()
 	// console.log("REsult of initial insert", tagId, postId, result)
-
-	// return;
-	// } 
-	// return
-
-	// let stats = results[0]
-	// // console.log("Stats after insert with conflict", postId, stats)
-
-	// if (stats == undefined) {
-	// 	// console.log("Compiled poststats query", r, query.compile(), filterJSON, postId)
-	// 	console.log("Undefined stats.", tagId, postId, stats)
-	// }
-	// assert(stats !== undefined)	
 
 	let result = await db
 		.updateTable('PostStats')
@@ -250,7 +198,6 @@ async function savePostStats(tagId: number, postId: number, location: Location, 
 
 // Seed locationStats with a good guess about the relative number of votes at each location
 export async function seedStats() {
-
 
 	await db.deleteFrom('ExplorationStats').execute()
 	await db.deleteFrom('LocationStats').execute()
