@@ -1,4 +1,4 @@
-import { type Post } from '#app/db/types.ts';
+import { type Post } from '#app/db/types.ts'
 
 type PostProps = {
   post: Post,

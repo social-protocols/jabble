@@ -43,7 +43,6 @@ export async function loader({ params }: DataFunctionArgs) {
 
 export default function Post() {
 	const { post, note } = useLoaderData<typeof loader>()
-
 	return <PostDetails post={post} note={note} />
 }
 
