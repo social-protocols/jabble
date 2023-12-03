@@ -25,9 +25,9 @@ export function PostDetails({ post, note }: PostProps) {
 
 export function PostTeaser({ post }: Post) {
   return (
-    <div className='flex justify-center'>
+    <div className='justify-center'>
       <Link to={`/posts/${post.id}`}>
-        <div className="bg-primary-foreground rounded-lg p-5 m-5 w-full">
+        <div className="bg-primary-foreground rounded-lg p-5 m-5">
           <p className="mb-5">{post.content}</p>
         </div>
       </Link>
@@ -47,9 +47,9 @@ export function NoteAttachment({ note }: { note: Post }) {
 
 export function VoteButtons() {
   return (
-    <div className='flex justify-stretch'>
-      <Button className='mr-5'>Upvote</Button>
-      <Button>Downvote</Button>
+    <div>
+      <Button variant='destructive' size='lg'>Upvote</Button>
+      <Button variant='destructive' size='lg'>Downvote</Button>
     </div>
   )
 }
