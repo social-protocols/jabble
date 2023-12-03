@@ -3,15 +3,15 @@ import { db } from "#app/db.ts";
 import { type Post, type PostStats } from "#app/db/types.ts";
 // import bloomFilters from 'bloom-filters';
 
-import { LocationType, logTagPageView, type Location } from "#app/attention.ts";
+import { LocationType, logTagPageView } from "#app/attention.ts";
 
-import { logExplorationVote } from '#app/exploration.ts';
+// import { logExplorationVote } from '#app/exploration.ts';
 
 import assert from 'assert';
 
-import { sql } from 'kysely';
+// import { sql } from 'kysely';
 
-import { saveTagPageStats, seedStats } from "#app/attention.ts";
+import { saveTagPageStats, seedStats, tagStats } from "#app/attention.ts";
 
 import { createPost } from "#app/post.ts";
 
@@ -19,7 +19,9 @@ import { Direction, vote } from "#app/vote.ts";
 
 import { type Tally } from '#app/beta-gamma-distribution.ts';
 
+import { getRankedPosts, totalInformationGain } from '#app/ranking.ts';
 import { getOrInsertTagId } from '#app/tag.ts';
+
 
 import jStat from 'jstat';
 
@@ -94,6 +96,7 @@ const nPosts = 100
 const nRanks = 90
 const nUsers = 1000
 const votesPerPeriod = 20
+const tag = "test"
 
 
 // const m = 5
@@ -135,17 +138,21 @@ async function simulateAttentionShare() {
 	assert(nUsers >= nPosts, "nUsers >= nPosts")
 
 	const rankedPosts = Array.from(Array(nPosts).keys())
-	const logVoteRates = rankedPosts.map(post => jStat.normal.sample(0, .3))
-	const upvoteProbabilities = rankedPosts.map(post => jStat.uniform.sample(0, 1))
+	const logVoteRates = rankedPosts.map(() => jStat.normal.sample(0, .3))
+	const upvoteProbabilities = rankedPosts.map(() => Math.random())
+	// const upvoteProbabilities = rankedPosts.map(() => jStat.uniform.sample(0, 1))
 
 	console.log("Creating simulated posts")
-	let tag = "test"
 	let postIds = Array(nPosts)
 	for (let i = 0; i < nPosts; i++) {
 		let postId = await createPost(tag, null, "Post " + i + " true voteRate=" + Math.exp(logVoteRates[i]) + ", true upvoteProbabilities=" + upvoteProbabilities[i], "101")
 		postIds[i] = postId
 	}
 
+	let minPostId = postIds[0]
+
+
+	let tagId = await getOrInsertTagId(tag)
 
 	console.log("Creating simulated users")
 	for (let i = 0; i < nUsers; i++) {
@@ -171,8 +178,13 @@ async function simulateAttentionShare() {
 	for (let t = 0; t < m; t++) {
 
 		// rank posts randomly
-		shuffleArray(rankedPosts)
-		let tagPage = rankedPosts.map(postNumber => postIds[postNumber]).slice(0, nRanks)
+		// shuffleArray(rankedPosts)
+		// let tagPage = rankedPosts.map(postNumber => postIds[postNumber]).slice(0, nRanks)
+
+
+		let tagPage = (await getRankedPosts(tag, nRanks)).map((p: Post) => p.id)
+
+
 		// console.log("First post", rankedPosts[0])
 
 		// cycle through users
@@ -181,16 +193,19 @@ async function simulateAttentionShare() {
 		// assume all users views the tag page
 		for (let i = 0; i < nUsers; i++) {
 			let userId = (1000 + i).toString()
-			await logTagPageView(userId, tag, tagPage)
+			logTagPageView(userId, tag, tagPage)
 		}
 
 		// for each rank
 		for (let i = 0; i < nRanks; i++) {
 
 			let oneBasedRank = i + 1
-			let postNumber = rankedPosts[i]
-			assert(postNumber != undefined, "postNumber is not undefined")
-			let postId = postIds[postNumber]
+			let postId = tagPage[i]
+
+			let postNumber = postId - minPostId
+
+			// assert(postNumber != undefined, "postNumber is not undefined")
+			// let postId = postIds[postNumber]
 
 			// get the actual vote rate for this post at this rank 
 			let voteRate = Math.exp(logVoteRates[postNumber])
@@ -203,6 +218,10 @@ async function simulateAttentionShare() {
 			let votes = jStat.poisson.sample(actualVoteRate)
 			// console.log("Votes for rank", i, votes, actualVoteRate, voteShare, voteRate)
 
+			let upvoteProbability = upvoteProbabilities[postNumber]
+			// let direction = Math.random() < upvoteProbability ? Direction.Up : Direction.Down
+			let direction = Direction.Up 
+
 			// Log the votes
 			for (let j = 0; j < votes; j++) {
 				let location = { locationType: locationType, oneBasedRank: oneBasedRank }
@@ -210,7 +229,7 @@ async function simulateAttentionShare() {
 				// cycle through the users when choosing a user to vote...
 				let userId = (1000 + t % nUsers).toString()
 
-				await vote(tag, userId, postId, null, Direction.Up, location)
+				await vote(tag, userId, postId, null, direction, location)
 				totalVotes++
 			}
 		}
@@ -220,6 +239,7 @@ async function simulateAttentionShare() {
 		// need to be update periodicially.
 		// console.log("totalVotes", totalVotes)
 		await saveTagPageStats(tag, tagPage)	
+
 
 	}
 	bar1.stop()
@@ -232,7 +252,7 @@ async function simulateAttentionShare() {
 
 	let squareErrorLocations = 0
 	for (let i = 0; i < nRanks; i++) {
-		let l = rankFactor(i + 1)
+		// let l = rankFactor(i + 1)
 		let actualShare = voteShareAtRank(i + 1)
 		// total = total + l
 		let estimatedShare = voteShares[i].voteShare
@@ -242,7 +262,6 @@ async function simulateAttentionShare() {
 	}
 
 
-	let tagId = await getOrInsertTagId(tag)
 
 	let postStats = await db.selectFrom("PostStats")
 		// where postId > minPostId
@@ -273,7 +292,7 @@ async function simulateAttentionShare() {
 		if (tally == undefined) {
 			tally = { count: 0, total: 0 }
 		}
-		let t = tally.count
+		let t = tally.total
 
 		let estimatedVoteRate = t / a
 
@@ -285,7 +304,12 @@ async function simulateAttentionShare() {
 	console.log("Mean Square error for attentionShare at each rank", squareErrorLocations / nRanks)
 	console.log("Mean Square error for vote rate", squareErrorPosts / nPosts)
 
+	let totalGain = await totalInformationGain(tagId)
+	let totalViews = (await tagStats(tag)).views
+	console.log("Information gain per view", totalGain/totalViews)
+
 }
+
 
 function shuffleArray<T>(array: T[]) {
 	for (let i = array.length - 1; i > 0; i--) {

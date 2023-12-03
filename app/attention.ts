@@ -1,6 +1,6 @@
 
 import { db } from "#app/db.ts";
-import { type Post, type PostStats } from "#app/db/types.ts";
+import { type PostStats, type TagStats } from "#app/db/types.ts";
 
 import { getOrInsertTagId } from './tag.ts';
 
@@ -32,12 +32,12 @@ export type Location = {
 }
 
 
-type TagStats = { filter: Map<String, boolean>, views: number, votes: number }
+type TagStatsAccumulator = { filter: Map<String, boolean>, views: number, votes: number }
 
-let statsForTag = new Map<string, TagStats>()
+let statsForTag = new Map<string, TagStatsAccumulator>()
 
 
-function getOrCreateStatsForTag(tag: string): TagStats {
+function getOrCreateStatsForTag(tag: string): TagStatsAccumulator {
 
 	let stats = statsForTag.get(tag)
 
@@ -232,5 +232,17 @@ export async function seedStats() {
 }
 
 
+
+export async function tagStats(tag: string): Promise<TagStats> {
+
+	let tagId = await getOrInsertTagId(tag)
+
+	return await db
+		.selectFrom('TagStats')
+		.where('tagId', '=', tagId)
+		.selectAll()
+		.executeTakeFirstOrThrow()
+
+}
 
 

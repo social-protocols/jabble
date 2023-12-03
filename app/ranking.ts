@@ -1,10 +1,10 @@
 import { db } from "#app/db.ts";
-import { type Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
+import { type Post} from '#app/db/types.ts'; // this is the Database interface we defined earlier
 import { sql } from 'kysely';
 // import { cumulativeAttention } from './attention.ts';
+import { saveTagPageStats } from './attention.ts';
 import { findTopNoteId, GLOBAL_PRIOR_VOTE_RATE } from './probabilities.ts';
 import { getOrInsertTagId } from './tag.ts';
-import { saveTagPageStats } from './attention.ts'
 
 import assert from 'assert';
 
@@ -29,7 +29,7 @@ const explorationPoolSize = .1
 const attentionCutoff = 2 // Note all posts start with 1 unit of attention (from poster)
 
 
-import { LRUCache } from 'lru-cache'
+import { LRUCache } from 'lru-cache';
 
 let rankingsCache = new LRUCache<string, RankedPost[]>({
 	max: 100,
@@ -50,9 +50,11 @@ let rankingsCache = new LRUCache<string, RankedPost[]>({
 
 export async function getRankedPosts(tag: string, maxResults: number): Promise<RankedPost[]> {
 
+	let tagId = await getOrInsertTagId(tag)
+
 	let result = rankingsCache.get(tag)
 	if (result == undefined) {
-		result = await getRankedPostsInternal(tag, maxResults)
+		result = await getRankedPostsInternal(tagId, maxResults)
 		rankingsCache.set(tag, result)
 	} 
 
@@ -60,10 +62,8 @@ export async function getRankedPosts(tag: string, maxResults: number): Promise<R
 }
 
 
-async function getRankedPostsInternal(tag: string, maxResults: number): Promise<RankedPost[]> {
 
-	let tagId = await getOrInsertTagId(tag)
-
+async function getPostsWithStats(tagId: number): Promise<PostWithStats[]> {
 	// Select all posts, along with vote tallies and attention
 	let query = db
 		.selectFrom('Post')
@@ -88,16 +88,27 @@ async function getRankedPostsInternal(tag: string, maxResults: number): Promise<
 		;
 
 	let allPosts: PostWithStats[] = await query.execute()
+
+	return allPosts
+
+}
+
+
+async function getRankedPostsInternal(tagId: number, maxResults: number): Promise<RankedPost[]> {
+
+	let allPosts = await getPostsWithStats(tagId)
+
 	let nPosts = allPosts.length
 
 	// Then score each post
 	let scoredPosts = await Promise.all(allPosts.map(async post => {
-		let s = await score(tag, post)
+		let s = await score(tagId, post)
 
 		return {
 			...post, ...s
 		}
 	}))
+	scoredPosts = scoredPosts.filter(p => p.informationValue > 0)
 
 
 	// Then split into two pools: rankedPosts, and explorationPosts, based on
@@ -117,7 +128,7 @@ async function getRankedPostsInternal(tag: string, maxResults: number): Promise<
 		nResults = maxResults
 	}
 
-	console.log("Number of posts",nResults, nPosts, nExplorationPosts, nRankedPosts)
+	console.log("Number of posts", nResults, nPosts, nExplorationPosts, nRankedPosts)
 
 	// Finally, create nResults results by iterating through the ranked posts
 	// while randomly inserting posts from the exploration pool (with a
@@ -158,10 +169,8 @@ async function getRankedPostsInternal(tag: string, maxResults: number): Promise<
 }
 
 
-async function score(tag: string, post: PostWithStats): Promise<ScoreData> {
+async function score(tagId: number, post: PostWithStats): Promise<ScoreData> {
 	// find informed probability
-
-	let tagId = await getOrInsertTagId(tag)
 
 
 
@@ -183,9 +192,9 @@ async function score(tag: string, post: PostWithStats): Promise<ScoreData> {
 	let informationRate = voteRate * informationValue
 
 
-	if(post.id == 10) {
-		console.log("Stats for post 10", post, p, q, voteRate, informationValue)
-	}
+	// if (post.id == 10) {
+	// 	console.log("Stats for post 10", post, p, q, voteRate, informationValue)
+	// }
 
 	return {
 		attention: post.attention,
@@ -199,6 +208,26 @@ async function score(tag: string, post: PostWithStats): Promise<ScoreData> {
 		score: informationRate
 	}
 }
+
+
+export async function totalInformationGain(tagId: number): Promise<number> {
+
+	let allPosts = await getPostsWithStats(tagId)
+	// console.log("All posts", allPosts.length, tagId)
+
+	// Then score each post
+	let informationGain = await Promise.all(allPosts.map(async post => {
+		let s = await score(tagId, post)
+
+		let informationGain = s.voteTotal * s.informationValue
+		// console.log("Information gain ", post.id, s.voteTotal, s.q, s.informationValue)
+		return informationGain
+
+	}))
+
+	return informationGain.reduce((sum, current) => sum + current, 0);
+}
+
 
 
 // Exploration Pool Logic:

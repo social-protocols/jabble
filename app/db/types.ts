@@ -18,3 +18,4 @@ export type Password = Selectable<schema.Password>
 export type PostStats = Selectable<schema.PostStats>
 export type LocationStats = Selectable<schema.LocationStats>
 export type ExplorationStats = Selectable<schema.ExplorationStats>
+export type TagStats = Selectable<schema.TagStats>
