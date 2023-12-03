@@ -139,7 +139,7 @@ export type Verification = {
 	expiresAt: string | null
 }
 export type VoteHistory = {
-	rowid: Generated<number>
+	rowId: Generated<number>
 	userId: string
 	tagId: number
 	postId: number
