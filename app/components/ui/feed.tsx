@@ -1,4 +1,4 @@
-import { PostDetails } from "#app/components/ui/post.tsx"
+import { PostTeaser } from "#app/components/ui/post.tsx"
 import { type Post } from '#app/db/types.ts'
 
 export function Feed({ posts }: Post[]) {
@@ -6,10 +6,11 @@ export function Feed({ posts }: Post[]) {
     <ul>
       {posts.map((post) => (
         <li>
-          <PostDetails post={post as Post} note={null} />
+          <PostTeaser post={ post as Post} />
         </li>
       ))}
     </ul>
   );
 }
+
 
