@@ -217,3 +217,14 @@ view CurrentTally {
 
   @@unique([tagId, postId])
 }
+
+view CurrentVote {
+  userId String
+  tagId  Int
+  postId Int
+  direction Int
+  latest  Int
+  createdAt  DateTime
+
+  @@unique([userId, tagId, postId])
+}
