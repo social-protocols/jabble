@@ -19,9 +19,10 @@ type ScoreData = {
 	voteCount: number,
 	informationValue: number,
 	informationRate: number,
+  topNoteId: number | null
 }
 
-export type RankedPost = Post & ScoreData & { explorationPool: boolean }
+export type RankedPost = Post & ScoreData & { explorationPool: boolean, note: Post | null }
 type PostWithStats = Post & { attention: number, voteCount: number, voteTotal: number }
 
 // const fatigueFactor = .9
@@ -161,7 +162,18 @@ async function getRankedPostsInternal(tagId: number, maxResults: number): Promis
 
 		let s = { oneBasedRank: i + 1, explorationPool: ep };
 
-		results[i] = { ...p, ...s }
+    console.log(p.topNoteId)
+
+    let note = p.topNoteId !== null
+      ? await db
+        .selectFrom('Post')
+        .where('Post.id', '=', p.topNoteId)
+        .selectAll()
+        .executeTakeFirstOrThrow()
+      : null
+
+
+		results[i] = { ...p, ...s, note }
 	}
 
 
@@ -174,7 +186,7 @@ async function score(tagId: number, post: PostWithStats): Promise<ScoreData> {
 
 
 
-	const [_topNoteId, p, q] = await findTopNoteId(tagId, post.id);
+	const [topNoteId, p, q] = await findTopNoteId(tagId, post.id);
 
 	// https://social-protocols.org/y-docs/information-value.html
 	let informationValue = (1 + Math.log2(q))
@@ -205,7 +217,8 @@ async function score(tagId: number, post: PostWithStats): Promise<ScoreData> {
 		voteRate: voteRate,
 		informationValue: informationValue,
 		informationRate: informationRate,
-		score: informationRate
+		score: informationRate,
+    topNoteId: topNoteId,
 	}
 }
 

@@ -93,7 +93,7 @@ export async function topNote(tag: string, postId: number): Promise<Post | null>
 }
 
 
-export async function findTopNoteId(tagId: number, postId: number): Promise<[number, number, number]> {
+export async function findTopNoteId(tagId: number, postId: number): Promise<[number | null, number, number]> {
 
     let talliesMap = new Map<number, InformedTally[]>()
     await getCurrentTallies(tagId, postId, talliesMap)
@@ -103,9 +103,6 @@ export async function findTopNoteId(tagId: number, postId: number): Promise<[num
     let tally = await currentTally(tagId, postId)
 
     let result = findTopNoteGivenTallies(postId, tally, talliesMap);
-    if (result == null) {
-        return [0, 0, 0]
-    }
     return result
 
 } 
@@ -120,12 +117,12 @@ export function findTopNoteGivenTallies(
     postId: number,
     postTally: Tally,
     subnoteTallies: Map<number, InformedTally[]>,
-): [number, number, number] {
+): [number | null, number, number] {
     let pOfAGivenNotShownTopNote = GLOBAL_PRIOR_UPVOTE_PROBABILITY.update(postTally).average;
 
     let pOfAGivenShownTopNote = pOfAGivenNotShownTopNote;
 
-    let topNoteId: number = 0;
+    let topNoteId: number | null = null;
 
     let tallies = subnoteTallies.get(postId);
 

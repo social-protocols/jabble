@@ -1,14 +1,19 @@
-import { PostTeaser } from "#app/components/ui/post.tsx"
+import { PostDetails } from "#app/components/ui/post.tsx"
 import { type Post } from '#app/db/types.ts'
+import { type RankedPost } from '#app/ranking.ts'
 
-export function Feed({ posts }: Post[]) {
+type FeedProps = {
+  posts: RankedPost[]
+}
+
+export function Feed({ posts }: FeedProps) {
   return (
-    <div className='flex w-10/12 max-w-3/5'>
+    <div className='flex flex-column place-items-start'>
       <ul>
         {posts.map((post) => (
           <li>
-            <div className='flex-1'>
-              <PostTeaser post={ post as Post} />
+            <div className='flex-1 justify-self-center'>
+              <PostDetails post={post as Post} note={post.note} />
             </div>
           </li>
         ))}
@@ -16,5 +21,4 @@ export function Feed({ posts }: Post[]) {
     </div>
   );
 }
-
 

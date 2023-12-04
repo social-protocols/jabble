@@ -19,6 +19,14 @@ export type CurrentTally = {
 	count: number
 	total: number
 }
+export type CurrentVote = {
+	userId: string
+	tagId: number
+	postId: number
+	direction: number
+	latest: number
+	createdAt: string
+}
 export type ExplorationStats = {
 	rowid: Generated<number>
 	votes: number
@@ -139,7 +147,7 @@ export type Verification = {
 	expiresAt: string | null
 }
 export type VoteHistory = {
-	rowId: Generated<number>
+	rowid: Generated<number>
 	userId: string
 	tagId: number
 	postId: number
@@ -152,6 +160,7 @@ export type DB = {
 	_RoleToUser: RoleToUser
 	CurrentInformedTally: CurrentInformedTally
 	CurrentTally: CurrentTally
+	CurrentVote: CurrentVote
 	ExplorationStats: ExplorationStats
 	LocationStats: LocationStats
 	Password: Password

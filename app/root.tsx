@@ -126,16 +126,9 @@ export async function loader({ request }: DataFunctionArgs) {
 	const honeyProps = honeypot.getInputProps()
 	const [csrfToken, csrfCookieHeader] = await csrf.commitToken()
 
-  const posts = await db
-    .selectFrom('Post')
-    .selectAll()
-    .limit(10)
-    .execute() as Post[]
-
 	return json(
 		{
 			user,
-      posts,
 			requestInfo: {
 				hints: getHints(request),
 				origin: getDomainUrl(request),
@@ -261,10 +254,7 @@ function App() {
 				</header>
 
 				<div className="flex-1">
-          {data.requestInfo.path === '/' 
-            ? <Feed posts={data.posts as Post[]} />
-					  : <Outlet />
-          }
+				  <Outlet />
 				</div>
 
 				<div className="container flex justify-between pb-5">

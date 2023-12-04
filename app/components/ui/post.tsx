@@ -4,7 +4,7 @@ import { Link } from '@remix-run/react'
 
 type PostProps = {
   post: Post,
-  note: Post | null
+  note: Post | null,
 }
 
 export function PostDetails({ post, note }: PostProps) {
@@ -23,7 +23,11 @@ export function PostDetails({ post, note }: PostProps) {
   )
 }
 
-export function PostTeaser({ post }: Post) {
+type PostTeaserProps = {
+  post: Post
+}
+
+export function PostTeaser({ post }: PostTeaserProps) {
   return (
     <div className='justify-center'>
       <Link to={`/posts/${post.id}`}>
@@ -35,7 +39,11 @@ export function PostTeaser({ post }: Post) {
   )
 }
 
-export function NoteAttachment({ note }: { note: Post }) {
+type NoteAttachmentProps = {
+  note: Post
+}
+
+export function NoteAttachment({ note }: NoteAttachmentProps) {
   return (
     <Link to={`/posts/${note.id}`}>
         <div className="bg-secondary p-5 mb-5 rounded-lg">
