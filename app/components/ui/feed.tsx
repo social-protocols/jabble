@@ -7,7 +7,7 @@ type FeedProps = {
   posts: RankedPost[]
 }
 
-export function Feed({tag, posts }: FeedProps) {
+export function Feed({ tag, posts }: FeedProps) {
   return (
     <div className='flex flex-column place-items-start'>
       <ul>

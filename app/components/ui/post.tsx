@@ -17,7 +17,7 @@ export function PostDetails({ tag, post, note }: PostProps) {
         {
           note === null
             ? <div />
-            : <NoteAttachment note={note} />
+            : <NoteAttachment note={note} tag={tag} />
         }
         <VoteButtons />
         <ReplyForm parentId={post.id} tag={tag} />
@@ -26,29 +26,31 @@ export function PostDetails({ tag, post, note }: PostProps) {
   )
 }
 
-type PostTeaserProps = {
-  post: Post
-}
+// type PostTeaserProps = {
+//   post: Post
+//   tag: string
+// }
 
-export function PostTeaser({ post }: PostTeaserProps) {
-  return (
-    <div className='justify-center'>
-      <Link to={`/posts/${post.id}`}>
-        <div className="bg-primary-foreground rounded-lg p-5 m-5">
-          <p className="mb-5">{post.content}</p>
-        </div>
-      </Link>
-    </div>
-  )
-}
+// export function PostTeaser({ tag, post }: PostTeaserProps) {
+//   return (
+//     <div className='justify-center'>
+//       <Link to={`/tags/${tag}/posts/${post.id}`}>
+//         <div className="bg-primary-foreground rounded-lg p-5 m-5">
+//           <p className="mb-5">{post.content}</p>
+//         </div>
+//       </Link>
+//     </div>
+//   )
+// }
 
 type NoteAttachmentProps = {
   note: Post
+  tag: string
 }
 
-export function NoteAttachment({ note }: NoteAttachmentProps) {
+export function NoteAttachment({ tag, note }: NoteAttachmentProps) {
   return (
-    <Link to={`/posts/${note.id}`}>
+    <Link to={`/tags/${tag}/posts/${note.id}`}>
       <div className="bg-secondary p-5 mb-5 rounded-lg">
         {note ? note.content : ""}
       </div>

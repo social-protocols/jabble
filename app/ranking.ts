@@ -57,7 +57,7 @@ export async function getRankedPosts(tag: string, maxResults: number): Promise<R
 	if (result == undefined) {
 		result = await getRankedPostsInternal(tagId, maxResults)
 		rankingsCache.set(tag, result)
-	} 
+	}
 
 	return result
 }

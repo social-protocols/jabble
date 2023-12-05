@@ -87,10 +87,16 @@ export async function topNote(tag: string, postId: number): Promise<Post | null>
         return null
     }
 
-    const tallies = await db.selectFrom("Post").where("id", "=", noteId).selectAll().execute()
+    const notes: Post[] = await db.selectFrom("Post").where("id", "=", noteId).selectAll().execute()
 
-    return tallies[0]
+    let note = notes[0]
+    if (note === undefined) {
+        return null
+    }
+
+    return note
 }
+
 
 
 export async function findTopNoteId(tagId: number, postId: number): Promise<[number | null, number, number]> {
