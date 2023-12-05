@@ -1,5 +1,5 @@
 import { db } from "#app/db.ts";
-import { type Post} from '#app/db/types.ts'; // this is the Database interface we defined earlier
+import { type Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
 import { sql } from 'kysely';
 // import { cumulativeAttention } from './attention.ts';
 import { saveTagPageStats } from './attention.ts';
@@ -19,7 +19,7 @@ type ScoreData = {
 	voteCount: number,
 	informationValue: number,
 	informationRate: number,
-  topNoteId: number | null
+	topNoteId: number | null
 }
 
 export type RankedPost = Post & ScoreData & { explorationPool: boolean, note: Post | null }
@@ -45,7 +45,7 @@ let rankingsCache = new LRUCache<string, RankedPost[]>({
 	// when we dispose of the page from the cache, call saveTagPageStats to update attention
 	// stats in the DB for each post on the tag page.
 	dispose: (posts, tag, reason) => {
-		saveTagPageStats(tag, posts.map(p => p.id))	
+		saveTagPageStats(tag, posts.map(p => p.id))     
 	},
 }) 
 
@@ -162,15 +162,13 @@ async function getRankedPostsInternal(tagId: number, maxResults: number): Promis
 
 		let s = { oneBasedRank: i + 1, explorationPool: ep };
 
-    console.log(p.topNoteId)
-
-    let note = p.topNoteId !== null
-      ? await db
-        .selectFrom('Post')
-        .where('Post.id', '=', p.topNoteId)
-        .selectAll()
-        .executeTakeFirstOrThrow()
-      : null
+		let note = p.topNoteId !== null
+			? await db
+				.selectFrom('Post')
+				.where('Post.id', '=', p.topNoteId)
+				.selectAll()
+				.executeTakeFirstOrThrow()
+			: null
 
 
 		results[i] = { ...p, ...s, note }
@@ -205,7 +203,7 @@ async function score(tagId: number, post: PostWithStats): Promise<ScoreData> {
 
 
 	// if (post.id == 10) {
-	// 	console.log("Stats for post 10", post, p, q, voteRate, informationValue)
+	//      console.log("Stats for post 10", post, p, q, voteRate, informationValue)
 	// }
 
 	return {
@@ -218,7 +216,7 @@ async function score(tagId: number, post: PostWithStats): Promise<ScoreData> {
 		informationValue: informationValue,
 		informationRate: informationRate,
 		score: informationRate,
-    topNoteId: topNoteId,
+		topNoteId: topNoteId,
 	}
 }
 

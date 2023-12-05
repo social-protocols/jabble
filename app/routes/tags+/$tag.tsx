@@ -17,8 +17,8 @@ import { getRankedPosts, type RankedPost } from "#app/ranking.ts"
 
 import { Feed } from "#app/components/ui/feed.tsx"
 
-import { requireUserId } from '#app/utils/auth.server.ts'
 import { getPositionsForTag } from '#app/positions.ts'
+import { requireUserId } from '#app/utils/auth.server.ts'
 
 // const GLOBAL_TAG = "global";
 
@@ -30,28 +30,28 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	const userId = await requireUserId(request)
   
-  const positions = await getPositionsForTag(userId, tag)
+	const positions = await getPositionsForTag(userId, tag)
 
 	invariant(tag, 'Missing tag param')
 
 	const posts = await getRankedPosts(tag, maxPosts)
 
-	logTagPageView(userId, tag, posts.map(p => p.id))
+	logTagPageView(userId, tag, posts.map((p) => p.id))
 
-	return json({ posts, userId, positions })
+	return json({ posts, userId, positions, tag })
 }
 
 export default function TagPage() {
-	const { posts, userId, positions } = useLoaderData<typeof loader>()
+	const { tag, posts, userId, positions } = useLoaderData<typeof loader>()
 
-  return (
-    <div>
-      <Feed posts={posts} />
-    </div>
-  )
+	return (
+		<div>
+			<Feed posts={posts} tag={tag} />
+		</div>
+	)
 }
 
-		// <div>
-		// 	<div>Post Content: {post.content}</div>
-		// 	<div>Score: {post.score} voteRate: {post.voteRate} Votes: {post.voteCount}/{post.voteTotal} p: {post.p} q: {post.q}  </div>
-		// </div>
+// <div>
+// 	<div>Post Content: {post.content}</div>
+// 	<div>Score: {post.score} voteRate: {post.voteRate} Votes: {post.voteCount}/{post.voteTotal} p: {post.p} q: {post.q}  </div>
+// </div>

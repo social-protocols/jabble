@@ -228,3 +228,4 @@ view CurrentVote {
 
   @@unique([userId, tagId, postId])
 }
+

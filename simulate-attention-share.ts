@@ -174,7 +174,7 @@ async function simulateAttentionShare() {
 
 	let totalVotes = 0
 
-	// for each minute
+	// for each period
 	for (let t = 0; t < m; t++) {
 
 		// rank posts randomly
