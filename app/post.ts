@@ -25,7 +25,7 @@ export async function createPost(
         .returning('id')
         .execute();
 
-    const createdPostId = results[0].id;
+    const createdPostId = results[0]!.id;
 
     const tagId: number = await getOrInsertTagId(tag);
     const direction: Direction = Direction.Up;

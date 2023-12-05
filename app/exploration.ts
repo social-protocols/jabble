@@ -3,9 +3,6 @@ import { db } from "#app/db.ts";
 // import { type Post, type PostStats } from "#app/db/types.ts";
 // import bloomFilters from 'bloom-filters';
 
-
-import assert from 'assert';
-
 import { sql } from 'kysely';
 
 import { LocationType, type Location } from "#app/attention.ts";
@@ -65,7 +62,7 @@ export async function logExplorationVote(location: Location) {
        .returning('votes')
        .execute();
 
-   const sitewideVotes: number = result[0].votes
+   const sitewideVotes: number = result[0]!.votes
 
 	const query = db
 		.updateTable('LocationStats')

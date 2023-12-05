@@ -21,5 +21,5 @@ export async function getOrInsertTagId(tag: string): Promise<number> {
 
     t = await db.selectFrom("Tag").where("tag", "=", tag).selectAll().execute()
     assert(t.length == 1)
-    return t[0].id
+    return t[0]!.id
 }

@@ -200,7 +200,7 @@ async function simulateAttentionShare() {
 		for (let i = 0; i < nRanks; i++) {
 
 			let oneBasedRank = i + 1
-			let postId = tagPage[i]
+			let postId = tagPage[i]!
 
 			let postNumber = postId - minPostId
 
@@ -255,7 +255,7 @@ async function simulateAttentionShare() {
 		// let l = rankFactor(i + 1)
 		let actualShare = voteShareAtRank(i + 1)
 		// total = total + l
-		let estimatedShare = voteShares[i].voteShare
+		let estimatedShare = voteShares[i]!.voteShare
 		let error = (actualShare - estimatedShare) / actualShare
 		// console.log("Location share at rank ", i + 1, "actual", actualShare, "estimated", estimatedShare, "error", error)
 		squareErrorLocations += error * error
@@ -288,7 +288,7 @@ async function simulateAttentionShare() {
 		let a = stats.attention
 		// (stats.attention - 1) * votesPerPeriod + 1
 
-		let tally: Tally = postTally[i]
+		let tally: Tally = postTally[i]!
 		if (tally == undefined) {
 			tally = { count: 0, total: 0 }
 		}
@@ -314,7 +314,7 @@ async function simulateAttentionShare() {
 function shuffleArray<T>(array: T[]) {
 	for (let i = array.length - 1; i > 0; i--) {
 		const j = Math.floor(Math.random() * (i + 1));
-		[array[i], array[j]] = [array[j], array[i]];
+		[array[i], array[j]] = [array[j]!, array[i]!];
 	}
 }
 

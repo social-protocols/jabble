@@ -1,19 +1,13 @@
 
 import { db } from "#app/db.ts";
-import { type PostStats, type TagStats } from "#app/db/types.ts";
+import { type TagStats } from "#app/db/types.ts";
 
 import { getOrInsertTagId } from './tag.ts';
 
-import assert from 'assert';
-
 import { GammaDistribution } from './beta-gamma-distribution.ts';
-
-// import bloomFilters from 'bloom-filters';
 
 
 import { sql } from 'kysely';
-
-// filter = bloomFilters.BloomFilter.fromJSON(j)
 
 // Global prior votes/view. The TagStats table keeps track of votes/view per tag, but
 // we need to start with some prior. This value is currently just a wild guess.
@@ -129,7 +123,7 @@ export async function saveTagPageStats(tag: string, posts: number[]) {
 		const result = await query.execute()
 
 		// console.log("REturned valuefrom udate tag stats", result)
-		votesPerView = result[0].votesPerView
+		votesPerView = result[0]!.votesPerView
 	}
 
 	// instead of using actual deltaVotes, use votesPerView*deltaViews, which is equal to deltaVotes
@@ -140,14 +134,14 @@ export async function saveTagPageStats(tag: string, posts: number[]) {
 	for (let i = 0; i < posts.length; i++) {
 		await savePostStats(
 			tagId, 
-			posts[i], 
+			posts[i]!, 
 			{ locationType: LocationType.TagPage, oneBasedRank: i + 1 },
 
 			deltaAttention,
 		)
 	}
 
-	statsForTag = new Map<string, TagStats>()
+	statsForTag = new Map<string, TagStatsAccumulator>()
 }
 
 
@@ -173,7 +167,7 @@ async function savePostStats(tagId: number, postId: number, location: Location, 
 	await query.execute()
 	// console.log("REsult of initial insert", tagId, postId, result)
 
-	let result = await db
+	await db
 		.updateTable('PostStats')
 		.from('LocationStats')
 		// .from('TagStats')

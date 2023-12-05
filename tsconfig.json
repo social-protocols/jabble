@@ -12,6 +12,7 @@
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
@@ -23,6 +24,6 @@
     },
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
-    "noEmit": true
+    "noEmit": true,
   }
 }

@@ -44,7 +44,7 @@ let rankingsCache = new LRUCache<string, RankedPost[]>({
 
 	// when we dispose of the page from the cache, call saveTagPageStats to update attention
 	// stats in the DB for each post on the tag page.
-	dispose: (posts, tag, reason) => {
+	dispose: (posts, tag, _reason) => {
 		saveTagPageStats(tag, posts.map(p => p.id))     
 	},
 }) 
@@ -159,7 +159,7 @@ async function getRankedPostsInternal(tagId: number, maxResults: number): Promis
 			nInsertions += 1
 			ep = true
 		}
-
+		assert(p !== undefined)
 		let s = { oneBasedRank: i + 1, explorationPool: ep };
 
 		let note = p.topNoteId !== null

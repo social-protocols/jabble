@@ -134,7 +134,7 @@ export function findTopNoteGivenTallies(
 
     if (tallies == null) {
         // console.log(
-            // `top note for post ${postId} is note ${topNoteId} with p=${pOfAGivenShownTopNote} and q=${pOfAGivenNotShownTopNote}`,
+        // `top note for post ${postId} is note ${topNoteId} with p=${pOfAGivenShownTopNote} and q=${pOfAGivenNotShownTopNote}`,
         // );
         // Bit of a hack. Should just get overall tally
         return [
@@ -192,11 +192,12 @@ async function currentTally(tagId: number, postId: number): Promise<Tally> {
         .selectAll()
         .execute()
 
-    if (tally.length == 0) {
+    let t = tally[0]
+    if (t === undefined) {
         return EMPTY_TALLY
     }
 
-    return tally[0];
+    return t;
 }
 
 
@@ -204,11 +205,12 @@ async function cumulativeAttention(tagId: number, postId: number): Promise<numbe
 
     const stats = await db.selectFrom("PostStats").where("tagId", "=", tagId).where("postId", "=", postId).selectAll().execute()
 
-    if (stats.length == 0) {
+    let s = stats[0] 
+    if (s === undefined) {
         return 0
     }
 
-    return stats[0].attention
+    return s.attention
 }
 
 
