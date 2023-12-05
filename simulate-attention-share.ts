@@ -193,7 +193,7 @@ async function simulateAttentionShare() {
 		// assume all users views the tag page
 		for (let i = 0; i < nUsers; i++) {
 			let userId = (1000 + i).toString()
-			logTagPageView(userId, tag, tagPage)
+			logTagPageView(userId, tag)
 		}
 
 		// for each rank

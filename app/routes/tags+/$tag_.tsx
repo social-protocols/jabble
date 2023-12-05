@@ -35,8 +35,7 @@ export async function loader({ params, request }: DataFunctionArgs) {
 	invariant(tag, 'Missing tag param')
 
 	const posts = await getRankedPosts(tag, maxPosts)
-
-	logTagPageView(userId, tag, posts.map((p) => p.id))
+	logTagPageView(userId, tag)
 
 	return json({ posts, userId, positions, tag })
 }

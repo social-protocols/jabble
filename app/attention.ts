@@ -52,8 +52,7 @@ export function logTagVote(tag: string) {
 	stats.votes += 1
 }
 
-
-export function logTagPageView(userId: string, tag: string, posts: number[]) {
+export function logTagPageView(userId: string, tag: string) {
 
 	let stats = getOrCreateStatsForTag(tag)
 	let filter = stats.filter
@@ -62,9 +61,6 @@ export function logTagPageView(userId: string, tag: string, posts: number[]) {
 	if (!filter.has(key)) {
 		filter.set(key, true)
 		stats.views += 1
-		// console.log("Incrementing stats views", stats.views)
-	} else {
-		// console.log("Deduping", userId)
 	}
 }
 

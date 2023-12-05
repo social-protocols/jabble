@@ -2,7 +2,7 @@ import { db } from "#app/db.ts";
 import { type Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
 import { sql } from 'kysely';
 // import { cumulativeAttention } from './attention.ts';
-import { saveTagPageStats } from './attention.ts';
+import { logTagPageView, saveTagPageStats } from './attention.ts';
 import { findTopNoteId, GLOBAL_PRIOR_VOTE_RATE } from './probabilities.ts';
 import { getOrInsertTagId } from './tag.ts';
 
@@ -45,9 +45,19 @@ let rankingsCache = new LRUCache<string, RankedPost[]>({
 	// when we dispose of the page from the cache, call saveTagPageStats to update attention
 	// stats in the DB for each post on the tag page.
 	dispose: (posts, tag, _reason) => {
+		console.log("Saving stats for", tag)
 		saveTagPageStats(tag, posts.map(p => p.id))     
 	},
 }) 
+
+export async function saveAllTagPageStats() {
+	console.log("Closing gracefully")
+	let keys = rankingsCache.keys()
+	for (let tag of keys) {
+		console.log("Deleting tag", tag)
+		rankingsCache.delete(tag)
+	}
+}
 
 export async function getRankedPosts(tag: string, maxResults: number): Promise<RankedPost[]> {
 
@@ -58,6 +68,7 @@ export async function getRankedPosts(tag: string, maxResults: number): Promise<R
 		result = await getRankedPostsInternal(tagId, maxResults)
 		rankingsCache.set(tag, result)
 	}
+	// logTagPageView(userId, tag)
 
 	return result
 }
