@@ -14,15 +14,20 @@ export function PostDetails({ tag, post, note, teaser }: PostProps) {
   return (
     <div className='flex justify-center'>
       <div className="bg-primary-foreground rounded-lg p-5 m-5 w-full max-w-3xl">
-        <p className="mb-5">{post.content}</p>
+        <p className="mb-5">
+          {teaser 
+            ? <Link to={`/tags/${tag}/posts/${post.id}`}>{post.content}</Link>
+            : <span>{post.content}</span>
+          }
+        </p>
         {
           note === null
-            ? <div />
+            ? <span />
             : <NoteAttachment note={note} tag={tag} />
         }
         {
           teaser 
-            ? <div />
+            ? <span />
             : 
             <div>
               <VoteButtons />
