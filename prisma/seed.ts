@@ -94,7 +94,7 @@ export async function seed() {
 	// logTagPageView(alice, tag, posts)
 
 	// And responds to bob's response
-	let post3 = await createPost(tag, post1, 'That trial was a sham. They were never going to convict.', alice)
+	let post3 = await createPost(tag, post2, 'That trial was a sham. They were never going to convict.', alice)
 
 	// And then creates another unrelated post
 	let post4 = await createPost(tag, null, 'Sudafed, Benadryl and most decongestants don’t work: FDA advisory panel https://trib.al/sJmOJBP', alice)

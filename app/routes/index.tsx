@@ -25,7 +25,7 @@ export default function Index() {
 export async function loader({ request }: DataFunctionArgs) {
   const userId = await requireUserId(request)
   console.log('userId', userId)
-  
+    
   return (
     { userId: userId }
   )

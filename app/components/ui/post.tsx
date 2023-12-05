@@ -7,9 +7,10 @@ type PostProps = {
   tag: string,
   post: Post,
   note: Post | null,
+  teaser: boolean,
 }
 
-export function PostDetails({ tag, post, note }: PostProps) {
+export function PostDetails({ tag, post, note, teaser }: PostProps) {
   return (
     <div className='flex justify-center'>
       <div className="bg-primary-foreground rounded-lg p-5 m-5 w-full max-w-3xl">
@@ -19,8 +20,15 @@ export function PostDetails({ tag, post, note }: PostProps) {
             ? <div />
             : <NoteAttachment note={note} tag={tag} />
         }
-        <VoteButtons />
-        <ReplyForm parentId={post.id} tag={tag} />
+        {
+          teaser 
+            ? <div />
+            : 
+            <div>
+              <VoteButtons />
+              <ReplyForm parentId={post.id} tag={tag} />
+            </div>
+        }
       </div>
     </div>
   )

@@ -2,8 +2,8 @@ import { db } from "#app/db.ts";
 import { type Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
 import { sql } from 'kysely';
 // import { cumulativeAttention } from './attention.ts';
-import { logTagPageView, saveTagPageStats } from './attention.ts';
-import { findTopNoteId, GLOBAL_PRIOR_VOTE_RATE } from './probabilities.ts';
+import { flushTagPageStats, logTagPageView } from './attention.ts';
+import { GLOBAL_PRIOR_VOTE_RATE, findTopNoteId } from './probabilities.ts';
 import { getOrInsertTagId } from './tag.ts';
 
 import assert from 'assert';
@@ -42,11 +42,11 @@ let rankingsCache = new LRUCache<string, RankedPost[]>({
 
 	ttlAutopurge: true,
 
-	// when we dispose of the page from the cache, call saveTagPageStats to update attention
+	// when we dispose of the page from the cache, call flushTagPageStats to update attention
 	// stats in the DB for each post on the tag page.
 	dispose: (posts, tag, _reason) => {
 		console.log("Saving stats for", tag)
-		saveTagPageStats(tag, posts.map(p => p.id))     
+		flushTagPageStats(tag, posts.map(p => p.id))     
 	},
 }) 
 
@@ -250,6 +250,19 @@ export async function totalInformationGain(tagId: number): Promise<number> {
 	return informationGain.reduce((sum, current) => sum + current, 0);
 }
 
+export async function getRankedNotes(tag: string, postId: number): Promise<Post[]> {
+	const tagId = await getOrInsertTagId(tag)
+
+	return await db
+		.selectFrom("Post")
+		.innerJoin("CurrentTally", "postId", "Post.id")
+		.where("CurrentTally.tagId", "=", tagId)
+		.where("Post.parentId", "=", postId)
+		.selectAll("Post")
+		.execute()
+}
+
+// await logPostPageView(tag, post.id, userId, notes)
 
 
 // Exploration Pool Logic:

@@ -14,7 +14,7 @@ export function Feed({ tag, posts }: FeedProps) {
         {posts.map((post) => (
           <li>
             <div className='flex-1 justify-self-center'>
-              <PostDetails post={post as Post} note={post.note} tag={tag} />
+              <PostDetails post={post as Post} note={post.note} tag={tag} teaser={true} />
             </div>
           </li>
         ))}

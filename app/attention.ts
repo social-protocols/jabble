@@ -52,6 +52,12 @@ export function logTagVote(tag: string) {
 	stats.votes += 1
 }
 
+
+export async function logPostPageView(_tag: string, _postId: number, _userId: string|null) {
+	// todo
+}
+
+
 export function logTagPageView(userId: string, tag: string) {
 
 	let stats = getOrCreateStatsForTag(tag)
@@ -64,7 +70,7 @@ export function logTagPageView(userId: string, tag: string) {
 	}
 }
 
-export async function saveTagPageStats(tag: string, posts: number[]) {
+export async function flushTagPageStats(tag: string, posts: number[]) {
 
 	let tagId = await getOrInsertTagId(tag)
 

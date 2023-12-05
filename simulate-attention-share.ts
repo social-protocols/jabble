@@ -11,7 +11,7 @@ import assert from 'assert';
 
 // import { sql } from 'kysely';
 
-import { saveTagPageStats, seedStats, tagStats } from "#app/attention.ts";
+import { flushTagPageStats, seedStats, tagStats } from "#app/attention.ts";
 
 import { createPost } from "#app/post.ts";
 
@@ -238,7 +238,7 @@ async function simulateAttentionShare() {
 		// update stats in the DB. logTagPageView just increments counters in memory which
 		// need to be update periodicially.
 		// console.log("totalVotes", totalVotes)
-		await saveTagPageStats(tag, tagPage)	
+		await flushTagPageStats(tag, tagPage)	
 
 
 	}
