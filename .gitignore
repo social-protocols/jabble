@@ -17,3 +17,4 @@ node_modules
 *.local.*
 /.direnv
 .env
+.DS_Store
