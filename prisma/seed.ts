@@ -13,6 +13,10 @@ import { getRankedPosts } from '#app/ranking.ts';
 
 import { seedStats } from '#app/attention.ts';
 
+import { db } from '#app/db.ts';
+
+import {sql} from 'kysely';
+
 export async function seed() {
 
 	console.time('🔑 Created permissions...')
@@ -80,7 +84,7 @@ export async function seed() {
 	let post1 = await createPost(tag, null, 'So, pregnant people can’t cross state lines to get abortions but guys like Kyle Rittenhouse can cross state lines to murder people. Seems fair.', alice)	
 
 	// Then, bob views the page
-	let posts = await getRankedPosts(tag,90)
+	let posts = await getRankedPosts(tag, 90)
 	// logTagPageView(bob, tag, posts)
 
 	// Then bob posts a response to alice's post
@@ -90,7 +94,7 @@ export async function seed() {
 	await vote(tag, bob, post1, post2, Direction.Down, null)
 
 	// bob views home page
-	posts = await getRankedPosts(tag,90)
+	posts = await getRankedPosts(tag, 90)
 	// logTagPageView(alice, tag, posts)
 
 	// And responds to bob's response
@@ -100,7 +104,7 @@ export async function seed() {
 	let post4 = await createPost(tag, null, 'Sudafed, Benadryl and most decongestants don’t work: FDA advisory panel https://trib.al/sJmOJBP', alice)
 
 	// Bob then views the page again
-	posts = await getRankedPosts(tag,90)
+	posts = await getRankedPosts(tag, 90)
 	// logTagPageView(bob, tag, posts)
 
 	// And respond's to Alices's latest post
@@ -110,7 +114,7 @@ export async function seed() {
 	let post6 = await createPost(tag, null, 'Right now, real wages for the average American worker is higher than it was before the pandemic, with lower wage workers seeing the largest gains. That\'s Bidenomics.', alice)
 
 	// Bob then views the page once again
-	posts = await getRankedPosts(tag,90)
+	posts = await getRankedPosts(tag, 90)
 	// console.log("Ranked posts", posts)
 	// logTagPageView(bob, tag, posts)
 
@@ -136,6 +140,15 @@ export async function seed() {
 	await vote(tag, charlie, post2, post3, Direction.Down, null)
 	await vote(tag, charlie, post2, post3, Direction.Up, null)
 
+
+
+	// Add a developer user and session ID that is already in my browser, so I remain logged in after I reseed the DB.
+	await prisma.user.create({
+		data: { id: "clptz40870002cdvq8rqkbfs5", username: 'developer', email: 'test@test.com', password: { create: createPassword('jonathan') } },
+	})
+
+	await sql`insert into session(id, expirationDate, createdAt, updatedAt, userId) values ('clptz40870001cdvqn4rnggxv', 1704471496999, 1701877981251, 1701877981251, 'clptz40870002cdvq8rqkbfs5')`
+		.execute(db)
 
 }
 
