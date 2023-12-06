@@ -38,10 +38,9 @@ select
 from currentVote
 group by tagId, postId;
 
-
-drop view if exists currentInformedTally;
-create view currentInformedTally as
-with currentInformedVotes as (
+-- Same as currentVote, but only looks at informed votes (votes where a note was shown).
+drop view if exists currentInformedVote;
+create view currentInformedVote as 
     SELECT
        userId 
       , tagId
@@ -59,8 +58,11 @@ with currentInformedVotes as (
       , tagId
       , postId
       , noteId
-)
-, informedTally as (
+;
+
+drop view if exists currentInformedTally;
+create view currentInformedTally as
+with informedTally as (
   select 
       tagId
     , postId
@@ -72,53 +74,52 @@ with currentInformedVotes as (
       end
     ) as count
     , count(*) as total
-  from currentInformedVotes
+  from currentInformedVote
   -- The latest vote might be zero, so in that case we don't return a record for this user and post
   where direction != 0
   group by tagId, postId, noteId
-),  
-firstVotesOnNotes as (
+)
+-- Find the first time the user voted on the post while being shown the note
+, usersFirstVoteOnPostGivenNote as (
   SELECT 
        userId 
         , tagId
         , postId
         , noteId
         -- , direction
-        , min(rowid) firstVoteOnThisNoteRowid
+        , min(rowid) firstVoteRowid
   FROM voteHistory
   WHERE noteId is not null
   GROUP BY userId, tagId, postId, noteId
 )
-, votesBeforeNote as (
+-- Now find all informed votes, and identify whether they were before or after usersFirstVoteOnPostGivenNote
+, allVotes as (
     select
-      params.tagId as p_tagId
-      , params.postId as p_postId
-      , params.noteId as p_noteId
-      -- , firstVotesOnNotes.tagId as f_tagId
-      -- , firstVotesOnNotes.postId as f_postId
-      -- , firstVotesOnNotes.noteId as f_noteId
-      , firstVotesOnNotes.firstVoteOnThisNoteRowid
+      informedTally.tagId as p_tagId
+      , informedTally.postId as p_postId
+      , informedTally.noteId as p_noteId
+      , usersFirstVoteOnPostGivenNote.firstVoteRowid
       , voteHistory.rowid
       , voteHistory.*
       , case when 
-          (firstVoteOnThisNoteRowid is null or voteHistory.rowid < firstVoteOnThisNoteRowid)
+          (firstVoteRowid is null or voteHistory.rowid < firstVoteRowid)
           -- and direction == 1
         then true
         else null end before_note
     
-      , params.count as countGivenShownThisNote
-      , params.total as totalGivenShownThisNote
+      , informedTally.count as countGivenShownThisNote
+      , informedTally.total as totalGivenShownThisNote
     FROM 
-       informedTally params
+       informedTally
        join voteHistory using (tagId, postId)
-    LEFT OUTER JOIN firstVotesOnNotes on (
-           firstVotesOnNotes.tagId = params.tagId
-       and firstVotesOnNotes.postId = params.postId
-       and firstVotesOnNotes.noteId = params.noteId
-       and firstVotesOnNotes.userId = voteHistory.userId
+    LEFT OUTER JOIN usersFirstVoteOnPostGivenNote on (
+           usersFirstVoteOnPostGivenNote.tagId = informedTally.tagId
+       and usersFirstVoteOnPostGivenNote.postId = informedTally.postId
+       and usersFirstVoteOnPostGivenNote.noteId = informedTally.noteId
+       and usersFirstVoteOnPostGivenNote.userId = voteHistory.userId
     )
 )
-, lastVotesBeforeNote as (
+, usersLastVoteOnPostBeforeNote as (
     select
         p_tagId as tagId
         , p_postId as postId
@@ -129,7 +130,7 @@ firstVotesOnNotes as (
         , countGivenShownThisNote
         , totalGivenShownThisNote
         , max(createdAt)
-    from  votesBeforeNote
+    from  allVotes
     where
     before_note
     group by p_tagId, p_postId, p_noteId,userId 
@@ -148,5 +149,5 @@ select
 
   , countGivenShownThisNote
   , totalGivenShownThisNote
-from lastVotesBeforeNote
+from usersLastVoteOnPostBeforeNote
 group by tagId, postId, noteId;
