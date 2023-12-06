@@ -2,7 +2,7 @@
 
 import { BetaDistribution, type Tally } from '#app/beta-gamma-distribution.ts';
 import { db } from "#app/db.ts";
-import { type CurrentInformedTally, type CurrentTally, type Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
+import { type CurrentTally, type DetailedTally, type Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
 import { getOrInsertTagId } from './tag.ts';
 
 // import { Selectable } from 'kysely';
@@ -33,7 +33,8 @@ type InformedTally = {
     forNote: Tally,
 }
 
-function toInformedTally(result: CurrentInformedTally, forNote: Tally): InformedTally {
+function toInformedTally(result: DetailedTally, forNote: Tally): InformedTally {
+    console.log("To informed tally", result, forNote)
     return {
         postId: result.postId,
         noteId: result.noteId,
@@ -104,8 +105,6 @@ export async function findTopNoteId(tagId: number, postId: number): Promise<[num
     let talliesMap = new Map<number, InformedTally[]>()
     await getCurrentTallies(tagId, postId, talliesMap)
 
-    // console.log("Current tallies", talliesMap)
-
     let tally = await currentTally(tagId, postId)
 
     let result = findTopNoteGivenTallies(postId, tally, talliesMap);
@@ -154,6 +153,7 @@ export function findTopNoteGivenTallies(
         let pOfAGivenNotShownThisNote = GLOBAL_PRIOR_UPVOTE_PROBABILITY
             .update(tally.givenNotShownThisNote)
             .average;
+
         let pOfAGivenShownThisNote = GLOBAL_PRIOR_UPVOTE_PROBABILITY
             .update(tally.givenNotShownThisNote)
             .resetWeight(WEIGHT_CONSTANT)
@@ -164,7 +164,7 @@ export function findTopNoteGivenTallies(
         let pOfAGivenShownThisNoteAndTopSubnote =
             pOfAGivenNotShownThisNote + delta * support;
 
-        console.log(`\tFor post ${postId} and note ${tally.noteId}, pOfAGivenShownThisNote=${pOfAGivenShownThisNote}, pOfAGivenNotShownThisNote=${pOfAGivenNotShownThisNote}, delta=${delta}, support=${support}`);
+        console.log(`For post ${postId} and note ${tally.noteId}, pOfAGivenShownThisNote=${pOfAGivenShownThisNote}, pOfAGivenNotShownThisNote=${pOfAGivenNotShownThisNote}, delta=${delta}, support=${support}`);
 
         if (Math.abs(pOfAGivenShownThisNoteAndTopSubnote - pOfAGivenNotShownThisNote)
             > Math.abs(pOfAGivenShownTopNote - pOfAGivenNotShownTopNote)) {
@@ -174,7 +174,7 @@ export function findTopNoteGivenTallies(
         }
     }
 
-    console.log(`top note for post ${postId} is note ${topNoteId} with p=${pOfAGivenShownTopNote} and q=${pOfAGivenNotShownTopNote}`);
+    console.log(`\ttop note for post ${postId} is note ${topNoteId} with p=${pOfAGivenShownTopNote} and q=${pOfAGivenNotShownTopNote}`);
 
     return [
         topNoteId,
@@ -217,15 +217,13 @@ async function cumulativeAttention(tagId: number, postId: number): Promise<numbe
 
 async function getCurrentTallies(tagId: number, postId: number, map: Map<number, InformedTally[]>) {
     // use dribble to select current informed tally
-    const results = await db.selectFrom("CurrentInformedTally").where("tagId", "=", tagId).where("postId", "=", postId).selectAll().execute()
-
-    // console.log("Got tallies", results)
+    const results = await db.selectFrom("DetailedTally").where("tagId", "=", tagId).where("postId", "=", postId).selectAll().execute()
 
     let tallies = await Promise.all(results.map(async result => {
         await getCurrentTallies(tagId, result.noteId, map)
-        let for_note = (await currentTally(tagId, result.noteId))
+        let tallyForNote = (await currentTally(tagId, result.noteId))
 
-        return toInformedTally(result, for_note)
+        return toInformedTally(result, tallyForNote)
     }))
 
     if (tallies.length > 0) {
@@ -244,7 +242,7 @@ async function getCurrentTallies(tagId: number, postId: number, map: Map<number,
     //         , upvotes_given_shown_this_note
     //         , votes_given_not_shown_this_note
     //         , upvotes_given_not_shown_this_note
-    //       FROM currentInformedTally p
+    //       FROM DetailedTally p
     //       WHERE postId = ${postId}
     //         UNION ALL
     //       SELECT 
@@ -253,11 +251,11 @@ async function getCurrentTallies(tagId: number, postId: number, map: Map<number,
     //         , p.countGivenNotShownThisNote
     //         , p.countGivenNotShownThisNote
     //       FROM children c
-    //       INNER JOIN currentInformedTally p ON p.postId = c.noteId
+    //       INNER JOIN DetailedTally p ON p.postId = c.noteId
     //     )
     //     SELECT 
     //         children.*
-    //         , currentTally    //         , currentTally.count as upvotes_for_note
+    //         , currentTally    //         , currentTally.count as tallyForNote
     //     FROM children join currentTally on(currentTally.postId = children.noteId);
 
     return

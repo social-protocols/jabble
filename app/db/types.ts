@@ -13,6 +13,7 @@ export type User = Selectable<schema.User>
 export type Post = Selectable<schema.Post>
 export type CurrentTally = Selectable<schema.CurrentTally>
 export type CurrentInformedTally = Selectable<schema.CurrentInformedTally>
+export type DetailedTally = Selectable<schema.DetailedTally>
 export type Tag = Selectable<schema.Tag>
 export type Password = Selectable<schema.Password>
 export type PostStats = Selectable<schema.PostStats>

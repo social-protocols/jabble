@@ -52,7 +52,7 @@ create view currentInformedVote as
       , direction
       , max(createdAt) AS createdAt
     FROM voteHistory
-    where noteId is not null
+    -- where noteId is not null
     GROUP BY 
        userId 
       , tagId
@@ -62,6 +62,45 @@ create view currentInformedVote as
 
 drop view if exists currentInformedTally;
 create view currentInformedTally as
+  select 
+      tagId
+    , postId
+    , noteId
+    , sum(
+      case
+        when direction = 1 then 1
+        else 0
+      end
+    ) as count
+    , count(*) as total
+    , min(createdAt) as firstVote 
+  from currentInformedVote
+  -- The latest vote might be zero, so in that case we don't return a record for this user and post
+  where direction != 0
+  group by tagId, postId, noteId
+;
+
+
+drop view if exists detailedTally;
+create view detailedTally as
+with a as (
+  select
+    tagId 
+    , postId
+    , noteId
+    , count as countGivenShownThisNote
+    , total as totalGivenShownThisNote
+
+    , sum(count) over (partition by tagId, postId order by firstVote) - count as countGivenNotShownThisNote
+    , sum(total) over (partition by tagId, postId order by firstVote) - total as totalGivenNotShownThisNote
+
+  from currentInformedTally
+  group by tagId, postId, noteId 
+)
+select * from a where noteId is not null;
+
+drop view if exists currentInformedTallyOld;
+create view currentInformedTallyOld as
 with informedTally as (
   select 
       tagId

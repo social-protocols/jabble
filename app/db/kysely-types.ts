@@ -8,10 +8,8 @@ export type CurrentInformedTally = {
 	tagId: number
 	postId: number
 	noteId: number
-	countGivenShownThisNote: number
-	totalGivenShownThisNote: number
-	countGivenNotShownThisNote: number
-	totalGivenNotShownThisNote: number
+	count: number
+	total: number
 }
 export type CurrentTally = {
 	tagId: number
@@ -26,6 +24,15 @@ export type CurrentVote = {
 	direction: number
 	latest: number
 	createdAt: string
+}
+export type DetailedTally = {
+	tagId: number
+	postId: number
+	noteId: number
+	countGivenShownThisNote: number
+	totalGivenShownThisNote: number
+	countGivenNotShownThisNote: number
+	totalGivenNotShownThisNote: number
 }
 export type ExplorationStats = {
 	rowid: Generated<number>
@@ -161,6 +168,7 @@ export type DB = {
 	CurrentInformedTally: CurrentInformedTally
 	CurrentTally: CurrentTally
 	CurrentVote: CurrentVote
+	DetailedTally: DetailedTally
 	ExplorationStats: ExplorationStats
 	LocationStats: LocationStats
 	Password: Password

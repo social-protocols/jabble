@@ -181,8 +181,8 @@ model LocationStats {
 }
 
 model TagStats {
-  tagId    Int @unique
-  views    Int
+  tagId        Int @unique
+  views        Int
   // votes    Int
   votesPerView Int
 
@@ -195,7 +195,7 @@ model ExplorationStats {
   votes Int
 }
 
-view CurrentInformedTally {
+view DetailedTally {
   tagId                      Int
   postId                     Int
   noteId                     Int
@@ -205,6 +205,17 @@ view CurrentInformedTally {
   totalGivenNotShownThisNote Int
   // count_for_note Int
   // total_for_note Int
+
+  @@unique([tagId, postId, noteId])
+}
+
+
+view CurrentInformedTally {
+  tagId  Int
+  postId Int
+  noteId Int
+  count  Int
+  total  Int
 
   @@unique([tagId, postId, noteId])
 }
@@ -219,13 +230,14 @@ view CurrentTally {
 }
 
 view CurrentVote {
-  userId String
-  tagId  Int
-  postId Int
+  userId    String
+  tagId     Int
+  postId    Int
   direction Int
-  latest  Int
-  createdAt  DateTime
+  latest    Int
+  createdAt DateTime
 
   @@unique([userId, tagId, postId])
 }
+
 
