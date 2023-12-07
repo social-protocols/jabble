@@ -20,9 +20,14 @@ import { Feed } from "#app/components/ui/feed.tsx"
 import { getPositionsForTag } from '#app/positions.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
+import { PostForm } from '#app/components/ui/post-form.tsx';
+import type { ActionFunctionArgs } from "@remix-run/node";
+import { createPost } from '#app/post.ts'
+
 // const GLOBAL_TAG = "global";
 
 const tagSchema = z.coerce.string()
+const contentSchema = z.coerce.string()
 const maxPosts = 90
 
 export async function loader({ params, request }: DataFunctionArgs) {
@@ -45,10 +50,25 @@ export default function TagPage() {
 
 	return (
 		<div>
+      <PostForm />
 			<Feed posts={posts} tag={tag} />
 		</div>
 	)
 }
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+	const userId: string = await requireUserId(request)
+
+const formData = await request.formData()
+	const d = Object.fromEntries(formData);
+  
+  const tag: string = tagSchema.parse(d.tag)
+  const content: string = contentSchema.parse(d.newPostContent)
+
+  const newPostId = await createPost(tag, null, content, userId)
+  
+  return true
+};
 
 // <div>
 // 	<div>Post Content: {post.content}</div>

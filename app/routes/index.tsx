@@ -17,7 +17,7 @@ export default function Index() {
 
   return (
     <div>
-      <div>This is the home page</div>
+      <h1>Welcome back!</h1>
     </div>
   )
 }
