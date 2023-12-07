@@ -49,7 +49,7 @@ export default function TagPage() {
 	const { tag, posts, userId, positions } = useLoaderData<typeof loader>()
 
 	return (
-		<div>
+		<div className='flex flex-col p-5'>
       <PostForm />
 			<Feed posts={posts} tag={tag} />
 		</div>

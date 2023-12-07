@@ -3,17 +3,19 @@ import { Button } from "#app/components/ui/button.tsx"
 
 export function PostForm() {
   return (
-    <form id="create-post" method="post">
-      <div>
-        <input type="hidden" name="tag" value="global" />
+    <div>
+      <form id="create-post" method="post">
         <div>
-          <Textarea name="newPostContent" placeholder="What's on your mind?" />
+          <input type="hidden" name="tag" value="global" />
+          <div>
+            <Textarea name="newPostContent" placeholder="What's on your mind?" />
+          </div>
+          <div>
+            <Button>Post</Button>
+          </div>
         </div>
-        <div>
-          <Button>Post</Button>
-        </div>
-      </div>
-    </form>
+      </form>
+    </div>
   )
 }
 

@@ -17,7 +17,7 @@ export default function Index() {
 
   return (
     <div>
-      <h1>Welcome back!</h1>
+      <h1 className='text-6xl'>Welcome back!</h1>
     </div>
   )
 }
