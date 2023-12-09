@@ -1,7 +1,7 @@
 import { Button } from '#app/components/ui/button.tsx';
 import { type Post } from '#app/db/types.ts';
 import { Direction } from "#app/vote.ts";
-import { Link, useFetcher } from '@remix-run/react';
+import { Link, useFetcher, useActionData } from '@remix-run/react';
 import { type Location, LocationType } from '#app/attention.ts';
 
 
@@ -78,11 +78,12 @@ export function VoteButtons({ tag, postId, noteId, randomLocation}: { tag: strin
 
   const fetcher = useFetcher();
 
+  const data = useActionData();
+
   let state = Direction.Neutral
 
   return (
-    <fetcher.Form method="post">
-      <input type="hidden" name="_action" value="vote" />
+    <fetcher.Form method="post" action="/vote">
       <input type="hidden" name="postId" value={postId} />
       <input type="hidden" name="tag" value={tag} />
       <input type="hidden" name="state" value={Direction[state]} />
@@ -110,7 +111,7 @@ export function ReplyForm({ parentId, tag }: { parentId: number, tag: string }) 
   console.log("Parent id in replyFOrm is ", parentId)
   return (
     <form id="reply-form" method="post">
-      <input type="hidden" name="_action" value="reply" />
+      <input type="hidden" value="reply" />
       <div className="w-full flex">
         <input type="hidden" name="parentId" value={parentId} />
         <input type="hidden" name="tag" value={tag} />

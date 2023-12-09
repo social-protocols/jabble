@@ -1,9 +1,6 @@
 // import { Spacer } from '#app/components/spacer.tsx'
 // import { Icon } from '#app/components/ui/icon.tsx'
-import type {
-	ActionFunctionArgs,
-} from "@remix-run/node";
-import { json, type DataFunctionArgs } from '@remix-run/node';
+import { ActionFunctionArgs, json, type DataFunctionArgs } from '@remix-run/node';
 
 import assert from 'assert';
 // import { Form, Link, useLoaderData, type MetaFunction } from '@remix-run/react'
@@ -22,70 +19,24 @@ import { type Post } from '#app/db/types.ts';
 import { getUserId, requireUserId } from '#app/utils/auth.server.ts';
 // import { Link } from '@remix-run/react';
 
-import { LocationType, logPostPageView, type Location } from "#app/attention.ts";
+import { LocationType, logPostPageView } from "#app/attention.ts";
 import { getRankedNotes } from "#app/ranking.ts";
 
 import { createPost } from '#app/post.ts';
-import { Direction, vote } from "#app/vote.ts";
 
 import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno
 
 // const GLOBAL_TAG = "global";
 
-
-
 const postIdSchema = z.coerce.number()
-const noteIdSchema = z.coerce.number().optional()
 const tagSchema = z.coerce.string()
 const contentSchema = z.coerce.string()
 
-// little hack described here: https://stackoverflow.com/questions/76797356/zod-nativeenum-type-checks-enums-value
-const directionKeys = Object.keys(Direction) as [keyof typeof Direction]
-const directionSchema = z.enum(directionKeys)
 
 
-export const handle = {
-  scripts: () => [{ src: '/js/vote.js' }]
-}
-
-
-function parseDirection(directionString: FormDataEntryValue | undefined): Direction {
-	const d: string = directionSchema.parse(directionString)
-	console.log("Parsing string", d)
-
-	// if d is a (possibly negative) integer
-	if (/^-?\d+$/.test(d)) {
-		// parse it as an int
-		const i = parseInt(d)
-		return i
-	}
-
-	// @ts-ignore: typescript doesn't know directionString is guaranteed to overlap with Direction
-	return Direction[d]
-}
-
-const locationTypeKeys = Object.keys(LocationType) as [keyof typeof LocationType]
-const randomLocationTypeSchema = z.enum(locationTypeKeys).optional()
-
-const oneBasedRankSchema = z.coerce.number().optional()
-
-
-function parseLocationType(locationTypeString: string): LocationType {
-
-	console.log("In parseLocationType", locationTypeString)
-	const d: string | undefined = randomLocationTypeSchema.parse(locationTypeString)
-	assert(d !== undefined, `unrecognized location type {locationTypeString}`)
-
-	// if d is a (possibly negative) integer
-	if (/^-?\d+$/.test(d)) {
-		// parse it as an int
-		const i = parseInt(d)
-		return i
-	}
-
-	// @ts-ignore: typescript doesn't know directionString is guaranteed to overlap with Direction
-	return LocationType[d]
-}
+// export const handle = {
+//   scripts: () => [{ src: '/js/vote.js' }]
+// }
 
 
 export async function loader({ params, request }: DataFunctionArgs) {
@@ -106,89 +57,6 @@ export async function loader({ params, request }: DataFunctionArgs) {
 }
 
 
-// https://github.com/remix-run/remix/discussions/3138
-// Single action function that routes the action dependin on the hidden _action field in the form
-export const action = async (args: ActionFunctionArgs) => {
-
-
-	let request = args.request
-	const formData = await request.formData();
-	let action = formData.get("_action")
-
-	console.log("In action", action)
-
-	invariant(action, 'Missing _action param')
-
-	switch (action) {
-		case "reply":
-			return await replyAction(args, formData)
-		case "vote":
-			return await voteAction(args, formData)
-	}
-
-}
-
-const voteSchema = zfd.formData({
-	postId: postIdSchema,
-	noteId: noteIdSchema,
-	tag: tagSchema,
-	direction: directionSchema,
-	state: directionSchema,
-	randomLocationType: randomLocationTypeSchema,
-	oneBasedRank: oneBasedRankSchema,
-});
-
-
-async function voteAction({
-	request,
-}: ActionFunctionArgs, formData: FormData) {
-
-	const parsedData = voteSchema.parse(formData);
-	const direction: Direction = parseDirection(parsedData.direction)
-	const state: Direction = parseDirection(parsedData.state)
-
-	// First, interpret the user intent based on the button pressed **and** the current state.
-	const newState = direction == state ? Direction.Neutral : direction
-
-	const userId: string = await requireUserId(request)
-
-	let location: Location | null = null
-
-	console.log("Parsed data", parsedData)
-
-
-	if (parsedData.randomLocationType !== undefined) {
-
-		let oneBasedRank: number | null = parsedData.oneBasedRank === undefined ? null : parsedData.oneBasedRank 
-		assert(oneBasedRank !== null, "oneBasedRank !== null")
-
-		let locationTypeString = parsedData.randomLocationType
-		console.log("Random locaiton type strinng", locationTypeString)
-		location = {
-			locationType: parseLocationType(locationTypeString),
-			oneBasedRank: oneBasedRank,
-		}
-		console.log("Got location in vote action", parsedData.randomLocationType, parsedData.oneBasedRank, location)
-	}
-
-	const noteId = parsedData.noteId === undefined ? null : parsedData.noteId
-
-	await vote(
-		parsedData.tag,
-		userId,
-		parsedData.postId,
-		noteId,
-		newState,
-		location,
-	)
-
-	return "vote action result"
-	// return updateContact(params.contactId, {
-	//   favorite: formData.get("favorite") === "true",
-	// });
-};
-
-
 const replySchema = zfd.formData({
 	postId: postIdSchema,
 	tag: tagSchema,
@@ -196,10 +64,10 @@ const replySchema = zfd.formData({
 });
 
 
-async function replyAction({
-	// params,
-	request,
-}: ActionFunctionArgs, formData: FormData) {
+export const action = async (args: ActionFunctionArgs) => {
+
+	let request = args.request
+	const formData = await request.formData();
 
 	const userId: string = await requireUserId(request)
 
@@ -209,8 +77,10 @@ async function replyAction({
 	const postId = parsedData.postId
 	const tag = parsedData.tag
 
+	invariant(content, "content !== undefined")
+	invariant(tag, "tag !== ''")
 
-	// console.log("Creating post", tag, postId, content, userId)
+	console.log("Creating post", tag, postId, content, userId)
 	let newPostId = await createPost(tag, postId, content, userId)
 
 	console.log("New post id", newPostId)

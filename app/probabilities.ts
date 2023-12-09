@@ -34,7 +34,6 @@ type InformedTally = {
 }
 
 function toInformedTally(result: DetailedTally, forNote: Tally): InformedTally {
-    console.log("To informed tally", result, forNote)
     return {
         postId: result.postId,
         noteId: result.noteId,

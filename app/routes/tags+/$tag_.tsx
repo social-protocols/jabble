@@ -20,9 +20,9 @@ import { Feed } from "#app/components/ui/feed.tsx"
 import { getPositionsForTag } from '#app/positions.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
-import { PostForm } from '#app/components/ui/post-form.tsx';
-import type { ActionFunctionArgs } from "@remix-run/node";
+import { PostForm } from '#app/components/ui/post-form.tsx'
 import { createPost } from '#app/post.ts'
+import type { ActionFunctionArgs } from "@remix-run/node"
 
 // const GLOBAL_TAG = "global";
 
@@ -50,7 +50,7 @@ export default function TagPage() {
 
 	return (
 		<div className='flex flex-col p-5'>
-      <PostForm />
+			<PostForm />
 			<Feed posts={posts} tag={tag} />
 		</div>
 	)
@@ -59,15 +59,17 @@ export default function TagPage() {
 export const action = async ({ request }: ActionFunctionArgs) => {
 	const userId: string = await requireUserId(request)
 
-const formData = await request.formData()
+	const formData = await request.formData()
 	const d = Object.fromEntries(formData);
   
-  const tag: string = tagSchema.parse(d.tag)
-  const content: string = contentSchema.parse(d.newPostContent)
+	const tag: string = tagSchema.parse(d.tag)
+	const content: string = contentSchema.parse(d.newPostContent)
+	invariant(content, "content !== undefined")
+	invariant(tag, "tag !== ''")
 
-  const newPostId = await createPost(tag, null, content, userId)
+	const newPostId = await createPost(tag, null, content, userId)
   
-  return true
+	return true
 };
 
 // <div>
