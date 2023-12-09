@@ -259,7 +259,7 @@ function App() {
 					</nav>
 				</header>
 
-				<div className="flex-1 main-content">
+				<div className="flex-1 mx-auto">
 					<Outlet />
 				</div>
 

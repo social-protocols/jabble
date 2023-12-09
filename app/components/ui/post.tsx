@@ -3,6 +3,7 @@ import { Button } from '#app/components/ui/button.tsx';
 import { type Post } from '#app/db/types.ts';
 import { Direction } from "#app/vote.ts";
 import { Link, useFetcher } from '@remix-run/react';
+import { Card } from './card.tsx';
 
 
 export function PostDetails({ tag, post, note, teaser, randomLocation, position, notePosition }: {
@@ -15,47 +16,41 @@ export function PostDetails({ tag, post, note, teaser, randomLocation, position,
   notePosition: Direction
 }) {
 
-
   // The vote buttons use the fetcher and shouldRevalidate to do a post without reloading the page.
   // So we need to get the current state of the user's vote on this post from the fetcher
   const fetcher = useFetcher<{ state: Direction, postId: number }>();
   let voteState = (fetcher.data && fetcher.data.postId === post.id) ? fetcher.data.state : position
 
   let voteClass = 
-    voteState === Direction.Up ? ' voted upvoted'
-      : voteState === Direction.Down ? ' voted downvoted' 
-        : '';
+    voteState === Direction.Up
+      ? ' voted upvoted'
+      : voteState === Direction.Down
+        ? ' voted downvoted' 
+        : ''
 
   return (
-    <div className={'flex justify-center'}>
-      <div className={"bg-primary-foreground rounded-lg p-5 m-5 w-full max-w-3xl post" + voteClass}>
-        <p className="mb-5">
-          {teaser 
+    <Card className={"flex flex-col justify-center m-5 post" + voteClass}>
+      <p>
+        {
+          teaser
             ? <Link to={`/tags/${tag}/posts/${post.id}`}>{post.content}</Link>
             : <span>{post.content}</span>
-          }
-        </p>
-        {
-          note === null
-            ? <span />
-            : <NoteAttachment note={note} tag={tag} position={notePosition} />
         }
-        <fetcher.Form method="post" action="/vote">
-          <div>
-            <VoteButtons postId={post.id} tag={tag} noteId={note !== null ? note.id : null} randomLocation={randomLocation} state={voteState} />
-          </div>
-        </fetcher.Form>
-        {
-          teaser 
-            ? <span />
-            : 
-            <div>
-              {<ReplyForm parentId={post.id} tag={tag} />}
-            </div>
-        }
-      </div>
-    </div>
-
+      </p>
+      {
+        note === null
+          ? <span />
+          : <NoteAttachment note={note} tag={tag} position={notePosition} />
+      }
+      <fetcher.Form method="post" action="/vote">
+        <VoteButtons postId={post.id} tag={tag} noteId={note !== null ? note.id : null} randomLocation={randomLocation} state={voteState} />
+      </fetcher.Form>
+      {
+        teaser 
+          ? <span />
+          : <ReplyForm parentId={post.id} tag={tag} />
+      }
+    </Card>
   )
 }
 
@@ -65,37 +60,42 @@ export function NoteAttachment({ tag, note, position }: {
   tag: string
   position: Direction
 }) {
-
   let voteClass = 
     position === Direction.Up ? ' voted upvoted'
       : position === Direction.Down ? ' voted downvoted' 
         : '';
-
   return (
     <Link to={`/tags/${tag}/posts/${note.id}`}>
-      <div className={"bg-secondary p-5 mb-5 rounded-lg post" + voteClass}>
+      <Card className={"bg-secondary post" + voteClass}>
         {note ? note.content : ""}
-      </div>
+      </Card>
     </Link>
   )
 }
 
-export function VoteButtons({ tag, postId, noteId, randomLocation, state }: { tag: string, postId: number, noteId: number | null, randomLocation: Location | null, state: Direction }) {
+export function VoteButtons({ tag, postId, noteId, randomLocation, state }: {
+  tag: string,
+  postId: number,
+  noteId: number | null,
+  randomLocation: Location | null,
+  state: Direction 
+}) {
 
   return <>
     <input type="hidden" name="postId" value={postId} />
     <input type="hidden" name="tag" value={tag} />
     <input type="hidden" name="state" value={Direction[state]} />
 
-    {randomLocation === null ? <span /> : <span>
-      <input type="hidden" name="randomLocationType" value={LocationType[randomLocation.locationType]} />
-      <input type="hidden" name="oneBasedRank" value={randomLocation === null ? "" : randomLocation.oneBasedRank} />
-    </span>
+    {
+      randomLocation === null ? <span /> : <span>
+        <input type="hidden" name="randomLocationType" value={LocationType[randomLocation.locationType]} />
+        <input type="hidden" name="oneBasedRank" value={randomLocation === null ? "" : randomLocation.oneBasedRank} />
+      </span>
     }
 
     {noteId === null ? <span /> : <input type="hidden" name="noteId" value={noteId} />}
 
-    <div className="vote-buttons mt-2 w-7 voted upvoted flex">
+    <div className="vote-buttons voted upvoted flex flex-row space-x-2">
       <Button className="upvote" name="direction" value="Up">▲</Button>
       <Button className="downvote" name="direction" value="Down">▼</Button>
     </div>

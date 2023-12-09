@@ -78,7 +78,7 @@ export function UserFeed({ feed }: { feed: TagPreview[] }) {
 
                         return (
                           <li key={post.id}>
-                            <div className='flex-1 justify-self-center'>
+                            <div className='flex-1 justify-self-center min-w-400'>
                               <PostDetails post={post as Post} note={post.note} tag={tag} teaser={true} randomLocation={randomLocation} position={position} notePosition={notePosition} />
                             </div>
                           </li>

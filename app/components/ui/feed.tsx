@@ -11,7 +11,7 @@ export function TagFeed({ tag, posts, positions }: {
   positions: Map<number, Direction>
 }) {
   return (
-    <div className='flex flex-column place-items-start'>
+    <div className='flex flex-column place-items-center'>
       <ul>
         {
           posts.map((post, i) => {
@@ -28,11 +28,17 @@ export function TagFeed({ tag, posts, positions }: {
 
             return (
               <li key={post.id}>
-                <div className='flex-1 justify-self-center'>
-                  <PostDetails post={post as Post} note={post.note} tag={tag} teaser={true} randomLocation={randomLocation} position={position} notePosition={notePosition} />
+                <div className='flex-1'>
+                  <PostDetails 
+                    post={post as Post}
+                    note={post.note}
+                    tag={tag}
+                    teaser={true}
+                    randomLocation={randomLocation}
+                    position={position}
+                    notePosition={notePosition} />
                 </div>
               </li>
-
             )
           })
         }

@@ -29,16 +29,30 @@ export async function createPost(
         .returning('id')
         .execute();
 
+    const additionalExtractedTags = extractTags(content);
+    const allTags = [tag, ...additionalExtractedTags];
+    console.log(allTags);
+
     const createdPostId = results[0]!.id;
 
-    const tagId: number = await getOrInsertTagId(tag);
+    const tagIds: number[] =
+      await Promise.all(allTags.map((tag) => getOrInsertTagId(tag)))
+
     const direction: Direction = Direction.Up;
  
-    await insertVoteRecord(tagId, authorId, createdPostId, null, direction)
+    await Promise.all(
+      tagIds.map((tagId) =>
+        insertVoteRecord(tagId, authorId, createdPostId, null, direction)
+      )
+    )
 
-    await logAuthorView(authorId, tagId, createdPostId)
+    await Promise.all(
+      tagIds.map((tagId) => logAuthorView(authorId, tagId, createdPostId))
+    )
 
-    await clearRankingsCacheForTagPage(tag)
+    await Promise.all(
+      allTags.map((tag) => clearRankingsCacheForTagPage(tag))
+    )
 
     return createdPostId;
 }
@@ -54,6 +68,11 @@ export async function getPost(id: number): Promise<Post> {
     return result
 }
 
+function extractTags(content: string): string[] {
+    const regex = /#[a-zA-Z0-9]+/g;
+    const matches = content.match(regex) || [];
+    return matches.map((match) => match.slice(1));
+}
 
 
 

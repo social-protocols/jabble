@@ -3,17 +3,11 @@ import { Button } from "#app/components/ui/button.tsx"
 
 export function PostForm({tag}: {tag: string}) {
   return (
-    <div>
+    <div className="bg-primary-foreground rounded-lg p-5 m-2 w-full max-w-3xl">
       <form id="create-post" method="post">
-        <div>
-          <input type="hidden" name="tag" value={`${tag}`} />
-          <div>
-            <Textarea name="newPostContent" placeholder="What's on your mind?" />
-          </div>
-          <div>
-            <Button>Post</Button>
-          </div>
-        </div>
+        <input type="hidden" name="tag" value={`${tag}`} />
+        <Textarea name="newPostContent" placeholder="What's on your mind?" />
+        <Button className='mt-2'>Post</Button>
       </form>
     </div>
   )

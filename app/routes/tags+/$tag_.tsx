@@ -58,14 +58,16 @@ export default function TagPage() {
 	}
 
 	return (
-		<div className='p-10'>
+    <>
 			<div>
 				<Link to={`/`}>Home</Link> 
 				 &nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
-			</div>	
-			<PostForm tag={tag} />
-			<TagFeed posts={posts} tag={tag} positions={p} />
-		</div>
+			</div>
+      <div className='flex flex-col place-items-center'>
+        <PostForm tag={tag} />
+        <TagFeed posts={posts} tag={tag} positions={p} />
+      </div>
+    </>
 	)
 }
 

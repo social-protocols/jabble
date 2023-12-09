@@ -2,12 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-.main-content {
-  max-width: 800px; /* also change the screen break-point! */
-  margin-left: auto;
-  margin-right: auto;
-}
-
 @media screen and (min-width: 800px) {
   /* by setting the breakpoint to the same value as the body-max-width, the scrollbar-margin only appears when there is centered content visible. As the jumps only occour on centered content which does not fill the space. */
   html {
