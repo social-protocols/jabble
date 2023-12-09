@@ -22,11 +22,11 @@ type ScoreData = {
 	topNoteId: number | null
 }
 
-export type RankedPost = Post & ScoreData & { explorationPool: boolean, note: Post | null }
+export type RankedPost = Post & ScoreData & { random: boolean, note: Post | null }
 type PostWithStats = Post & { attention: number, voteCount: number, voteTotal: number }
 
 // const fatigueFactor = .9
-const explorationPoolSize = .1
+const randomPoolSize = .1
 const attentionCutoff = 2 // Note all posts start with 1 unit of attention (from poster)
 
 
@@ -123,7 +123,7 @@ async function getRankedPostsInternal(tagId: number, maxResults: number): Promis
 	scoredPosts = scoredPosts.filter(p => p.informationValue > 0)
 
 
-	// Then split into two pools: rankedPosts, and explorationPosts, based on
+	// Then split into two pools: rankedPosts, and randomPosts, based on
 	// whether cumulative attention is above or below the cutoff.
 
 	let rankedPosts = scoredPosts
@@ -131,8 +131,8 @@ async function getRankedPostsInternal(tagId: number, maxResults: number): Promis
 		.sort((a, b) => { return b.score - a.score })
 	let nRankedPosts = rankedPosts.length
 
-	let explorationPosts = scoredPosts.filter(p => p.attention < attentionCutoff)
-	let nExplorationPosts = explorationPosts.length
+	let randomPosts = scoredPosts.filter(p => p.attention < attentionCutoff)
+	let nRandomPosts = randomPosts.length
 
 
 	let nResults = nPosts
@@ -140,12 +140,12 @@ async function getRankedPostsInternal(tagId: number, maxResults: number): Promis
 		nResults = maxResults
 	}
 
-	console.log("Number of posts", nResults, nPosts, nExplorationPosts, nRankedPosts)
+	console.log("Number of posts", nResults, nPosts, nRandomPosts, nRankedPosts)
 
 	// Finally, create nResults results by iterating through the ranked posts
-	// while randomly inserting posts from the exploration pool (with a
-	// probability of explorationPoolSize) at each rank. When we run out of
-	// ranked posts, return random posts from the exploration pool until we
+	// while randomly inserting posts from the random pool (with a
+	// probability of randomPoolSize) at each rank. When we run out of
+	// ranked posts, return random posts from the random pool until we
 	// have nResults total posts.
 
 	let results: RankedPost[] = Array(nResults)
@@ -155,23 +155,23 @@ async function getRankedPostsInternal(tagId: number, maxResults: number): Promis
 		let ep
 		let p = null
 
-		if (i < nRankedPosts && Math.random() > explorationPoolSize || nExplorationPosts == 0) {
+		if (i < nRankedPosts && Math.random() > randomPoolSize || nRandomPosts == 0) {
 			p = rankedPosts[i - nInsertions]
 			// console.log("Taking post ranked", i, i - nInsertions)
 			ep = false
 		} else {
-			assert(nExplorationPosts > 0, "nExplorationPosts > 0") // this must be true if my logic is correct. But is my logic correct.
-			let randomPostNum = Math.floor(Math.random() * nExplorationPosts)
-			// console.log("Taking random post", i, nExplorationPosts, randomPostNum)
-			p = explorationPosts[randomPostNum]
-			explorationPosts.splice(randomPostNum, 1)
-			nExplorationPosts--
-			assert(nExplorationPosts == explorationPosts.length, "nExplorationPosts == explorationPosts.length")
+			assert(nRandomPosts > 0, "nRandomPosts > 0") // this must be true if my logic is correct. But is my logic correct.
+			let randomPostNum = Math.floor(Math.random() * nRandomPosts)
+			// console.log("Taking random post", i, nRandomPosts, randomPostNum)
+			p = randomPosts[randomPostNum]
+			randomPosts.splice(randomPostNum, 1)
+			nRandomPosts--
+			assert(nRandomPosts == randomPosts.length, "nRandomPosts == randomPosts.length")
 			nInsertions += 1
 			ep = true
 		}
 		assert(p !== undefined)
-		let s = { oneBasedRank: i + 1, explorationPool: ep };
+		let s = { oneBasedRank: i + 1, random: ep };
 
 		let note = p.topNoteId !== null
 			? await db
@@ -261,24 +261,6 @@ export async function getRankedNotes(tag: string, postId: number): Promise<Post[
 		.selectAll("Post")
 		.execute()
 }
-
-// await logPostPageView(tag, post.id, userId, notes)
-
-
-// Exploration Pool Logic:
-//     R% of impressions at each rank are exploration pool
-//     so for each rank, exploration impression with probability of R
-//     randomly choose post from exploration pool
-//         exploration pool is posts with less than certain amount of attention
-//             or better, with a certain confidence interval
-//     increment impression count at that rank
-//     increment cumulative attention of post
-//     create link that has eRank of eImpression
-//     log eVote when 
-//     weight factors is just average of eVote / eImpression group by rank
-
-
-// }
 
 
 

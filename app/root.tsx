@@ -59,6 +59,7 @@ import { useOptionalUser, useUser } from './utils/user.ts'
 import { db } from "#app/db.ts";
 import { Feed } from './components/ui/feed.tsx'
 import { type Post } from '#app/db/types.ts'
+import { ExternalScripts } from "remix-utils/external-scripts";
 
 export const links: LinksFunction = () => {
 	return [
@@ -201,6 +202,7 @@ function Document({
 				<meta charSet="utf-8" />
 				<meta name="viewport" content="width=device-width,initial-scale=1" />
 				<Links />
+				<ExternalScripts/> 
 			</head>
 			<body className="bg-background text-foreground">
 				{children}

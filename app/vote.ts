@@ -3,7 +3,7 @@ import { db } from "#app/db.ts";
 import { sql } from "kysely";
 
 import { logTagVote, type Location } from './attention.ts';
-import { logExplorationVote } from './exploration.ts';
+import { logVoteOnRandomlyRankedPost } from './exploration.ts';
 import { getOrInsertTagId } from './tag.ts';
 import assert from 'assert'
 export enum Direction {
@@ -23,7 +23,7 @@ export async function vote(
     postId: number,
     noteId: number | null,
     direction: Direction,
-    explorationLocation: Location | null
+    randomLocation: Location | null
 ) {
 
     const tagId = await getOrInsertTagId(tag)
@@ -34,8 +34,8 @@ export async function vote(
     if (added) {
         // console.log("Logging exploration vote")
         logTagVote(tag)
-        if (explorationLocation != null) {
-            logExplorationVote(explorationLocation)
+        if (randomLocation != null) {
+            logVoteOnRandomlyRankedPost(randomLocation)
         }
     }
 

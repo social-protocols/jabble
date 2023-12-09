@@ -5,8 +5,6 @@ import { type Post, type PostStats } from "#app/db/types.ts";
 
 import { LocationType, logTagPageView } from "#app/attention.ts";
 
-// import { logExplorationVote } from '#app/exploration.ts';
-
 import assert from 'assert';
 
 // import { sql } from 'kysely';
@@ -28,8 +26,6 @@ import jStat from 'jstat';
 // import { SingleBar, cliProgress } from 'cli-progress'
 import * as cliProgress from 'cli-progress';
 
-
-// import { logExplorationVote } from './attention.ts'
 
 
 /*
@@ -54,8 +50,8 @@ each post given the rank it is shown at and it's voteRate. Specifically:
 
 We then sample from a Poisson distribution with
 that true vote rate and simulate that number of votes. We then call
-logExplorationVote() to log the votes. Over time, the logic
-in logExplorationVote should update the locationStats table so that
+logVoteOnRandomlyRankedPost() to log the votes. Over time, the logic
+in logVoteOnRandomlyRankedPost should update the locationStats table so that
 attentionShare approximates the true attentionShare at that location. 
 
 We then compare the estimated attentionShare in the locationStats table with
@@ -72,7 +68,7 @@ Bayesian averaging). We then calculate the total error between the estimated
 vote factor and the known vote factors for each post.
 
 
-logExplorationVote uses an exponentially weighted moving average in
+logVoteOnRandomlyRankedPost uses an exponentially weighted moving average in
 LocationStats. There is a tradeoff in the selection of this alpha. Too big ,
 and the estimates for locations at large ranks(large value of oneBasedRank)
 will be way off, because we get few votes at those locations, and so the

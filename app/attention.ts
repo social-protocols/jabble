@@ -17,12 +17,12 @@ const GLOBAL_PRIOR_VOTES_PER_VIEW = new GammaDistribution(.1, 4)
 export enum LocationType {
 	NewPost = 0,
 	TagPage = 1,
-	UserFeed = 2,
+	PostReplies = 2
 }
 
 export type Location = {
 	locationType: LocationType,
-	oneBasedRank: number,
+	oneBasedRank: number
 }
 
 
@@ -53,7 +53,7 @@ export function logTagVote(tag: string) {
 }
 
 
-export async function logPostPageView(_tag: string, _postId: number, _userId: string|null) {
+export async function logPostPageView(_tag: string, _postId: number, _userId: string | null) {
 	// todo
 }
 

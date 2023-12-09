@@ -1,16 +1,17 @@
 import { Button } from '#app/components/ui/button.tsx';
 import { type Post } from '#app/db/types.ts';
-import { Link } from '@remix-run/react';
+import { Direction } from "#app/vote.ts";
+import { Link, useFetcher } from '@remix-run/react';
+import { type Location, LocationType } from '#app/attention.ts';
 
 
-type PostProps = {
+export function PostDetails({ tag, post, note, teaser, randomLocation }: {
   tag: string,
   post: Post,
   note: Post | null,
   teaser: boolean,
-}
-
-export function PostDetails({ tag, post, note, teaser }: PostProps) {
+  randomLocation: Location | null,
+}) {
   return (
     <div className='flex justify-center'>
       <div className="bg-primary-foreground rounded-lg p-5 m-5 w-full max-w-3xl">
@@ -25,12 +26,14 @@ export function PostDetails({ tag, post, note, teaser }: PostProps) {
             ? <span />
             : <NoteAttachment note={note} tag={tag} />
         }
+        <div>
+              <VoteButtons postId={post.id} tag={tag} noteId={note !== null ? note.id : null} randomLocation={randomLocation}/>
+        </div>
         {
           teaser 
             ? <span />
             : 
             <div>
-              <VoteButtons />
               <ReplyForm parentId={post.id} tag={tag} />
             </div>
         }
@@ -71,12 +74,33 @@ export function NoteAttachment({ tag, note }: NoteAttachmentProps) {
   )
 }
 
-export function VoteButtons() {
+export function VoteButtons({ tag, postId, noteId, randomLocation}: { tag: string, postId: number, noteId: number | null, randomLocation: Location | null }) {
+
+  const fetcher = useFetcher();
+
+  let state = Direction.Neutral
+
   return (
-    <div>
-      <Button variant='destructive' size='lg'>Upvote</Button>
-      <Button variant='destructive' size='lg'>Downvote</Button>
-    </div>
+    <fetcher.Form method="post">
+      <input type="hidden" name="_action" value="vote" />
+      <input type="hidden" name="postId" value={postId} />
+      <input type="hidden" name="tag" value={tag} />
+      <input type="hidden" name="state" value={Direction[state]} />
+
+      {randomLocation === null ? <span/> : <span>
+          <input type="hidden" name="randomLocationType" value={LocationType[randomLocation.locationType]} />
+          <input type="hidden" name="oneBasedRank" value={randomLocation === null ? "" : randomLocation.oneBasedRank} />
+        </span>
+      }
+
+      {noteId === null ? <span /> : <input type="hidden" name="noteId" value={noteId} />}
+
+      <div>
+        <Button className="upvote" name="direction" value="Up">▲</Button>
+        <Button className="downvote" name="direction" value="Down">▼</Button>
+      </div>
+
+    </fetcher.Form>
   )
 }
 
@@ -86,6 +110,7 @@ export function ReplyForm({ parentId, tag }: { parentId: number, tag: string }) 
   console.log("Parent id in replyFOrm is ", parentId)
   return (
     <form id="reply-form" method="post">
+      <input type="hidden" name="_action" value="reply" />
       <div className="w-full flex">
         <input type="hidden" name="parentId" value={parentId} />
         <input type="hidden" name="tag" value={tag} />

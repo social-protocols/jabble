@@ -11,7 +11,7 @@ import { LocationType, type Location } from "#app/attention.ts";
 
 /*
 
-logExplorationVote is a key part of to our attention model.
+logVoteOnRandomlyRankedPost is a key part of to our attention model.
 
 In order to estimate the information rate for a post, we track the cumulative
 attention for each post using a method similar to the one described in the
@@ -38,7 +38,7 @@ of votes at each location. Dividing by the total impressions gives us the
 expected votes per impression at each location -- or the deltaAttention
 (per impression) at each location
 
-The logExplorationVote function below updates this aggregate given a
+The logVoteOnRandomlyRankedPost function below updates this aggregate given a
 location.
 
 
@@ -51,7 +51,7 @@ location.
 const movingAverageAlpha = .9999
 const windowSize = 1 / (1 - movingAverageAlpha)
 
-export async function logExplorationVote(location: Location) {
+export async function logVoteOnRandomlyRankedPost(location: Location) {
 
     const result = await db
        .updateTable('ExplorationStats')

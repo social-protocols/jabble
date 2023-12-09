@@ -5,6 +5,7 @@ import type {
 } from "@remix-run/node";
 import { json, type DataFunctionArgs } from '@remix-run/node';
 
+import assert from 'assert';
 // import { Form, Link, useLoaderData, type MetaFunction } from '@remix-run/react'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx';
 import { PostDetails } from '#app/components/ui/post.tsx';
@@ -21,20 +22,70 @@ import { type Post } from '#app/db/types.ts';
 import { getUserId, requireUserId } from '#app/utils/auth.server.ts';
 // import { Link } from '@remix-run/react';
 
-import { logPostPageView } from "#app/attention.ts";
+import { LocationType, logPostPageView, type Location } from "#app/attention.ts";
 import { getRankedNotes } from "#app/ranking.ts";
 
 import { createPost } from '#app/post.ts';
+import { Direction, vote } from "#app/vote.ts";
+
+import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno
 
 // const GLOBAL_TAG = "global";
 
+
+
 const postIdSchema = z.coerce.number()
+const noteIdSchema = z.coerce.number().optional()
 const tagSchema = z.coerce.string()
 const contentSchema = z.coerce.string()
 
-// const replySchema = z.object({
-// 	content: zfd.text(z.string()),
-// })
+// little hack described here: https://stackoverflow.com/questions/76797356/zod-nativeenum-type-checks-enums-value
+const directionKeys = Object.keys(Direction) as [keyof typeof Direction]
+const directionSchema = z.enum(directionKeys)
+
+
+export const handle = {
+  scripts: () => [{ src: '/js/vote.js' }]
+}
+
+
+function parseDirection(directionString: FormDataEntryValue | undefined): Direction {
+	const d: string = directionSchema.parse(directionString)
+	console.log("Parsing string", d)
+
+	// if d is a (possibly negative) integer
+	if (/^-?\d+$/.test(d)) {
+		// parse it as an int
+		const i = parseInt(d)
+		return i
+	}
+
+	// @ts-ignore: typescript doesn't know directionString is guaranteed to overlap with Direction
+	return Direction[d]
+}
+
+const locationTypeKeys = Object.keys(LocationType) as [keyof typeof LocationType]
+const randomLocationTypeSchema = z.enum(locationTypeKeys).optional()
+
+const oneBasedRankSchema = z.coerce.number().optional()
+
+
+function parseLocationType(locationTypeString: string): LocationType {
+
+	console.log("In parseLocationType", locationTypeString)
+	const d: string | undefined = randomLocationTypeSchema.parse(locationTypeString)
+	assert(d !== undefined, `unrecognized location type {locationTypeString}`)
+
+	// if d is a (possibly negative) integer
+	if (/^-?\d+$/.test(d)) {
+		// parse it as an int
+		const i = parseInt(d)
+		return i
+	}
+
+	// @ts-ignore: typescript doesn't know directionString is guaranteed to overlap with Direction
+	return LocationType[d]
+}
 
 
 export async function loader({ params, request }: DataFunctionArgs) {
@@ -55,48 +106,116 @@ export async function loader({ params, request }: DataFunctionArgs) {
 }
 
 
+// https://github.com/remix-run/remix/discussions/3138
+// Single action function that routes the action dependin on the hidden _action field in the form
+export const action = async (args: ActionFunctionArgs) => {
 
 
+	let request = args.request
+	const formData = await request.formData();
+	let action = formData.get("_action")
 
-export const action = async ({
-	params,
+	console.log("In action", action)
+
+	invariant(action, 'Missing _action param')
+
+	switch (action) {
+		case "reply":
+			return await replyAction(args, formData)
+		case "vote":
+			return await voteAction(args, formData)
+	}
+
+}
+
+const voteSchema = zfd.formData({
+	postId: postIdSchema,
+	noteId: noteIdSchema,
+	tag: tagSchema,
+	direction: directionSchema,
+	state: directionSchema,
+	randomLocationType: randomLocationTypeSchema,
+	oneBasedRank: oneBasedRankSchema,
+});
+
+
+async function voteAction({
 	request,
-}: ActionFunctionArgs) => {
+}: ActionFunctionArgs, formData: FormData) {
 
-	const postId: number = postIdSchema.parse(params.postId)
-	const tag: string = tagSchema.parse(params.tag)
+	const parsedData = voteSchema.parse(formData);
+	const direction: Direction = parseDirection(parsedData.direction)
+	const state: Direction = parseDirection(parsedData.state)
+
+	// First, interpret the user intent based on the button pressed **and** the current state.
+	const newState = direction == state ? Direction.Neutral : direction
 
 	const userId: string = await requireUserId(request)
 
-	console.log('userId', userId)
-	console.log('parentId', postId)
-	console.log('tag', tag)
+	let location: Location | null = null
+
+	console.log("Parsed data", parsedData)
 
 
-	const formData = await request.formData()
-	const d = Object.fromEntries(formData);
+	if (parsedData.randomLocationType !== undefined) {
 
-	const content: string = contentSchema.parse(d.content)
+		let oneBasedRank: number | null = parsedData.oneBasedRank === undefined ? null : parsedData.oneBasedRank 
+		assert(oneBasedRank !== null, "oneBasedRank !== null")
 
-	// const actionData = useActionData<typeof action>();
+		let locationTypeString = parsedData.randomLocationType
+		console.log("Random locaiton type strinng", locationTypeString)
+		location = {
+			locationType: parseLocationType(locationTypeString),
+			oneBasedRank: oneBasedRank,
+		}
+		console.log("Got location in vote action", parsedData.randomLocationType, parsedData.oneBasedRank, location)
+	}
 
-	// console.log("Body is", body)
-	// console.log("Action data is ", actionData)
-	console.log("content", content)
+	const noteId = parsedData.noteId === undefined ? null : parsedData.noteId
 
-	console.log("Creating post", tag, postId, content, userId)
+	await vote(
+		parsedData.tag,
+		userId,
+		parsedData.postId,
+		noteId,
+		newState,
+		location,
+	)
+
+	return "vote action result"
+	// return updateContact(params.contactId, {
+	//   favorite: formData.get("favorite") === "true",
+	// });
+};
+
+
+const replySchema = zfd.formData({
+	postId: postIdSchema,
+	tag: tagSchema,
+	content: contentSchema,
+});
+
+
+async function replyAction({
+	// params,
+	request,
+}: ActionFunctionArgs, formData: FormData) {
+
+	const userId: string = await requireUserId(request)
+
+	// const d = Object.fromEntries(formData);
+	const parsedData = replySchema.parse(formData);
+	const content = parsedData.content
+	const postId = parsedData.postId
+	const tag = parsedData.tag
+
+
+	// console.log("Creating post", tag, postId, content, userId)
 	let newPostId = await createPost(tag, postId, content, userId)
 
 	console.log("New post id", newPostId)
 
-	// const name = body.get("visitorsName");
 	return json({ newPostId: newPostId });
-
-	// invariant(params.contactId, "Missing contactId param");
-	// const formData = await request.formData();
-	// const updates = Object.fromEntries(formData);
-	// await updateContact(params.contactId, updates);
-	// return redirect(`/contacts/${params.contactId}`);
 };
 
 
@@ -107,7 +226,7 @@ export default function Post() {
 
 	return (
 		<div>
-			<PostDetails tag={tag} post={post} note={topNote} teaser={false} />
+			<PostDetails tag={tag} post={post} note={topNote} teaser={false} randomLocation={null} />
 			<PostReplies tag={tag} replies={replies} />
 		</div>
 	)
@@ -115,8 +234,19 @@ export default function Post() {
 
 
 export function PostReplies({ tag, replies }: { tag: string, replies: Post[] }) {
-	return replies.map((post: Post) => 
-		<PostDetails tag={tag} post={post} note={null} teaser={true} />
+	return (
+		<ol>
+			{
+				replies.map((post: Post) => {
+					// let randomLocation = {locationType: LocationType.PostReplies, oneBasedRank: i + 1}
+					return (
+						<li key={post.id}>
+							<PostDetails tag={tag} post={post} note={null} teaser={true} randomLocation={null} />
+						</li>
+					)
+				})
+			}
+		</ol>
 	)
 }
 
