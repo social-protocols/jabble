@@ -4,6 +4,7 @@ import { sql } from 'kysely';
 // import { cumulativeAttention } from './attention.ts';
 import assert from 'assert';
 import { logTagPageView, logTagPreview, writeTagPageStats } from './attention.ts';
+import { getUserPositions, type Position } from './positions.ts';
 import { GLOBAL_PRIOR_VOTE_RATE, findTopNoteId } from './probabilities.ts';
 import { getOrInsertTagId } from './tag.ts';
 
@@ -304,7 +305,7 @@ export async function getUserFeed(userId: string): Promise<TagPreview[]> {
 		}
 
 		logTagPreview(userId, tag)
-		let positions = await getUserPositions(userId, posts.map(p => p.id))
+		let positions = await getUserPositions(userId, tag, posts.map(p => p.id))
 
 		// console.log("Posts", tag, posts)
 		feed.push({ tag, posts, positions })

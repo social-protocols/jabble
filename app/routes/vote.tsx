@@ -114,5 +114,5 @@ export const action = async (args: ActionFunctionArgs) => {
 		location,
 	)
 
-	return { state: newState }
+	return { state: newState, postId: parsedData.postId }
 };
