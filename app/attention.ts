@@ -82,7 +82,7 @@ export function logTagPageView(userId: string, tag: string) {
 	}
 }
 
-export async function flushTagPageStats(tag: string, posts: number[]) {
+export async function writeTagPageStats(tag: string, posts: number[]) {
 
 	let tagId = await getOrInsertTagId(tag)
 

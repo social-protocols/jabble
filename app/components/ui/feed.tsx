@@ -17,6 +17,7 @@ export function TagFeed({ tag, posts, positions }: {
           posts.map((post, i) => {
 
             let position = positions.get(post.id) || Direction.Neutral
+            let notePosition: Direction = ( post.note && positions.get(post.note.id) ) || Direction.Neutral
 
             let randomLocation: Location | null = 
               post.random 
@@ -28,7 +29,7 @@ export function TagFeed({ tag, posts, positions }: {
             return (
               <li key={post.id}>
                 <div className='flex-1 justify-self-center'>
-                  <PostDetails post={post as Post} note={post.note} tag={tag} teaser={true} randomLocation={randomLocation} position={position} />
+                  <PostDetails post={post as Post} note={post.note} tag={tag} teaser={true} randomLocation={randomLocation} position={position} notePosition={notePosition} />
                 </div>
               </li>
 

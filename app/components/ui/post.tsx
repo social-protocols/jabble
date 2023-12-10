@@ -5,13 +5,14 @@ import { Direction } from "#app/vote.ts";
 import { Link, useFetcher } from '@remix-run/react';
 
 
-export function PostDetails({ tag, post, note, teaser, randomLocation, position }: {
+export function PostDetails({ tag, post, note, teaser, randomLocation, position, notePosition }: {
   tag: string,
   post: Post,
   note: Post | null,
   teaser: boolean,
   randomLocation: Location | null,
   position: Direction
+  notePosition: Direction
 }) {
 
 
@@ -26,8 +27,8 @@ export function PostDetails({ tag, post, note, teaser, randomLocation, position 
         : '';
 
   return (
-    <div className={'flex justify-center post' + voteClass}>
-      <div className="bg-primary-foreground rounded-lg p-5 m-5 w-full max-w-3xl">
+    <div className={'flex justify-center'}>
+      <div className={"bg-primary-foreground rounded-lg p-5 m-5 w-full max-w-3xl post" + voteClass}>
         <p className="mb-5">
           {teaser 
             ? <Link to={`/tags/${tag}/posts/${post.id}`}>{post.content}</Link>
@@ -37,7 +38,7 @@ export function PostDetails({ tag, post, note, teaser, randomLocation, position 
         {
           note === null
             ? <span />
-            : <NoteAttachment note={note} tag={tag} />
+            : <NoteAttachment note={note} tag={tag} position={notePosition} />
         }
         <fetcher.Form method="post" action="/vote">
           <div>
@@ -58,15 +59,21 @@ export function PostDetails({ tag, post, note, teaser, randomLocation, position 
   )
 }
 
-type NoteAttachmentProps = {
+
+export function NoteAttachment({ tag, note, position }: {
   note: Post
   tag: string
-}
+  position: Direction
+}) {
 
-export function NoteAttachment({ tag, note }: NoteAttachmentProps) {
+  let voteClass = 
+    position === Direction.Up ? ' voted upvoted'
+      : position === Direction.Down ? ' voted downvoted' 
+        : '';
+
   return (
     <Link to={`/tags/${tag}/posts/${note.id}`}>
-      <div className="bg-secondary p-5 mb-5 rounded-lg">
+      <div className={"bg-secondary p-5 mb-5 rounded-lg post" + voteClass}>
         {note ? note.content : ""}
       </div>
     </Link>

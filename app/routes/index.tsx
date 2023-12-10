@@ -67,6 +67,7 @@ export function UserFeed({ feed }: { feed: TagPreview[] }) {
                       posts.map((post: RankedPost, i: number) => {
 
                         let position = p.get(post.id) || Direction.Neutral
+                        let notePosition: Direction = (post.note && p.get(post.note.id)) || Direction.Neutral
 
                         let randomLocation: Location | null = 
                           post.random 
@@ -78,7 +79,7 @@ export function UserFeed({ feed }: { feed: TagPreview[] }) {
                         return (
                           <li key={post.id}>
                             <div className='flex-1 justify-self-center'>
-                              <PostDetails post={post as Post} note={post.note} tag={tag} teaser={true} randomLocation={randomLocation} position={position} />
+                              <PostDetails post={post as Post} note={post.note} tag={tag} teaser={true} randomLocation={randomLocation} position={position} notePosition={notePosition} />
                             </div>
                           </li>
                         )

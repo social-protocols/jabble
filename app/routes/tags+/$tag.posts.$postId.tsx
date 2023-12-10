@@ -27,7 +27,7 @@ import { createPost } from '#app/post.ts';
 
 // import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno
 
-import { getPositionsForPost } from '#app/positions.ts';
+import { getUserPositions } from '#app/positions.ts';
 
 import { Direction } from "#app/vote.ts";
 // const GLOBAL_TAG = "global";
@@ -59,8 +59,7 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 
 	// let positions: Map<number, Direction> = new Map<number, Direction>()
-	let positions = userId === null ? [] : await getPositionsForPost(userId, tag, postId)
-	// let positionsForReplies = getPositionsForReplies(userId, tag, post.id)
+	let positions = userId === null ? [] : await getUserPositions(userId, tag, replies.map(p => p.id).concat([post.id]))
 
 	let result = json({ post, replies, tag, positions })
 
@@ -110,6 +109,7 @@ export default function Post() {
 	let topNote: Post | null = replies.length > 0 ? replies[0]! : null
 
 	let position = p.get(post.id) || Direction.Neutral
+	let notePosition: Direction = ( topNote && p.get(topNote.id) ) || Direction.Neutral
 
 	return (
 		<div>
@@ -118,7 +118,7 @@ export default function Post() {
 				 &nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
 				 &nbsp; &gt; View post
 			</div>	
-			<PostDetails tag={tag} post={post} note={topNote} teaser={false} randomLocation={null} position={position} />
+			<PostDetails tag={tag} post={post} note={topNote} teaser={false} randomLocation={null} position={position} notePosition={notePosition} />
 			<PostReplies tag={tag} replies={replies} positions={p} />
 		</div>
 	)
@@ -136,7 +136,7 @@ export function PostReplies({ tag, replies, positions }: { tag: string, replies:
 
 					return (
 						<li key={post.id}>
-							<PostDetails tag={tag} post={post} note={null} teaser={true} randomLocation={null} position={position} />
+							<PostDetails tag={tag} post={post} note={null} teaser={true} randomLocation={null} position={position} notePosition={Direction.Neutral} />
 						</li>
 					)
 				})

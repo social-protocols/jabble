@@ -303,7 +303,7 @@ export async function getUserFeed(userId: string): Promise<TagPreview[]> {
 		}
 
 		logTagPreview(userId, tag)
-		let positions = await getPositionsForTag(userId, tag)
+		let positions = await getUserPositions(userId, posts.map(p => p.id))
 
 		// console.log("Posts", tag, posts)
 		feed.push({ tag, posts, positions })

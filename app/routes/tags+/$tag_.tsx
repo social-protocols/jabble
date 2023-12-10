@@ -16,7 +16,7 @@ import { getRankedPosts } from "#app/ranking.ts"
 
 // import { Feed } from "#app/components/ui/feed.tsx"
 
-import { getPositionsForTag } from '#app/positions.ts'
+import { getUserPositions } from '#app/positions.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
 import { PostForm } from '#app/components/ui/post-form.tsx'
@@ -36,12 +36,14 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	const userId = await requireUserId(request)
   
-	const positions = await getPositionsForTag(userId, tag)
 
 	invariant(tag, 'Missing tag param')
 
 	const posts = await getRankedPosts(tag)
 	logTagPageView(userId, tag)
+
+	const positions = await getUserPositions(userId, tag, posts.map(p => p.id))
+
 
 	return json({ posts, userId, positions, tag })
 }

@@ -10,21 +10,20 @@ export type Position = {
 
 // let isPostId: unique symbol = Symbol();
 
-export async function getPositionsForTag(userId: string, tag: string): Promise<Position[]> {
-  let tagId = await getOrInsertTagId(tag)
+// export async function getPositions(userId: string, tag: string, postIds: number[]): Promise<Position[]> {
+//   let tagId = await getOrInsertTagId(tag)
   
-  return await db
-    .selectFrom("CurrentVote")
-    .innerJoin("Post", "postId", "Post.id")
-    .where("userId", "=", userId)
-    .where("tagId", "=", tagId)
-    .where("Post.parentId", "is", null)
-    .select(["postId", "direction"])
-    .execute()
-}
+//   return await db
+//     .selectFrom("CurrentVote")
+//     .where("userId", "=", userId)
+//     .where("tagId", "=", tagId)
+//     .where("postId", "in", postIds)
+//     .select(["postId", "direction"])
+//     .execute()
+// }
 
 
-export async function getPositionsForPost(userId: string, tag: string, postId: number): Promise<Position[]> {
+export async function getUserPositions(userId: string, tag: string, postIds: number[]): Promise<Position[]> {
   let tagId = await getOrInsertTagId(tag)
   
   return await db
@@ -33,8 +32,8 @@ export async function getPositionsForPost(userId: string, tag: string, postId: n
     .where("userId", "=", userId)
     .where("tagId", "=", tagId)
     .where((eb) => eb.or([
-      eb("parentId", "=", postId),
-      eb("id", "=", postId)
+      eb("parentId", "in", postIds),
+      eb("id", "in", postIds)
     ]))
     .select(["postId", "direction"])
     .execute()
