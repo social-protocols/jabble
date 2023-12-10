@@ -17,7 +17,7 @@ import { Direction, vote } from "#app/vote.ts";
 
 import { type Tally } from '#app/beta-gamma-distribution.ts';
 
-import { getRankedPosts, totalInformationGain } from '#app/ranking.ts';
+import { getRankedPosts, totalInformationGain, MAX_RESULTS } from '#app/ranking.ts';
 import { getOrInsertTagId } from '#app/tag.ts';
 
 
@@ -89,7 +89,7 @@ m=1000, nRanks=90, votesPerPeriod=20, alpha=.99, MSE = 2.548275797826558
 
 const m = 200
 const nPosts = 100
-const nRanks = 90
+const nRanks = MAX_RESULTS
 const nUsers = 1000
 const votesPerPeriod = 20
 const tag = "test"
@@ -177,9 +177,7 @@ async function simulateAttentionShare() {
 		// shuffleArray(rankedPosts)
 		// let tagPage = rankedPosts.map(postNumber => postIds[postNumber]).slice(0, nRanks)
 
-
-		let tagPage = (await getRankedPosts(tag, nRanks)).map((p: Post) => p.id)
-
+		let tagPage = (await getRankedPosts(tag)).map((p: Post) => p.id)
 
 		// console.log("First post", rankedPosts[0])
 

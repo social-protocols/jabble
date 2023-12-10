@@ -2,11 +2,12 @@ import { db } from "#app/db.ts";
 import { type Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
 import { sql } from 'kysely';
 // import { cumulativeAttention } from './attention.ts';
-import { flushTagPageStats, logTagPageView } from './attention.ts';
+import { Direction } from '#app/vote.ts';
+import assert from 'assert';
+import { flushTagPageStats, logTagPageView, logTagPreview } from './attention.ts';
+import { getPositionsForTag, type Position } from './positions.ts';
 import { GLOBAL_PRIOR_VOTE_RATE, findTopNoteId } from './probabilities.ts';
 import { getOrInsertTagId } from './tag.ts';
-
-import assert from 'assert';
 
 
 type ScoreData = {
@@ -29,6 +30,7 @@ type PostWithStats = Post & { attention: number, voteCount: number, voteTotal: n
 const randomPoolSize = .1
 const attentionCutoff = 2 // Note all posts start with 1 unit of attention (from poster)
 
+export const MAX_RESULTS = 90
 
 import { LRUCache } from 'lru-cache';
 
@@ -59,13 +61,13 @@ export async function saveAllTagPageStats() {
 	}
 }
 
-export async function getRankedPosts(tag: string, maxResults: number): Promise<RankedPost[]> {
+export async function getRankedPosts(tag: string): Promise<RankedPost[]> {
 
 	let tagId = await getOrInsertTagId(tag)
 
 	let result = rankingsCache.get(tag)
 	if (result == undefined) {
-		result = await getRankedPostsInternal(tagId, maxResults)
+		result = await getRankedPostsInternal(tagId)
 		rankingsCache.set(tag, result)
 	}
 	// logTagPageView(userId, tag)
@@ -106,7 +108,7 @@ async function getPostsWithStats(tagId: number): Promise<PostWithStats[]> {
 }
 
 
-async function getRankedPostsInternal(tagId: number, maxResults: number): Promise<RankedPost[]> {
+async function getRankedPostsInternal(tagId: number): Promise<RankedPost[]> {
 
 	let allPosts = await getPostsWithStats(tagId)
 
@@ -136,8 +138,8 @@ async function getRankedPostsInternal(tagId: number, maxResults: number): Promis
 
 
 	let nResults = nPosts
-	if (nResults > maxResults) {
-		nResults = maxResults
+	if (nResults > MAX_RESULTS) {
+		nResults = MAX_RESULTS
 	}
 
 	console.log("Number of posts", nResults, nPosts, nRandomPosts, nRankedPosts)
@@ -184,6 +186,7 @@ async function getRankedPostsInternal(tagId: number, maxResults: number): Promis
 
 		results[i] = { ...p, ...s, note }
 	}
+
 
 
 	return results
@@ -264,5 +267,50 @@ export async function getRankedNotes(tag: string, postId: number): Promise<Post[
 
 
 
+export async function getRankedTags(): Promise<string[]> {
+
+	let results = await db
+		.selectFrom("Tag")
+		.innerJoin("TagStats", "TagStats.tagId", "Tag.id")
+		.select("tag")
+		.orderBy("TagStats.votesPerView", "desc")
+		.execute()
+
+	return results.map((row) => row.tag)
+}
+
+
+
+export type TagPreview = {
+	tag: string,
+	posts: RankedPost[],
+	positions: Position[],
+}
+
+export async function getUserFeed(userId: string): Promise<TagPreview[]> {
+
+	let feed: TagPreview[] = []
+
+	let tags: string[] = await getRankedTags()
+
+	console.log("Tags are", tags)
+
+	for (let tag of tags) {
+		let posts: RankedPost[] = (await getRankedPosts(tag)).slice(0, 2)
+
+		if (posts.length == 0) {
+			continue
+		}
+
+		logTagPreview(userId, tag)
+		let positions = await getPositionsForTag(userId, tag)
+
+		// console.log("Posts", tag, posts)
+		feed.push({ tag, posts, positions })
+	}
+
+	return feed
+
+}
 
 

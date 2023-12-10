@@ -84,7 +84,7 @@ export async function seed() {
 	let post1 = await createPost(tag, null, 'So, pregnant people can’t cross state lines to get abortions but guys like Kyle Rittenhouse can cross state lines to murder people. Seems fair.', alice)	
 
 	// Then, bob views the page
-	let posts = await getRankedPosts(tag, 90)
+	let posts = await getRankedPosts(tag)
 	// logTagPageView(bob, tag, posts)
 
 	// Then bob posts a response to alice's post
@@ -94,7 +94,7 @@ export async function seed() {
 	await vote(tag, bob, post1, post2, Direction.Down, null)
 
 	// bob views home page
-	posts = await getRankedPosts(tag, 90)
+	posts = await getRankedPosts(tag)
 	// logTagPageView(alice, tag, posts)
 
 	// And responds to bob's response
@@ -104,7 +104,7 @@ export async function seed() {
 	let post4 = await createPost(tag, null, 'Sudafed, Benadryl and most decongestants don’t work: FDA advisory panel https://trib.al/sJmOJBP', alice)
 
 	// Bob then views the page again
-	posts = await getRankedPosts(tag, 90)
+	posts = await getRankedPosts(tag)
 	// logTagPageView(bob, tag, posts)
 
 	// And respond's to Alices's latest post
@@ -114,7 +114,7 @@ export async function seed() {
 	let post6 = await createPost(tag, null, 'Right now, real wages for the average American worker is higher than it was before the pandemic, with lower wage workers seeing the largest gains. That\'s Bidenomics.', alice)
 
 	// Bob then views the page once again
-	posts = await getRankedPosts(tag, 90)
+	posts = await getRankedPosts(tag)
 	// console.log("Ranked posts", posts)
 	// logTagPageView(bob, tag, posts)
 

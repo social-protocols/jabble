@@ -14,7 +14,7 @@ import { z } from 'zod'
 import { getRankedPosts } from "#app/ranking.ts"
 // import { invariantResponse } from '#app/utils/misc.tsx'
 
-import { Feed } from "#app/components/ui/feed.tsx"
+// import { Feed } from "#app/components/ui/feed.tsx"
 
 import { getPositionsForTag } from '#app/positions.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
@@ -23,13 +23,13 @@ import { PostForm } from '#app/components/ui/post-form.tsx'
 import { createPost } from '#app/post.ts'
 import type { ActionFunctionArgs } from "@remix-run/node"
 // import {type PostId } from '#app/post.ts'
+import { TagFeed } from "#app/components/ui/feed.tsx"
 import { Direction } from "#app/vote.ts"
-
+import { Link } from '@remix-run/react'
 // const GLOBAL_TAG = "global";
 
 const tagSchema = z.coerce.string()
 const contentSchema = z.coerce.string()
-const maxPosts = 90
 
 export async function loader({ params, request }: DataFunctionArgs) {
 	const tag: string = tagSchema.parse(params.tag)
@@ -40,7 +40,7 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	invariant(tag, 'Missing tag param')
 
-	const posts = await getRankedPosts(tag, maxPosts)
+	const posts = await getRankedPosts(tag)
 	logTagPageView(userId, tag)
 
 	return json({ posts, userId, positions, tag })
@@ -56,9 +56,13 @@ export default function TagPage() {
 	}
 
 	return (
-		<div className='flex flex-col p-5'>
-			<PostForm />
-			<Feed posts={posts} tag={tag} positions={p} />
+		<div className='p-10'>
+			<div>
+				<Link to={`/`}>Home</Link> 
+				 &nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
+			</div>	
+			<PostForm tag={tag} />
+			<TagFeed posts={posts} tag={tag} positions={p} />
 		</div>
 	)
 }

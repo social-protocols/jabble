@@ -2,7 +2,7 @@
 // import { Icon } from '#app/components/ui/icon.tsx'
 import { ActionFunctionArgs, json, type DataFunctionArgs } from '@remix-run/node';
 
-import { type ShouldRevalidateFunction } from '@remix-run/react';
+import { type ShouldRevalidateFunction, Link } from '@remix-run/react';
 // import assert from 'assert';
 // import { Form, Link, useLoaderData, type MetaFunction } from '@remix-run/react'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx';
@@ -113,6 +113,11 @@ export default function Post() {
 
 	return (
 		<div>
+			<div>
+				<Link to={`/`}>Home</Link> 
+				 &nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
+				 &nbsp; &gt; View post
+			</div>	
 			<PostDetails tag={tag} post={post} note={topNote} teaser={false} randomLocation={null} position={position} />
 			<PostReplies tag={tag} replies={replies} positions={p} />
 		</div>

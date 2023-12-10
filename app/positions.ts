@@ -3,7 +3,7 @@ import { getOrInsertTagId } from "./tag.ts";
 import { Direction } from "./vote.ts";
 // import { type PostId } from "./post.ts";
 
-type Position = {
+export type Position = {
   postId: number,
   direction: Direction
 }

@@ -26,7 +26,7 @@ export type Location = {
 }
 
 
-type TagStatsAccumulator = { filter: Map<String, boolean>, views: number, votes: number }
+type TagStatsAccumulator = { filter: Map<String, boolean>, views: number, votes: number, previews: number }
 
 let statsForTag = new Map<string, TagStatsAccumulator>()
 
@@ -39,7 +39,7 @@ function getOrCreateStatsForTag(tag: string): TagStatsAccumulator {
 		// console.log("Not stats for tag", tag)
 		// let filter = new bloomFilters.BloomFilter(bits, hashes)
 		let filter = new Map<string, boolean>()
-		stats = { filter: filter, views: 0, votes: 0 }
+		stats = { filter: filter, views: 0, votes: 0, previews: 0 }
 		statsForTag.set(tag, stats)
 	}
 	return stats
@@ -57,6 +57,18 @@ export async function logPostPageView(_tag: string, _postId: number, _userId: st
 	// todo
 }
 
+
+export function logTagPreview(userId: string, tag: string) {
+
+	let stats = getOrCreateStatsForTag(tag)
+	let filter = stats.filter
+	let key = userId;
+
+	if (!filter.has(key)) {
+		filter.set(key, true)
+		stats.previews += 1
+	}
+}
 
 export function logTagPageView(userId: string, tag: string) {
 
@@ -135,7 +147,7 @@ export async function flushTagPageStats(tag: string, posts: number[]) {
 	// Update individual post stats
 	for (let i = 0; i < posts.length; i++) {
 		await savePostStats(
-			tagId, 
+			tagId,
 			posts[i]!, 
 			{ locationType: LocationType.TagPage, oneBasedRank: i + 1 },
 
@@ -147,7 +159,7 @@ export async function flushTagPageStats(tag: string, posts: number[]) {
 }
 
 
-export async function logAuthorView(userId: string, tagId: number, postId: number) {
+export async function logAuthorView(_userId: string, tagId: number, postId: number) {
 	await savePostStats(tagId, postId, { locationType: LocationType.NewPost, oneBasedRank: 1 }, 1)	
 }
 
