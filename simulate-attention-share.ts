@@ -9,7 +9,6 @@ import assert from 'assert';
 
 // import { sql } from 'kysely';
 
-import { flushTagPageStats, seedStats, tagStats } from "#app/attention.ts";
 
 import { createPost } from "#app/post.ts";
 
@@ -17,7 +16,8 @@ import { Direction, vote } from "#app/vote.ts";
 
 import { type Tally } from '#app/beta-gamma-distribution.ts';
 
-import { getRankedPosts, totalInformationGain, MAX_RESULTS } from '#app/ranking.ts';
+import { seedStats, tagStats } from "#app/attention.ts";
+import { MAX_RESULTS, clearRankingsCache, getRankedPosts, totalInformationGain } from '#app/ranking.ts';
 import { getOrInsertTagId } from '#app/tag.ts';
 
 
@@ -232,9 +232,7 @@ async function simulateAttentionShare() {
 		// update stats in the DB. logTagPageView just increments counters in memory which
 		// need to be update periodicially.
 		// console.log("totalVotes", totalVotes)
-		await flushTagPageStats(tag, tagPage)	
-
-
+		await clearRankingsCache()	
 	}
 	bar1.stop()
 
@@ -300,7 +298,7 @@ async function simulateAttentionShare() {
 
 	let totalGain = await totalInformationGain(tagId)
 	let totalViews = (await tagStats(tag)).views
-	console.log("Information gain per view", totalGain/totalViews)
+	console.log("Information gain per view", totalGain / totalViews)
 
 }
 

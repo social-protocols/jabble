@@ -1,4 +1,4 @@
-import { saveAllTagPageStats } from '#app/ranking.ts'
+import { clearRankingsCache } from '#app/ranking.ts'
 import { installGlobals } from '@remix-run/node'
 import chalk from 'chalk'
 import closeWithGrace from 'close-with-grace'
@@ -9,7 +9,7 @@ installGlobals()
 
 closeWithGrace(async ({ err }) => {
 	console.log("Received shutdown signal.")
-	await saveAllTagPageStats()
+	await clearRankingsCache()
 	if (err) {
 		console.error(chalk.red(err))
 		console.error(chalk.red(err.stack))

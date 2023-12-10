@@ -10,6 +10,7 @@ import assert from 'assert';
 
 import { logAuthorView } from './attention.ts';
 
+import { clearRankingsCacheForTagPage } from './ranking.ts';
 
 // export type PostId = number & {readonly isPostId: unique symbol}
 
@@ -36,6 +37,8 @@ export async function createPost(
     await insertVoteRecord(tagId, authorId, createdPostId, null, direction)
 
     await logAuthorView(authorId, tagId, createdPostId)
+
+    await clearRankingsCacheForTagPage(tag)
 
     return createdPostId;
 }

@@ -2,10 +2,8 @@ import { db } from "#app/db.ts";
 import { type Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
 import { sql } from 'kysely';
 // import { cumulativeAttention } from './attention.ts';
-import { Direction } from '#app/vote.ts';
 import assert from 'assert';
-import { flushTagPageStats, logTagPageView, logTagPreview } from './attention.ts';
-import { getPositionsForTag, type Position } from './positions.ts';
+import { logTagPageView, logTagPreview, writeTagPageStats } from './attention.ts';
 import { GLOBAL_PRIOR_VOTE_RATE, findTopNoteId } from './probabilities.ts';
 import { getOrInsertTagId } from './tag.ts';
 
@@ -44,15 +42,18 @@ let rankingsCache = new LRUCache<string, RankedPost[]>({
 
 	ttlAutopurge: true,
 
-	// when we dispose of the page from the cache, call flushTagPageStats to update attention
+	// when we dispose of the page from the cache, call writeTagPageStats to update attention
 	// stats in the DB for each post on the tag page.
 	dispose: (posts, tag, _reason) => {
-		console.log("Saving stats for", tag)
-		flushTagPageStats(tag, posts.map(p => p.id))     
+		writeTagPageStats(tag, posts.map(p => p.id))     
 	},
-}) 
+})
 
-export async function saveAllTagPageStats() {
+export async function clearRankingsCacheForTagPage(tag: string) {
+	rankingsCache.delete(tag)
+}
+
+export async function clearRankingsCache() {
 	console.log("Closing gracefully")
 	let keys = rankingsCache.keys()
 	for (let tag of keys) {
