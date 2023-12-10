@@ -1,21 +1,9 @@
-import { conform, useForm } from '@conform-to/react'
-import { getFieldsetConstraint, parse } from '@conform-to/zod'
-import {
-	json,
-	redirect,
-	type DataFunctionArgs,
-	type MetaFunction,
-} from '@remix-run/node'
-import { Form, Link, useActionData, useSearchParams } from '@remix-run/react'
-import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
-import { HoneypotInputs } from 'remix-utils/honeypot/react'
-import { safeRedirect } from 'remix-utils/safe-redirect'
-import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { CheckboxField, ErrorList, Field } from '#app/components/forms.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { twoFAVerificationType } from '#app/routes/settings+/profile.two-factor.tsx'
+import { SITE_NAME } from '#app/site.ts'
 import {
 	getUserId,
 	login,
@@ -38,6 +26,19 @@ import { authSessionStorage } from '#app/utils/session.server.ts'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
 import { PasswordSchema, UsernameSchema } from '#app/utils/user-validation.ts'
 import { verifySessionStorage } from '#app/utils/verification.server.ts'
+import { conform, useForm } from '@conform-to/react'
+import { getFieldsetConstraint, parse } from '@conform-to/zod'
+import {
+	json,
+	redirect,
+	type DataFunctionArgs,
+	type MetaFunction,
+} from '@remix-run/node'
+import { Form, Link, useActionData, useSearchParams } from '@remix-run/react'
+import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
+import { HoneypotInputs } from 'remix-utils/honeypot/react'
+import { safeRedirect } from 'remix-utils/safe-redirect'
+import { z } from 'zod'
 import { getRedirectToUrl, type VerifyFunctionArgs } from './verify.tsx'
 
 const verifiedTimeKey = 'verified-time'
@@ -360,7 +361,7 @@ export default function LoginPage() {
 }
 
 export const meta: MetaFunction = () => {
-	return [{ title: 'Login to Epic Notes' }]
+	return [{ title: 'Login to ' + SITE_NAME }]
 }
 
 export function ErrorBoundary() {

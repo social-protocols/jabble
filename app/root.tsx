@@ -62,6 +62,8 @@ import { useOptionalUser, useUser } from './utils/user.ts'
 import voteStyleSheetUrl from '#app/styles/vote.css'
 import { ExternalScripts } from "remix-utils/external-scripts"
 
+import { SITE_NAME } from './site.ts'
+
 export const links: LinksFunction = () => {
 	return [
 		// Preload svg sprite as a resource to avoid render blocking
@@ -91,7 +93,7 @@ export const links: LinksFunction = () => {
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
 	return [
-		{ title: data ? 'Epic Notes' : 'Error | Epic Notes' },
+		{ title: data ? SITE_NAME : 'Error | ' + SITE_NAME },
 		{ name: 'description', content: `Your own captain's log` },
 	]
 }
@@ -238,7 +240,7 @@ function App() {
 					<nav>
 						<div className="flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8">
 							<Link to="/">
-								<div className="font-bold">social network</div>
+								<div className="font-bold">{SITE_NAME}</div>
 							</Link>
 							<div className="ml-auto hidden max-w-sm flex-1 sm:block">
 								{searchBar}

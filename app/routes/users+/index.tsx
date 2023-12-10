@@ -1,11 +1,12 @@
-import { json, redirect, type DataFunctionArgs } from '@remix-run/node'
-import { Link, useLoaderData } from '@remix-run/react'
-import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList } from '#app/components/forms.tsx'
 import { SearchBar } from '#app/components/search-bar.tsx'
+import { SITE_NAME } from '#app/site.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { cn, getUserImgSrc, useDelayedIsPending } from '#app/utils/misc.tsx'
+import { json, redirect, type DataFunctionArgs } from '@remix-run/node'
+import { Link, useLoaderData } from '@remix-run/react'
+import { z } from 'zod'
 
 const UserSearchResultSchema = z.object({
 	id: z.string(),
@@ -61,7 +62,7 @@ export default function UsersRoute() {
 
 	return (
 		<div className="container mb-48 mt-36 flex flex-col items-center justify-center gap-6">
-			<h1 className="text-h1">Epic Notes Users</h1>
+			<h1 className="text-h1">{SITE_NAME} Users</h1>
 			<div className="w-full max-w-[700px] ">
 				<SearchBar status={data.status} autoFocus autoSubmit />
 			</div>
