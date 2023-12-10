@@ -13,7 +13,6 @@ export default function Index() {
   // due to the loader, this component will never be rendered, but we'll return
   // the error boundary just in case.
   let data = useLoaderData<typeof loader>();
-  console.log("Data", data)
 
   return (
     <div>

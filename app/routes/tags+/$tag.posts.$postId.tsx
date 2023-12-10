@@ -2,7 +2,8 @@
 // import { Icon } from '#app/components/ui/icon.tsx'
 import { ActionFunctionArgs, json, type DataFunctionArgs } from '@remix-run/node';
 
-import assert from 'assert';
+import { type ShouldRevalidateFunction } from '@remix-run/react';
+// import assert from 'assert';
 // import { Form, Link, useLoaderData, type MetaFunction } from '@remix-run/react'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx';
 import { PostDetails } from '#app/components/ui/post.tsx';
@@ -19,13 +20,16 @@ import { type Post } from '#app/db/types.ts';
 import { getUserId, requireUserId } from '#app/utils/auth.server.ts';
 // import { Link } from '@remix-run/react';
 
-import { LocationType, logPostPageView } from "#app/attention.ts";
+import { logPostPageView } from "#app/attention.ts";
 import { getRankedNotes } from "#app/ranking.ts";
 
 import { createPost } from '#app/post.ts';
 
-import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno
+// import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno
 
+import { getPositionsForPost } from '#app/positions.ts';
+
+import { Direction } from "#app/vote.ts";
 // const GLOBAL_TAG = "global";
 
 const postIdSchema = z.coerce.number()
@@ -53,12 +57,19 @@ export async function loader({ params, request }: DataFunctionArgs) {
 	let replies = await getRankedNotes(tag, post.id)
 	await logPostPageView(tag, post.id, userId)
 
-	return json({ post, replies, tag, userId })
+
+	// let positions: Map<number, Direction> = new Map<number, Direction>()
+	let positions = userId === null ? [] : await getPositionsForPost(userId, tag, postId)
+	// let positionsForReplies = getPositionsForReplies(userId, tag, post.id)
+
+	let result = json({ post, replies, tag, positions })
+
+	return result
 }
 
 
 const replySchema = zfd.formData({
-	postId: postIdSchema,
+	parentId: postIdSchema,
 	tag: tagSchema,
 	content: contentSchema,
 });
@@ -71,17 +82,15 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	const userId: string = await requireUserId(request)
 
-	// const d = Object.fromEntries(formData);
 	const parsedData = replySchema.parse(formData);
 	const content = parsedData.content
-	const postId = parsedData.postId
+	const parentId = parsedData.parentId
 	const tag = parsedData.tag
 
 	invariant(content, "content !== undefined")
 	invariant(tag, "tag !== ''")
 
-	console.log("Creating post", tag, postId, content, userId)
-	let newPostId = await createPost(tag, postId, content, userId)
+	let newPostId = await createPost(tag, parentId, content, userId)
 
 	console.log("New post id", newPostId)
 
@@ -91,27 +100,38 @@ export const action = async (args: ActionFunctionArgs) => {
 
 
 export default function Post() {
-	const { post, replies, tag } = useLoaderData<typeof loader>()
+	const { post, replies, tag, positions } = useLoaderData<typeof loader>()
+
+	let p = new Map<number, Direction>()
+	for (let position of positions) {
+		p.set(position.postId, position.direction)
+	}
+
 	let topNote: Post | null = replies.length > 0 ? replies[0]! : null
+
+	let position = p.get(post.id) || Direction.Neutral
 
 	return (
 		<div>
-			<PostDetails tag={tag} post={post} note={topNote} teaser={false} randomLocation={null} />
-			<PostReplies tag={tag} replies={replies} />
+			<PostDetails tag={tag} post={post} note={topNote} teaser={false} randomLocation={null} position={position} />
+			<PostReplies tag={tag} replies={replies} positions={p} />
 		</div>
 	)
 }
 
 
-export function PostReplies({ tag, replies }: { tag: string, replies: Post[] }) {
+export function PostReplies({ tag, replies, positions }: { tag: string, replies: Post[], positions: Map<number, Direction> }) {
 	return (
 		<ol>
 			{
 				replies.map((post: Post) => {
 					// let randomLocation = {locationType: LocationType.PostReplies, oneBasedRank: i + 1}
+
+					let position: Direction = positions.get(post.id) || Direction.Neutral
+
 					return (
 						<li key={post.id}>
-							<PostDetails tag={tag} post={post} note={null} teaser={true} randomLocation={null} />
+							<PostDetails tag={tag} post={post} note={null} teaser={true} randomLocation={null} position={position} />
 						</li>
 					)
 				})
@@ -132,4 +152,11 @@ export function ErrorBoundary() {
 	)
 }
 
+export const shouldRevalidate: ShouldRevalidateFunction = (args: { formAction?: string | undefined }) => {
 
+	// Optimization that makes it so /votes don't reload the page
+	if (args.formAction == "/vote") {
+		return false
+	}
+	return true;
+};

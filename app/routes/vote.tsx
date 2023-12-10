@@ -19,12 +19,6 @@ const tagSchema = z.coerce.string()
 const directionKeys = Object.keys(Direction) as [keyof typeof Direction]
 const directionSchema = z.enum(directionKeys)
 
-
-// export const handle = {
-// 	scripts: () => [{ src: '/js/vote.js' }]
-// }
-
-
 function parseDirection(directionString: FormDataEntryValue | undefined): Direction {
 	const d: string = directionSchema.parse(directionString)
 	console.log("Parsing string", d)
@@ -120,8 +114,5 @@ export const action = async (args: ActionFunctionArgs) => {
 		location,
 	)
 
-	return { result: "vote action result" }
-	// return updateContact(params.contactId, {
-	//   favorite: formData.get("favorite") === "true",
-	// });
+	return { state: newState }
 };

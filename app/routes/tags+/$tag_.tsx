@@ -1,10 +1,9 @@
 // import { Spacer } from '#app/components/spacer.tsx'
 // import { Icon } from '#app/components/ui/icon.tsx'
-import { json, type DataFunctionArgs } from '@remix-run/node'
-// import { Form, Link, useLoaderData, type MetaFunction } from '@remix-run/react'
 import { logTagPageView } from "#app/attention.ts"
+import { json, type DataFunctionArgs } from '@remix-run/node'
 // import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { useLoaderData } from '@remix-run/react'
+import { useLoaderData, type ShouldRevalidateFunction } from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 
@@ -12,7 +11,7 @@ import { z } from 'zod'
 // import { getPost } from "#app/post.ts"
 // import { topNote, voteRate } from '#app/probabilities.ts'
 
-import { getRankedPosts, type RankedPost } from "#app/ranking.ts"
+import { getRankedPosts } from "#app/ranking.ts"
 // import { invariantResponse } from '#app/utils/misc.tsx'
 
 import { Feed } from "#app/components/ui/feed.tsx"
@@ -23,6 +22,8 @@ import { requireUserId } from '#app/utils/auth.server.ts'
 import { PostForm } from '#app/components/ui/post-form.tsx'
 import { createPost } from '#app/post.ts'
 import type { ActionFunctionArgs } from "@remix-run/node"
+// import {type PostId } from '#app/post.ts'
+import { Direction } from "#app/vote.ts"
 
 // const GLOBAL_TAG = "global";
 
@@ -46,12 +47,18 @@ export async function loader({ params, request }: DataFunctionArgs) {
 }
 
 export default function TagPage() {
-	const { tag, posts, userId, positions } = useLoaderData<typeof loader>()
+	const { tag, posts, positions } = useLoaderData<typeof loader>()
+
+	// We lose the type info for positions after serializing and deserializing JSON
+	let p = new Map<number, Direction>()
+	for (let position of positions) {
+		p.set(position.postId, position.direction)
+	}
 
 	return (
 		<div className='flex flex-col p-5'>
 			<PostForm />
-			<Feed posts={posts} tag={tag} />
+			<Feed posts={posts} tag={tag} positions={p} />
 		</div>
 	)
 }
@@ -72,7 +79,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 	return true
 };
 
-// <div>
-// 	<div>Post Content: {post.content}</div>
-// 	<div>Score: {post.score} voteRate: {post.voteRate} Votes: {post.voteCount}/{post.voteTotal} p: {post.p} q: {post.q}  </div>
-// </div>
+export const shouldRevalidate: ShouldRevalidateFunction = (args: { formAction?: string | undefined }) => {
+
+	// Optimization that makes it so /votes don't reload the page
+	if (args.formAction == "/vote") {
+		return false
+	}
+	return true;
+};

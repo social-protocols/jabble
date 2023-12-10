@@ -1,11 +1,14 @@
-import { Direction } from "./vote.ts";
 import { db } from "./db.ts";
 import { getOrInsertTagId } from "./tag.ts";
+import { Direction } from "./vote.ts";
+// import { type PostId } from "./post.ts";
 
 type Position = {
   postId: number,
   direction: Direction
 }
+
+// let isPostId: unique symbol = Symbol();
 
 export async function getPositionsForTag(userId: string, tag: string): Promise<Position[]> {
   let tagId = await getOrInsertTagId(tag)
@@ -19,6 +22,24 @@ export async function getPositionsForTag(userId: string, tag: string): Promise<P
     .select(["postId", "direction"])
     .execute()
 }
+
+
+export async function getPositionsForPost(userId: string, tag: string, postId: number): Promise<Position[]> {
+  let tagId = await getOrInsertTagId(tag)
+  
+  return await db
+    .selectFrom("CurrentVote")
+    .innerJoin("Post", "postId", "Post.id")
+    .where("userId", "=", userId)
+    .where("tagId", "=", tagId)
+    .where((eb) => eb.or([
+      eb("parentId", "=", postId),
+      eb("id", "=", postId)
+    ]))
+    .select(["postId", "direction"])
+    .execute()
+}
+
 
 
 

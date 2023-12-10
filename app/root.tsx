@@ -2,9 +2,9 @@ import { useForm } from '@conform-to/react'
 import { parse } from '@conform-to/zod'
 import { cssBundleHref } from '@remix-run/css-bundle'
 import {
+	json,
 	type DataFunctionArgs,
 	type HeadersFunction,
-	json,
 	type LinksFunction,
 	type MetaFunction,
 } from '@remix-run/node'
@@ -41,7 +41,7 @@ import {
 	DropdownMenuPortal,
 	DropdownMenuTrigger,
 } from './components/ui/dropdown-menu.tsx'
-import { href as iconsHref, Icon } from './components/ui/icon.tsx'
+import { Icon, href as iconsHref } from './components/ui/icon.tsx'
 import tailwindStyleSheetUrl from './styles/tailwind.css'
 import { getUserId, logout } from './utils/auth.server.ts'
 import { ClientHintCheck, getHints, useHints } from './utils/client-hints.tsx'
@@ -56,10 +56,11 @@ import { getTheme, setTheme, type Theme } from './utils/theme.server.ts'
 import { makeTimings, time } from './utils/timing.server.ts'
 import { getToast } from './utils/toast.server.ts'
 import { useOptionalUser, useUser } from './utils/user.ts'
-import { db } from "#app/db.ts";
-import { Feed } from './components/ui/feed.tsx'
-import { type Post } from '#app/db/types.ts'
-import { ExternalScripts } from "remix-utils/external-scripts";
+// import { db } from "#app/db.ts";
+// import { Feed } from './components/ui/feed.tsx'
+// import { type Post } from '#app/db/types.ts'
+import voteStyleSheetUrl from '#app/styles/vote.css'
+import { ExternalScripts } from "remix-utils/external-scripts"
 
 export const links: LinksFunction = () => {
 	return [
@@ -84,6 +85,7 @@ export const links: LinksFunction = () => {
 		{ rel: 'icon', type: 'image/svg+xml', href: '/favicons/favicon.svg' },
 		{ rel: 'stylesheet', href: tailwindStyleSheetUrl },
 		cssBundleHref ? { rel: 'stylesheet', href: cssBundleHref } : null,
+		{ rel: 'stylesheet', href: voteStyleSheetUrl }
 	].filter(Boolean)
 }
 
@@ -202,7 +204,7 @@ function Document({
 				<meta charSet="utf-8" />
 				<meta name="viewport" content="width=device-width,initial-scale=1" />
 				<Links />
-				<ExternalScripts/> 
+				<ExternalScripts />
 			</head>
 			<body className="bg-background text-foreground">
 				{children}
@@ -236,7 +238,7 @@ function App() {
 					<nav>
 						<div className="flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8">
 							<Link to="/">
-                <div className="font-bold">social network</div>
+								<div className="font-bold">social network</div>
 							</Link>
 							<div className="ml-auto hidden max-w-sm flex-1 sm:block">
 								{searchBar}
@@ -256,7 +258,7 @@ function App() {
 				</header>
 
 				<div className="flex-1 main-content">
-				  <Outlet />
+					<Outlet />
 				</div>
 
 				<div className="container flex justify-between pb-5">

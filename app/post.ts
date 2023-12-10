@@ -10,6 +10,9 @@ import assert from 'assert';
 
 import { logAuthorView } from './attention.ts';
 
+
+// export type PostId = number & {readonly isPostId: unique symbol}
+
 // import { LocationType } from './attention.ts';
 
 // express the above fn in typescript with kysely queries
