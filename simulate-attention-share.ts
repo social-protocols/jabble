@@ -16,8 +16,8 @@ import { Direction, vote } from "#app/vote.ts";
 
 import { type Tally } from '#app/beta-gamma-distribution.ts';
 
-import { seedStats, tagStats } from "#app/attention.ts";
-import { MAX_RESULTS, clearRankingsCache, getRankedPosts, totalInformationGain } from '#app/ranking.ts';
+import { seedStats, tagStats, writeTagPageStats } from "#app/attention.ts";
+import { MAX_RESULTS, getRankedPosts, totalInformationGain } from '#app/ranking.ts';
 import { getOrInsertTagId } from '#app/tag.ts';
 
 
@@ -232,7 +232,9 @@ async function simulateAttentionShare() {
 		// update stats in the DB. logTagPageView just increments counters in memory which
 		// need to be update periodicially.
 		// console.log("totalVotes", totalVotes)
-		await clearRankingsCache()	
+		await writeTagPageStats(tag, tagPage)	
+// export async function writeTagPageStats(tag: string, posts: number[]) {
+
 	}
 	bar1.stop()
 

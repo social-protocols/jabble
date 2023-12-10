@@ -55,10 +55,8 @@ export async function clearRankingsCacheForTagPage(tag: string) {
 }
 
 export async function clearRankingsCache() {
-	console.log("Closing gracefully")
 	let keys = rankingsCache.keys()
 	for (let tag of keys) {
-		console.log("Deleting tag", tag)
 		rankingsCache.delete(tag)
 	}
 }
@@ -144,7 +142,7 @@ async function getRankedPostsInternal(tagId: number): Promise<RankedPost[]> {
 		nResults = MAX_RESULTS
 	}
 
-	console.log("Number of posts", nResults, nPosts, nRandomPosts, nRankedPosts)
+	// console.log("Number of posts", nResults, nPosts, nRandomPosts, nRankedPosts)
 
 	// Finally, create nResults results by iterating through the ranked posts
 	// while randomly inserting posts from the random pool (with a
