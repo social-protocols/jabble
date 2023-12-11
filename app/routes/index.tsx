@@ -5,8 +5,8 @@
 import { LocationType, logTagPreview, type Location } from '#app/attention.ts';
 import { PostDetails } from "#app/components/ui/post.tsx";
 import { type Post } from '#app/db/types.ts';
-import { getUserFeed, type RankedPost, type TagPreview } from "#app/ranking.ts";
-import { logout, requireUserId } from '#app/utils/auth.server.ts';
+import { getDefaultFeed, getUserFeed, type RankedPost, type TagPreview } from "#app/ranking.ts";
+import { getUserId, logout, requireUserId } from '#app/utils/auth.server.ts';
 import { Direction } from '#app/vote.ts';
 import { type DataFunctionArgs } from '@remix-run/node';
 import { Link, useLoaderData } from "@remix-run/react";
@@ -24,14 +24,22 @@ export default function Index() {
 }
 
 export async function loader({ request }: DataFunctionArgs) {
-  const userId = await requireUserId(request)
+
+  const userId = await getUserId(request)
+
   console.log('userId', userId)
 
+  let feed: TagPreview[] = []
 
-  let feed = await getUserFeed(userId)
+  if (userId) {
+    feed = await getUserFeed(userId)
+  } else {
+    feed = await getDefaultFeed()
+
+  }
     
   return (
-    { userId, feed }
+    { feed }
   )
 }
 

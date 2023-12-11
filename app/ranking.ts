@@ -287,7 +287,22 @@ export type TagPreview = {
 	positions: Position[],
 }
 
+
 export async function getUserFeed(userId: string): Promise<TagPreview[]> {
+	assert(userId !== "", "missing user ID")
+	let feed = await getDefaultFeed()
+
+	for (let tagPreview of feed) {
+		const { tag, posts } = tagPreview
+		logTagPreview(userId, tag)
+		let positions = await getUserPositions(userId, tag, posts.map(p => p.id))
+		tagPreview.positions = positions
+	}
+
+	return feed
+}
+
+export async function getDefaultFeed(): Promise<TagPreview[]> {
 
 	let feed: TagPreview[] = []
 
@@ -302,11 +317,8 @@ export async function getUserFeed(userId: string): Promise<TagPreview[]> {
 			continue
 		}
 
-		logTagPreview(userId, tag)
-		let positions = await getUserPositions(userId, tag, posts.map(p => p.id))
-
 		// console.log("Posts", tag, posts)
-		feed.push({ tag, posts, positions })
+		feed.push({ tag, posts, positions: [] })
 	}
 
 	return feed

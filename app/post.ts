@@ -31,7 +31,7 @@ export async function createPost(
 
     const additionalExtractedTags = extractTags(content);
     const allTags = [tag, ...additionalExtractedTags];
-    console.log(allTags);
+    console.log("All tags", allTags);
 
     const createdPostId = results[0]!.id;
 

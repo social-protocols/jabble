@@ -21,9 +21,11 @@ import { requireUserId } from '#app/utils/auth.server.ts'
 
 import { PostForm } from '#app/components/ui/post-form.tsx'
 import { createPost } from '#app/post.ts'
+import { getUserId } from "#app/utils/auth.server.ts"
 import type { ActionFunctionArgs } from "@remix-run/node"
 // import {type PostId } from '#app/post.ts'
 import { TagFeed } from "#app/components/ui/feed.tsx"
+import { type Position } from '#app/positions.ts'
 import { Direction } from "#app/vote.ts"
 import { Link } from '@remix-run/react'
 // const GLOBAL_TAG = "global";
@@ -33,17 +35,16 @@ const contentSchema = z.coerce.string()
 
 export async function loader({ params, request }: DataFunctionArgs) {
 	const tag: string = tagSchema.parse(params.tag)
-
-	const userId = await requireUserId(request)
-  
-
 	invariant(tag, 'Missing tag param')
 
+	const userId: string | null = await getUserId(request)
+  
 	const posts = await getRankedPosts(tag)
-	logTagPageView(userId, tag)
-
-	const positions = await getUserPositions(userId, tag, posts.map(p => p.id))
-
+	let positions: Position[] = []
+	if (userId) {
+		logTagPageView(userId, tag)
+		positions = await getUserPositions(userId, tag, posts.map(p => p.id))
+	}
 
 	return json({ posts, userId, positions, tag })
 }
@@ -58,16 +59,16 @@ export default function TagPage() {
 	}
 
 	return (
-    <>
+		<>
 			<div>
 				<Link to={`/`}>Home</Link> 
-				 &nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
+				&nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
 			</div>
-      <div className='flex flex-col place-items-center'>
-        <PostForm tag={tag} />
-        <TagFeed posts={posts} tag={tag} positions={p} />
-      </div>
-    </>
+			<div className='flex flex-col place-items-center'>
+				<PostForm tag={tag} />
+				<TagFeed posts={posts} tag={tag} positions={p} />
+			</div>
+		</>
 	)
 }
 
