@@ -2,10 +2,9 @@
 import { db } from "#app/db.ts";
 import { sql } from "kysely";
 
-import { logTagVote, type Location } from './attention.ts';
-import { logVoteOnRandomlyRankedPost } from './exploration.ts';
+import assert from 'assert';
+import { type Location, logTagVote, logVoteOnRandomlyRankedPost } from './attention.ts';
 import { getOrInsertTagId } from './tag.ts';
-import assert from 'assert'
 export enum Direction {
     Up = 1,
     Down = -1,
@@ -32,19 +31,11 @@ export async function vote(
 
     // Todo: dedupe in case user toggles vote multiple times
     if (added) {
-        // console.log("Logging exploration vote")
         logTagVote(tag)
         if (randomLocation != null) {
             logVoteOnRandomlyRankedPost(randomLocation)
         }
     }
-
-    // console.log("Vote result", result)
-
-    // await db
-    //     .insertInto('voteHistory')
-    //     .values({ userId, tagId, postId, noteId, direction: direction_i32 })
-    //     .execute();
 }
 
 

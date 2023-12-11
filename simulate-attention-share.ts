@@ -3,7 +3,7 @@ import { db } from "#app/db.ts";
 import { type Post, type PostStats } from "#app/db/types.ts";
 // import bloomFilters from 'bloom-filters';
 
-import { LocationType, logTagPageView } from "#app/attention.ts";
+import { GLOBAL_PRIOR_VOTES_PER_VIEW, LocationType, logTagPageView } from "#app/attention.ts";
 
 import assert from 'assert';
 
@@ -16,10 +16,9 @@ import { Direction, vote } from "#app/vote.ts";
 
 import { type Tally } from '#app/beta-gamma-distribution.ts';
 
-import { seedStats, tagStats, writeTagPageStats } from "#app/attention.ts";
+import { flushTagPageStats, seedStats, tagStats } from "#app/attention.ts";
 import { MAX_RESULTS, getRankedPosts, totalInformationGain } from '#app/ranking.ts';
 import { getOrInsertTagId } from '#app/tag.ts';
-
 
 import jStat from 'jstat';
 
@@ -90,10 +89,21 @@ m=1000, nRanks=90, votesPerPeriod=20, alpha=.99, MSE = 2.548275797826558
 const m = 200
 const nPosts = 100
 const nRanks = MAX_RESULTS
-const nUsers = 1000
-const votesPerPeriod = 20
-const tag = "test"
+const nUsers = 10000
+// const votesPerPeriod = 20
 
+// If the actual votesPerView is very different from the global prior, then
+// the initial estimates of votesPerView for a tag will be way off. This will result
+// in the accumulated attention for each post possibly being way too big, which means
+// and it will take a long time (without moving averaging) for the average to approach
+// the true average.
+
+const votesPerView = GLOBAL_PRIOR_VOTES_PER_VIEW.average
+const viewsPerPeriod = nUsers
+const votesPerPeriod = viewsPerPeriod * votesPerView
+console.log(votesPerView, viewsPerPeriod, votesPerPeriod)
+
+const tag = "test"
 
 // const m = 5
 // const nPosts = 90
@@ -174,10 +184,12 @@ async function simulateAttentionShare() {
 	for (let t = 0; t < m; t++) {
 
 		// rank posts randomly
-		// shuffleArray(rankedPosts)
+		let rankedPosts = [...postIds]
+		shuffleArray(rankedPosts)
+		let tagPage = rankedPosts
 		// let tagPage = rankedPosts.map(postNumber => postIds[postNumber]).slice(0, nRanks)
 
-		let tagPage = (await getRankedPosts(tag)).map((p: Post) => p.id)
+		// let tagPage = (await getRankedPosts(tag)).map((p: Post) => p.id)
 
 		// console.log("First post", rankedPosts[0])
 
@@ -185,7 +197,7 @@ async function simulateAttentionShare() {
 		// let userId = (1000 + t % nUsers).toString()
 
 		// assume all users views the tag page
-		for (let i = 0; i < nUsers; i++) {
+		for (let i = 0; i < viewsPerPeriod; i++) {
 			let userId = (1000 + i).toString()
 			logTagPageView(userId, tag)
 		}
@@ -206,11 +218,19 @@ async function simulateAttentionShare() {
 			// let rf = rankFactor(oneBasedRank)
 			let voteShare = voteShareAtRank(oneBasedRank)
 			// console.log("Rf", oneBasedRank, rf, voteShare)
+
+
+
 			let actualVoteRate = votesPerPeriod * voteShare * voteRate
 
+			// console.log("Actual vote rate", actualVoteRate, votesPerPeriod, voteShare, voteRate)
+			assert(actualVoteRate > 0)
+
+			// continue;
 			// get a random number of votes from a Poisson distribution with the actual vote rate
 			let votes = jStat.poisson.sample(actualVoteRate)
 			// console.log("Votes for rank", i, votes, actualVoteRate, voteShare, voteRate)
+
 
 			let upvoteProbability = upvoteProbabilities[postNumber]
 			// let direction = Math.random() < upvoteProbability ? Direction.Up : Direction.Down
@@ -230,11 +250,9 @@ async function simulateAttentionShare() {
 		bar1.update(t);
 
 		// update stats in the DB. logTagPageView just increments counters in memory which
-		// need to be update periodicially.
-		// console.log("totalVotes", totalVotes)
-		await writeTagPageStats(tag, tagPage)	
-// export async function writeTagPageStats(tag: string, posts: number[]) {
-
+		// need to be update periodically.
+		await flushTagPageStats(tag, tagPage)	
+		
 	}
 	bar1.stop()
 
@@ -251,7 +269,7 @@ async function simulateAttentionShare() {
 		// total = total + l
 		let estimatedShare = voteShares[i]!.voteShare
 		let error = (actualShare - estimatedShare) / actualShare
-		// console.log("Location share at rank ", i + 1, "actual", actualShare, "estimated", estimatedShare, "error", error)
+		console.log("Location share at rank ", i + 1, "actual", actualShare, "estimated", estimatedShare, "error", error)
 		squareErrorLocations += error * error
 	}
 
@@ -267,6 +285,12 @@ async function simulateAttentionShare() {
 		.where("postId", ">=", postIds[0])
 		.where("tagId", "=", tagId)
 		.selectAll().orderBy("postId").execute()
+
+
+	let ts = await tagStats(tag)
+
+	console.log("Tag stats", ts)
+
 
 
 	let squareErrorPosts = 0
@@ -299,7 +323,7 @@ async function simulateAttentionShare() {
 	console.log("Mean Square error for vote rate", squareErrorPosts / nPosts)
 
 	let totalGain = await totalInformationGain(tagId)
-	let totalViews = (await tagStats(tag)).views
+	let totalViews = ts.views
 	console.log("Information gain per view", totalGain / totalViews)
 
 }

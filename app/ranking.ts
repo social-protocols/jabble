@@ -3,7 +3,7 @@ import { type Post } from '#app/db/types.ts'; // this is the Database interface 
 import { sql } from 'kysely';
 // import { cumulativeAttention } from './attention.ts';
 import assert from 'assert';
-import { logTagPageView, logTagPreview, writeTagPageStats } from './attention.ts';
+import { logTagPageView, logTagPreview, flushTagPageStats } from './attention.ts';
 import { getUserPositions, type Position } from './positions.ts';
 import { GLOBAL_PRIOR_VOTE_RATE, findTopNoteId } from './probabilities.ts';
 import { getOrInsertTagId } from './tag.ts';
@@ -43,10 +43,10 @@ let rankingsCache = new LRUCache<string, RankedPost[]>({
 
 	ttlAutopurge: true,
 
-	// when we dispose of the page from the cache, call writeTagPageStats to update attention
+	// when we dispose of the page from the cache, call flushTagPageStats to update attention
 	// stats in the DB for each post on the tag page.
 	dispose: (posts, tag, _reason) => {
-		writeTagPageStats(tag, posts.map(p => p.id))     
+		flushTagPageStats(tag, posts.map(p => p.id))     
 	},
 })
 
