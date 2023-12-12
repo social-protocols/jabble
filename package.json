@@ -14,7 +14,7 @@
     "predev": "npm run build:icons --silent",
     "dev": "remix dev -c \"node ./server/dev-server.js\" --manual",
     "prisma:studio": "prisma studio",
-    "format": "prettier --write .",
+    "format": "lint-staged",
     "lint": "eslint .",
     "setup": "npm run build && prisma generate && prisma migrate deploy && prisma db seed && playwright install",
     "start": "cross-env NODE_ENV=production node .",
@@ -148,6 +148,7 @@
     "eslint-config-prettier": "^9.0.0",
     "fs-extra": "^11.1.1",
     "jsdom": "^22.1.0",
+    "lint-staged": "^15.2.0",
     "msw": "0.0.0-fetch.rc-20",
     "node-html-parser": "^6.1.10",
     "npm-run-all": "^4.1.5",
@@ -166,5 +167,10 @@
   "epic-stack": true,
   "prisma": {
     "seed": "tsx prisma/seed.ts"
+  },
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx}": [
+      "prettier --write"
+    ]
   }
 }

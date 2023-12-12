@@ -23,6 +23,9 @@ typecheck:
 lint:
 	npm run lint
 
+format:
+  npm run format
+
 test:
 	npm run test 
 
