@@ -15,7 +15,7 @@
     "dev": "remix dev -c \"node ./server/dev-server.js\" --manual",
     "prisma:studio": "prisma studio",
     "format": "lint-staged",
-    "lint": "eslint .",
+    "lint": "eslint . --fix",
     "setup": "npm run build && prisma generate && prisma migrate deploy && prisma db seed && playwright install",
     "start": "cross-env NODE_ENV=production node .",
     "start:mocks": "cross-env NODE_ENV=production MOCKS=true tsx .",
@@ -29,7 +29,6 @@
     "typecheck": "tsc",
     "validate": "run-p \"test -- --run\" lint typecheck test:e2e:run",
     "prettier": "prettier -w app/attention.ts"
-
   },
   "eslintIgnore": [
     "/node_modules",
@@ -146,8 +145,9 @@
     "cookie": "^0.5.0",
     "enforce-unique": "^1.1.1",
     "esbuild": "^0.19.3",
-    "eslint": "^8.50.0",
-    "eslint-config-prettier": "^9.0.0",
+    "eslint": "^8.55.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.0.1",
     "fs-extra": "^11.1.1",
     "jsdom": "^22.1.0",
     "lint-staged": "^15.2.0",
