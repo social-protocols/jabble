@@ -1,37 +1,38 @@
+import { db } from '#app/db.ts'
+import { type TagStats } from '#app/db/types.ts'
 
-import { db } from "#app/db.ts";
-import { type TagStats } from "#app/db/types.ts";
+import { getOrInsertTagId } from './tag.ts'
 
-import { getOrInsertTagId } from './tag.ts';
+import { GammaDistribution } from './beta-gamma-distribution.ts'
 
-import { GammaDistribution } from './beta-gamma-distribution.ts';
-
- import assert from "node:assert";
-import { sql } from 'kysely';
+import { sql } from 'kysely'
+import assert from 'node:assert'
 
 // Global prior votes/view. The TagStats table keeps track of votes/view per tag, but
 // we need to start with some prior. This value is currently just a wild guess.
-export const GLOBAL_PRIOR_VOTES_PER_VIEW = new GammaDistribution(.002, 1000)
-
+export const GLOBAL_PRIOR_VOTES_PER_VIEW = new GammaDistribution(0.002, 1000)
 
 export enum LocationType {
 	NewPost = 0,
 	TagPage = 1,
-	PostReplies = 2
+	PostReplies = 2,
 }
 
 export type Location = {
-	locationType: LocationType,
+	locationType: LocationType
 	oneBasedRank: number
 }
 
-
-type TagStatsAccumulator = { filter: Map<String, boolean>, views: number, votes: number, previews: number }
+type TagStatsAccumulator = {
+	filter: Map<String, boolean>
+	views: number
+	votes: number
+	previews: number
+}
 
 let statsForTag = new Map<string, TagStatsAccumulator>()
 
 function getOrCreateStatsForTag(tag: string): TagStatsAccumulator {
-
 	let stats = statsForTag.get(tag)
 
 	if (stats == undefined) {
@@ -51,17 +52,18 @@ export function logTagVote(tag: string) {
 	stats.votes += 1
 }
 
-
-export async function logPostPageView(_tag: string, _postId: number, _userId: string | null) {
+export async function logPostPageView(
+	_tag: string,
+	_postId: number,
+	_userId: string | null,
+) {
 	// todo
 }
 
-
 export function logTagPreview(userId: string, tag: string) {
-
 	let stats = getOrCreateStatsForTag(tag)
 	let filter = stats.filter
-	let key = userId;
+	let key = userId
 
 	if (!filter.has(key)) {
 		filter.set(key, true)
@@ -70,10 +72,9 @@ export function logTagPreview(userId: string, tag: string) {
 }
 
 export function logTagPageView(userId: string, tag: string) {
-
 	let stats = getOrCreateStatsForTag(tag)
 	let filter = stats.filter
-	let key = userId;
+	let key = userId
 
 	if (!filter.has(key)) {
 		filter.set(key, true)
@@ -82,46 +83,47 @@ export function logTagPageView(userId: string, tag: string) {
 }
 
 export async function flushTagPageStats(tag: string, posts: number[]) {
-
 	let tagId = await getOrInsertTagId(tag)
 
 	let deltaViews = 0
 	let deltaVotes = 0
 
-	let stats = statsForTag.get(tag) 
+	let stats = statsForTag.get(tag)
 	if (stats != undefined) {
 		deltaViews = stats.views
 		deltaVotes = stats.votes
 	}
 
-
 	// Read total votes. Currently, CurrentTally is a view that sums over entire voteHistory.
 	// This is super inefficient, but simple for now.
 
-	const prior = GLOBAL_PRIOR_VOTES_PER_VIEW.update({ count: deltaVotes, total: deltaViews })
+	const prior = GLOBAL_PRIOR_VOTES_PER_VIEW.update({
+		count: deltaVotes,
+		total: deltaViews,
+	})
 
 	let votesPerView = 0
 	// Update tag stats, including total votes, views, and a moving average votesPerView
 	{
-
-		let movingAverageAlpha = .9999
+		let movingAverageAlpha = 0.9999
 		let windowSize = 1 / (1 - movingAverageAlpha)
 
-
-		assert(deltaViews > 0, "deltaViews > 0 -- there shouldn't be any votes without views")
+		assert(
+			deltaViews > 0,
+			"deltaViews > 0 -- there shouldn't be any votes without views",
+		)
 
 		let decayFactor = movingAverageAlpha ** deltaViews
 
 		const query = db
 			.insertInto('TagStats')
-			.values({ 
-				tagId: tagId, 
+			.values({
+				tagId: tagId,
 				views: prior.weight,
-				votesPerView: prior.average
+				votesPerView: prior.average,
 			})
-			.onConflict((oc) => oc
-				.column('tagId')
-				.doUpdateSet({
+			.onConflict(oc =>
+				oc.column('tagId').doUpdateSet({
 					views: eb => eb('views', '+', deltaViews),
 					votesPerView: sql<number>`
 						case 
@@ -130,12 +132,10 @@ export async function flushTagPageStats(tag: string, posts: number[]) {
 						else 
 							votesPerView * ${decayFactor} + ${deltaVotes}/${deltaViews}*(1 - ${decayFactor})
 						end
-					`
-
-
-				})
+					`,
+				}),
 			)
-			.returningAll();
+			.returningAll()
 
 		const result = await query.execute()
 
@@ -151,7 +151,7 @@ export async function flushTagPageStats(tag: string, posts: number[]) {
 	for (let i = 0; i < posts.length; i++) {
 		await savePostStats(
 			tagId,
-			posts[i]!, 
+			posts[i]!,
 			{ locationType: LocationType.TagPage, oneBasedRank: i + 1 },
 
 			deltaAttention,
@@ -161,13 +161,25 @@ export async function flushTagPageStats(tag: string, posts: number[]) {
 	statsForTag.delete(tag)
 }
 
-
-export async function logAuthorView(_userId: string, tagId: number, postId: number) {
-	await savePostStats(tagId, postId, { locationType: LocationType.NewPost, oneBasedRank: 1 }, 1)	
+export async function logAuthorView(
+	_userId: string,
+	tagId: number,
+	postId: number,
+) {
+	await savePostStats(
+		tagId,
+		postId,
+		{ locationType: LocationType.NewPost, oneBasedRank: 1 },
+		1,
+	)
 }
 
-async function savePostStats(tagId: number, postId: number, location: Location, deltaAttention: number) {
-
+async function savePostStats(
+	tagId: number,
+	postId: number,
+	location: Location,
+	deltaAttention: number,
+) {
 	// if (results.length == 0) {
 	let query = db
 		.insertInto('PostStats')
@@ -180,17 +192,20 @@ async function savePostStats(tagId: number, postId: number, location: Location, 
 			views: 1,
 		})
 		// ignore conflict
-		.onConflict((oc) => oc.column('postId').doNothing())
+		.onConflict(oc => oc.column('postId').doNothing())
 	await query.execute()
 	// console.log("REsult of initial insert", tagId, postId, result)
-
 
 	await db
 		.updateTable('PostStats')
 		.from('LocationStats')
 		// .from('TagStats')
 		.set(({ eb, ref }) => ({
-			attention: eb('attention', '+', eb(ref('voteShare'), '*', deltaAttention)),
+			attention: eb(
+				'attention',
+				'+',
+				eb(ref('voteShare'), '*', deltaAttention),
+			),
 			views: eb('views', '+', 1),
 		}))
 		.where('LocationStats.locationType', '=', location.locationType)
@@ -201,12 +216,8 @@ async function savePostStats(tagId: number, postId: number, location: Location, 
 		.returningAll()
 		.execute()
 
-
-	return; 
-
+	return
 }
-
-
 
 /*
 
@@ -246,20 +257,19 @@ location.
 
 // This needs to be quite small. We want to use an exponentially weighted moving average to detect the gradual changes in user behavior over time
 // But we want the moving average window to be quite big so as to have more accurate data. Especially for locations/ranks where we don't get
-// a lot of data. 
-const movingAverageAlpha = .9999
+// a lot of data.
+const movingAverageAlpha = 0.9999
 const windowSize = 1 / (1 - movingAverageAlpha)
 
 export async function logVoteOnRandomlyRankedPost(location: Location) {
-
 	const result = await db
 		.updateTable('ExplorationStats')
 		.set(eb => ({
-			votes: eb('votes', '+', 1)
+			votes: eb('votes', '+', 1),
 			// votes: sql<number>`excluded.votes + 1`  // increment votes by 1
 		}))
 		.returning('votes')
-		.execute();
+		.execute()
 
 	const sitewideVotes: number = result[0]!.votes
 
@@ -286,30 +296,30 @@ export async function logVoteOnRandomlyRankedPost(location: Location) {
 					voteShare * pow(${movingAverageAlpha}, ${sitewideVotes} - latestSitewideVotes) + (1 - ${movingAverageAlpha})
 				end
 				`,
-			latestSitewideVotes: sitewideVotes
+			latestSitewideVotes: sitewideVotes,
 		}))
 
 	// console.log("Update location stats Query is", query.compile())
 
-	await query.execute();
+	await query.execute()
 
 	// console.log("Logged exploration vote", result)
 }
 
-
-
 // Seed locationStats with a good guess about the relative number of votes at each location
 export async function seedStats() {
-
 	await db.deleteFrom('ExplorationStats').execute()
 	await db.deleteFrom('LocationStats').execute()
 
-	const startingSitewideVotes = 1000 
+	const startingSitewideVotes = 1000
 	// const startingSitewideViews = 1000
-	db.insertInto('ExplorationStats').values({ votes: startingSitewideVotes }).onConflict(oc => oc.doNothing()).execute()
+	db.insertInto('ExplorationStats')
+		.values({ votes: startingSitewideVotes })
+		.onConflict(oc => oc.doNothing())
+		.execute()
 
 	// Rough guess of vote share at position 1 just for seeding.
-	const rankOneVoteShare = .08
+	const rankOneVoteShare = 0.08
 	let locationType = LocationType.TagPage
 
 	// loop i from 1 to 90
@@ -325,18 +335,13 @@ export async function seedStats() {
 				voteShare: voteShare, // Initial vote count for a new entry
 				latestSitewideVotes: startingSitewideVotes, // Indicates strength of our prior about the voteShare per location
 			})
-			.execute();
-	
+			.execute()
 
 		// set sitewideUpvotes
 	}
-
 }
 
-
-
 export async function tagStats(tag: string): Promise<TagStats> {
-
 	let tagId = await getOrInsertTagId(tag)
 
 	return await db
@@ -344,6 +349,4 @@ export async function tagStats(tag: string): Promise<TagStats> {
 		.where('tagId', '=', tagId)
 		.selectAll()
 		.executeTakeFirstOrThrow()
-
 }
-
