@@ -1,33 +1,34 @@
 // import { Spacer } from '#app/components/spacer.tsx'
 // import { Icon } from '#app/components/ui/icon.tsx'
-import { logTagPageView } from "#app/attention.ts"
 import { json, type DataFunctionArgs } from '@remix-run/node'
-// import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { useLoaderData, type ShouldRevalidateFunction } from '@remix-run/react'
+import { type ActionFunctionArgs } from '@remix-run/node'
+import {
+	useLoaderData,
+	type ShouldRevalidateFunction,
+	Link,
+} from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
+import { logTagPageView } from '#app/attention.ts'
+// import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 
 // import { db } from "#app/db.ts"
 // import { getPost } from "#app/post.ts"
 // import { topNote, voteRate } from '#app/probabilities.ts'
 
-import { getRankedPosts } from "#app/ranking.ts"
+import { TagFeed } from '#app/components/ui/feed.tsx'
+import { PostForm } from '#app/components/ui/post-form.tsx'
+import { getUserPositions, type Position } from '#app/positions.ts'
+import { createPost } from '#app/post.ts'
+import { getRankedPosts } from '#app/ranking.ts'
 // import { invariantResponse } from '#app/utils/misc.tsx'
 
 // import { Feed } from "#app/components/ui/feed.tsx"
 
-import { getUserPositions } from '#app/positions.ts'
-import { requireUserId } from '#app/utils/auth.server.ts'
+import { requireUserId, getUserId } from '#app/utils/auth.server.ts'
 
-import { PostForm } from '#app/components/ui/post-form.tsx'
-import { createPost } from '#app/post.ts'
-import { getUserId } from "#app/utils/auth.server.ts"
-import type { ActionFunctionArgs } from "@remix-run/node"
 // import {type PostId } from '#app/post.ts'
-import { TagFeed } from "#app/components/ui/feed.tsx"
-import { type Position } from '#app/positions.ts'
-import { Direction } from "#app/vote.ts"
-import { Link } from '@remix-run/react'
+import { type Direction } from '#app/vote.ts'
 // const GLOBAL_TAG = "global";
 
 const tagSchema = z.coerce.string()
@@ -38,12 +39,16 @@ export async function loader({ params, request }: DataFunctionArgs) {
 	invariant(tag, 'Missing tag param')
 
 	const userId: string | null = await getUserId(request)
-  
+
 	const posts = await getRankedPosts(tag)
 	let positions: Position[] = []
 	if (userId) {
 		logTagPageView(userId, tag)
-		positions = await getUserPositions(userId, tag, posts.map(p => p.id))
+		positions = await getUserPositions(
+			userId,
+			tag,
+			posts.map(p => p.id),
+		)
 	}
 
 	return json({ posts, userId, positions, tag })
@@ -61,10 +66,10 @@ export default function TagPage() {
 	return (
 		<>
 			<div>
-				<Link to={`/`}>Home</Link> 
+				<Link to={`/`}>Home</Link>
 				&nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
 			</div>
-			<div className='flex flex-col place-items-center'>
+			<div className="flex flex-col place-items-center">
 				<PostForm tag={tag} />
 				<TagFeed posts={posts} tag={tag} positions={p} />
 			</div>
@@ -76,23 +81,24 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 	const userId: string = await requireUserId(request)
 
 	const formData = await request.formData()
-	const d = Object.fromEntries(formData);
-  
+	const d = Object.fromEntries(formData)
+
 	const tag: string = tagSchema.parse(d.tag)
 	const content: string = contentSchema.parse(d.newPostContent)
-	invariant(content, "content !== undefined")
+	invariant(content, 'content !== undefined')
 	invariant(tag, "tag !== ''")
 
 	const newPostId = await createPost(tag, null, content, userId)
-  
+
 	return true
-};
+}
 
-export const shouldRevalidate: ShouldRevalidateFunction = (args: { formAction?: string | undefined }) => {
-
+export const shouldRevalidate: ShouldRevalidateFunction = (args: {
+	formAction?: string | undefined
+}) => {
 	// Optimization that makes it so /votes don't reload the page
-	if (args.formAction == "/vote") {
+	if (args.formAction == '/vote') {
 		return false
 	}
-	return true;
-};
+	return true
+}

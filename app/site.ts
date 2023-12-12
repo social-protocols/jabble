@@ -1,2 +1,1 @@
-
-export const SITE_NAME = "The Social Network"
+export const SITE_NAME = 'The Social Network'

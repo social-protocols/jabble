@@ -1,24 +1,15 @@
-import { prisma } from '#app/utils/db.server.ts';
+import { sql } from 'kysely'
+import { seedStats } from '#app/attention.ts'
+import { db } from '#app/db.ts'
+import { createPost } from '#app/post.ts'
+import { getRankedPosts } from '#app/ranking.ts'
+import { prisma } from '#app/utils/db.server.ts'
 // import * as fs from 'fs';
 
-import {
-	cleanupDb,
-	createPassword,
-} from '#tests/db-utils.ts';
-
-import { createPost } from '#app/post.ts';
-import { Direction, vote } from '#app/vote.ts';
-
-import { getRankedPosts } from '#app/ranking.ts';
-
-import { seedStats } from '#app/attention.ts';
-
-import { db } from '#app/db.ts';
-
-import {sql} from 'kysely';
+import { Direction, vote } from '#app/vote.ts'
+import { cleanupDb, createPassword } from '#tests/db-utils.ts'
 
 export async function seed() {
-
 	console.time('🔑 Created permissions...')
 	const entities = ['user', 'note']
 	const actions = ['create', 'read', 'update', 'delete']
@@ -57,16 +48,19 @@ export async function seed() {
 	})
 	console.timeEnd('👑 Created roles...')
 
-
-
 	// since prisma provides the cuid() function (not supported by sqlite), we use prisma statements instead of sql to create users
 	// insert into user(idInt, username, email) values (100, "alice", "alice@test.com");
 	// insert into user(idInt, username, email) values (101, "bob", "bob@test.com");
-	let alice = "100"
-	let bob = "101"
-	let charlie = "102"
+	let alice = '100'
+	let bob = '101'
+	let charlie = '102'
 	await prisma.user.create({
-		data: { id: alice, username: 'alice', email: 'alice@test.com', password: { create: createPassword('alice') } },
+		data: {
+			id: alice,
+			username: 'alice',
+			email: 'alice@test.com',
+			password: { create: createPassword('alice') },
+		},
 	})
 	await prisma.user.create({
 		data: { id: '101', username: 'bob', email: 'bob@test.com' },
@@ -75,20 +69,28 @@ export async function seed() {
 		data: { id: '102', username: 'charlie', email: 'charlie@test.com' },
 	})
 
-
 	await seedStats()
 
-
 	// First, alice creates a post
-	const tag = "global"
-	let post1 = await createPost(tag, null, 'So, pregnant people can’t cross state lines to get abortions but guys like Kyle Rittenhouse can cross state lines to murder people. Seems fair.', alice)	
+	const tag = 'global'
+	let post1 = await createPost(
+		tag,
+		null,
+		'So, pregnant people can’t cross state lines to get abortions but guys like Kyle Rittenhouse can cross state lines to murder people. Seems fair.',
+		alice,
+	)
 
 	// Then, bob views the page
 	let posts = await getRankedPosts(tag)
 	// logTagPageView(bob, tag, posts)
 
 	// Then bob posts a response to alice's post
-	let post2 = await createPost(tag, post1, 'Kyle Rittenhouse was acquitted of murder charges. Clear video evidence showed he acted in self defense.', bob)	
+	let post2 = await createPost(
+		tag,
+		post1,
+		'Kyle Rittenhouse was acquitted of murder charges. Clear video evidence showed he acted in self defense.',
+		bob,
+	)
 
 	// And also downvotes (with their own post as a note -- this is an important detail)
 	await vote(tag, bob, post1, post2, Direction.Down, null)
@@ -98,20 +100,40 @@ export async function seed() {
 	// logTagPageView(alice, tag, posts)
 
 	// And responds to bob's response
-	let post3 = await createPost(tag, post2, 'That trial was a sham. They were never going to convict.', alice)
+	let post3 = await createPost(
+		tag,
+		post2,
+		'That trial was a sham. They were never going to convict.',
+		alice,
+	)
 
 	// And then creates another unrelated post
-	let post4 = await createPost(tag, null, 'Sudafed, Benadryl and most decongestants don’t work: FDA advisory panel https://trib.al/sJmOJBP', alice)
+	let post4 = await createPost(
+		tag,
+		null,
+		'Sudafed, Benadryl and most decongestants don’t work: FDA advisory panel https://trib.al/sJmOJBP',
+		alice,
+	)
 
 	// Bob then views the page again
 	posts = await getRankedPosts(tag)
 	// logTagPageView(bob, tag, posts)
 
 	// And respond's to Alices's latest post
-	await createPost(tag, post4, 'This is misleading. Regular Benadryl is an antihistamine; it is not a decongestant. There is a Benadryl branded product that is impacted. https://www.nbcnews.com/news/amp/rcna104424', bob)
+	await createPost(
+		tag,
+		post4,
+		'This is misleading. Regular Benadryl is an antihistamine; it is not a decongestant. There is a Benadryl branded product that is impacted. https://www.nbcnews.com/news/amp/rcna104424',
+		bob,
+	)
 
 	// Alice post's again
-	let post6 = await createPost(tag, null, 'Right now, real wages for the average American worker is higher than it was before the pandemic, with lower wage workers seeing the largest gains. That\'s Bidenomics.', alice)
+	let post6 = await createPost(
+		tag,
+		null,
+		"Right now, real wages for the average American worker is higher than it was before the pandemic, with lower wage workers seeing the largest gains. That's Bidenomics.",
+		alice,
+	)
 
 	// Bob then views the page once again
 	posts = await getRankedPosts(tag)
@@ -119,7 +141,12 @@ export async function seed() {
 	// logTagPageView(bob, tag, posts)
 
 	// And respond's to Alice's third post
-	let post7 = await createPost(tag, post6, 'The tweet\'s claim about real wages contains a factual error. On 3/15/20 when US COVID lockdowns began real wages adjusted for inflation (AFI) were $11.15. As of 7/16/23 real wages AFI are $11.05. Real wages AFI remain lower (not higher) than before the pandemic.', bob)
+	let post7 = await createPost(
+		tag,
+		post6,
+		"The tweet's claim about real wages contains a factual error. On 3/15/20 when US COVID lockdowns began real wages adjusted for inflation (AFI) were $11.15. As of 7/16/23 real wages AFI are $11.05. Real wages AFI remain lower (not higher) than before the pandemic.",
+		bob,
+	)
 	await vote(tag, alice, post6, post7, Direction.Down, null)
 
 	// agreed with 2 (shown 3)
@@ -140,18 +167,20 @@ export async function seed() {
 	await vote(tag, charlie, post2, post3, Direction.Down, null)
 	await vote(tag, charlie, post2, post3, Direction.Up, null)
 
-
-
 	// Add a developer user and session ID that is already in my browser, so I remain logged in after I reseed the DB.
 	await prisma.user.create({
-		data: { id: "clptz40870002cdvq8rqkbfs5", username: 'developer', email: 'test@test.com', password: { create: createPassword('jonathan') } },
+		data: {
+			id: 'clptz40870002cdvq8rqkbfs5',
+			username: 'developer',
+			email: 'test@test.com',
+			password: { create: createPassword('jonathan') },
+		},
 	})
 
-	await sql`insert into session(id, expirationDate, createdAt, updatedAt, userId) values ('clptz40870001cdvqn4rnggxv', 1704471496999, 1701877981251, 1701877981251, 'clptz40870002cdvq8rqkbfs5')`
-		.execute(db)
-
+	await sql`insert into session(id, expirationDate, createdAt, updatedAt, userId) values ('clptz40870001cdvqn4rnggxv', 1704471496999, 1701877981251, 1701877981251, 'clptz40870002cdvq8rqkbfs5')`.execute(
+		db,
+	)
 }
-
 
 seed()
 	.catch(e => {

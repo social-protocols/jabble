@@ -26,8 +26,10 @@ import {
 import { withSentry } from '@sentry/remix'
 import { useRef } from 'react'
 import { AuthenticityTokenProvider } from 'remix-utils/csrf/react'
+import { ExternalScripts } from 'remix-utils/external-scripts'
 import { HoneypotProvider } from 'remix-utils/honeypot/react'
 import { z } from 'zod'
+import voteStyleSheetUrl from '#app/styles/vote.css'
 import { GeneralErrorBoundary } from './components/error-boundary.tsx'
 import { ErrorList } from './components/forms.tsx'
 import { EpicProgress } from './components/progress-bar.tsx'
@@ -42,6 +44,7 @@ import {
 	DropdownMenuTrigger,
 } from './components/ui/dropdown-menu.tsx'
 import { Icon, href as iconsHref } from './components/ui/icon.tsx'
+import { SITE_NAME } from './site.ts'
 import tailwindStyleSheetUrl from './styles/tailwind.css'
 import { getUserId, logout } from './utils/auth.server.ts'
 import { ClientHintCheck, getHints, useHints } from './utils/client-hints.tsx'
@@ -59,10 +62,6 @@ import { useOptionalUser, useUser } from './utils/user.ts'
 // import { db } from "#app/db.ts";
 // import { Feed } from './components/ui/feed.tsx'
 // import { type Post } from '#app/db/types.ts'
-import voteStyleSheetUrl from '#app/styles/vote.css'
-import { ExternalScripts } from "remix-utils/external-scripts"
-
-import { SITE_NAME } from './site.ts'
 
 export const links: LinksFunction = () => {
 	return [
@@ -87,7 +86,7 @@ export const links: LinksFunction = () => {
 		{ rel: 'icon', type: 'image/svg+xml', href: '/favicons/favicon.svg' },
 		{ rel: 'stylesheet', href: tailwindStyleSheetUrl },
 		cssBundleHref ? { rel: 'stylesheet', href: cssBundleHref } : null,
-		{ rel: 'stylesheet', href: voteStyleSheetUrl }
+		{ rel: 'stylesheet', href: voteStyleSheetUrl },
 	].filter(Boolean)
 }
 
@@ -108,18 +107,18 @@ export async function loader({ request }: DataFunctionArgs) {
 
 	const user = userId
 		? await time(
-			() =>
-				prisma.user.findUniqueOrThrow({
-					select: {
-						id: true,
-						name: true,
-						username: true,
-						image: { select: { id: true } },
-					},
-					where: { id: userId },
-				}),
-			{ timings, type: 'find user', desc: 'find user in root' },
-		)
+				() =>
+					prisma.user.findUniqueOrThrow({
+						select: {
+							id: true,
+							name: true,
+							username: true,
+							image: { select: { id: true } },
+						},
+						where: { id: userId },
+					}),
+				{ timings, type: 'find user', desc: 'find user in root' },
+		  )
 		: null
 	if (userId && !user) {
 		console.info('something weird happened')
@@ -259,7 +258,7 @@ function App() {
 					</nav>
 				</header>
 
-				<div className="flex-1 mx-auto">
+				<div className="mx-auto flex-1">
 					<Outlet />
 				</div>
 

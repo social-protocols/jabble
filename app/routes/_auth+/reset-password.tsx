@@ -1,12 +1,3 @@
-import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { ErrorList, Field } from '#app/components/forms.tsx'
-import { StatusButton } from '#app/components/ui/status-button.tsx'
-import { SITE_NAME } from '#app/site.ts'
-import { requireAnonymous, resetUserPassword } from '#app/utils/auth.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
-import { invariant, useIsPending } from '#app/utils/misc.tsx'
-import { PasswordAndConfirmPasswordSchema } from '#app/utils/user-validation.ts'
-import { verifySessionStorage } from '#app/utils/verification.server.ts'
 import { conform, useForm } from '@conform-to/react'
 import { getFieldsetConstraint, parse } from '@conform-to/zod'
 import {
@@ -16,6 +7,15 @@ import {
 	type MetaFunction,
 } from '@remix-run/node'
 import { Form, useActionData, useLoaderData } from '@remix-run/react'
+import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { ErrorList, Field } from '#app/components/forms.tsx'
+import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { SITE_NAME } from '#app/site.ts'
+import { requireAnonymous, resetUserPassword } from '#app/utils/auth.server.ts'
+import { prisma } from '#app/utils/db.server.ts'
+import { invariant, useIsPending } from '#app/utils/misc.tsx'
+import { PasswordAndConfirmPasswordSchema } from '#app/utils/user-validation.ts'
+import { verifySessionStorage } from '#app/utils/verification.server.ts'
 import { type VerifyFunctionArgs } from './verify.tsx'
 
 const resetPasswordUsernameSessionKey = 'resetPasswordUsername'

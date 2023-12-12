@@ -1,14 +1,14 @@
-import { clearRankingsCache } from '#app/ranking.ts'
 import { installGlobals } from '@remix-run/node'
 import chalk from 'chalk'
 import closeWithGrace from 'close-with-grace'
+import { clearRankingsCache } from '#app/ranking.ts'
 import 'dotenv/config'
 import 'source-map-support/register.js'
 
 installGlobals()
 
 closeWithGrace(async ({ err }) => {
-	console.log("Received shutdown signal.")
+	console.log('Received shutdown signal.')
 	await clearRankingsCache()
 	if (err) {
 		console.error(chalk.red(err))

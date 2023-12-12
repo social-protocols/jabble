@@ -1,37 +1,44 @@
-import { db } from "#app/db.ts";
-import { type Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
-import { sql } from 'kysely';
+import assert from 'assert'
+import { sql } from 'kysely'
+import { LRUCache } from 'lru-cache'
+import { type Post } from '#app/db/types.ts' // this is the Database interface we defined earlier
+import { db } from '#app/db.ts'
 // import { cumulativeAttention } from './attention.ts';
-import assert from 'assert';
-import { logTagPageView, logTagPreview, flushTagPageStats } from './attention.ts';
-import { getUserPositions, type Position } from './positions.ts';
-import { GLOBAL_PRIOR_VOTE_RATE, findTopNoteId } from './probabilities.ts';
-import { getOrInsertTagId } from './tag.ts';
-
+import {
+	logTagPageView,
+	logTagPreview,
+	flushTagPageStats,
+} from './attention.ts'
+import { getUserPositions, type Position } from './positions.ts'
+import { GLOBAL_PRIOR_VOTE_RATE, findTopNoteId } from './probabilities.ts'
+import { getOrInsertTagId } from './tag.ts'
 
 type ScoreData = {
-	attention: number,
-	p: number,
-	q: number,
-	score: number,
-	voteRate: number,
-	voteTotal: number,
-	voteCount: number,
-	informationValue: number,
-	informationRate: number,
+	attention: number
+	p: number
+	q: number
+	score: number
+	voteRate: number
+	voteTotal: number
+	voteCount: number
+	informationValue: number
+	informationRate: number
 	topNoteId: number | null
 }
 
-export type RankedPost = Post & ScoreData & { random: boolean, note: Post | null }
-type PostWithStats = Post & { attention: number, voteCount: number, voteTotal: number }
+export type RankedPost = Post &
+	ScoreData & { random: boolean; note: Post | null }
+type PostWithStats = Post & {
+	attention: number
+	voteCount: number
+	voteTotal: number
+}
 
 // const fatigueFactor = .9
-const randomPoolSize = .1
+const randomPoolSize = 0.1
 const attentionCutoff = 2 // Note all posts start with 1 unit of attention (from poster)
 
 export const MAX_RESULTS = 90
-
-import { LRUCache } from 'lru-cache';
 
 let rankingsCache = new LRUCache<string, RankedPost[]>({
 	max: 100,
@@ -46,7 +53,10 @@ let rankingsCache = new LRUCache<string, RankedPost[]>({
 	// when we dispose of the page from the cache, call flushTagPageStats to update attention
 	// stats in the DB for each post on the tag page.
 	dispose: (posts, tag, _reason) => {
-		flushTagPageStats(tag, posts.map(p => p.id))     
+		flushTagPageStats(
+			tag,
+			posts.map(p => p.id),
+		)
 	},
 })
 
@@ -62,7 +72,6 @@ export async function clearRankingsCache() {
 }
 
 export async function getRankedPosts(tag: string): Promise<RankedPost[]> {
-
 	let tagId = await getOrInsertTagId(tag)
 
 	let result = rankingsCache.get(tag)
@@ -75,8 +84,6 @@ export async function getRankedPosts(tag: string): Promise<RankedPost[]> {
 	return result
 }
 
-
-
 async function getPostsWithStats(tagId: number): Promise<PostWithStats[]> {
 	// Select all posts, along with vote tallies and attention
 	let query = db
@@ -84,58 +91,51 @@ async function getPostsWithStats(tagId: number): Promise<PostWithStats[]> {
 		.innerJoin('CurrentTally', 'CurrentTally.postId', 'Post.id')
 		.where('CurrentTally.tagId', '=', tagId)
 		.where('Post.parentId', 'is', null)
-		.leftJoin(
-			'PostStats',
-			(join) => join
+		.leftJoin('PostStats', join =>
+			join
 				.onRef('PostStats.postId', '=', 'Post.id')
-				.on('PostStats.tagId', '=', tagId)
+				.on('PostStats.tagId', '=', tagId),
 		)
-		.select(
-			sql<number>`COALESCE(PostStats.attention, 0)`.as('attention')
-		).select(
-			sql<number>`COALESCE(CurrentTally.total, 0)`.as('voteTotal')
-		).select(
-			sql<number>`COALESCE(CurrentTally.count, 0)`.as('voteCount'),
-		)
+		.select(sql<number>`COALESCE(PostStats.attention, 0)`.as('attention'))
+		.select(sql<number>`COALESCE(CurrentTally.total, 0)`.as('voteTotal'))
+		.select(sql<number>`COALESCE(CurrentTally.count, 0)`.as('voteCount'))
 		.selectAll('Post')
 		.orderBy('attention', 'asc')
-		;
-
 	let allPosts: PostWithStats[] = await query.execute()
 
 	return allPosts
-
 }
 
-
 async function getRankedPostsInternal(tagId: number): Promise<RankedPost[]> {
-
 	let allPosts = await getPostsWithStats(tagId)
 
 	let nPosts = allPosts.length
 
 	// Then score each post
-	let scoredPosts = await Promise.all(allPosts.map(async post => {
-		let s = await score(tagId, post)
+	let scoredPosts = await Promise.all(
+		allPosts.map(async post => {
+			let s = await score(tagId, post)
 
-		return {
-			...post, ...s
-		}
-	}))
+			return {
+				...post,
+				...s,
+			}
+		}),
+	)
 	scoredPosts = scoredPosts.filter(p => p.informationValue > 0)
-
 
 	// Then split into two pools: rankedPosts, and randomPosts, based on
 	// whether cumulative attention is above or below the cutoff.
 
 	let rankedPosts = scoredPosts
 		.filter(p => p.attention >= attentionCutoff)
-		.sort((a, b) => { return b.score - a.score })
+		.sort((a, b) => {
+			return b.score - a.score
+		})
 	let nRankedPosts = rankedPosts.length
 
 	let randomPosts = scoredPosts.filter(p => p.attention < attentionCutoff)
 	let nRandomPosts = randomPosts.length
-
 
 	let nResults = nPosts
 	if (nResults > MAX_RESULTS) {
@@ -153,60 +153,62 @@ async function getRankedPostsInternal(tagId: number): Promise<RankedPost[]> {
 	let results: RankedPost[] = Array(nResults)
 	let nInsertions = 0
 	for (let i = 0; i < nResults; i++) {
-
 		let ep
 		let p = null
 
-		if (i < nRankedPosts && Math.random() > randomPoolSize || nRandomPosts == 0) {
+		if (
+			(i < nRankedPosts && Math.random() > randomPoolSize) ||
+			nRandomPosts == 0
+		) {
 			p = rankedPosts[i - nInsertions]
 			// console.log("Taking post ranked", i, i - nInsertions)
 			ep = false
 		} else {
-			assert(nRandomPosts > 0, "nRandomPosts > 0") // this must be true if my logic is correct. But is my logic correct.
+			assert(nRandomPosts > 0, 'nRandomPosts > 0') // this must be true if my logic is correct. But is my logic correct.
 			let randomPostNum = Math.floor(Math.random() * nRandomPosts)
 			// console.log("Taking random post", i, nRandomPosts, randomPostNum)
 			p = randomPosts[randomPostNum]
 			randomPosts.splice(randomPostNum, 1)
 			nRandomPosts--
-			assert(nRandomPosts == randomPosts.length, "nRandomPosts == randomPosts.length")
+			assert(
+				nRandomPosts == randomPosts.length,
+				'nRandomPosts == randomPosts.length',
+			)
 			nInsertions += 1
 			ep = true
 		}
 		assert(p !== undefined)
-		let s = { oneBasedRank: i + 1, random: ep };
+		let s = { oneBasedRank: i + 1, random: ep }
 
-		let note = p.topNoteId !== null
-			? await db
-				.selectFrom('Post')
-				.where('Post.id', '=', p.topNoteId)
-				.selectAll()
-				.executeTakeFirstOrThrow()
-			: null
-
+		let note =
+			p.topNoteId !== null
+				? await db
+						.selectFrom('Post')
+						.where('Post.id', '=', p.topNoteId)
+						.selectAll()
+						.executeTakeFirstOrThrow()
+				: null
 
 		results[i] = { ...p, ...s, note }
 	}
 
-
-
 	return results
 }
-
 
 async function score(tagId: number, post: PostWithStats): Promise<ScoreData> {
 	// find informed probability
 
-
-
-	const [topNoteId, p, q] = await findTopNoteId(tagId, post.id);
+	const [topNoteId, p, q] = await findTopNoteId(tagId, post.id)
 
 	// https://social-protocols.org/y-docs/information-value.html
-	let informationValue = (1 + Math.log2(q))
+	let informationValue = 1 + Math.log2(q)
 
-	let voteRate = GLOBAL_PRIOR_VOTE_RATE.update({ count: post.voteTotal, total: post.attention }).average
+	let voteRate = GLOBAL_PRIOR_VOTE_RATE.update({
+		count: post.voteTotal,
+		total: post.attention,
+	}).average
 
-
-	// The formula below gives us attention adjusted for fatigue. 
+	// The formula below gives us attention adjusted for fatigue.
 	// Our decay model says that effective attention (e.g. the vote rate) decays exponentially, so the *derivative* of the formula below
 	// should be e**(-fatigueFactor*a). So the function below starts at being roughly equal to a but then as a increases
 	// it levels off.
@@ -214,7 +216,6 @@ async function score(tagId: number, post: PostWithStats): Promise<ScoreData> {
 
 	// This is our ranking score!
 	let informationRate = voteRate * informationValue
-
 
 	// if (post.id == 10) {
 	//      console.log("Stats for post 10", post, p, q, voteRate, informationValue)
@@ -234,68 +235,68 @@ async function score(tagId: number, post: PostWithStats): Promise<ScoreData> {
 	}
 }
 
-
 export async function totalInformationGain(tagId: number): Promise<number> {
-
 	let allPosts = await getPostsWithStats(tagId)
 	// console.log("All posts", allPosts.length, tagId)
 
 	// Then score each post
-	let informationGain = await Promise.all(allPosts.map(async post => {
-		let s = await score(tagId, post)
+	let informationGain = await Promise.all(
+		allPosts.map(async post => {
+			let s = await score(tagId, post)
 
-		let informationGain = s.voteTotal * s.informationValue
-		// console.log("Information gain ", post.id, s.voteTotal, s.q, s.informationValue)
-		return informationGain
+			let informationGain = s.voteTotal * s.informationValue
+			// console.log("Information gain ", post.id, s.voteTotal, s.q, s.informationValue)
+			return informationGain
+		}),
+	)
 
-	}))
-
-	return informationGain.reduce((sum, current) => sum + current, 0);
+	return informationGain.reduce((sum, current) => sum + current, 0)
 }
 
-export async function getRankedNotes(tag: string, postId: number): Promise<Post[]> {
+export async function getRankedNotes(
+	tag: string,
+	postId: number,
+): Promise<Post[]> {
 	const tagId = await getOrInsertTagId(tag)
 
 	return await db
-		.selectFrom("Post")
-		.innerJoin("CurrentTally", "postId", "Post.id")
-		.where("CurrentTally.tagId", "=", tagId)
-		.where("Post.parentId", "=", postId)
-		.selectAll("Post")
+		.selectFrom('Post')
+		.innerJoin('CurrentTally', 'postId', 'Post.id')
+		.where('CurrentTally.tagId', '=', tagId)
+		.where('Post.parentId', '=', postId)
+		.selectAll('Post')
 		.execute()
 }
-
-
 
 export async function getRankedTags(): Promise<string[]> {
-
 	let results = await db
-		.selectFrom("Tag")
-		.innerJoin("TagStats", "TagStats.tagId", "Tag.id")
-		.select("tag")
-		.orderBy("TagStats.votesPerView", "desc")
+		.selectFrom('Tag')
+		.innerJoin('TagStats', 'TagStats.tagId', 'Tag.id')
+		.select('tag')
+		.orderBy('TagStats.votesPerView', 'desc')
 		.execute()
 
-	return results.map((row) => row.tag)
+	return results.map(row => row.tag)
 }
-
-
 
 export type TagPreview = {
-	tag: string,
-	posts: RankedPost[],
-	positions: Position[],
+	tag: string
+	posts: RankedPost[]
+	positions: Position[]
 }
 
-
 export async function getUserFeed(userId: string): Promise<TagPreview[]> {
-	assert(userId !== "", "missing user ID")
+	assert(userId !== '', 'missing user ID')
 	let feed = await getDefaultFeed()
 
 	for (let tagPreview of feed) {
 		const { tag, posts } = tagPreview
 		logTagPreview(userId, tag)
-		let positions = await getUserPositions(userId, tag, posts.map(p => p.id))
+		let positions = await getUserPositions(
+			userId,
+			tag,
+			posts.map(p => p.id),
+		)
 		tagPreview.positions = positions
 	}
 
@@ -303,12 +304,11 @@ export async function getUserFeed(userId: string): Promise<TagPreview[]> {
 }
 
 export async function getDefaultFeed(): Promise<TagPreview[]> {
-
 	let feed: TagPreview[] = []
 
 	let tags: string[] = await getRankedTags()
 
-	console.log("Tags are", tags)
+	console.log('Tags are', tags)
 
 	for (let tag of tags) {
 		let posts: RankedPost[] = (await getRankedPosts(tag)).slice(0, 2)
@@ -322,7 +322,4 @@ export async function getDefaultFeed(): Promise<TagPreview[]> {
 	}
 
 	return feed
-
 }
-
-

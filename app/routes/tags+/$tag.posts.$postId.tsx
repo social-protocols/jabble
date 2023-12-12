@@ -1,47 +1,49 @@
 // import { Spacer } from '#app/components/spacer.tsx'
 // import { Icon } from '#app/components/ui/icon.tsx'
-import { ActionFunctionArgs, json, type DataFunctionArgs } from '@remix-run/node';
+import {
+	type ActionFunctionArgs,
+	json,
+	type DataFunctionArgs,
+} from '@remix-run/node'
 
-import { Link, type ShouldRevalidateFunction } from '@remix-run/react';
+import {
+	Link,
+	type ShouldRevalidateFunction,
+	useLoaderData,
+} from '@remix-run/react'
 // import assert from 'assert';
 // import { Form, Link, useLoaderData, type MetaFunction } from '@remix-run/react'
-import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx';
-import { PostDetails } from '#app/components/ui/post.tsx';
 // import { db } from "#app/db.ts";
-import { getPost } from "#app/post.ts";
 // import { topNote, voteRate } from '#app/probabilities.ts';
-import { invariantResponse } from '#app/utils/misc.tsx';
-import { useLoaderData } from '@remix-run/react';
-import invariant from 'tiny-invariant';
-import { z } from 'zod';
-import { zfd } from 'zod-form-data';
+import invariant from 'tiny-invariant'
+import { z } from 'zod'
+import { zfd } from 'zod-form-data'
 // import { Button } from '#app/components/ui/button.tsx';
-import { type Post } from '#app/db/types.ts';
-import { getUserId, requireUserId } from '#app/utils/auth.server.ts';
 // import { Link } from '@remix-run/react';
 
-import { logPostPageView } from "#app/attention.ts";
-import { getRankedNotes } from "#app/ranking.ts";
-
-import { createPost } from '#app/post.ts';
+import { logPostPageView } from '#app/attention.ts'
+import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { PostDetails } from '#app/components/ui/post.tsx'
+import { type Post } from '#app/db/types.ts'
 
 // import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno
 
-import { getUserPositions } from '#app/positions.ts';
+import { getUserPositions } from '#app/positions.ts'
+import { getPost, createPost } from '#app/post.ts'
+import { getRankedNotes } from '#app/ranking.ts'
+import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
+import { invariantResponse } from '#app/utils/misc.tsx'
 
-import { Direction } from "#app/vote.ts";
+import { Direction } from '#app/vote.ts'
 // const GLOBAL_TAG = "global";
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
 const contentSchema = z.coerce.string()
 
-
-
 // export const handle = {
 //   scripts: () => [{ src: '/js/vote.js' }]
 // }
-
 
 export async function loader({ params, request }: DataFunctionArgs) {
 	invariant(params.postId, 'Missing postid param')
@@ -57,46 +59,47 @@ export async function loader({ params, request }: DataFunctionArgs) {
 	let replies = await getRankedNotes(tag, post.id)
 	await logPostPageView(tag, post.id, userId)
 
-
 	// let positions: Map<number, Direction> = new Map<number, Direction>()
-	let positions = userId === null ? [] : await getUserPositions(userId, tag, replies.map(p => p.id).concat([post.id]))
+	let positions =
+		userId === null
+			? []
+			: await getUserPositions(
+					userId,
+					tag,
+					replies.map(p => p.id).concat([post.id]),
+			  )
 
 	let result = json({ post, replies, tag, positions })
 
 	return result
 }
 
-
 const replySchema = zfd.formData({
 	parentId: postIdSchema,
 	tag: tagSchema,
 	content: contentSchema,
-});
-
+})
 
 export const action = async (args: ActionFunctionArgs) => {
-
 	let request = args.request
-	const formData = await request.formData();
+	const formData = await request.formData()
 
 	const userId: string = await requireUserId(request)
 
-	const parsedData = replySchema.parse(formData);
+	const parsedData = replySchema.parse(formData)
 	const content = parsedData.content
 	const parentId = parsedData.parentId
 	const tag = parsedData.tag
 
-	invariant(content, "content !== undefined")
+	invariant(content, 'content !== undefined')
 	invariant(tag, "tag !== ''")
 
 	let newPostId = await createPost(tag, parentId, content, userId)
 
-	console.log("New post id", newPostId)
+	console.log('New post id', newPostId)
 
-	return json({ newPostId: newPostId });
-};
-
-
+	return json({ newPostId: newPostId })
+}
 
 export default function Post() {
 	const { post, replies, tag, positions } = useLoaderData<typeof loader>()
@@ -109,43 +112,63 @@ export default function Post() {
 	let topNote: Post | null = replies.length > 0 ? replies[0]! : null
 
 	let position = p.get(post.id) || Direction.Neutral
-	let notePosition: Direction = (topNote && p.get(topNote.id)) || Direction.Neutral
-
+	let notePosition: Direction =
+		(topNote && p.get(topNote.id)) || Direction.Neutral
 
 	return (
 		<div>
 			<div>
-				<Link to={`/`}>Home</Link> 
+				<Link to={`/`}>Home</Link>
 				&nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
 				&nbsp; &gt; View post
-			</div>	
-			<PostDetails tag={tag} post={post} note={topNote} teaser={false} randomLocation={null} position={position} notePosition={notePosition} />
+			</div>
+			<PostDetails
+				tag={tag}
+				post={post}
+				note={topNote}
+				teaser={false}
+				randomLocation={null}
+				position={position}
+				notePosition={notePosition}
+			/>
 			<PostReplies tag={tag} replies={replies} positions={p} />
 		</div>
 	)
 }
 
-
-export function PostReplies({ tag, replies, positions }: { tag: string, replies: Post[], positions: Map<number, Direction> }) {
+export function PostReplies({
+	tag,
+	replies,
+	positions,
+}: {
+	tag: string
+	replies: Post[]
+	positions: Map<number, Direction>
+}) {
 	return (
 		<ol>
-			{
-				replies.map((post: Post) => {
-					// let randomLocation = {locationType: LocationType.PostReplies, oneBasedRank: i + 1}
+			{replies.map((post: Post) => {
+				// let randomLocation = {locationType: LocationType.PostReplies, oneBasedRank: i + 1}
 
-					let position: Direction = positions.get(post.id) || Direction.Neutral
+				let position: Direction = positions.get(post.id) || Direction.Neutral
 
-					return (
-						<li key={post.id}>
-							<PostDetails tag={tag} post={post} note={null} teaser={true} randomLocation={null} position={position} notePosition={Direction.Neutral} />
-						</li>
-					)
-				})
-			}
+				return (
+					<li key={post.id}>
+						<PostDetails
+							tag={tag}
+							post={post}
+							note={null}
+							teaser={true}
+							randomLocation={null}
+							position={position}
+							notePosition={Direction.Neutral}
+						/>
+					</li>
+				)
+			})}
 		</ol>
 	)
 }
-
 
 export function ErrorBoundary() {
 	return (
@@ -158,11 +181,12 @@ export function ErrorBoundary() {
 	)
 }
 
-export const shouldRevalidate: ShouldRevalidateFunction = (args: { formAction?: string | undefined }) => {
-
+export const shouldRevalidate: ShouldRevalidateFunction = (args: {
+	formAction?: string | undefined
+}) => {
 	// Optimization that makes it so /votes don't reload the page
-	if (args.formAction == "/vote") {
+	if (args.formAction == '/vote') {
 		return false
 	}
-	return true;
-};
+	return true
+}

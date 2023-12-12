@@ -1,18 +1,18 @@
-import { db } from "./db.ts";
-import { getOrInsertTagId } from "./tag.ts";
-import { Direction } from "./vote.ts";
+import { db } from './db.ts'
+import { getOrInsertTagId } from './tag.ts'
+import { type Direction } from './vote.ts'
 // import { type PostId } from "./post.ts";
 
 export type Position = {
-  postId: number,
-  direction: Direction
+	postId: number
+	direction: Direction
 }
 
 // let isPostId: unique symbol = Symbol();
 
 // export async function getPositions(userId: string, tag: string, postIds: number[]): Promise<Position[]> {
 //   let tagId = await getOrInsertTagId(tag)
-  
+
 //   return await db
 //     .selectFrom("CurrentVote")
 //     .where("userId", "=", userId)
@@ -22,28 +22,24 @@ export type Position = {
 //     .execute()
 // }
 
+export async function getUserPositions(
+	userId: string,
+	tag: string,
+	postIds: number[],
+): Promise<Position[]> {
+	let tagId = await getOrInsertTagId(tag)
 
-export async function getUserPositions(userId: string, tag: string, postIds: number[]): Promise<Position[]> {
-  let tagId = await getOrInsertTagId(tag)
-  
-  return await db
-    .selectFrom("CurrentVote")
-    .innerJoin("Post", "postId", "Post.id")
-    .where("userId", "=", userId)
-    .where("tagId", "=", tagId)
-    .where((eb) => eb.or([
-      eb("parentId", "in", postIds),
-      eb("id", "in", postIds)
-    ]))
-    .select(["postId", "direction"])
-    .execute()
+	return await db
+		.selectFrom('CurrentVote')
+		.innerJoin('Post', 'postId', 'Post.id')
+		.where('userId', '=', userId)
+		.where('tagId', '=', tagId)
+		.where(eb =>
+			eb.or([eb('parentId', 'in', postIds), eb('id', 'in', postIds)]),
+		)
+		.select(['postId', 'direction'])
+		.execute()
 }
-
-
-
-
-
-
 
 // pub async fn positions(
 
@@ -57,13 +53,9 @@ export async function getUserPositions(userId: string, tag: string, postIds: num
 
 //     let user = get_or_create_user(&cookies, &pool).await?;
 
- 
-
 //     let user_id = user.id;
 
 //     let tag = form_data.tag.as_str();
-
- 
 
 //     let positions: Vec<(i64, i64)> = if form_data.post_id == 0 {
 
@@ -75,11 +67,7 @@ export async function getUserPositions(userId: string, tag: string, postIds: num
 
 //     };
 
- 
-
 //     let json = serde_json::to_string(&positions)?;
-
- 
 
 //     Ok(html! {
 
@@ -111,19 +99,19 @@ export async function getUserPositions(userId: string, tag: string, postIds: num
 
 //     let query = r#"
 
-//         select 
+//         select
 
 //             post_id, direction
 
-//         from 
+//         from
 
-//             current_vote 
+//             current_vote
 
 //             join posts on (post_id = posts.id)
 
 //             join tags on (tag_id = tags.id)
 
-//         where 
+//         where
 
 //             user_id = ?
 
@@ -132,8 +120,6 @@ export async function getUserPositions(userId: string, tag: string, postIds: num
 //             and posts.parent_id is null
 
 //     "#;
-
- 
 
 //     // execute the query and get a vector of Votes
 
@@ -146,8 +132,6 @@ export async function getUserPositions(userId: string, tag: string, postIds: num
 //         .fetch_all(pool)
 
 //         .await?;
-
- 
 
 //     Ok(positions)
 

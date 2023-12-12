@@ -1,56 +1,54 @@
+import assert from 'assert'
+import { sql } from 'kysely'
+import { db } from '#app/db.ts'
 
-import { db } from "#app/db.ts";
-import { sql } from "kysely";
-
-import assert from 'assert';
-import { type Location, logTagVote, logVoteOnRandomlyRankedPost } from './attention.ts';
-import { getOrInsertTagId } from './tag.ts';
+import {
+	type Location,
+	logTagVote,
+	logVoteOnRandomlyRankedPost,
+} from './attention.ts'
+import { getOrInsertTagId } from './tag.ts'
 export enum Direction {
-    Up = 1,
-    Down = -1,
-    Neutral = 0,
+	Up = 1,
+	Down = -1,
+	Neutral = 0,
 }
-
-
 
 // TODO: if a new post is untagged, do we post in in #global?
 
 // The vote function inserts a vote record in voteHistory, and also updates attention stats
 export async function vote(
-    tag: string,
-    userId: string,
-    postId: number,
-    noteId: number | null,
-    direction: Direction,
-    randomLocation: Location | null
+	tag: string,
+	userId: string,
+	postId: number,
+	noteId: number | null,
+	direction: Direction,
+	randomLocation: Location | null,
 ) {
+	const tagId = await getOrInsertTagId(tag)
 
-    const tagId = await getOrInsertTagId(tag)
+	let added = await insertVoteRecord(tagId, userId, postId, noteId, direction)
 
-    let added = await insertVoteRecord(tagId, userId, postId, noteId, direction)
-
-    // Todo: dedupe in case user toggles vote multiple times
-    if (added) {
-        logTagVote(tag)
-        if (randomLocation != null) {
-            logVoteOnRandomlyRankedPost(randomLocation)
-        }
-    }
+	// Todo: dedupe in case user toggles vote multiple times
+	if (added) {
+		logTagVote(tag)
+		if (randomLocation != null) {
+			logVoteOnRandomlyRankedPost(randomLocation)
+		}
+	}
 }
 
-
 export async function insertVoteRecord(
-    tagId: number,
-    userId: string,
-    postId: number,
-    noteId: number | null,
-    direction: Direction,
+	tagId: number,
+	userId: string,
+	postId: number,
+	noteId: number | null,
+	direction: Direction,
 ): Promise<boolean> {
+	// TODO: transaction
+	const direction_int = direction as number
 
-    // TODO: transaction
-    const direction_int = direction as number
-
-    let query = sql`
+	let query = sql`
         with parameters as (
                 select
                     ${userId} as userId,
@@ -86,13 +84,9 @@ export async function insertVoteRecord(
 --            where not duplicate
     `
 
-    let result = await query.execute(db)
+	let result = await query.execute(db)
 
-
-    assert(result !== undefined)
-    assert(result.numUpdatedOrDeletedRows !== undefined)
-    return result.numUpdatedOrDeletedRows > 0
+	assert(result !== undefined)
+	assert(result.numUpdatedOrDeletedRows !== undefined)
+	return result.numUpdatedOrDeletedRows > 0
 }
-
-
-

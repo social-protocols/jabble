@@ -1,19 +1,3 @@
-import { CheckboxField, ErrorList, Field } from '#app/components/forms.tsx'
-import { Spacer } from '#app/components/spacer.tsx'
-import { StatusButton } from '#app/components/ui/status-button.tsx'
-import { SITE_NAME } from '#app/site.ts'
-import { requireAnonymous, sessionKey, signup } from '#app/utils/auth.server.ts'
-import { validateCSRF } from '#app/utils/csrf.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
-import { checkHoneypot } from '#app/utils/honeypot.server.ts'
-import { invariant, useIsPending } from '#app/utils/misc.tsx'
-import { authSessionStorage } from '#app/utils/session.server.ts'
-import {
-	NameSchema,
-	PasswordAndConfirmPasswordSchema,
-	UsernameSchema,
-} from '#app/utils/user-validation.ts'
-import { verifySessionStorage } from '#app/utils/verification.server.ts'
 import { conform, useForm } from '@conform-to/react'
 import { getFieldsetConstraint, parse } from '@conform-to/zod'
 import {
@@ -32,6 +16,22 @@ import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
 import { HoneypotInputs } from 'remix-utils/honeypot/react'
 import { safeRedirect } from 'remix-utils/safe-redirect'
 import { z } from 'zod'
+import { CheckboxField, ErrorList, Field } from '#app/components/forms.tsx'
+import { Spacer } from '#app/components/spacer.tsx'
+import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { SITE_NAME } from '#app/site.ts'
+import { requireAnonymous, sessionKey, signup } from '#app/utils/auth.server.ts'
+import { validateCSRF } from '#app/utils/csrf.server.ts'
+import { prisma } from '#app/utils/db.server.ts'
+import { checkHoneypot } from '#app/utils/honeypot.server.ts'
+import { invariant, useIsPending } from '#app/utils/misc.tsx'
+import { authSessionStorage } from '#app/utils/session.server.ts'
+import {
+	NameSchema,
+	PasswordAndConfirmPasswordSchema,
+	UsernameSchema,
+} from '#app/utils/user-validation.ts'
+import { verifySessionStorage } from '#app/utils/verification.server.ts'
 import { type VerifyFunctionArgs } from './verify.tsx'
 
 const onboardingEmailSessionKey = 'onboardingEmail'

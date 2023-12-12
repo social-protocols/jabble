@@ -1,3 +1,16 @@
+import { conform, useForm } from '@conform-to/react'
+import { getFieldsetConstraint, parse } from '@conform-to/zod'
+import * as E from '@react-email/components'
+import {
+	json,
+	redirect,
+	type DataFunctionArgs,
+	type MetaFunction,
+} from '@remix-run/node'
+import { Form, useActionData, useSearchParams } from '@remix-run/react'
+import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
+import { HoneypotInputs } from 'remix-utils/honeypot/react'
+import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList, Field } from '#app/components/forms.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
@@ -12,19 +25,6 @@ import { sendEmail } from '#app/utils/email.server.ts'
 import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { useIsPending } from '#app/utils/misc.tsx'
 import { EmailSchema } from '#app/utils/user-validation.ts'
-import { conform, useForm } from '@conform-to/react'
-import { getFieldsetConstraint, parse } from '@conform-to/zod'
-import * as E from '@react-email/components'
-import {
-	json,
-	redirect,
-	type DataFunctionArgs,
-	type MetaFunction,
-} from '@remix-run/node'
-import { Form, useActionData, useSearchParams } from '@remix-run/react'
-import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
-import { HoneypotInputs } from 'remix-utils/honeypot/react'
-import { z } from 'zod'
 import { prepareVerification } from './verify.tsx'
 
 const SignupSchema = z.object({

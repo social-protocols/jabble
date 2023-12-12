@@ -14,6 +14,7 @@ import {
 	requireRecentVerification,
 	type VerifyFunctionArgs,
 } from '#app/routes/_auth+/verify.tsx'
+import { SITE_NAME } from '#app/site.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { validateCSRF } from '#app/utils/csrf.server.ts'
 import { prisma } from '#app/utils/db.server.ts'
@@ -23,7 +24,6 @@ import { redirectWithToast } from '#app/utils/toast.server.ts'
 import { EmailSchema } from '#app/utils/user-validation.ts'
 import { verifySessionStorage } from '#app/utils/verification.server.ts'
 import { type BreadcrumbHandle } from './profile.tsx'
-import { SITE_NAME } from '#app/site.ts'
 
 export const handle: BreadcrumbHandle & SEOHandle = {
 	breadcrumb: <Icon name="envelope-closed">Change Email</Icon>,

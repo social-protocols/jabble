@@ -1,12 +1,10 @@
-import { db } from '#app/db.ts'
+import assert from 'node:assert'
+import { sql } from 'kysely'
 import { type TagStats } from '#app/db/types.ts'
-
-import { getOrInsertTagId } from './tag.ts'
+import { db } from '#app/db.ts'
 
 import { GammaDistribution } from './beta-gamma-distribution.ts'
-
-import { sql } from 'kysely'
-import assert from 'node:assert'
+import { getOrInsertTagId } from './tag.ts'
 
 // Global prior votes/view. The TagStats table keeps track of votes/view per tag, but
 // we need to start with some prior. This value is currently just a wild guess.

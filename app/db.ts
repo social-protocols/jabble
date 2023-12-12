@@ -1,11 +1,10 @@
+import assert from 'assert'
 
-import assert from 'assert';
+import SQLite from 'better-sqlite3'
+import { Kysely, SqliteDialect } from 'kysely'
 
-import SQLite from 'better-sqlite3';
-import { Kysely, SqliteDialect } from 'kysely';
-
-import { type DB } from '#app/db/kysely-types.ts'; // this is the Database interface we defined earlier
-import { type Post } from '#app/db/types.ts'; // this is the Database interface we defined earlier
+import { type DB } from '#app/db/kysely-types.ts' // this is the Database interface we defined earlier
+import { type Post } from '#app/db/types.ts' // this is the Database interface we defined earlier
 
 const databasePath = process.env.DATABASE_PATH
 
@@ -16,7 +15,7 @@ var sqliteInstance = new SQLite(databasePath)
 // process. So any changes won't persist, but this is just fine for
 // simulations, tests, etc.
 if (process.env.IN_MEMORY_DB) {
-	console.log("Using in-memory DB instance")
+	console.log('Using in-memory DB instance')
 	const buffer = sqliteInstance.serialize()
 	sqliteInstance = new SQLite(buffer)
 }
@@ -25,11 +24,10 @@ const dialect = new SqliteDialect({
 	database: sqliteInstance,
 })
 
-// Database interface is passed to Kysely's constructor, and from now on, Kysely 
+// Database interface is passed to Kysely's constructor, and from now on, Kysely
 // knows your database structure.
-// Dialect is passed to Kysely's constructor, and from now on, Kysely knows how 
+// Dialect is passed to Kysely's constructor, and from now on, Kysely knows how
 // to communicate with your database.
 export const db = new Kysely<DB>({
 	dialect,
 })
-

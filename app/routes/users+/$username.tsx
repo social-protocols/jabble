@@ -1,3 +1,5 @@
+import { json, type DataFunctionArgs } from '@remix-run/node'
+import { Form, Link, useLoaderData, type MetaFunction } from '@remix-run/react'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { Button } from '#app/components/ui/button.tsx'
@@ -6,8 +8,6 @@ import { SITE_NAME } from '#app/site.ts'
 import { prisma } from '#app/utils/db.server.ts'
 import { getUserImgSrc, invariantResponse } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
-import { json, type DataFunctionArgs } from '@remix-run/node'
-import { Form, Link, useLoaderData, type MetaFunction } from '@remix-run/react'
 
 export async function loader({ params }: DataFunctionArgs) {
 	const user = await prisma.user.findFirst({
