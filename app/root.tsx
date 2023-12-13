@@ -107,18 +107,18 @@ export async function loader({ request }: DataFunctionArgs) {
 
 	const user = userId
 		? await time(
-				() =>
-					prisma.user.findUniqueOrThrow({
-						select: {
-							id: true,
-							name: true,
-							username: true,
-							image: { select: { id: true } },
-						},
-						where: { id: userId },
-					}),
-				{ timings, type: 'find user', desc: 'find user in root' },
-		  )
+			() =>
+				prisma.user.findUniqueOrThrow({
+					select: {
+						id: true,
+						name: true,
+						username: true,
+						image: { select: { id: true } },
+					},
+					where: { id: userId },
+				}),
+			{ timings, type: 'find user', desc: 'find user in root' },
+		)
 		: null
 	if (userId && !user) {
 		console.info('something weird happened')
@@ -230,7 +230,7 @@ function App() {
 	const theme = useTheme()
 	const matches = useMatches()
 	const isOnSearchPage = matches.find(m => m.id === 'routes/users+/index')
-	const searchBar = isOnSearchPage ? null : <SearchBar status="idle" />
+	const searchBar = null // isOnSearchPage ? null : <SearchBar status="idle" />
 
 	return (
 		<Document nonce={nonce} theme={theme} env={data.ENV}>
@@ -244,6 +244,7 @@ function App() {
 							<div className="ml-auto hidden max-w-sm flex-1 sm:block">
 								{searchBar}
 							</div>
+							<ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
 							<div className="flex items-center gap-10">
 								{user ? (
 									<UserDropdown />
@@ -260,10 +261,6 @@ function App() {
 
 				<div className="mx-auto flex-1">
 					<Outlet />
-				</div>
-
-				<div className="container flex justify-between pb-5">
-					<ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
 				</div>
 			</div>
 			<EpicToaster toast={data.toast} />
