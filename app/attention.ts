@@ -106,10 +106,12 @@ export async function flushTagPageStats(tag: string, posts: number[]) {
 		let movingAverageAlpha = 0.9999
 		let windowSize = 1 / (1 - movingAverageAlpha)
 
-		// assert(
-		// 	deltaViews > 0,
-		// 	"deltaViews > 0 -- there shouldn't be any votes without views",
-		// )
+		console.log('Delta votes / delta views', deltaVotes, deltaViews)
+
+		assert(
+			deltaViews > 0,
+			"deltaViews > 0 -- there shouldn't be any votes without views",
+		)
 
 		let decayFactor = movingAverageAlpha ** deltaViews
 
