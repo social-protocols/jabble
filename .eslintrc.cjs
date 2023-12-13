@@ -9,10 +9,10 @@ module.exports = {
 		'@remix-run/eslint-config/node',
 		'prettier',
 	],
-	plugins: ['prettier'],
+	plugins: ['prettier', '@typescript-eslint'],
 
 	rules: {
-		"prettier/prettier": ["error"],
+		'prettier/prettier': ['error'],
 		// playwright requires destructuring in fixtures even if you don't use anything 🤷‍♂️
 		'no-empty-pattern': 'off',
 		'@typescript-eslint/consistent-type-imports': [
@@ -39,6 +39,7 @@ module.exports = {
 				],
 			},
 		],
+		'@typescript-eslint/no-unused-vars': ['warn', { 'argsIgnorePattern': '^_', 'destructuredArrayIgnorePattern': "^_", 'varsIgnorePattern': "^_" }],
 	},
 	overrides: [
 		{
