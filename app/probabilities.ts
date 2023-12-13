@@ -13,7 +13,7 @@ import { getOrInsertTagId } from './tag.ts'
 
 //Import data structures
 
-export const WEIGHT_CONSTANT: number = 2.3
+export const WEIGHT_CONSTANT = 2.3
 
 // The global prior on the upvote probability (upvotes / votes)
 export const GLOBAL_PRIOR_UPVOTE_PROBABILITY = new BetaDistribution(
@@ -59,22 +59,22 @@ function toInformedTally(result: DetailedTally, forNote: Tally): InformedTally {
 }
 
 export async function voteRate(tag: string, postId: number): Promise<number> {
-	let tagId = await getOrInsertTagId(tag)
+	const tagId = await getOrInsertTagId(tag)
 
-	let tally = await currentTally(tagId, postId)
-	let attention = await cumulativeAttention(tagId, postId)
+	const tally = await currentTally(tagId, postId)
+	const attention = await cumulativeAttention(tagId, postId)
 
 	console.log(`Cumulative attention for ${postId}, ${attention}`, tally)
 
 	return GLOBAL_PRIOR_VOTE_RATE.update({ count: tally.total, total: attention })
-		.average
+		.mean
 }
 
 export async function informedProbability(
 	tag: string,
 	postId: number,
 ): Promise<number> {
-	let tagId = await getOrInsertTagId(tag)
+	const tagId = await getOrInsertTagId(tag)
 
 	const [_noteId, _p, q] = await findTopNoteId(tagId, postId)
 
@@ -85,7 +85,7 @@ export async function topNote(
 	tag: string,
 	postId: number,
 ): Promise<Post | null> {
-	let tagId = await getOrInsertTagId(tag)
+	const tagId = await getOrInsertTagId(tag)
 
 	const [noteId, _p, _q] = await findTopNoteId(tagId, postId)
 
@@ -99,7 +99,7 @@ export async function topNote(
 		.selectAll()
 		.execute()
 
-	let note = notes[0]
+	const note = notes[0]
 	if (note === undefined) {
 		return null
 	}
@@ -111,12 +111,12 @@ export async function findTopNoteId(
 	tagId: number,
 	postId: number,
 ): Promise<[number | null, number, number]> {
-	let talliesMap = new Map<number, InformedTally[]>()
+	const talliesMap = new Map<number, InformedTally[]>()
 	await getCurrentTallies(tagId, postId, talliesMap)
 
-	let tally = await currentTally(tagId, postId)
+	const tally = await currentTally(tagId, postId)
 
-	let result = findTopNoteGivenTallies(postId, tally, talliesMap)
+	const result = findTopNoteGivenTallies(postId, tally, talliesMap)
 	return result
 }
 
@@ -131,13 +131,13 @@ export function findTopNoteGivenTallies(
 	subnoteTallies: Map<number, InformedTally[]>,
 ): [number | null, number, number] {
 	let pOfAGivenNotShownTopNote =
-		GLOBAL_PRIOR_UPVOTE_PROBABILITY.update(postTally).average
+		GLOBAL_PRIOR_UPVOTE_PROBABILITY.update(postTally).mean
 
 	let pOfAGivenShownTopNote = pOfAGivenNotShownTopNote
 
 	let topNoteId: number | null = null
 
-	let tallies = subnoteTallies.get(postId)
+	const tallies = subnoteTallies.get(postId)
 
 	if (tallies == null) {
 		// console.log(
@@ -148,23 +148,23 @@ export function findTopNoteGivenTallies(
 	}
 
 	// loop over tallies
-	for (let tally of tallies) {
-		let [_, p_of_b_given_shown_top_subnote, pOfBGivenNotShownTopSubnote] =
+	for (const tally of tallies) {
+		const [_, p_of_b_given_shown_top_subnote, pOfBGivenNotShownTopSubnote] =
 			findTopNoteGivenTallies(tally.noteId, tally.forNote, subnoteTallies)
-		let support = p_of_b_given_shown_top_subnote / pOfBGivenNotShownTopSubnote
+		const support = p_of_b_given_shown_top_subnote / pOfBGivenNotShownTopSubnote
 
-		let pOfAGivenNotShownThisNote = GLOBAL_PRIOR_UPVOTE_PROBABILITY.update(
+		const pOfAGivenNotShownThisNote = GLOBAL_PRIOR_UPVOTE_PROBABILITY.update(
 			tally.givenNotShownThisNote,
-		).average
+		).mean
 
-		let pOfAGivenShownThisNote = GLOBAL_PRIOR_UPVOTE_PROBABILITY.update(
+		const pOfAGivenShownThisNote = GLOBAL_PRIOR_UPVOTE_PROBABILITY.update(
 			tally.givenNotShownThisNote,
 		)
 			.resetWeight(WEIGHT_CONSTANT)
-			.update(tally.givenShownThisNote).average
-		let delta = pOfAGivenShownThisNote - pOfAGivenNotShownThisNote
+			.update(tally.givenShownThisNote).mean
+		const delta = pOfAGivenShownThisNote - pOfAGivenNotShownThisNote
 
-		let pOfAGivenShownThisNoteAndTopSubnote =
+		const pOfAGivenShownThisNoteAndTopSubnote =
 			pOfAGivenNotShownThisNote + delta * support
 
 		console.log(
@@ -197,7 +197,7 @@ async function currentTally(tagId: number, postId: number): Promise<Tally> {
 		.selectAll()
 		.execute()
 
-	let t = tally[0]
+	const t = tally[0]
 	if (t === undefined) {
 		return EMPTY_TALLY
 	}
@@ -216,7 +216,7 @@ async function cumulativeAttention(
 		.selectAll()
 		.execute()
 
-	let s = stats[0]
+	const s = stats[0]
 	if (s === undefined) {
 		return 0
 	}
@@ -237,10 +237,10 @@ async function getCurrentTallies(
 		.selectAll()
 		.execute()
 
-	let tallies = await Promise.all(
+	const tallies = await Promise.all(
 		results.map(async result => {
 			await getCurrentTallies(tagId, result.noteId, map)
-			let tallyForNote = await currentTally(tagId, result.noteId)
+			const tallyForNote = await currentTally(tagId, result.noteId)
 
 			return toInformedTally(result, tallyForNote)
 		}),

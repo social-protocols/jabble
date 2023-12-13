@@ -98,7 +98,7 @@ const nUsers = 10000
 // and it will take a long time (without moving averaging) for the average to approach
 // the true average.
 
-const votesPerView = GLOBAL_PRIOR_VOTES_PER_VIEW.average
+const votesPerView = GLOBAL_PRIOR_VOTES_PER_VIEW.mean
 const viewsPerPeriod = nUsers
 const votesPerPeriod = viewsPerPeriod * votesPerView
 console.log(votesPerView, viewsPerPeriod, votesPerPeriod)

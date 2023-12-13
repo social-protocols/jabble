@@ -118,7 +118,7 @@ export async function flushTagPageStats(tag: string, posts: number[]) {
 			.values({
 				tagId: tagId,
 				views: prior.weight,
-				votesPerView: prior.average,
+				votesPerView: prior.mean,
 			})
 			.onConflict(oc =>
 				oc.column('tagId').doUpdateSet({

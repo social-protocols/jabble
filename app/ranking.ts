@@ -206,7 +206,7 @@ async function score(tagId: number, post: PostWithStats): Promise<ScoreData> {
 	let voteRate = GLOBAL_PRIOR_VOTE_RATE.update({
 		count: post.voteTotal,
 		total: post.attention,
-	}).average
+	}).mean
 
 	// The formula below gives us attention adjusted for fatigue.
 	// Our decay model says that effective attention (e.g. the vote rate) decays exponentially, so the *derivative* of the formula below
