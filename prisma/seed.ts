@@ -7,7 +7,7 @@ import { prisma } from '#app/utils/db.server.ts'
 // import * as fs from 'fs';
 
 import { Direction, vote } from '#app/vote.ts'
-import { cleanupDb, createPassword } from '#tests/db-utils.ts'
+import { createPassword } from '#tests/db-utils.ts'
 
 export async function seed() {
 	console.time('🔑 Created permissions...')
@@ -81,7 +81,7 @@ export async function seed() {
 	)
 
 	// Then, bob views the page
-	let posts = await getRankedPosts(tag)
+	await getRankedPosts(tag)
 	// logTagPageView(bob, tag, posts)
 
 	// Then bob posts a response to alice's post
@@ -96,7 +96,7 @@ export async function seed() {
 	await vote(tag, bob, post1, post2, Direction.Down, null)
 
 	// bob views home page
-	posts = await getRankedPosts(tag)
+	await getRankedPosts(tag)
 	// logTagPageView(alice, tag, posts)
 
 	// And responds to bob's response
@@ -116,7 +116,7 @@ export async function seed() {
 	)
 
 	// Bob then views the page again
-	posts = await getRankedPosts(tag)
+	await getRankedPosts(tag)
 	// logTagPageView(bob, tag, posts)
 
 	// And respond's to Alices's latest post
@@ -136,7 +136,7 @@ export async function seed() {
 	)
 
 	// Bob then views the page once again
-	posts = await getRankedPosts(tag)
+	await getRankedPosts(tag)
 	// console.log("Ranked posts", posts)
 	// logTagPageView(bob, tag, posts)
 

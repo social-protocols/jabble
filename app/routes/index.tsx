@@ -4,7 +4,7 @@
 
 import { type DataFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
-import { LocationType, logTagPreview, type Location } from '#app/attention.ts'
+import { LocationType, type Location } from '#app/attention.ts'
 import { PostDetails } from '#app/components/ui/post.tsx'
 import { type Post } from '#app/db/types.ts'
 import {
@@ -13,7 +13,7 @@ import {
 	type RankedPost,
 	type TagPreview,
 } from '#app/ranking.ts'
-import { getUserId, logout, requireUserId } from '#app/utils/auth.server.ts'
+import { getUserId } from '#app/utils/auth.server.ts'
 import { Direction } from '#app/vote.ts'
 // export async function loader() {
 // }

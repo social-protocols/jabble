@@ -5,7 +5,7 @@ import { type Post } from '#app/db/types.ts' // this is the Database interface w
 import { db } from '#app/db.ts'
 // import { cumulativeAttention } from './attention.ts';
 import {
-	logTagPageView,
+	// logTagPageView,
 	logTagPreview,
 	flushTagPageStats,
 } from './attention.ts'

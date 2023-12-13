@@ -1,7 +1,10 @@
 // import { Spacer } from '#app/components/spacer.tsx'
 // import { Icon } from '#app/components/ui/icon.tsx'
-import { json, type DataFunctionArgs } from '@remix-run/node'
-import { type ActionFunctionArgs } from '@remix-run/node'
+import {
+	type ActionFunctionArgs,
+	json,
+	type DataFunctionArgs,
+} from '@remix-run/node'
 import {
 	useLoaderData,
 	type ShouldRevalidateFunction,
@@ -88,7 +91,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 	invariant(content, 'content !== undefined')
 	invariant(tag, "tag !== ''")
 
-	const newPostId = await createPost(tag, null, content, userId)
+	const _newPostId = await createPost(tag, null, content, userId)
 
 	return true
 }

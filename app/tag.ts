@@ -14,7 +14,7 @@ export async function getOrInsertTagId(tag: string): Promise<number> {
 
 	if (t.length == 0) {
 		// use drizzle to create new tag
-		let newTag = await db.insertInto('Tag').values({ tag: tag }).execute()
+		let _newTag = await db.insertInto('Tag').values({ tag: tag }).execute()
 	}
 
 	t = await db.selectFrom('Tag').where('tag', '=', tag).selectAll().execute()

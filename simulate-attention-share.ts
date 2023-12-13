@@ -10,7 +10,6 @@ import {
 	tagStats,
 } from '#app/attention.ts'
 import { type Tally } from '#app/beta-gamma-distribution.ts'
-import { type Post, type PostStats } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
 // import bloomFilters from 'bloom-filters';
 
@@ -20,7 +19,7 @@ import { createPost } from '#app/post.ts'
 
 import {
 	MAX_RESULTS,
-	getRankedPosts,
+	//getRankedPosts,
 	totalInformationGain,
 } from '#app/ranking.ts'
 import { getOrInsertTagId } from '#app/tag.ts'
@@ -236,7 +235,7 @@ async function simulateAttentionShare() {
 			let votes = jStat.poisson.sample(actualVoteRate)
 			// console.log("Votes for rank", i, votes, actualVoteRate, voteShare, voteRate)
 
-			let upvoteProbability = upvoteProbabilities[postNumber]
+			// let upvoteProbability = upvoteProbabilities[postNumber]
 			// let direction = Math.random() < upvoteProbability ? Direction.Up : Direction.Down
 			let direction = Direction.Up
 
