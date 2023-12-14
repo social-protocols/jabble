@@ -258,8 +258,7 @@ function App() {
 						</div>
 					</nav>
 				</header>
-
-				<div className="mx-auto flex-1">
+				<div className="mx-auto max-w-3xl flex-1">
 					<Outlet />
 				</div>
 			</div>

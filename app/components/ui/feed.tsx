@@ -1,4 +1,4 @@
-import { LocationType, type Location } from '#app/attention.ts'
+import { type Location, LocationType } from '#app/attention.ts'
 import { PostDetails } from '#app/components/ui/post.tsx'
 import { type Post } from '#app/db/types.ts'
 import { type RankedPost } from '#app/ranking.ts'
@@ -15,37 +15,32 @@ export function TagFeed({
 	positions: Map<number, Direction>
 }) {
 	return (
-		<div className="flex-column flex place-items-center">
-			<ul>
-				{posts.map((post, i) => {
-					let position = positions.get(post.id) || Direction.Neutral
-					let notePosition: Direction =
-						(post.note && positions.get(post.note.id)) || Direction.Neutral
+		<>
+			{posts.map((post, i) => {
+				let position = positions.get(post.id) || Direction.Neutral
+				let notePosition: Direction =
+					(post.note && positions.get(post.note.id)) || Direction.Neutral
 
-					let randomLocation: Location | null = post.random
-						? {
-								oneBasedRank: i + 1,
-								locationType: LocationType.TagPage,
-						  }
-						: null
+				let randomLocation: Location | null = post.random
+					? {
+						oneBasedRank: i + 1,
+						locationType: LocationType.TagPage,
+					}
+					: null
 
-					return (
-						<li key={post.id}>
-							<div className="flex-1">
-								<PostDetails
-									post={post as Post}
-									note={post.note}
-									tag={tag}
-									teaser={true}
-									randomLocation={randomLocation}
-									position={position}
-									notePosition={notePosition}
-								/>
-							</div>
-						</li>
-					)
-				})}
-			</ul>
-		</div>
+				return (
+					<PostDetails
+						key={post.id}
+						post={post as Post}
+						note={post.note}
+						tag={tag}
+						teaser={true}
+						randomLocation={randomLocation}
+						position={position}
+						notePosition={notePosition}
+					/>
+				)
+			})}
+		</>
 	)
 }

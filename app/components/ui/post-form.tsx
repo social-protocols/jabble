@@ -3,7 +3,7 @@ import { Textarea } from '#app/components/ui/textarea.tsx'
 
 export function PostForm({ tag }: { tag: string }) {
 	return (
-		<div className="m-2 w-full max-w-3xl rounded-lg bg-primary-foreground p-5">
+		<div className="w-full rounded-lg bg-primary-foreground p-5">
 			<form id="create-post" method="post">
 				<input type="hidden" name="tag" value={`${tag}`} />
 				<Textarea name="newPostContent" placeholder="What's on your mind?" />

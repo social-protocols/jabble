@@ -1,5 +1,5 @@
 import { Link, useFetcher } from '@remix-run/react'
-import { LocationType, type Location } from '#app/attention.ts'
+import { type Location, LocationType } from '#app/attention.ts'
 import { Button } from '#app/components/ui/button.tsx'
 import { type Post } from '#app/db/types.ts'
 import { Direction } from '#app/vote.ts'
@@ -34,11 +34,11 @@ export function PostDetails({
 		voteState === Direction.Up
 			? ' voted upvoted'
 			: voteState === Direction.Down
-			? ' voted downvoted'
-			: ''
+				? ' voted downvoted'
+				: ''
 
 	return (
-		<Card className={'post m-5 flex flex-col justify-center' + voteClass}>
+		<Card className={'post my-5 flex flex-col justify-center' + voteClass}>
 			<p>
 				{teaser ? (
 					<Link to={`/tags/${tag}/posts/${post.id}`}>{post.content}</Link>
@@ -78,8 +78,8 @@ export function NoteAttachment({
 		position === Direction.Up
 			? ' voted upvoted'
 			: position === Direction.Down
-			? ' voted downvoted'
-			: ''
+				? ' voted downvoted'
+				: ''
 	return (
 		<Link to={`/tags/${tag}/posts/${note.id}`}>
 			<Card className={'post bg-secondary' + voteClass}>

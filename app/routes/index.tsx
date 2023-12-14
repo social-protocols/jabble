@@ -61,7 +61,7 @@ export function UserFeed({ feed }: { feed: TagPreview[] }) {
 
 				return (
 					<div key={tag}>
-						<h2 className="pl-10">
+						<h2>
 							Top posts in <Link to={`/tags/${tag}`}>#{tag}</Link>
 						</h2>
 						<div className="flex-column flex place-items-start">
@@ -73,9 +73,9 @@ export function UserFeed({ feed }: { feed: TagPreview[] }) {
 
 									let randomLocation: Location | null = post.random
 										? {
-												oneBasedRank: i + 1,
-												locationType: LocationType.TagPage,
-										  }
+											oneBasedRank: i + 1,
+											locationType: LocationType.TagPage,
+										}
 										: null
 
 									return (
@@ -96,7 +96,7 @@ export function UserFeed({ feed }: { feed: TagPreview[] }) {
 								})}
 							</ul>
 						</div>
-						<div className="pl-10">
+						<div>
 							More posts from <Link to={`/tags/${tag}`}>#{tag}</Link>
 						</div>
 					</div>
