@@ -2,8 +2,8 @@
 // import { Icon } from '#app/components/ui/icon.tsx'
 import {
 	type ActionFunctionArgs,
-	json,
 	type DataFunctionArgs,
+	json,
 } from '@remix-run/node'
 
 import {
@@ -23,13 +23,14 @@ import { zfd } from 'zod-form-data'
 
 import { logPostPageView } from '#app/attention.ts'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { Textarea } from '#app/components/ui/textarea.tsx'
 import { PostDetails } from '#app/components/ui/post.tsx'
 import { type Post } from '#app/db/types.ts'
 
 // import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno
 
 import { getUserPositions } from '#app/positions.ts'
-import { getPost, createPost } from '#app/post.ts'
+import { createPost, getPost } from '#app/post.ts'
 import { getRankedNotes } from '#app/ranking.ts'
 import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
@@ -64,10 +65,10 @@ export async function loader({ params, request }: DataFunctionArgs) {
 		userId === null
 			? []
 			: await getUserPositions(
-					userId,
-					tag,
-					replies.map(p => p.id).concat([post.id]),
-			  )
+				userId,
+				tag,
+				replies.map(p => p.id).concat([post.id]),
+			)
 
 	let result = json({ post, replies, tag, positions })
 
@@ -131,8 +132,42 @@ export default function Post() {
 				position={position}
 				notePosition={notePosition}
 			/>
+			<h2 className="mb-4">Replies</h2>
+			<ReplyForm tag={tag} parentId={post.id} />
 			<PostReplies tag={tag} replies={replies} positions={p} />
 		</div>
+	)
+}
+
+export function ReplyForm({
+	parentId,
+	tag,
+}: {
+	parentId: number
+	tag: string
+}) {
+	console.log('Parent id in replyFOrm is ', parentId)
+	return (
+		<form id="reply-form" method="post">
+			<input type="hidden" value="reply" />
+			<div className="flex flex-col items-end">
+				<input type="hidden" name="parentId" value={parentId} />
+				<input type="hidden" name="tag" value={tag} />
+
+				<Textarea
+					name="content"
+					className="mb-1 w-full"
+					cols={100}
+					rows={1}
+					placeholder="Enter your reply"
+				/>
+				<div>
+					<button className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700">
+						Reply
+					</button>
+				</div>
+			</div>
+		</form>
 	)
 }
 

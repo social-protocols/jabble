@@ -52,7 +52,6 @@ export function PostDetails({
 					)}
 				</p>
 				{note === null ? <></> : <NoteAttachment note={note} tag={tag} />}
-				{teaser ? <span /> : <ReplyForm parentId={post.id} tag={tag} />}
 			</div>
 		</Card>
 	)
@@ -128,36 +127,3 @@ export function VoteButtons({
 	)
 }
 
-export function ReplyForm({
-	parentId,
-	tag,
-}: {
-	parentId: number
-	tag: string
-}) {
-	console.log('Parent id in replyFOrm is ', parentId)
-	return (
-		<form id="reply-form" method="post">
-			<input type="hidden" value="reply" />
-			<div className="flex w-full">
-				<input type="hidden" name="parentId" value={parentId} />
-				<input type="hidden" name="tag" value={tag} />
-
-				<div className="mr-1">
-					<textarea
-						name="content"
-						className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-						cols={100}
-						rows={1}
-						placeholder="Enter your reply"
-					></textarea>
-				</div>
-				<div className="justify-end">
-					<button className="float-right rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700">
-						Reply
-					</button>
-				</div>
-			</div>
-		</form>
-	)
-}
