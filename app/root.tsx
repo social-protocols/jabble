@@ -2,9 +2,9 @@ import { useForm } from '@conform-to/react'
 import { parse } from '@conform-to/zod'
 import { cssBundleHref } from '@remix-run/css-bundle'
 import {
-	json,
 	type DataFunctionArgs,
 	type HeadersFunction,
+	json,
 	type LinksFunction,
 	type MetaFunction,
 } from '@remix-run/node'
@@ -29,7 +29,6 @@ import { AuthenticityTokenProvider } from 'remix-utils/csrf/react'
 import { ExternalScripts } from 'remix-utils/external-scripts'
 import { HoneypotProvider } from 'remix-utils/honeypot/react'
 import { z } from 'zod'
-import voteStyleSheetUrl from '#app/styles/vote.css'
 import { GeneralErrorBoundary } from './components/error-boundary.tsx'
 import { ErrorList } from './components/forms.tsx'
 import { EpicProgress } from './components/progress-bar.tsx'
@@ -43,7 +42,7 @@ import {
 	DropdownMenuPortal,
 	DropdownMenuTrigger,
 } from './components/ui/dropdown-menu.tsx'
-import { Icon, href as iconsHref } from './components/ui/icon.tsx'
+import { href as iconsHref, Icon } from './components/ui/icon.tsx'
 import { SITE_NAME } from './site.ts'
 import tailwindStyleSheetUrl from './styles/tailwind.css'
 import { getUserId, logout } from './utils/auth.server.ts'
@@ -86,7 +85,6 @@ export const links: LinksFunction = () => {
 		{ rel: 'icon', type: 'image/svg+xml', href: '/favicons/favicon.svg' },
 		{ rel: 'stylesheet', href: tailwindStyleSheetUrl },
 		cssBundleHref ? { rel: 'stylesheet', href: cssBundleHref } : null,
-		{ rel: 'stylesheet', href: voteStyleSheetUrl },
 	].filter(Boolean)
 }
 
@@ -228,8 +226,8 @@ function App() {
 	const nonce = useNonce()
 	const user = useOptionalUser()
 	const theme = useTheme()
-	const matches = useMatches()
-	const isOnSearchPage = matches.find(m => m.id === 'routes/users+/index')
+	// const matches = useMatches()
+	// const isOnSearchPage = matches.find(m => m.id === 'routes/users+/index')
 	const searchBar = null // isOnSearchPage ? null : <SearchBar status="idle" />
 
 	return (

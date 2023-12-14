@@ -30,61 +30,38 @@ export function PostDetails({
 			? fetcher.data.state
 			: position
 
-	let voteClass =
-		voteState === Direction.Up
-			? ' voted upvoted'
-			: voteState === Direction.Down
-				? ' voted downvoted'
-				: ''
-
 	return (
-		<Card className={'post my-5 flex flex-col justify-center' + voteClass}>
-			<p>
-				{teaser ? (
-					<Link to={`/tags/${tag}/posts/${post.id}`}>{post.content}</Link>
-				) : (
-					<span>{post.content}</span>
-				)}
-			</p>
-			{note === null ? (
-				<span />
-			) : (
-				<NoteAttachment note={note} tag={tag} position={notePosition} />
-			)}
-			<fetcher.Form method="post" action="/vote">
-				<VoteButtons
-					postId={post.id}
-					tag={tag}
-					noteId={note !== null ? note.id : null}
-					randomLocation={randomLocation}
-					state={voteState}
-				/>
-			</fetcher.Form>
-			{teaser ? <span /> : <ReplyForm parentId={post.id} tag={tag} />}
+		<Card className={'my-5 flex flex-row space-x-4'}>
+			<div>
+				<fetcher.Form method="post" action="/vote">
+					<VoteButtons
+						postId={post.id}
+						tag={tag}
+						noteId={note !== null ? note.id : null}
+						randomLocation={randomLocation}
+						state={voteState}
+					/>
+				</fetcher.Form>
+			</div>
+			<div className={'flex flex-col space-y-4'}>
+				<p>
+					{teaser ? (
+						<Link to={`/tags/${tag}/posts/${post.id}`}>{post.content}</Link>
+					) : (
+						<span>{post.content}</span>
+					)}
+				</p>
+				{note === null ? <></> : <NoteAttachment note={note} tag={tag} />}
+				{teaser ? <span /> : <ReplyForm parentId={post.id} tag={tag} />}
+			</div>
 		</Card>
 	)
 }
 
-export function NoteAttachment({
-	tag,
-	note,
-	position,
-}: {
-	note: Post
-	tag: string
-	position: Direction
-}) {
-	let voteClass =
-		position === Direction.Up
-			? ' voted upvoted'
-			: position === Direction.Down
-				? ' voted downvoted'
-				: ''
+export function NoteAttachment({ tag, note }: { note: Post; tag: string }) {
 	return (
 		<Link to={`/tags/${tag}/posts/${note.id}`}>
-			<Card className={'post bg-secondary' + voteClass}>
-				{note ? note.content : ''}
-			</Card>
+			<Card className={'bg-secondary'}>{note ? note.content : ''}</Card>
 		</Link>
 	)
 }
@@ -109,9 +86,9 @@ export function VoteButtons({
 			<input type="hidden" name="state" value={Direction[state]} />
 
 			{randomLocation === null ? (
-				<span />
+				<></>
 			) : (
-				<span>
+				<>
 					<input
 						type="hidden"
 						name="randomLocationType"
@@ -122,22 +99,30 @@ export function VoteButtons({
 						name="oneBasedRank"
 						value={randomLocation === null ? '' : randomLocation.oneBasedRank}
 					/>
-				</span>
+				</>
 			)}
 
 			{noteId === null ? (
-				<span />
+				<></>
 			) : (
 				<input type="hidden" name="noteId" value={noteId} />
 			)}
 
-			<div className="vote-buttons voted upvoted flex flex-row space-x-2">
-				<Button className="upvote" name="direction" value="Up">
+			<div className="flex flex-col text-xl">
+				<button
+					name="direction"
+					value="Up"
+					className={state === Direction.Up ? '' : 'opacity-30'}
+				>
 					▲
-				</Button>
-				<Button className="downvote" name="direction" value="Down">
+				</button>
+				<button
+					name="direction"
+					value="Down"
+					className={state === Direction.Down ? '' : 'opacity-30'}
+				>
 					▼
-				</Button>
+				</button>
 			</div>
 		</>
 	)
