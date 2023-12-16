@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 @media screen and (min-width: 800px) {
-
 	/* by setting the breakpoint to the same value as the body-max-width, the scrollbar-margin only appears when there is centered content visible. As the jumps only occour on centered content which does not fill the space. */
 	html {
 		/* adds a margin of the same size as the scrollbar */
@@ -24,8 +23,8 @@
 		/* prefixed with foreground because it should look good on the background */
 		--foreground-destructive: 345 82.7% 40.8%;
 
-		--background: 0 0% 100%;
-		--foreground: 222.2 84% 4.9%;
+		--background: rgb(241, 245, 249);
+		--foreground: rgb(2, 8, 23);
 
 		--muted: 210 40% 93%;
 		--muted-foreground: 215.4 16.3% 30%;
@@ -37,8 +36,8 @@
 		--card-foreground: 222.2 84% 4.9%;
 
 		--border: 214.3 31.8% 91.4%;
-		--input: 214.3 31.8% 91.4%;
-		--input-invalid: 0 84.2% 60.2%;
+		--input: #7592b8;
+		--input-invalid: hsl(0 84.2% 60.2%);
 
 		--primary: 222.2 47.4% 11.2%;
 		--primary-foreground: 210 40% 98%;
@@ -55,11 +54,15 @@
 		--ring: 215 20.2% 65.1%;
 
 		--radius: 0.5rem;
+
+		--post: white;
+		--note: #f1f5f9;
+		--note-foreground: #434343;
 	}
 
 	.dark {
-		--background: 222.2 84% 4.9%;
-		--foreground: 210 40% 98%;
+		--background: #1e293b;
+		--foreground: white;
 
 		/* prefixed with foreground because it should look good on the background */
 		--foreground-destructive: -4 84% 60%;
@@ -74,8 +77,8 @@
 		--card-foreground: 210 40% 98%;
 
 		--border: 217.2 32.6% 17.5%;
-		--input: 217.2 32.6% 17.5%;
-		--input-invalid: 0 62.8% 30.6%;
+		--input: #334155;
+		--input-invalid: hsl(0 62.8% 30.6%);
 
 		--primary: 210 40% 98%;
 		--primary-foreground: 222.2 47.4% 11.2%;
@@ -90,6 +93,10 @@
 		--destructive-foreground: 0 85.7% 97.3%;
 
 		--ring: 217.2 32.6% 60%;
+
+		--post: #334155;
+		--note: #506585;
+		--note-foreground: #d5e2f3;
 	}
 }
 

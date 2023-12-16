@@ -4,16 +4,16 @@ export const extendedTheme = {
 	colors: {
 		border: 'hsl(var(--border))',
 		input: {
-			DEFAULT: 'hsl(var(--input))',
-			invalid: 'hsl(var(--input-invalid))',
+			DEFAULT: 'var(--input)',
+			invalid: 'var(--input-invalid)',
 		},
 		ring: {
 			DEFAULT: 'hsl(var(--ring))',
 			invalid: 'hsl(var(--foreground-destructive))',
 		},
-		background: 'hsl(var(--background))',
+		background: 'var(--background)',
 		foreground: {
-			DEFAULT: 'hsl(var(--foreground))',
+			DEFAULT: 'var(--foreground)',
 			destructive: 'hsl(var(--foreground-destructive))',
 		},
 		primary: {
@@ -43,6 +43,13 @@ export const extendedTheme = {
 		card: {
 			DEFAULT: 'hsl(var(--card))',
 			foreground: 'hsl(var(--card-foreground))',
+		},
+		post: {
+			DEFAULT: 'var(--post)',
+		},
+		note: {
+			DEFAULT: 'var(--note)',
+			foreground: 'var(--note-foreground)',
 		},
 	},
 	borderRadius: {

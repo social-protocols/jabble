@@ -23,8 +23,8 @@ import { zfd } from 'zod-form-data'
 
 import { logPostPageView } from '#app/attention.ts'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { Textarea } from '#app/components/ui/textarea.tsx'
 import { PostDetails } from '#app/components/ui/post.tsx'
+import { Textarea } from '#app/components/ui/textarea.tsx'
 import { type Post } from '#app/db/types.ts'
 
 // import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno

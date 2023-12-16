@@ -6,11 +6,7 @@ type CardProps = {
 
 export function Card(props: PropsWithChildren<CardProps>) {
 	return (
-		<div
-			className={
-				'w-full rounded-lg bg-primary-foreground p-5' + ' ' + props.className
-			}
-		>
+		<div className={'w-full rounded-lg p-5' + ' ' + props.className}>
 			{props.children}
 		</div>
 	)

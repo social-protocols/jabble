@@ -72,8 +72,8 @@ export default function TagPage() {
 				<Link to={`/`}>Home</Link>
 				&nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
 			</div>
-				<PostForm tag={tag} />
-				<TagFeed posts={posts} tag={tag} positions={p} />
+			<PostForm tag={tag} />
+			<TagFeed posts={posts} tag={tag} positions={p} />
 		</>
 	)
 }

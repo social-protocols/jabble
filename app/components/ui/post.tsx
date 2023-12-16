@@ -31,7 +31,7 @@ export function PostDetails({
 			: position
 
 	return (
-		<Card className={'my-5 flex flex-row space-x-4'}>
+		<Card className={'bg-post my-5 flex flex-row space-x-4'}>
 			<div>
 				<fetcher.Form method="post" action="/vote">
 					<VoteButtons
@@ -60,7 +60,9 @@ export function PostDetails({
 export function NoteAttachment({ tag, note }: { note: Post; tag: string }) {
 	return (
 		<Link to={`/tags/${tag}/posts/${note.id}`}>
-			<Card className={'bg-secondary'}>{note ? note.content : ''}</Card>
+			<Card className={'bg-note text-note-foreground'}>
+				{note ? note.content : ''}
+			</Card>
 		</Link>
 	)
 }
@@ -126,4 +128,3 @@ export function VoteButtons({
 		</>
 	)
 }
-

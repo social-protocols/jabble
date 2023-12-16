@@ -23,9 +23,9 @@ export function TagFeed({
 
 				let randomLocation: Location | null = post.random
 					? {
-						oneBasedRank: i + 1,
-						locationType: LocationType.TagPage,
-					}
+							oneBasedRank: i + 1,
+							locationType: LocationType.TagPage,
+					  }
 					: null
 
 				return (
