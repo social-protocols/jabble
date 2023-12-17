@@ -47,6 +47,9 @@ export const extendedTheme = {
 		post: {
 			DEFAULT: 'var(--post)',
 		},
+		postParent: {
+			foreground: 'var(--post-parent-foreground)',
+		},
 		note: {
 			DEFAULT: 'var(--note)',
 			foreground: 'var(--note-foreground)',

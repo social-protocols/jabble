@@ -30,7 +30,7 @@ import { type Post } from '#app/db/types.ts'
 // import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno
 
 import { getUserPositions } from '#app/positions.ts'
-import { createPost, getPost } from '#app/post.ts'
+import { createPost, getPost, getTransitiveParents } from '#app/post.ts'
 import { getRankedNotes } from '#app/ranking.ts'
 import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
@@ -57,6 +57,8 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	invariantResponse(post, 'Post not found', { status: 404 })
 
+	const transitiveParents = await getTransitiveParents(post.id)
+
 	let replies = await getRankedNotes(tag, post.id)
 	await logPostPageView(tag, post.id, userId)
 
@@ -70,7 +72,7 @@ export async function loader({ params, request }: DataFunctionArgs) {
 				replies.map(p => p.id).concat([post.id]),
 			)
 
-	let result = json({ post, replies, tag, positions })
+	let result = json({ post, transitiveParents, replies, tag, positions })
 
 	return result
 }
@@ -103,7 +105,8 @@ export const action = async (args: ActionFunctionArgs) => {
 }
 
 export default function Post() {
-	const { post, replies, tag, positions } = useLoaderData<typeof loader>()
+	const { post, transitiveParents, replies, tag, positions } =
+		useLoaderData<typeof loader>()
 
 	let p = new Map<number, Direction>()
 	for (let position of positions) {
@@ -118,11 +121,12 @@ export default function Post() {
 
 	return (
 		<div>
-			<div>
+			<div className="mb-5">
 				<Link to={`/`}>Home</Link>
 				&nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
 				&nbsp; &gt; View post
 			</div>
+			<ParentThread transitiveParents={transitiveParents} tag={tag} />
 			<PostDetails
 				tag={tag}
 				post={post}
@@ -136,6 +140,29 @@ export default function Post() {
 			<ReplyForm tag={tag} parentId={post.id} />
 			<PostReplies tag={tag} replies={replies} positions={p} />
 		</div>
+	)
+}
+
+function ParentThread({
+	transitiveParents,
+	tag,
+}: {
+	transitiveParents: Post[]
+	tag: string
+}) {
+	return (
+		<>
+			{transitiveParents.map(parentPost => (
+				<Link to={`/tags/${tag}/posts/${parentPost.id}`}>
+					<div
+						key={parentPost.id}
+						className="bg-post text-postParent-foreground mb-2 rounded-lg p-3 text-xs"
+					>
+						{parentPost.content}
+					</div>
+				</Link>
+			))}
+		</>
 	)
 }
 

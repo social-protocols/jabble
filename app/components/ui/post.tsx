@@ -31,7 +31,7 @@ export function PostDetails({
 			: position
 
 	return (
-		<Card className={'bg-post my-5 flex flex-row space-x-4'}>
+		<Card className={'bg-post mb-5 flex flex-row space-x-4'}>
 			<div>
 				<fetcher.Form method="post" action="/vote">
 					<VoteButtons

@@ -63,6 +63,36 @@ export async function getPost(id: number): Promise<Post> {
 	return result
 }
 
+export async function getTransitiveParents(id: number): Promise<Post[]> {
+	let result: Post[] = await db
+		.withRecursive('transitive_parents', db =>
+			db
+				.selectFrom('Post')
+				.where('id', '=', id)
+				.select(['id', 'parentId', 'authorId', 'content', 'createdAt'])
+				.unionAll(db =>
+					db
+						.selectFrom('Post as P')
+						.innerJoin('transitive_parents as TP', 'P.id', 'TP.parentId')
+						.select([
+							'P.id',
+							'P.parentId',
+							'P.authorId',
+							'P.content',
+							'P.createdAt',
+						]),
+				),
+		)
+		.selectFrom('transitive_parents')
+		.selectAll()
+		.execute()
+
+	// the topmost parent is the first element in the array
+	// skip the first element, which is the post itself
+	let resultReversed = result.slice(1).reverse()
+	return resultReversed
+}
+
 function extractTags(content: string): string[] {
 	const regex = /#[a-zA-Z0-9]+/g
 	const matches = content.match(regex) || []
