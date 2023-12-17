@@ -1,4 +1,3 @@
-import { Button } from '#app/components/ui/button.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 
 export function PostForm({ tag }: { tag: string }) {

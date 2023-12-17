@@ -1,6 +1,5 @@
 import { Link, useFetcher } from '@remix-run/react'
 import { type Location, LocationType } from '#app/attention.ts'
-import { Button } from '#app/components/ui/button.tsx'
 import { type Post } from '#app/db/types.ts'
 import { Direction } from '#app/vote.ts'
 import { Card } from './card.tsx'
@@ -31,7 +30,7 @@ export function PostDetails({
 			: position
 
 	return (
-		<Card className={'bg-post mb-5 flex flex-row space-x-4'}>
+		<Card className={'mb-5 flex flex-row space-x-4 bg-post'}>
 			<div>
 				<fetcher.Form method="post" action="/vote">
 					<VoteButtons

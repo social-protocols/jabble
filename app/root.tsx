@@ -20,7 +20,6 @@ import {
 	useFetcher,
 	useFetchers,
 	useLoaderData,
-	useMatches,
 	useSubmit,
 } from '@remix-run/react'
 import { withSentry } from '@sentry/remix'
@@ -32,7 +31,6 @@ import { z } from 'zod'
 import { GeneralErrorBoundary } from './components/error-boundary.tsx'
 import { ErrorList } from './components/forms.tsx'
 import { EpicProgress } from './components/progress-bar.tsx'
-import { SearchBar } from './components/search-bar.tsx'
 import { EpicToaster } from './components/toaster.tsx'
 import { Button } from './components/ui/button.tsx'
 import {
