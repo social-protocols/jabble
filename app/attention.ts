@@ -1,4 +1,3 @@
-import assert from 'node:assert'
 import { sql } from 'kysely'
 import { type TagStats } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
@@ -92,8 +91,12 @@ export async function flushTagPageStats(tag: string, posts: number[]) {
 		deltaVotes = stats.votes
 	}
 
-	// Read total votes. Currently, CurrentTally is a view that sums over entire voteHistory.
-	// This is super inefficient, but simple for now.
+	if (deltaViews == 0) {
+		if (deltaVotes != 0) {
+			console.log('deltaViews == 0 but deltaVotes =', deltaVotes)
+		}
+		return
+	}
 
 	const prior = GLOBAL_PRIOR_VOTES_PER_VIEW.update({
 		count: deltaVotes,
@@ -105,13 +108,6 @@ export async function flushTagPageStats(tag: string, posts: number[]) {
 	{
 		let movingAverageAlpha = 0.9999
 		let windowSize = 1 / (1 - movingAverageAlpha)
-
-		console.log('Delta votes / delta views', deltaVotes, deltaViews)
-
-		assert(
-			deltaViews > 0,
-			"deltaViews > 0 -- there shouldn't be any votes without views",
-		)
 
 		let decayFactor = movingAverageAlpha ** deltaViews
 
@@ -127,7 +123,7 @@ export async function flushTagPageStats(tag: string, posts: number[]) {
 					views: eb => eb('views', '+', deltaViews),
 					votesPerView: sql<number>`
 						case 
-						when views < ${windowSize} then 							
+						when views < ${windowSize} || ${deltaViews} == 0 then
 							(votesPerView*views + ${deltaVotes}) / (views + ${deltaViews})
 						else 
 							votesPerView * ${decayFactor} + ${deltaVotes}/${deltaViews}*(1 - ${decayFactor})
