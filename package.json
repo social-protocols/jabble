@@ -52,7 +52,7 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-toast": "^1.1.5",
     "@radix-ui/react-tooltip": "^1.0.7",
-    "@react-email/components": "^0.0.7",
+    "@react-email/components": "^0.0.12",
     "@remix-run/css-bundle": "^2.1.0",
     "@remix-run/express": "^2.1.0",
     "@remix-run/node": "^2.1.0",
@@ -90,6 +90,7 @@
     "kysely": "^0.26.3",
     "litefs-js": "^1.1.2",
     "lru-cache": "^10.0.1",
+    "markdown-to-jsx": "^7.3.2",
     "morgan": "^1.10.0",
     "prisma": "^5.3.1",
     "prisma-kysely": "^1.7.1",
@@ -109,6 +110,7 @@
     "tailwindcss-animate": "^1.0.7",
     "tailwindcss-radix": "^2.8.0",
     "tiny-invariant": "^1.3.1",
+    "turndown": "^7.1.2",
     "zod": "^3.22.2",
     "zod-form-data": "^2.0.2"
   },
@@ -164,7 +166,7 @@
     "vitest": "^0.34.5"
   },
   "engines": {
-    "node": "20.6.1"
+    "node": "21.4.0"
   },
   "epic-stack": true,
   "prisma": {

@@ -15,6 +15,7 @@ import {
 // import { Form, Link, useLoaderData, type MetaFunction } from '@remix-run/react'
 // import { db } from "#app/db.ts";
 // import { topNote, voteRate } from '#app/probabilities.ts';
+import Markdown from 'markdown-to-jsx'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 import { zfd } from 'zod-form-data'
@@ -158,7 +159,7 @@ function ParentThread({
 						key={parentPost.id}
 						className="mb-2 rounded-lg bg-post p-3 text-xs text-postParent-foreground"
 					>
-						{parentPost.content}
+						<Markdown>{parentPost.content}</Markdown>
 					</div>
 				</Link>
 			))}

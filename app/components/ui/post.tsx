@@ -1,4 +1,5 @@
 import { Link, useFetcher } from '@remix-run/react'
+import Markdown from 'markdown-to-jsx'
 import { type Location, LocationType } from '#app/attention.ts'
 import { type Post } from '#app/db/types.ts'
 import { Direction } from '#app/vote.ts'
@@ -45,9 +46,13 @@ export function PostDetails({
 			<div className={'flex flex-col space-y-4'}>
 				<p>
 					{teaser ? (
-						<Link to={`/tags/${tag}/posts/${post.id}`}>{post.content}</Link>
+						<Link to={`/tags/${tag}/posts/${post.id}`}>
+							<Markdown>{post.content}</Markdown>
+						</Link>
 					) : (
-						<span>{post.content}</span>
+						<span>
+							<Markdown>{post.content}</Markdown>
+						</span>
 					)}
 				</p>
 				{note === null ? <></> : <NoteAttachment note={note} tag={tag} />}
@@ -60,7 +65,7 @@ export function NoteAttachment({ tag, note }: { note: Post; tag: string }) {
 	return (
 		<Link to={`/tags/${tag}/posts/${note.id}`}>
 			<Card className={'bg-note text-note-foreground'}>
-				{note ? note.content : ''}
+				<Markdown>{note ? note.content : ''}</Markdown>
 			</Card>
 		</Link>
 	)
