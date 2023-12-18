@@ -1,6 +1,8 @@
 import { Link, useFetcher } from '@remix-run/react'
 import Markdown from 'markdown-to-jsx'
+import { useState } from 'react'
 import { type Location, LocationType } from '#app/attention.ts'
+import { Textarea } from '#app/components/ui/textarea.tsx'
 import { type Post } from '#app/db/types.ts'
 import { Direction } from '#app/vote.ts'
 import { Card } from './card.tsx'
@@ -30,8 +32,15 @@ export function PostDetails({
 			? fetcher.data.state
 			: position
 
+	// TODO: how do we get this number
+	const nReplies = 'N'
+
+	const replyFetcher = useFetcher<{ newPostId: number }>()
+
+	const [showReplyForm, setShowReplyForm] = useState(false)
+
 	return (
-		<Card className={'mb-5 flex flex-row space-x-4 bg-post'}>
+		<Card className={'mb-5 flex w-full flex-row space-x-4 bg-post'}>
 			<div>
 				<fetcher.Form method="post" action="/vote">
 					<VoteButtons
@@ -44,16 +53,68 @@ export function PostDetails({
 				</fetcher.Form>
 			</div>
 			<div className={'markdown flex flex-col space-y-4'}>
-				{teaser ? (
-					<Link to={`/tags/${tag}/posts/${post.id}`}>
-						<Markdown>{post.content}</Markdown>
-					</Link>
-				) : (
-					<>
-						<Markdown>{post.content}</Markdown>
-					</>
-				)}
+				<Markdown>{post.content}</Markdown>
 				{note === null ? <></> : <NoteAttachment note={note} tag={tag} />}
+
+				<div className="mb-4 flex w-full">
+					<Link to={`/tags/${tag}/posts/${post.id}`}>
+						Show{' '}
+						{nReplies === 1
+							? '1 Reply'
+							: (nReplies === 0 ? 'No' : nReplies) + ' Replies'}
+					</Link>
+					{showReplyForm ? (
+						<button
+							className="ml-auto pr-2"
+							onClick={() => setShowReplyForm(false)}
+						>
+							✕
+						</button>
+					) : (
+						<button
+							className="ml-2 font-medium text-blue-600"
+							onClick={() => {
+								setShowReplyForm(true)
+								return false
+							}}
+							// preventScrollReset={true}
+						>
+							Reply
+						</button>
+					)}
+				</div>
+
+				{showReplyForm && (
+					<replyFetcher.Form id="reply-form" method="post" action="/reply">
+						<div className="flex flex-col items-end">
+							<input type="hidden" name="parentId" value={post.id} />
+							<input type="hidden" name="tag" value={tag} />
+
+							<Textarea
+								name="content"
+								className="mb-1 w-full"
+								style={{
+									resize: 'vertical',
+								}}
+								autoFocus={true}
+								placeholder="Enter your reply"
+							/>
+
+							<div>
+								<button
+									className="mb-4 rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700"
+									onClick={() => {
+										console.log('SEtting show reply form ')
+										setShowReplyForm(false)
+										return false
+									}}
+								>
+									Reply
+								</button>
+							</div>
+						</div>
+					</replyFetcher.Form>
+				)}
 			</div>
 		</Card>
 	)

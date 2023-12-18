@@ -1,10 +1,6 @@
 // import { Spacer } from '#app/components/spacer.tsx'
 // import { Icon } from '#app/components/ui/icon.tsx'
-import {
-	type ActionFunctionArgs,
-	type DataFunctionArgs,
-	json,
-} from '@remix-run/node'
+import { type DataFunctionArgs, json } from '@remix-run/node'
 
 import {
 	Link,
@@ -16,25 +12,23 @@ import {
 // import { db } from "#app/db.ts";
 // import { topNote, voteRate } from '#app/probabilities.ts';
 import Markdown from 'markdown-to-jsx'
-import { useState } from 'react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
-import { zfd } from 'zod-form-data'
+// import { zfd } from 'zod-form-data'
 // import { Button } from '#app/components/ui/button.tsx';
 // import { Link } from '@remix-run/react';
 
 import { logPostPageView } from '#app/attention.ts'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { PostDetails } from '#app/components/ui/post.tsx'
-import { Textarea } from '#app/components/ui/textarea.tsx'
 import { type Post } from '#app/db/types.ts'
 
 // import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno
 
 import { getUserPositions } from '#app/positions.ts'
-import { createPost, getPost, getTransitiveParents } from '#app/post.ts'
+import { getPost, getTransitiveParents } from '#app/post.ts'
 import { getRankedNotes } from '#app/ranking.ts'
-import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
+import { getUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
 
 import { Direction } from '#app/vote.ts'
@@ -42,7 +36,6 @@ import { Direction } from '#app/vote.ts'
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
-const contentSchema = z.coerce.string()
 
 // export const handle = {
 //   scripts: () => [{ src: '/js/vote.js' }]
@@ -79,33 +72,6 @@ export async function loader({ params, request }: DataFunctionArgs) {
 	return result
 }
 
-const replySchema = zfd.formData({
-	parentId: postIdSchema,
-	tag: tagSchema,
-	content: contentSchema,
-})
-
-export const action = async (args: ActionFunctionArgs) => {
-	let request = args.request
-	const formData = await request.formData()
-
-	const userId: string = await requireUserId(request)
-
-	const parsedData = replySchema.parse(formData)
-	const content = parsedData.content
-	const parentId = parsedData.parentId
-	const tag = parsedData.tag
-
-	invariant(content, 'content !== undefined')
-	invariant(tag, "tag !== ''")
-
-	let newPostId = await createPost(tag, parentId, content, userId)
-
-	console.log('New post id', newPostId)
-
-	return json({ newPostId: newPostId })
-}
-
 export default function Post() {
 	const { post, transitiveParents, replies, tag, positions } =
 		useLoaderData<typeof loader>()
@@ -120,8 +86,6 @@ export default function Post() {
 	let position = p.get(post.id) || Direction.Neutral
 	let notePosition: Direction =
 		(topNote && p.get(topNote.id)) || Direction.Neutral
-
-	const [showReplyForm, setShowReplyForm] = useState(false)
 
 	return (
 		<div>
@@ -140,25 +104,6 @@ export default function Post() {
 				position={position}
 				notePosition={notePosition}
 			/>
-			<div className="mb-4 flex w-full">
-				{replies.length} Replies{' '}
-				{showReplyForm ? (
-					<button
-						className="ml-auto pr-2"
-						onClick={() => setShowReplyForm(false)}
-					>
-						✕
-					</button>
-				) : (
-					<button
-						className="ml-2 font-medium text-blue-600"
-						onClick={() => setShowReplyForm(true)}
-					>
-						Reply
-					</button>
-				)}
-			</div>
-			{showReplyForm && <ReplyForm tag={tag} parentId={post.id} />}
 			<PostReplies tag={tag} replies={replies} positions={p} />
 		</div>
 	)
@@ -177,46 +122,13 @@ function ParentThread({
 				<Link key={parentPost.id} to={`/tags/${tag}/posts/${parentPost.id}`}>
 					<div
 						key={parentPost.id}
-						className="text-postParent-foreground mb-2 rounded-lg bg-post p-3 text-xs"
+						className="text-postParent-foreground markdown mb-2 rounded-lg bg-post p-3 text-xs"
 					>
 						<Markdown>{parentPost.content}</Markdown>
 					</div>
 				</Link>
 			))}
 		</>
-	)
-}
-
-export function ReplyForm({
-	parentId,
-	tag,
-}: {
-	parentId: number
-	tag: string
-}) {
-
-	return (
-		<form id="reply-form" method="post">
-			<div className="flex flex-col items-end">
-				<input type="hidden" name="parentId" value={parentId} />
-				<input type="hidden" name="tag" value={tag} />
-
-				<Textarea
-					name="content"
-					className="mb-1 w-full"
-					style={{
-						resize: 'vertical',
-					}}
-					placeholder="Enter your reply"
-				/>
-
-				<div>
-					<button className="mb-4 rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700">
-						Reply
-					</button>
-				</div>
-			</div>
-		</form>
 	)
 }
 
@@ -230,27 +142,33 @@ export function PostReplies({
 	positions: Map<number, Direction>
 }) {
 	return (
-		<ol>
-			{replies.map((post: Post) => {
-				// let randomLocation = {locationType: LocationType.PostReplies, oneBasedRank: i + 1}
+		replies.length > 0 && (
+			<>
+				<h2 className="mb-4 font-medium">All Replies</h2>
+				<ol>
+					{replies.map((post: Post) => {
+						// let randomLocation = {locationType: LocationType.PostReplies, oneBasedRank: i + 1}
 
-				let position: Direction = positions.get(post.id) || Direction.Neutral
+						let position: Direction =
+							positions.get(post.id) || Direction.Neutral
 
-				return (
-					<li key={post.id}>
-						<PostDetails
-							tag={tag}
-							post={post}
-							note={null}
-							teaser={true}
-							randomLocation={null}
-							position={position}
-							notePosition={Direction.Neutral}
-						/>
-					</li>
-				)
-			})}
-		</ol>
+						return (
+							<li key={post.id}>
+								<PostDetails
+									tag={tag}
+									post={post}
+									note={null}
+									teaser={true}
+									randomLocation={null}
+									position={position}
+									notePosition={Direction.Neutral}
+								/>
+							</li>
+						)
+					})}
+				</ol>
+			</>
+		)
 	)
 }
 
