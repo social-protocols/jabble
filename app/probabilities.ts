@@ -229,7 +229,6 @@ async function getCurrentTallies(
 	postId: number,
 	map: Map<number, InformedTally[]>,
 ) {
-	// use dribble to select current informed tally
 	const results = await db
 		.selectFrom('DetailedTally')
 		.where('tagId', '=', tagId)

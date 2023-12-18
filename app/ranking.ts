@@ -187,7 +187,12 @@ async function getRankedPostsInternal(tagId: number): Promise<RankedPost[]> {
 						.where('Post.id', '=', p.topNoteId)
 						.selectAll()
 						.executeTakeFirstOrThrow()
-				: null
+				: (await db
+						.selectFrom('Post')
+						.where('Post.parentId', '=', p.id)
+						.selectAll()
+						.orderBy(sql`RANDOM()`)
+						.executeTakeFirst()) || null
 
 		results[i] = { ...p, ...s, note }
 	}
@@ -195,10 +200,11 @@ async function getRankedPostsInternal(tagId: number): Promise<RankedPost[]> {
 	return results
 }
 
+
 async function score(tagId: number, post: PostWithStats): Promise<ScoreData> {
 	// find informed probability
 
-	const [topNoteId, p, q] = await findTopNoteId(tagId, post.id)
+	let [topNoteId, p, q] = await findTopNoteId(tagId, post.id)
 
 	// https://social-protocols.org/y-docs/information-value.html
 	let informationValue = 1 + Math.log2(q)
