@@ -24,6 +24,7 @@
               git
 
               sqlite-interactive
+              nodejs_21
 
               flyctl
 
