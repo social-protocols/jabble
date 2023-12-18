@@ -117,7 +117,29 @@
 			@apply underline;
 		}
 	}
+	pre {
+		@apply mb-4;
+		@apply pl-8;
+	}
+	ul {
+		list-style-type: circle;
+		list-style-position: inside;
+		@apply mb-4;
+	}
+	ol {
+		list-style-type: upper-roman;
+		list-style-position: inside;
+		@apply mb-4;
+	}
+	li ul  {
+		@apply pl-4;
+	}
+	li ol  {
+			@apply pl-4;
+	}
+
 }
+
 
 /* useful for layout debugging: */
 /* * { */
