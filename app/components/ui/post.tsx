@@ -43,18 +43,16 @@ export function PostDetails({
 					/>
 				</fetcher.Form>
 			</div>
-			<div className={'flex flex-col space-y-4'}>
-				<p>
-					{teaser ? (
-						<Link to={`/tags/${tag}/posts/${post.id}`}>
-							<Markdown>{post.content}</Markdown>
-						</Link>
-					) : (
-						<span>
-							<Markdown>{post.content}</Markdown>
-						</span>
-					)}
-				</p>
+			<div className={'markdown flex flex-col space-y-4'}>
+				{teaser ? (
+					<Link to={`/tags/${tag}/posts/${post.id}`}>
+						<Markdown>{post.content}</Markdown>
+					</Link>
+				) : (
+					<>
+						<Markdown>{post.content}</Markdown>
+					</>
+				)}
 				{note === null ? <></> : <NoteAttachment note={note} tag={tag} />}
 			</div>
 		</Card>

@@ -109,6 +109,16 @@
 	}
 }
 
+.markdown {
+	p {
+		@apply mb-4;
+
+		a {
+			@apply underline;
+		}
+	}
+}
+
 /* useful for layout debugging: */
 /* * { */
 /* 	outline: 1px dashed rgba(255, 128, 255, 0.3); */
