@@ -41,3 +41,6 @@ sim:
 # Same as sim, but doesn't use in-memory DB so simulated state is persisted
 sim-seed:
 	npx tsx simulate-attention-share.ts
+
+import-hn:
+	npx tsx import-hn.ts ./other/hn-data/*.json.gz
