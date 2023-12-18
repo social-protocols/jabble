@@ -16,6 +16,7 @@ import {
 // import { db } from "#app/db.ts";
 // import { topNote, voteRate } from '#app/probabilities.ts';
 import Markdown from 'markdown-to-jsx'
+import { useState } from 'react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 import { zfd } from 'zod-form-data'
@@ -120,6 +121,8 @@ export default function Post() {
 	let notePosition: Direction =
 		(topNote && p.get(topNote.id)) || Direction.Neutral
 
+	const [showReplyForm, setShowReplyForm] = useState(false)
+
 	return (
 		<div>
 			<div className="mb-5">
@@ -137,8 +140,25 @@ export default function Post() {
 				position={position}
 				notePosition={notePosition}
 			/>
-			<h2 className="mb-4">Replies</h2>
-			<ReplyForm tag={tag} parentId={post.id} />
+			<div className="mb-4 flex w-full">
+				{replies.length} Replies{' '}
+				{showReplyForm ? (
+					<button
+						className="ml-auto pr-2"
+						onClick={() => setShowReplyForm(false)}
+					>
+						✕
+					</button>
+				) : (
+					<button
+						className="ml-2 font-medium text-blue-600"
+						onClick={() => setShowReplyForm(true)}
+					>
+						Reply
+					</button>
+				)}
+			</div>
+			{showReplyForm && <ReplyForm tag={tag} parentId={post.id} />}
 			<PostReplies tag={tag} replies={replies} positions={p} />
 		</div>
 	)
@@ -157,7 +177,7 @@ function ParentThread({
 				<Link key={parentPost.id} to={`/tags/${tag}/posts/${parentPost.id}`}>
 					<div
 						key={parentPost.id}
-						className="mb-2 rounded-lg bg-post p-3 text-xs text-postParent-foreground"
+						className="text-postParent-foreground mb-2 rounded-lg bg-post p-3 text-xs"
 					>
 						<Markdown>{parentPost.content}</Markdown>
 					</div>
@@ -174,10 +194,9 @@ export function ReplyForm({
 	parentId: number
 	tag: string
 }) {
-	console.log('Parent id in replyFOrm is ', parentId)
+
 	return (
 		<form id="reply-form" method="post">
-			<input type="hidden" value="reply" />
 			<div className="flex flex-col items-end">
 				<input type="hidden" name="parentId" value={parentId} />
 				<input type="hidden" name="tag" value={tag} />
@@ -185,12 +204,14 @@ export function ReplyForm({
 				<Textarea
 					name="content"
 					className="mb-1 w-full"
-					cols={100}
-					rows={1}
+					style={{
+						resize: 'vertical',
+					}}
 					placeholder="Enter your reply"
 				/>
+
 				<div>
-					<button className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700">
+					<button className="mb-4 rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700">
 						Reply
 					</button>
 				</div>
