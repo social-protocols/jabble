@@ -200,7 +200,6 @@ async function getRankedPostsInternal(tagId: number): Promise<RankedPost[]> {
 	return results
 }
 
-
 async function score(tagId: number, post: PostWithStats): Promise<ScoreData> {
 	// find informed probability
 

@@ -8,7 +8,6 @@ import { logAuthorView } from './attention.ts'
 import { clearRankingsCacheForTagPage } from './ranking.ts'
 import { getOrInsertTagId } from './tag.ts'
 
-
 // express the above fn in typescript with kysely queries
 export async function createPost(
 	tag: string,
