@@ -15,6 +15,10 @@ import { z } from 'zod'
 // import { Link } from '@remix-run/react';
 
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import {
+	GLOBAL_PRIOR_VOTE_RATE,
+	GLOBAL_PRIOR_UPVOTE_PROBABILITY,
+} from '#app/probabilities.ts'
 
 // import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno
 
@@ -67,30 +71,54 @@ export default function PostStats() {
 
 	const totalCrossEntropy = post.voteTotal * relativeEntropy(post.p, post.q)
 
+	// const voteRatePrior = GLOBAL_PRIOR_VOTE_RATE
+	// const upvoteProbabilityPrior = GLOBAL_PRIOR_UPVOTE_PROBABILITY
+
+	const informationValueNewVotes = post.voteTotal * (1 - Math.log2(post.q))
+	const informationValueTotal = informationValueNewVotes - totalCrossEntropy
+
 	const markdown = `
 # Stats for post [${post.id}](/tags/${tag}/posts/${
 		post.id
 	}) in [#${tag}](/tags/${tag})
 
-- **Information Rate:** ${post.informationRate.toFixed(3)}
-- **Vote Rate:** ${post.voteRate.toFixed(3)}
-- **p:** ${post.p.toFixed(3)}
-- **q:** ${post.q.toFixed(3)}
-- **attention:** ${post.attention.toFixed(3)}
-- **upvotes:** ${post.voteCount}
-- **downvotes:** ${post.voteTotal - post.voteCount}
-- **total votes:** ${post.voteTotal}
-- **cognitive dissonance:** ${totalCrossEntropy.toFixed(3)} bits
-- **top note:** ${
-		post.topNoteId == null
-			? 'null'
-			: `[${post.topNoteId}](/tags/${tag}/stats/${post.topNoteId})`
-	}
 - **parent:** ${
 		post.parentId == null
 			? 'null'
 			: `[${post.parentId}](/tags/${tag}/stats/${post.parentId})`
 	}
+- **upvotes:** ${post.voteCount}
+- **downvotes:** ${post.voteTotal - post.voteCount}
+- **votes:** ${post.voteTotal}
+- **attention:** ${post.attention.toFixed(3)}
+- **vote rate:** ${post.voteRate.toFixed(3)}
+  - voteRate = Bayesian Average(votes/attention, voteRatePrior)
+- **p:** ${post.p.toFixed(3)}
+  - p = Bayesian Average(upvotes/votes), upvoteProbabilityPrior)
+  - see [Docs on Rating and Evaluating Content](https://social-protocols.org/global-brain/rating-and-evaluating-content.html)
+- **top note:** ${
+		post.topNoteId == null
+			? 'null'
+			: `[${post.topNoteId}](/tags/${tag}/stats/${post.topNoteId})`
+	}
+- **q:** ${post.q.toFixed(3)}
+	- q = ${
+		post.topNoteId === null
+			? 'p'
+			: `Bayesian Average(upvotes/votes given shown top note ${post.topNoteId}), p)`
+	}
+- **cognitive dissonance (existing votes):** ${totalCrossEntropy.toFixed(
+		3,
+	)} bits
+	- cognitiveDissonance = votesTotal * Dkl(p,q)
+	- see [docs on cognitive dissonance](https://social-protocols.org/global-brain/cognitive-dissonance.html)
+- **information value created (new votes)**: ${informationValueNewVotes}
+  - informationValue = votesTotal * (1 - log(q))
+  - see [Docs on Information Value](https://social-protocols.org/global-brain/information-value.html)
+- **information value created (total)**: ${informationValueTotal}
+  - informationValue = informationValueNewVotes - cognitiveDissonance
+- **information rate (new votes):** ${post.informationRate.toFixed(3)}
+  - informationRate = voteRate * (1 - log(q)) 
 	`
 
 	return (
