@@ -1,9 +1,11 @@
 import { Link, useFetcher } from '@remix-run/react'
 import Markdown from 'markdown-to-jsx'
+import moment from 'moment'
 import { type FormEvent, useState } from 'react'
 import { type Location, LocationType } from '#app/attention.ts'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { type Post } from '#app/db/types.ts'
+import { type ScoredPost } from '#app/ranking.ts'
 import { Direction } from '#app/vote.ts'
 import { Card } from './card.tsx'
 
@@ -17,7 +19,7 @@ export function PostDetails({
 	notePosition,
 }: {
 	tag: string
-	post: Post
+	post: ScoredPost
 	note: Post | null
 	teaser: boolean
 	randomLocation: Location | null
@@ -32,9 +34,6 @@ export function PostDetails({
 			? fetcher.data.state
 			: position
 
-	// TODO: how do we get this number
-	const nReplies = 'N'
-
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
 	const replyFetcher = useFetcher<{ newPostId: number }>()
@@ -43,12 +42,23 @@ export function PostDetails({
 		console.log('Fetcher data', replyFetcher.data)
 	}
 
+	const nReplies = post.nReplies
+	const nRepliesString =
+		nReplies === 1 ? '1 Reply' : (nReplies === 0 ? 'No' : nReplies) + ' Replies'
+
 	// const submit = useSubmit()
 	const handleReplySubmit = function (event: FormEvent<HTMLFormElement>) {
 		event.preventDefault() // this will prevent Remix from submitting the form
 		setShowReplyForm(false)
 		replyFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
 	}
+
+	let informationRateString = Math.round(post.informationRate * 100) / 100
+	// const informationRateString = `${ Math.round(post.informationRate * 100) / 100} p=${post.p} q=${post.q} voteRate=${post.voteRate}`
+	const age = new Date(2022, 12, 2)
+	// const ageString = format(age)
+	// const ageString = moment('20111031', 'YYYYMMDD').fromNow()
+	const ageString = moment(post.createdAt).fromNow()
 
 	return (
 		<Card className={'mb-5 flex w-full flex-row space-x-4 bg-post'}>
@@ -68,11 +78,18 @@ export function PostDetails({
 				{note === null ? <></> : <NoteAttachment note={note} tag={tag} />}
 
 				<div className="mb-4 flex w-full">
-					<Link to={`/tags/${tag}/posts/${post.id}`}>
-						{nReplies === 1
-							? '1 Reply'
-							: (nReplies === 0 ? 'No' : nReplies) + ' Replies'}
-					</Link>
+					<span className="information-rate pr-2 font-medium">
+						{informationRateString} bits
+					</span>
+					<span className="age pr-2">{ageString}</span>
+
+					{teaser ? (
+						<Link to={`/tags/${tag}/posts/${post.id}`} className="underline">
+							{nRepliesString}
+						</Link>
+					) : (
+						nRepliesString
+					)}
 					{showReplyForm ? (
 						<button
 							className="ml-auto pr-2"

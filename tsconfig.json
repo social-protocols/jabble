@@ -25,5 +25,6 @@
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
     "noEmit": true,
+    "sourceMap": true,
   }
 }

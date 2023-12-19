@@ -4,7 +4,7 @@ import { db } from '#app/db.ts'
 
 import { GammaDistribution } from './beta-gamma-distribution.ts'
 import { getOrInsertTagId } from './tag.ts'
-
+import { initPostStats } from './post.ts'
 // Global prior votes/view. The TagStats table keeps track of votes/view per tag, but
 // we need to start with some prior. This value is currently just a wild guess.
 export const GLOBAL_PRIOR_VOTES_PER_VIEW = new GammaDistribution(0.002, 1000)
@@ -176,20 +176,8 @@ async function savePostStats(
 	location: Location,
 	deltaAttention: number,
 ) {
-	// if (results.length == 0) {
-	let query = db
-		.insertInto('PostStats')
-		.values({
-			tagId: tagId,
-			postId: postId,
-			// initial attention is 1 + deltaAttention, because each post automatically gets 1 upvote from the author
-			// and so the expectedVotes (attention) for a new post is equal to 1.
-			attention: 1,
-			views: 1,
-		})
-		// ignore conflict
-		.onConflict(oc => oc.column('postId').doNothing())
-	await query.execute()
+	await initPostStats(tagId, postId)
+
 	// console.log("REsult of initial insert", tagId, postId, result)
 
 	await db

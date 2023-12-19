@@ -168,6 +168,9 @@ model PostStats {
   views     Int
   // uniqueUsers String
 
+  // childCount Int
+  replies Int
+
   @@unique([postId])
 }
 

@@ -1,6 +1,5 @@
 import { type Location, LocationType } from '#app/attention.ts'
 import { PostDetails } from '#app/components/ui/post.tsx'
-import { type Post } from '#app/db/types.ts'
 import { type RankedPost } from '#app/ranking.ts'
 import { Direction } from '#app/vote.ts'
 // import { type PostId } from '#app/post.ts'
@@ -31,7 +30,7 @@ export function TagFeed({
 				return (
 					<PostDetails
 						key={post.id}
-						post={post as Post}
+						post={post}
 						note={post.note}
 						tag={tag}
 						teaser={true}

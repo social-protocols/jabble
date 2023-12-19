@@ -24,14 +24,19 @@ type ScoreData = {
 	informationValue: number
 	informationRate: number
 	topNoteId: number | null
+	nReplies: number
 }
+
+export type ScoredPost = Post & ScoreData
 
 export type RankedPost = Post &
 	ScoreData & { random: boolean; note: Post | null }
+
 type PostWithStats = Post & {
 	attention: number
 	voteCount: number
 	voteTotal: number
+	nReplies: number
 }
 
 // const fatigueFactor = .9
@@ -99,11 +104,40 @@ async function getPostsWithStats(tagId: number): Promise<PostWithStats[]> {
 		.select(sql<number>`COALESCE(PostStats.attention, 0)`.as('attention'))
 		.select(sql<number>`COALESCE(CurrentTally.total, 0)`.as('voteTotal'))
 		.select(sql<number>`COALESCE(CurrentTally.count, 0)`.as('voteCount'))
+		.select(sql<number>`replies`.as('nReplies'))
 		.selectAll('Post')
 		.orderBy('attention', 'asc')
+
 	let allPosts: PostWithStats[] = await query.execute()
 
 	return allPosts
+}
+
+export async function getScoredPost(
+	tag: string,
+	postId: number,
+): Promise<ScoredPost> {
+	const tagId = await getOrInsertTagId(tag)
+	const postWithStats: PostWithStats = await db
+		.selectFrom('Post')
+		.where('id', 'is', postId)
+		.innerJoin('CurrentTally', 'CurrentTally.postId', 'Post.id')
+		.where('CurrentTally.tagId', '=', tagId)
+		.leftJoin('PostStats', join =>
+			join
+				.onRef('PostStats.postId', '=', 'Post.id')
+				.on('PostStats.tagId', '=', tagId),
+		)
+		.select(sql<number>`COALESCE(PostStats.attention, 0)`.as('attention'))
+		.select(sql<number>`COALESCE(CurrentTally.total, 0)`.as('voteTotal'))
+		.select(sql<number>`COALESCE(CurrentTally.count, 0)`.as('voteCount'))
+		.select(sql<number>`replies`.as('nReplies'))
+		.selectAll('Post')
+		.executeTakeFirstOrThrow()
+
+	const scoreData: ScoreData = await score(tagId, postWithStats)
+
+	return { ...postWithStats, ...scoreData }
 }
 
 async function getRankedPostsInternal(tagId: number): Promise<RankedPost[]> {
@@ -237,6 +271,7 @@ async function score(tagId: number, post: PostWithStats): Promise<ScoreData> {
 		informationRate: informationRate,
 		score: informationRate,
 		topNoteId: topNoteId,
+		nReplies: post.nReplies,
 	}
 }
 
@@ -261,16 +296,48 @@ export async function totalInformationGain(tagId: number): Promise<number> {
 export async function getRankedNotes(
 	tag: string,
 	postId: number,
-): Promise<Post[]> {
+): Promise<RankedPost[]> {
 	const tagId = await getOrInsertTagId(tag)
 
-	return await db
+	const notes = await db
 		.selectFrom('Post')
-		.innerJoin('CurrentTally', 'postId', 'Post.id')
+		.innerJoin('CurrentTally', 'CurrentTally.postId', 'Post.id')
 		.where('CurrentTally.tagId', '=', tagId)
 		.where('Post.parentId', '=', postId)
+		.leftJoin('PostStats', join =>
+			join
+				.onRef('PostStats.postId', '=', 'Post.id')
+				.on('PostStats.tagId', '=', tagId),
+		)
+		.select(sql<number>`COALESCE(PostStats.attention, 0)`.as('attention'))
+		.select(sql<number>`COALESCE(CurrentTally.total, 0)`.as('voteTotal'))
+		.select(sql<number>`COALESCE(CurrentTally.count, 0)`.as('voteCount'))
+		.select(sql<number>`replies`.as('nReplies'))
 		.selectAll('Post')
 		.execute()
+
+	let scoredNotes = await Promise.all(
+		notes.map(async (post: PostWithStats) => {
+			let s = await score(tagId, post)
+
+			return {
+				...post,
+				...s,
+			}
+		}),
+	)
+
+	scoredNotes = scoredNotes.filter(p => p.informationValue > 0)
+
+	return scoredNotes.map((p: ScoredPost, i: number) => {
+		const result = {
+			random: false,
+			note: null,
+			oneBasedRank: i + 1,
+			...p,
+		}
+		return result
+	})
 }
 
 export async function getRankedTags(): Promise<string[]> {

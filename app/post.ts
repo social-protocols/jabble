@@ -1,7 +1,6 @@
 import assert from 'assert'
 import { type Post } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { db } from '#app/db.ts'
-
 import { Direction, insertVoteRecord } from '#app/vote.ts'
 
 import { logAuthorView } from './attention.ts'
@@ -39,6 +38,10 @@ export async function createPost(
 		),
 	)
 
+	if (parentId != null) {
+		await Promise.all(tagIds.map(tagId => incrementReplyCount(tagId, parentId)))
+	}
+
 	await Promise.all(
 		tagIds.map(tagId => logAuthorView(authorId, tagId, createdPostId)),
 	)
@@ -46,6 +49,35 @@ export async function createPost(
 	await Promise.all(allTags.map(tag => clearRankingsCacheForTagPage(tag)))
 
 	return createdPostId
+}
+
+export async function initPostStats(tagId: number, postId: number) {
+	let query = db
+		.insertInto('PostStats')
+		.values({
+			tagId: tagId,
+			postId: postId,
+			// initial attention is 1 + deltaAttention, because each post automatically gets 1 upvote from the author
+			// and so the expectedVotes (attention) for a new post is equal to 1.
+			attention: 1,
+			views: 1,
+			replies: 0,
+		})
+		// ignore conflict
+		.onConflict(oc => oc.column('postId').doNothing())
+	await query.execute()
+}
+
+export async function incrementReplyCount(tagId: number, postId: number) {
+	await initPostStats(tagId, postId)
+	await db
+		.updateTable('PostStats')
+		.set(eb => ({
+			replies: eb.bxp('replies', '+', 1),
+		}))
+		.where('tagId', '=', tagId)
+		.where('postId', '=', postId)
+		.execute()
 }
 
 export async function getPost(id: number): Promise<Post> {

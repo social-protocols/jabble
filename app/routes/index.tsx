@@ -82,7 +82,7 @@ export function UserFeed({ feed }: { feed: TagPreview[] }) {
 										<li key={post.id}>
 											<div className="min-w-400 flex-1 justify-self-center">
 												<PostDetails
-													post={post as Post}
+													post={post}
 													note={post.note}
 													tag={tag}
 													teaser={true}

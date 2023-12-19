@@ -31,11 +31,17 @@ import { type Post } from '#app/db/types.ts'
 
 import { getUserPositions } from '#app/positions.ts'
 import { createPost, getPost, getTransitiveParents } from '#app/post.ts'
-import { getRankedNotes } from '#app/ranking.ts'
+import {
+	getRankedNotes,
+	type ScoredPost,
+	type RankedPost,
+	getScoredPost,
+} from '#app/ranking.ts'
 import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
 
 import { Direction } from '#app/vote.ts'
+
 // const GLOBAL_TAG = "global";
 
 const postIdSchema = z.coerce.number()
@@ -53,14 +59,17 @@ export async function loader({ params, request }: DataFunctionArgs) {
 	const tag: string = tagSchema.parse(params.tag)
 
 	const userId: string | null = await getUserId(request)
-	const post = await getPost(postId)
+	const post: ScoredPost = await getScoredPost(tag, postId)
 
 	invariantResponse(post, 'Post not found', { status: 404 })
 
 	const transitiveParents = await getTransitiveParents(post.id)
 
-	let replies = await getRankedNotes(tag, post.id)
+	let replies: RankedPost[] = await getRankedNotes(tag, post.id)
 	await logPostPageView(tag, post.id, userId)
+
+	// let topNote: Post | null = replies.length > 0 ? replies[0]! : null
+	let topNote = post.topNoteId ? await getPost(post.topNoteId) : null
 
 	// let positions: Map<number, Direction> = new Map<number, Direction>()
 	let positions =
@@ -72,7 +81,14 @@ export async function loader({ params, request }: DataFunctionArgs) {
 					replies.map(p => p.id).concat([post.id]),
 			  )
 
-	let result = json({ post, transitiveParents, replies, tag, positions })
+	let result = json({
+		post,
+		transitiveParents,
+		replies,
+		tag,
+		positions,
+		topNote,
+	})
 
 	return result
 }
@@ -105,15 +121,13 @@ export const action = async (args: ActionFunctionArgs) => {
 }
 
 export default function Post() {
-	const { post, transitiveParents, replies, tag, positions } =
+	const { post, transitiveParents, replies, tag, positions, topNote } =
 		useLoaderData<typeof loader>()
 
 	let p = new Map<number, Direction>()
 	for (let position of positions) {
 		p.set(position.postId, position.direction)
 	}
-
-	let topNote: Post | null = replies.length > 0 ? replies[0]! : null
 
 	let position = p.get(post.id) || Direction.Neutral
 	let notePosition: Direction =
@@ -152,10 +166,7 @@ function ParentThread({
 		<>
 			{transitiveParents.map(parentPost => (
 				<Link key={parentPost.id} to={`/tags/${tag}/posts/${parentPost.id}`}>
-					<div
-						key={parentPost.id}
-						className="post-parent markdown"
-					>
+					<div key={parentPost.id} className="post-parent markdown">
 						<Markdown>{parentPost.content}</Markdown>
 					</div>
 				</Link>
@@ -170,7 +181,7 @@ export function PostReplies({
 	positions,
 }: {
 	tag: string
-	replies: Post[]
+	replies: ScoredPost[]
 	positions: Map<number, Direction>
 }) {
 	return (
@@ -178,7 +189,7 @@ export function PostReplies({
 			<>
 				<h2 className="mb-4 font-medium">All Replies</h2>
 				<ol>
-					{replies.map((post: Post) => {
+					{replies.map((post: ScoredPost) => {
 						// let randomLocation = {locationType: LocationType.PostReplies, oneBasedRank: i + 1}
 
 						let position: Direction =
