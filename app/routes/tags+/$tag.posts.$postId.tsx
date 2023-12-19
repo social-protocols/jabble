@@ -32,7 +32,7 @@ import { type Post } from '#app/db/types.ts'
 import { getUserPositions } from '#app/positions.ts'
 import { createPost, getPost, getTransitiveParents } from '#app/post.ts'
 import {
-	getRankedNotes,
+	getRankedReplies,
 	type ScoredPost,
 	type RankedPost,
 	getScoredPost,
@@ -65,8 +65,12 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	const transitiveParents = await getTransitiveParents(post.id)
 
-	let replies: RankedPost[] = await getRankedNotes(tag, post.id)
+	let replies: RankedPost[] = await getRankedReplies(tag, post.id)
+
 	await logPostPageView(tag, post.id, userId)
+
+	// So the first of the replies and the top note are not necessarily the same thing?!?
+	// The top note is the most convincing one. But the replies are ordered by *information rate*.
 
 	// let topNote: Post | null = replies.length > 0 ? replies[0]! : null
 	let topNote = post.topNoteId ? await getPost(post.topNoteId) : null
@@ -203,7 +207,7 @@ export function PostReplies({
 								<PostDetails
 									tag={tag}
 									post={post}
-									note={null}
+									note={post.note}
 									teaser={true}
 									randomLocation={null}
 									position={position}

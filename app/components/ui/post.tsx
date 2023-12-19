@@ -159,7 +159,7 @@ export function NoteAttachment({ tag, note }: { note: Post; tag: string }) {
 	return (
 		<Link to={`/tags/${tag}/posts/${note.id}`}>
 			<Card className={'bg-note pb-3 pt-2 text-note-foreground'}>
-				<div className="text-medium pb-0 text-sm">Top Reply</div>
+				<div className="font-medium pb-0 text-sm">Top Reply</div>
 				<Markdown>{note ? note.content : ''}</Markdown>
 			</Card>
 		</Link>

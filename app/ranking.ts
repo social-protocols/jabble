@@ -76,19 +76,6 @@ export async function clearRankingsCache() {
 	}
 }
 
-export async function getRankedPosts(tag: string): Promise<RankedPost[]> {
-	let tagId = await getOrInsertTagId(tag)
-
-	let result = rankingsCache.get(tag)
-	if (result == undefined) {
-		result = await getRankedPostsInternal(tagId)
-		rankingsCache.set(tag, result)
-	}
-	// logTagPageView(userId, tag)
-
-	return result
-}
-
 async function getPostsWithStats(tagId: number): Promise<PostWithStats[]> {
 	// Select all posts, along with vote tallies and attention
 	let query = db
@@ -140,9 +127,24 @@ export async function getScoredPost(
 	return { ...postWithStats, ...scoreData }
 }
 
-async function getRankedPostsInternal(tagId: number): Promise<RankedPost[]> {
-	let allPosts = await getPostsWithStats(tagId)
+export async function getRankedPosts(tag: string): Promise<RankedPost[]> {
+	let tagId = await getOrInsertTagId(tag)
 
+	let result = rankingsCache.get(tag)
+	if (result == undefined) {
+		let allPosts = await getPostsWithStats(tagId)
+		result = await rankPosts(tagId, allPosts)
+		rankingsCache.set(tag, result)
+	}
+	// logTagPageView(userId, tag)
+
+	return result
+}
+
+async function rankPosts(
+	tagId: number,
+	allPosts: PostWithStats[],
+): Promise<RankedPost[]> {
 	let nPosts = allPosts.length
 
 	// Then score each post
@@ -221,12 +223,7 @@ async function getRankedPostsInternal(tagId: number): Promise<RankedPost[]> {
 						.where('Post.id', '=', p.topNoteId)
 						.selectAll()
 						.executeTakeFirstOrThrow()
-				: (await db
-						.selectFrom('Post')
-						.where('Post.parentId', '=', p.id)
-						.selectAll()
-						.orderBy(sql`RANDOM()`)
-						.executeTakeFirst()) || null
+				: null
 
 		results[i] = { ...p, ...s, note }
 	}
@@ -256,9 +253,17 @@ async function score(tagId: number, post: PostWithStats): Promise<ScoreData> {
 	// This is our ranking score!
 	let informationRate = voteRate * informationValue
 
-	// if (post.id == 10) {
-	//      console.log("Stats for post 10", post, p, q, voteRate, informationValue)
-	// }
+	if (topNoteId == null) {
+		console.log('No top note for', post.id)
+		const topNote = await db
+			.selectFrom('Post')
+			.where('Post.parentId', '=', 8)
+			.select(['id'])
+			.orderBy(sql`RANDOM()`)
+			.executeTakeFirst()
+		topNoteId = topNote && topNote.id
+		console.log('Got random top note', post.id, topNote.id)
+	}
 
 	return {
 		attention: post.attention,
@@ -293,13 +298,13 @@ export async function totalInformationGain(tagId: number): Promise<number> {
 	return informationGain.reduce((sum, current) => sum + current, 0)
 }
 
-export async function getRankedNotes(
+export async function getRankedReplies(
 	tag: string,
 	postId: number,
 ): Promise<RankedPost[]> {
 	const tagId = await getOrInsertTagId(tag)
 
-	const notes = await db
+	const allNotes: PostWithStats[] = await db
 		.selectFrom('Post')
 		.innerJoin('CurrentTally', 'CurrentTally.postId', 'Post.id')
 		.where('CurrentTally.tagId', '=', tagId)
@@ -314,30 +319,10 @@ export async function getRankedNotes(
 		.select(sql<number>`COALESCE(CurrentTally.count, 0)`.as('voteCount'))
 		.select(sql<number>`replies`.as('nReplies'))
 		.selectAll('Post')
+		// .limit(limit)
 		.execute()
 
-	let scoredNotes = await Promise.all(
-		notes.map(async (post: PostWithStats) => {
-			let s = await score(tagId, post)
-
-			return {
-				...post,
-				...s,
-			}
-		}),
-	)
-
-	scoredNotes = scoredNotes.filter(p => p.informationValue > 0)
-
-	return scoredNotes.map((p: ScoredPost, i: number) => {
-		const result = {
-			random: false,
-			note: null,
-			oneBasedRank: i + 1,
-			...p,
-		}
-		return result
-	})
+	return await rankPosts(tagId, allNotes)
 }
 
 export async function getRankedTags(): Promise<string[]> {
