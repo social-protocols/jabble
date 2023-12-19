@@ -35,8 +35,6 @@ export function PostDetails({
 	// TODO: how do we get this number
 	const nReplies = 'N'
 
-	const replyFetcher = useFetcher<{ newPostId: number }>()
-
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
 	return (
@@ -58,7 +56,6 @@ export function PostDetails({
 
 				<div className="mb-4 flex w-full">
 					<Link to={`/tags/${tag}/posts/${post.id}`}>
-						Show{' '}
 						{nReplies === 1
 							? '1 Reply'
 							: (nReplies === 0 ? 'No' : nReplies) + ' Replies'}
@@ -83,40 +80,42 @@ export function PostDetails({
 						</button>
 					)}
 				</div>
-
-				{showReplyForm && (
-					<replyFetcher.Form id="reply-form" method="post" action="/reply">
-						<div className="flex flex-col items-end">
-							<input type="hidden" name="parentId" value={post.id} />
-							<input type="hidden" name="tag" value={tag} />
-
-							<Textarea
-								name="content"
-								className="mb-1 w-full"
-								style={{
-									resize: 'vertical',
-								}}
-								autoFocus={true}
-								placeholder="Enter your reply"
-							/>
-
-							<div>
-								<button
-									className="mb-4 rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700"
-									onClick={() => {
-										console.log('SEtting show reply form ')
-										setShowReplyForm(false)
-										return false
-									}}
-								>
-									Reply
-								</button>
-							</div>
-						</div>
-					</replyFetcher.Form>
-				)}
+				{showReplyForm && <ReplyForm tag={tag} parentId={post.id} />}
 			</div>
 		</Card>
+	)
+}
+
+export function ReplyForm({
+	parentId,
+	tag,
+}: {
+	parentId: number
+	tag: string
+}) {
+	return (
+		<form id="reply-form" method="post">
+			<div className="flex flex-col items-end">
+				<input type="hidden" name="parentId" value={parentId} />
+				<input type="hidden" name="tag" value={tag} />
+
+				<Textarea
+					name="content"
+					className="mb-1 w-full"
+					style={{
+						resize: 'vertical',
+					}}
+					autoFocus={true}
+					placeholder="Enter your reply"
+				/>
+
+				<div>
+					<button className="mb-4 rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700">
+						Reply
+					</button>
+				</div>
+			</div>
+		</form>
 	)
 }
 
