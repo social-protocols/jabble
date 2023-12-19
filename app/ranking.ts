@@ -257,12 +257,11 @@ async function score(tagId: number, post: PostWithStats): Promise<ScoreData> {
 		console.log('No top note for', post.id)
 		const topNote = await db
 			.selectFrom('Post')
-			.where('Post.parentId', '=', 8)
+			.where('Post.parentId', '=', post.id)
 			.select(['id'])
 			.orderBy(sql`RANDOM()`)
 			.executeTakeFirst()
-		topNoteId = topNote && topNote.id
-		console.log('Got random top note', post.id, topNote.id)
+		topNoteId = (topNote && topNote.id) || null
 	}
 
 	return {

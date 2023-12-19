@@ -136,11 +136,14 @@
 	p {
 		@apply mb-4;
 
+	}
+	* {
 		a {
 			@apply underline;
 			@apply text-blue-500;
 		}
 	}
+
 	pre {
 		@apply mb-4;
 		@apply pl-8;

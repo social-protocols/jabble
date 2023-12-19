@@ -6,7 +6,6 @@ import { type DataFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import { LocationType, type Location } from '#app/attention.ts'
 import { PostDetails } from '#app/components/ui/post.tsx'
-import { type Post } from '#app/db/types.ts'
 import {
 	getDefaultFeed,
 	getUserFeed,

@@ -188,7 +188,7 @@ export function PostReplies({
 	positions,
 }: {
 	tag: string
-	replies: ScoredPost[]
+	replies: RankedPost[]
 	positions: Map<number, Direction>
 }) {
 	return (
@@ -196,7 +196,7 @@ export function PostReplies({
 			<h2 className="mb-4 font-medium">{replies.length} Replies</h2>
 			{replies.length > 0 && (
 				<ol>
-					{replies.map((post: ScoredPost) => {
+					{replies.map((post: RankedPost) => {
 						// let randomLocation = {locationType: LocationType.PostReplies, oneBasedRank: i + 1}
 
 						let position: Direction =

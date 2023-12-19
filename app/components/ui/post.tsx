@@ -49,7 +49,6 @@ export function PostDetails({
 	const nRepliesString =
 		nReplies === 1 ? '1 reply' : nReplies > 1 ? nReplies + ' replies' : ''
 
-	// const submit = useSubmit()
 	const handleReplySubmit = function (event: FormEvent<HTMLFormElement>) {
 		event.preventDefault() // this will prevent Remix from submitting the form
 		setShowReplyForm(false)
@@ -57,10 +56,6 @@ export function PostDetails({
 	}
 
 	let informationRateString = Math.round(post.informationRate * 100) / 100
-	// const informationRateString = `${ Math.round(post.informationRate * 100) / 100} p=${post.p} q=${post.q} voteRate=${post.voteRate}`
-	const age = new Date(2022, 12, 2)
-	// const ageString = format(age)
-	// const ageString = moment('20111031', 'YYYYMMDD').fromNow()
 	const ageString = moment(post.createdAt).fromNow()
 
 	return (
@@ -76,14 +71,17 @@ export function PostDetails({
 					/>
 				</fetcher.Form>
 			</div>
-			<div className={'markdown flex flex-col space-y-4'}>
-				<Markdown>{post.content}</Markdown>
+			<div className={'flex flex-col space-y-4'}>
+				<Markdown className="markdown">{post.content}</Markdown>
 				{note === null ? <></> : <NoteAttachment note={note} tag={tag} />}
 
 				<div className="post-stats mb-4 flex w-full text-sm">
-					<span className="information-rate pr-2 font-medium">
+					<Link
+						to={`/tags/${tag}/stats/${post.id}`}
+						className="information-rate green-400 pr-2 font-medium"
+					>
 						{informationRateString} bits
-					</span>
+					</Link>
 
 					{teaser ? (
 						<Link
@@ -159,8 +157,8 @@ export function NoteAttachment({ tag, note }: { note: Post; tag: string }) {
 	return (
 		<Link to={`/tags/${tag}/posts/${note.id}`}>
 			<Card className={'bg-note pb-3 pt-2 text-note-foreground'}>
-				<div className="font-medium pb-0 text-sm">Top Reply</div>
-				<Markdown>{note ? note.content : ''}</Markdown>
+				<div className="pb-0 text-sm font-medium">Top Reply</div>
+				<Markdown className="markdown">{note ? note.content : ''}</Markdown>
 			</Card>
 		</Link>
 	)
