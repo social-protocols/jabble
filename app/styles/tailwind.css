@@ -57,7 +57,6 @@
 		--radius: 0.5rem;
 
 		--post: white;
-		--post-parent-foreground: #434343;
 		--note: #f1f5f9;
 		--note-foreground: #434343;
 	}
@@ -97,7 +96,6 @@
 		--ring: 217.2 32.6% 60%;
 
 		--post: #334155;
-		--post-parent-foreground: #d5e2f3;
 		--note: #506585;
 		--note-foreground: #d5e2f3;
 	}
@@ -110,6 +108,10 @@
 }
 
 .markdown {
+
+	/*	Otherwise, code blocks with long lines of text will flow past edge of post */
+	overflow: hidden;
+
 	h1 {
 		@apply text-xl font-bold;
 		@apply mb-1;
@@ -162,9 +164,7 @@
 
 }
 
-.markdown.post-parent {
-	@apply rounded-lg bg-post p-3 mb-2 text-postParent-foreground;
-
+.markdown.postparent {
 /*	Override font size increases for headers when shown in parent thread*/
 	h1, h2, h3, h4, h5, h6 {
 		@apply text-sm font-semibold 

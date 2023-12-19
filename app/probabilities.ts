@@ -167,9 +167,9 @@ export function findTopNoteGivenTallies(
 		const pOfAGivenShownThisNoteAndTopSubnote =
 			pOfAGivenNotShownThisNote + delta * support
 
-		console.log(
-			`For post ${postId} and note ${tally.noteId}, pOfAGivenShownThisNote=${pOfAGivenShownThisNote}, pOfAGivenNotShownThisNote=${pOfAGivenNotShownThisNote}, delta=${delta}, support=${support}`,
-		)
+		// console.log(
+		// 	`For post ${postId} and note ${tally.noteId}, pOfAGivenShownThisNote=${pOfAGivenShownThisNote}, pOfAGivenNotShownThisNote=${pOfAGivenNotShownThisNote}, delta=${delta}, support=${support}`,
+		// )
 
 		if (
 			Math.abs(
@@ -182,9 +182,9 @@ export function findTopNoteGivenTallies(
 		}
 	}
 
-	console.log(
-		`\ttop note for post ${postId} is note ${topNoteId} with p=${pOfAGivenShownTopNote} and q=${pOfAGivenNotShownTopNote}`,
-	)
+	// console.log(
+	// 	`\ttop note for post ${postId} is note ${topNoteId} with p=${pOfAGivenShownTopNote} and q=${pOfAGivenNotShownTopNote}`,
+	// )
 
 	return [topNoteId, pOfAGivenShownTopNote, pOfAGivenNotShownTopNote]
 }

@@ -43,8 +43,11 @@ export function PostDetails({
 	}
 
 	const nReplies = post.nReplies
+	// const nRepliesString =
+	// 	nReplies === 1 ? '1 Reply' : (nReplies === 0 ? 'No' : nReplies) + ' Replies'
+
 	const nRepliesString =
-		nReplies === 1 ? '1 Reply' : (nReplies === 0 ? 'No' : nReplies) + ' Replies'
+		nReplies === 1 ? '1 reply' : nReplies > 1 ? nReplies + ' replies' : ''
 
 	// const submit = useSubmit()
 	const handleReplySubmit = function (event: FormEvent<HTMLFormElement>) {
@@ -77,18 +80,26 @@ export function PostDetails({
 				<Markdown>{post.content}</Markdown>
 				{note === null ? <></> : <NoteAttachment note={note} tag={tag} />}
 
-				<div className="mb-4 flex w-full">
+				<div className="post-stats mb-4 flex w-full text-sm">
 					<span className="information-rate pr-2 font-medium">
 						{informationRateString} bits
 					</span>
-					<span className="age pr-2">{ageString}</span>
 
 					{teaser ? (
+						<Link
+							to={`/tags/${tag}/posts/${post.id}`}
+							className="age pr-2 underline"
+						>
+							{ageString}
+						</Link>
+					) : (
+						<>{ageString}</>
+					)}
+
+					{teaser && (
 						<Link to={`/tags/${tag}/posts/${post.id}`} className="underline">
 							{nRepliesString}
 						</Link>
-					) : (
-						nRepliesString
 					)}
 					{showReplyForm ? (
 						<button
@@ -106,7 +117,7 @@ export function PostDetails({
 							}}
 							// preventScrollReset={true}
 						>
-							Reply
+							reply
 						</button>
 					)}
 				</div>
@@ -147,7 +158,8 @@ export function PostDetails({
 export function NoteAttachment({ tag, note }: { note: Post; tag: string }) {
 	return (
 		<Link to={`/tags/${tag}/posts/${note.id}`}>
-			<Card className={'bg-note text-note-foreground'}>
+			<Card className={'bg-note pb-3 pt-2 text-note-foreground'}>
+				<div className="text-medium pb-0 text-sm">Top Reply</div>
 				<Markdown>{note ? note.content : ''}</Markdown>
 			</Card>
 		</Link>

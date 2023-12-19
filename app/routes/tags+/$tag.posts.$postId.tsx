@@ -166,7 +166,10 @@ function ParentThread({
 		<>
 			{transitiveParents.map(parentPost => (
 				<Link key={parentPost.id} to={`/tags/${tag}/posts/${parentPost.id}`}>
-					<div key={parentPost.id} className="post-parent markdown">
+					<div
+						key={parentPost.id}
+						className="postparent mb-2 ml-10 rounded-lg bg-post p-3 text-sm text-note-foreground"
+					>
 						<Markdown>{parentPost.content}</Markdown>
 					</div>
 				</Link>
@@ -185,9 +188,9 @@ export function PostReplies({
 	positions: Map<number, Direction>
 }) {
 	return (
-		replies.length > 0 && (
-			<>
-				<h2 className="mb-4 font-medium">All Replies</h2>
+		<>
+			<h2 className="mb-4 font-medium">{replies.length} Replies</h2>
+			{replies.length > 0 && (
 				<ol>
 					{replies.map((post: ScoredPost) => {
 						// let randomLocation = {locationType: LocationType.PostReplies, oneBasedRank: i + 1}
@@ -210,8 +213,8 @@ export function PostReplies({
 						)
 					})}
 				</ol>
-			</>
-		)
+			)}
+		</>
 	)
 }
 
