@@ -81,8 +81,6 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	let location: Location | null = null
 
-	console.log('Parsed data', parsedData)
-
 	if (parsedData.randomLocationType !== undefined) {
 		let oneBasedRank: number | null =
 			parsedData.oneBasedRank === undefined ? null : parsedData.oneBasedRank

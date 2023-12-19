@@ -145,8 +145,6 @@ async function rankPosts(
 	tagId: number,
 	allPosts: PostWithStats[],
 ): Promise<RankedPost[]> {
-	let nPosts = allPosts.length
-
 	// Then score each post
 	let scoredPosts = await Promise.all(
 		allPosts.map(async post => {
@@ -159,6 +157,8 @@ async function rankPosts(
 		}),
 	)
 	scoredPosts = scoredPosts.filter(p => p.informationValue > 0)
+
+	let nPosts = scoredPosts.length
 
 	// Then split into two pools: rankedPosts, and randomPosts, based on
 	// whether cumulative attention is above or below the cutoff.
@@ -173,7 +173,7 @@ async function rankPosts(
 	let randomPosts = scoredPosts.filter(p => p.attention < attentionCutoff)
 	let nRandomPosts = randomPosts.length
 
-	let nResults = nPosts
+	let nResults = nRankedPosts + nRandomPosts
 	if (nResults > MAX_RESULTS) {
 		nResults = MAX_RESULTS
 	}
@@ -213,7 +213,7 @@ async function rankPosts(
 			nInsertions += 1
 			ep = true
 		}
-		assert(p !== undefined)
+		assert(p !== undefined, `p is undefined`)
 		let s = { oneBasedRank: i + 1, random: ep }
 
 		let note =
@@ -237,7 +237,9 @@ async function score(tagId: number, post: PostWithStats): Promise<ScoreData> {
 	let [topNoteId, p, q] = await findTopNoteId(tagId, post.id)
 
 	// https://social-protocols.org/y-docs/information-value.html
-	let informationValue = 1 + Math.log2(q)
+	let informationValuePerVote = 1 + Math.log2(p)
+
+	let informationValue = post.voteTotal * informationValuePerVote
 
 	let voteRate = GLOBAL_PRIOR_VOTE_RATE.update({
 		count: post.voteTotal,
@@ -251,10 +253,9 @@ async function score(tagId: number, post: PostWithStats): Promise<ScoreData> {
 	// let adjustedAttention = (1 - Math.exp(-fatigueFactor * a)) / fatigueFactor
 
 	// This is our ranking score!
-	let informationRate = voteRate * informationValue
+	let informationRate = voteRate * informationValuePerVote
 
 	if (topNoteId == null) {
-		console.log('No top note for', post.id)
 		const topNote = await db
 			.selectFrom('Post')
 			.where('Post.parentId', '=', post.id)

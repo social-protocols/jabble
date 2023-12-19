@@ -74,7 +74,7 @@ export default function PostStats() {
 	// const voteRatePrior = GLOBAL_PRIOR_VOTE_RATE
 	// const upvoteProbabilityPrior = GLOBAL_PRIOR_UPVOTE_PROBABILITY
 
-	const informationValueNewVotes = post.voteTotal * (1 - Math.log2(post.q))
+	const informationValueNewVotes = post.voteTotal * (1 + Math.log2(post.p))
 	const informationValueTotal = informationValueNewVotes - totalCrossEntropy
 
 	const markdown = `
@@ -93,32 +93,34 @@ export default function PostStats() {
 - **attention:** ${post.attention.toFixed(3)}
 - **vote rate:** ${post.voteRate.toFixed(3)}
   - voteRate = Bayesian Average(votes/attention, voteRatePrior)
-- **p:** ${post.p.toFixed(3)}
-  - p = Bayesian Average(upvotes/votes), upvoteProbabilityPrior)
+- **q**: ${post.q.toFixed(3)}
+  - q = Bayesian Average(upvotes/votes), upvoteProbabilityPrior)
   - see [Docs on Rating and Evaluating Content](https://social-protocols.org/global-brain/rating-and-evaluating-content.html)
 - **top note:** ${
 		post.topNoteId == null
 			? 'null'
 			: `[${post.topNoteId}](/tags/${tag}/stats/${post.topNoteId})`
 	}
-- **q:** ${post.q.toFixed(3)}
-	- q = ${
+- **p:** ${post.p.toFixed(3)}
+	- p = ${
 		post.topNoteId === null
-			? 'p'
-			: `Bayesian Average(upvotes/votes given shown top note ${post.topNoteId}), p)`
+			? 'q'
+			: `Bayesian Average(upvotes/votes given shown top note ${post.topNoteId}), q)`
 	}
 - **cognitive dissonance (existing votes):** ${totalCrossEntropy.toFixed(
 		3,
 	)} bits
 	- cognitiveDissonance = votesTotal * Dkl(p,q)
-	- see [docs on cognitive dissonance](https://social-protocols.org/global-brain/cognitive-dissonance.html)
-- **information value created (new votes)**: ${informationValueNewVotes}
-  - informationValue = votesTotal * (1 - log(q))
+	- see [Docs on Cognitive Dissonance](https://social-protocols.org/global-brain/cognitive-dissonance.html)
+- **information value created (new votes)**: ${informationValueNewVotes.toFixed(
+		3,
+	)}
+  - informationValue = votesTotal * (1 + log(p))
   - see [Docs on Information Value](https://social-protocols.org/global-brain/information-value.html)
-- **information value created (total)**: ${informationValueTotal}
+- **information value created (total)**: ${informationValueTotal.toFixed(3)}
   - informationValue = informationValueNewVotes - cognitiveDissonance
 - **information rate (new votes):** ${post.informationRate.toFixed(3)}
-  - informationRate = voteRate * (1 - log(q)) 
+  - informationRate = voteRate * (1 + log(p)) 
 	`
 
 	return (

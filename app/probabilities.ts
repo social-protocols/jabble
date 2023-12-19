@@ -141,8 +141,8 @@ export function findTopNoteGivenTallies(
 
 	if (tallies == null) {
 		// console.log(
-		// `top note for post ${postId} is note ${topNoteId} with p=${pOfAGivenShownTopNote} and q=${pOfAGivenNotShownTopNote}`,
-		// );
+		// 	`top note for post ${postId} is note ${topNoteId} with p=${pOfAGivenShownTopNote} and q=${pOfAGivenNotShownTopNote}`,
+		// )
 		// Bit of a hack. Should just get overall tally
 		return [topNoteId, pOfAGivenShownTopNote, pOfAGivenNotShownTopNote]
 	}
