@@ -110,11 +110,33 @@
 }
 
 .markdown {
+	h1 {
+		@apply text-xl font-bold;
+		@apply mb-1;
+	}
+	h2 {
+		@apply text-xl font-semibold;
+		@apply mb-1;
+	}
+	h3 {
+		@apply text-lg font-semibold;
+		@apply mb-1;
+	}
+	h4 {
+		@apply text-base font-semibold;
+	}
+	h5 {
+		@apply text-base font-medium;
+	}
+	h6 {
+		@apply text-sm font-semibold;
+	}
 	p {
 		@apply mb-4;
 
 		a {
 			@apply underline;
+			@apply text-blue-500;
 		}
 	}
 	pre {
@@ -138,6 +160,16 @@
 			@apply pl-4;
 	}
 
+}
+
+.markdown.post-parent {
+	@apply rounded-lg bg-post p-3 mb-2 text-postParent-foreground;
+
+/*	Override font size increases for headers when shown in parent thread*/
+	h1, h2, h3, h4, h5, h6 {
+		@apply text-sm font-semibold 
+
+	}
 }
 
 
