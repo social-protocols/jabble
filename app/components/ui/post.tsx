@@ -99,6 +99,16 @@ export function PostDetails({
 							{nRepliesString}
 						</Link>
 					)}
+					<button
+						className="hyperlink ml-2"
+						onClick={() => {
+							setShowReplyForm(!showReplyForm)
+							return false
+						}}
+						// preventScrollReset={true}
+					>
+						reply
+					</button>
 					{showReplyForm ? (
 						<button
 							className="ml-auto pr-2"
@@ -107,16 +117,7 @@ export function PostDetails({
 							✕
 						</button>
 					) : (
-						<button
-							className="ml-2 font-medium text-blue-600"
-							onClick={() => {
-								setShowReplyForm(true)
-								return false
-							}}
-							// preventScrollReset={true}
-						>
-							reply
-						</button>
+						<></>
 					)}
 				</div>
 				{showReplyForm && (
@@ -132,7 +133,7 @@ export function PostDetails({
 
 							<Textarea
 								name="content"
-								className="mb-1 w-full"
+								className="mb-2 w-full"
 								style={{
 									resize: 'vertical',
 								}}
@@ -141,7 +142,7 @@ export function PostDetails({
 							/>
 
 							<div>
-								<button className="mb-4 rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700">
+								<button className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700">
 									Reply
 								</button>
 							</div>

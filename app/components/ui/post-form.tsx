@@ -12,7 +12,7 @@ export function PostForm({
 			<div className={'flex flex-col items-end ' + className}>
 				<input type="hidden" name="tag" value={`${tag}`} />
 				<Textarea
-					className="mb-1 w-full"
+					className="mb-2 w-full"
 					name="newPostContent"
 					placeholder="What's on your mind?"
 				/>

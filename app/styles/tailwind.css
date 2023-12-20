@@ -105,75 +105,79 @@
 	body {
 		@apply bg-background text-foreground;
 	}
-}
 
-.markdown {
+	.hyperlink {
+		@apply underline;
+	}
 
-	/*	Otherwise, code blocks with long lines of text will flow past edge of post */
-	overflow: hidden;
+	.markdown {
 
-	h1 {
-		@apply text-xl font-bold;
-		@apply mb-1;
-	}
-	h2 {
-		@apply text-xl font-semibold;
-		@apply mb-1;
-	}
-	h3 {
-		@apply text-lg font-semibold;
-		@apply mb-1;
-	}
-	h4 {
-		@apply text-base font-semibold;
-	}
-	h5 {
-		@apply text-base font-medium;
-	}
-	h6 {
-		@apply text-sm font-semibold;
-	}
-	p {
-		@apply mb-4;
+		/*	Otherwise, code blocks with long lines of text will flow past edge of post */
+		overflow: hidden;
 
-	}
-	* {
+		h1 {
+			@apply text-xl font-bold;
+			@apply mb-1;
+		}
+		h2 {
+			@apply text-xl font-semibold;
+			@apply mb-1;
+		}
+		h3 {
+			@apply text-lg font-semibold;
+			@apply mb-1;
+		}
+		h4 {
+			@apply text-base font-semibold;
+		}
+		h5 {
+			@apply text-base font-medium;
+		}
+		h6 {
+			@apply text-sm font-semibold;
+		}
+		p {
+			@apply mb-4;
+
+		}
 		a {
 			@apply underline;
-			@apply text-blue-500;
+		}
+
+		pre {
+			@apply mb-4;
+			@apply pl-8;
+		}
+		ul {
+			list-style-type: circle;
+			list-style-position: inside;
+			@apply mb-4;
+		}
+		ol {
+			list-style-type: upper-roman;
+			list-style-position: inside;
+			@apply mb-4;
+		}
+		li ul  {
+			@apply pl-4;
+		}
+		li ol  {
+				@apply pl-4;
+		}
+
+	}
+
+	.markdown.postparent {
+	/*	Override font size increases for headers when shown in parent thread*/
+		h1, h2, h3, h4, h5, h6 {
+			@apply text-sm font-semibold 
+
 		}
 	}
-
-	pre {
-		@apply mb-4;
-		@apply pl-8;
-	}
-	ul {
-		list-style-type: circle;
-		list-style-position: inside;
-		@apply mb-4;
-	}
-	ol {
-		list-style-type: upper-roman;
-		list-style-position: inside;
-		@apply mb-4;
-	}
-	li ul  {
-		@apply pl-4;
-	}
-	li ol  {
-			@apply pl-4;
-	}
-
 }
 
-.markdown.postparent {
-/*	Override font size increases for headers when shown in parent thread*/
-	h1, h2, h3, h4, h5, h6 {
-		@apply text-sm font-semibold 
 
-	}
-}
+
 
 
 /* useful for layout debugging: */
