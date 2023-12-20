@@ -1,9 +1,15 @@
 import { Textarea } from '#app/components/ui/textarea.tsx'
 
-export function PostForm({ tag }: { tag: string }) {
+export function PostForm({
+	tag,
+	className,
+}: {
+	tag: string
+	className: string
+}) {
 	return (
 		<form id="create-post" method="post">
-			<div className="flex flex-col items-end">
+			<div className={'flex flex-col items-end ' + className}>
 				<input type="hidden" name="tag" value={`${tag}`} />
 				<Textarea
 					className="mb-1 w-full"

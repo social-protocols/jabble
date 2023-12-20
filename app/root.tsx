@@ -103,18 +103,18 @@ export async function loader({ request }: DataFunctionArgs) {
 
 	const user = userId
 		? await time(
-				() =>
-					prisma.user.findUniqueOrThrow({
-						select: {
-							id: true,
-							name: true,
-							username: true,
-							image: { select: { id: true } },
-						},
-						where: { id: userId },
-					}),
-				{ timings, type: 'find user', desc: 'find user in root' },
-		  )
+			() =>
+				prisma.user.findUniqueOrThrow({
+					select: {
+						id: true,
+						name: true,
+						username: true,
+						image: { select: { id: true } },
+					},
+					where: { id: userId },
+				}),
+			{ timings, type: 'find user', desc: 'find user in root' },
+		)
 		: null
 	if (userId && !user) {
 		console.info('something weird happened')
@@ -254,7 +254,7 @@ function App() {
 						</div>
 					</nav>
 				</header>
-				<div className="mx-auto max-w-3xl flex-1">
+				<div className="mx-auto w-full max-w-3xl px-2">
 					<Outlet />
 				</div>
 			</div>
