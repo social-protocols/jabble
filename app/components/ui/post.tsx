@@ -59,8 +59,12 @@ export function PostDetails({
 	const ageString = moment(post.createdAt).fromNow()
 
 	return (
-		<Card className={'mb-5 flex w-full flex-row space-x-4 bg-post'}>
-			<div>
+		<div
+			className={
+				'mb-5 flex w-full flex-row space-x-4 rounded-lg bg-post px-5 pb-5'
+			}
+		>
+			<div className="mt-5">
 				<fetcher.Form method="post" action="/vote">
 					<VoteButtons
 						postId={post.id}
@@ -71,34 +75,22 @@ export function PostDetails({
 					/>
 				</fetcher.Form>
 			</div>
-			<div className={'flex flex-col space-y-4'}>
-				<Markdown className="markdown">{post.content}</Markdown>
-				{note === null ? <></> : <NoteAttachment note={note} tag={tag} />}
+			<div className={'flex min-w-0 flex-col'}>
+				<div className="mt-1 text-right text-sm opacity-50">{ageString}</div>
+				<div className="markdown mb-4">
+					<Markdown>{post.content}</Markdown>
+				</div>
+				{note === null ? (
+					<></>
+				) : (
+					<NoteAttachment note={note} tag={tag} className="mb-4" />
+				)}
 
-				<div className="post-stats mb-4 flex w-full text-sm">
-					<Link
-						to={`/tags/${tag}/stats/${post.id}`}
-						className="information-rate green-400 pr-2 font-medium"
-					>
+				<div className="flex w-full text-sm">
+					<Link to={`/tags/${tag}/stats/${post.id}`} className="hyperlink pr-2">
 						{informationRateString} bits
 					</Link>
 
-					{teaser ? (
-						<Link
-							to={`/tags/${tag}/posts/${post.id}`}
-							className="age pr-2 underline"
-						>
-							{ageString}
-						</Link>
-					) : (
-						<>{ageString}</>
-					)}
-
-					{teaser && (
-						<Link to={`/tags/${tag}/posts/${post.id}`} className="underline">
-							{nRepliesString}
-						</Link>
-					)}
 					<button
 						className="hyperlink ml-2"
 						onClick={() => {
@@ -117,7 +109,12 @@ export function PostDetails({
 							✕
 						</button>
 					) : (
-						<></>
+						<Link
+							to={`/tags/${tag}/posts/${post.id}`}
+							className="hyperlink ml-auto"
+						>
+							{nRepliesString}
+						</Link>
 					)}
 				</div>
 				{showReplyForm && (
@@ -150,16 +147,26 @@ export function PostDetails({
 					</replyFetcher.Form>
 				)}
 			</div>
-		</Card>
+		</div>
 	)
 }
 
-export function NoteAttachment({ tag, note }: { note: Post; tag: string }) {
+export function NoteAttachment({
+	tag,
+	note,
+	className,
+}: {
+	note: Post
+	tag: string
+	className: string
+}) {
 	return (
 		<Link to={`/tags/${tag}/posts/${note.id}`}>
-			<Card className={'bg-note pb-3 pt-2 text-note-foreground'}>
+			<Card className={'bg-note pb-3 pt-2 text-note-foreground ' + className}>
 				<div className="pb-1 text-sm font-medium opacity-50">Top Reply</div>
-				<Markdown className="markdown">{note ? note.content : ''}</Markdown>
+				<div className="markdown">
+					<Markdown>{note ? note.content : ''}</Markdown>
+				</div>
 			</Card>
 		</Link>
 	)

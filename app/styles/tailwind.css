@@ -115,10 +115,6 @@
 	}
 
 	.markdown {
-
-		/*	Otherwise, code blocks with long lines of text will flow past edge of post */
-		overflow: hidden;
-
 		h1 {
 			@apply text-xl font-bold;
 			@apply mb-1;
@@ -148,10 +144,6 @@
 			@apply underline;
 		}
 
-		pre {
-			@apply mb-4;
-			@apply pl-8;
-		}
 		ul {
 			list-style-type: circle;
 			list-style-position: inside;
@@ -167,6 +159,12 @@
 		}
 		li ol  {
 				@apply pl-4;
+		}
+
+		pre {
+			@apply p-2;
+			@apply mb-4;
+			@apply overflow-x-auto;
 		}
 
 	}

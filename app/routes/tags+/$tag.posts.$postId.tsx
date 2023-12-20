@@ -172,7 +172,7 @@ function ParentThread({
 				<Link key={parentPost.id} to={`/tags/${tag}/posts/${parentPost.id}`}>
 					<div
 						key={parentPost.id}
-						className="postparent text-postparent-foreground mb-2 ml-3 rounded-lg bg-post p-3 text-sm"
+						className="markdown postparent text-postparent-foreground mb-2 ml-3 rounded-lg bg-post p-3 text-sm"
 					>
 						<Markdown>{parentPost.content}</Markdown>
 					</div>

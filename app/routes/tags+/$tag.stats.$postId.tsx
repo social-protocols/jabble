@@ -78,15 +78,13 @@ export default function PostStats() {
 	const informationValueTotal = informationValueNewVotes - totalCrossEntropy
 
 	const markdown = `
-# Stats for post [${post.id}](/tags/${tag}/posts/${
-		post.id
-	}) in [#${tag}](/tags/${tag})
+# Stats for post [${post.id}](/tags/${tag}/posts/${post.id
+		}) in [#${tag}](/tags/${tag})
 
-- **parent:** ${
-		post.parentId == null
+- **parent:** ${post.parentId == null
 			? 'null'
 			: `[${post.parentId}](/tags/${tag}/stats/${post.parentId})`
-	}
+		}
 - **upvotes:** ${post.voteCount}
 - **downvotes:** ${post.voteTotal - post.voteCount}
 - **votes:** ${post.voteTotal}
@@ -96,25 +94,23 @@ export default function PostStats() {
 - **q**: ${post.q.toFixed(3)}
   - q = Bayesian Average(upvotes/votes), upvoteProbabilityPrior)
   - see [Docs on Rating and Evaluating Content](https://social-protocols.org/global-brain/rating-and-evaluating-content.html)
-- **top note:** ${
-		post.topNoteId == null
+- **top note:** ${post.topNoteId == null
 			? 'null'
 			: `[${post.topNoteId}](/tags/${tag}/stats/${post.topNoteId})`
-	}
+		}
 - **p:** ${post.p.toFixed(3)}
-	- p = ${
-		post.topNoteId === null
+	- p = ${post.topNoteId === null
 			? 'q'
 			: `Bayesian Average(upvotes/votes given shown top note ${post.topNoteId}), q)`
-	}
+		}
 - **cognitive dissonance (existing votes):** ${totalCrossEntropy.toFixed(
-		3,
-	)} bits
+			3,
+		)} bits
 	- cognitiveDissonance = votesTotal * Dkl(p,q)
 	- see [Docs on Cognitive Dissonance](https://social-protocols.org/global-brain/cognitive-dissonance.html)
 - **information value created (new votes)**: ${informationValueNewVotes.toFixed(
-		3,
-	)}
+			3,
+		)}
   - informationValue = votesTotal * (1 + log(p))
   - see [Docs on Information Value](https://social-protocols.org/global-brain/information-value.html)
 - **information value created (total)**: ${informationValueTotal.toFixed(3)}
@@ -124,9 +120,9 @@ export default function PostStats() {
 	`
 
 	return (
-		<>
-			<Markdown className="markdown">{markdown}</Markdown>
-		</>
+		<div className="markdown">
+			<Markdown>{markdown}</Markdown>
+		</div>
 	)
 }
 
