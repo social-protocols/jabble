@@ -75,7 +75,7 @@ export function PostDetails({
 					/>
 				</fetcher.Form>
 			</div>
-			<div className={'flex min-w-0 flex-col'}>
+			<div className={'flex w-full min-w-0 flex-col'}>
 				<div className="mt-1 text-right text-sm opacity-50">{ageString}</div>
 				<div className="markdown mb-4">
 					<Markdown>{post.content}</Markdown>
