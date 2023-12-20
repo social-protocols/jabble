@@ -49,7 +49,7 @@ export function PostDetails({
 	const nRepliesString =
 		nReplies === 1 ? '1 reply' : nReplies > 1 ? nReplies + ' replies' : ''
 
-	const handleReplySubmit = function (event: FormEvent<HTMLFormElement>) {
+	const handleReplySubmit = function(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault() // this will prevent Remix from submitting the form
 		setShowReplyForm(false)
 		replyFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
@@ -105,7 +105,7 @@ export function PostDetails({
 							setShowReplyForm(!showReplyForm)
 							return false
 						}}
-						// preventScrollReset={true}
+					// preventScrollReset={true}
 					>
 						reply
 					</button>
@@ -158,7 +158,7 @@ export function NoteAttachment({ tag, note }: { note: Post; tag: string }) {
 	return (
 		<Link to={`/tags/${tag}/posts/${note.id}`}>
 			<Card className={'bg-note pb-3 pt-2 text-note-foreground'}>
-				<div className="pb-0 text-sm font-medium">Top Reply</div>
+				<div className="pb-1 text-sm font-medium opacity-50">Top Reply</div>
 				<Markdown className="markdown">{note ? note.content : ''}</Markdown>
 			</Card>
 		</Link>

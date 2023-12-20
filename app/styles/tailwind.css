@@ -57,6 +57,8 @@
 		--radius: 0.5rem;
 
 		--post: white;
+		--postparent-foreground: #434343;
+		--postparent-threadline: #BCBFC2;
 		--note: #f1f5f9;
 		--note-foreground: #434343;
 	}
@@ -96,6 +98,8 @@
 		--ring: 217.2 32.6% 60%;
 
 		--post: #334155;
+		--postparent-foreground: #d5e2f3;
+		--postparent-threadline: #506585;
 		--note: #506585;
 		--note-foreground: #d5e2f3;
 	}

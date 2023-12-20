@@ -33,9 +33,9 @@ import { getUserPositions } from '#app/positions.ts'
 import { createPost, getPost, getTransitiveParents } from '#app/post.ts'
 import {
 	getRankedReplies,
-	type ScoredPost,
-	type RankedPost,
 	getScoredPost,
+	type RankedPost,
+	type ScoredPost,
 } from '#app/ranking.ts'
 import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
@@ -80,10 +80,10 @@ export async function loader({ params, request }: DataFunctionArgs) {
 		userId === null
 			? []
 			: await getUserPositions(
-					userId,
-					tag,
-					replies.map(p => p.id).concat([post.id]),
-			  )
+				userId,
+				tag,
+				replies.map(p => p.id).concat([post.id]),
+			)
 
 	let result = json({
 		post,
@@ -138,7 +138,7 @@ export default function Post() {
 		(topNote && p.get(topNote.id)) || Direction.Neutral
 
 	return (
-		<div>
+		<>
 			<div className="mb-5">
 				<Link to={`/`}>Home</Link>
 				&nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
@@ -155,7 +155,7 @@ export default function Post() {
 				notePosition={notePosition}
 			/>
 			<PostReplies tag={tag} replies={replies} positions={p} />
-		</div>
+		</>
 	)
 }
 
@@ -167,18 +167,18 @@ function ParentThread({
 	tag: string
 }) {
 	return (
-		<>
+		<div className="border-postparent-threadline border-l-4">
 			{transitiveParents.map(parentPost => (
 				<Link key={parentPost.id} to={`/tags/${tag}/posts/${parentPost.id}`}>
 					<div
 						key={parentPost.id}
-						className="postparent mb-2 ml-10 rounded-lg bg-post p-3 text-sm text-note-foreground"
+						className="postparent text-postparent-foreground mb-2 ml-3 rounded-lg bg-post p-3 text-sm"
 					>
 						<Markdown>{parentPost.content}</Markdown>
 					</div>
 				</Link>
 			))}
-		</>
+		</div>
 	)
 }
 
