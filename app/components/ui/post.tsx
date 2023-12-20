@@ -49,7 +49,7 @@ export function PostDetails({
 	const nRepliesString =
 		nReplies === 1 ? '1 reply' : nReplies > 1 ? nReplies + ' replies' : ''
 
-	const handleReplySubmit = function(event: FormEvent<HTMLFormElement>) {
+	const handleReplySubmit = function (event: FormEvent<HTMLFormElement>) {
 		event.preventDefault() // this will prevent Remix from submitting the form
 		setShowReplyForm(false)
 		replyFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
@@ -97,7 +97,7 @@ export function PostDetails({
 							setShowReplyForm(!showReplyForm)
 							return false
 						}}
-					// preventScrollReset={true}
+						// preventScrollReset={true}
 					>
 						reply
 					</button>
@@ -124,7 +124,7 @@ export function PostDetails({
 						action="/reply"
 						onSubmit={handleReplySubmit}
 					>
-						<div className="flex flex-col items-end">
+						<div className="mt-1 flex flex-col items-end">
 							<input type="hidden" name="parentId" value={post.id} />
 							<input type="hidden" name="tag" value={tag} />
 
