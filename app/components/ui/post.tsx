@@ -34,26 +34,10 @@ export function PostDetails({
 			? fetcher.data.state
 			: position
 
-	const [showReplyForm, setShowReplyForm] = useState(false)
-
-	const replyFetcher = useFetcher<{ newPostId: number }>()
-
-	if (replyFetcher.data) {
-		console.log('Fetcher data', replyFetcher.data)
-	}
-
 	const nReplies = post.nReplies
-	// const nRepliesString =
-	// 	nReplies === 1 ? '1 Reply' : (nReplies === 0 ? 'No' : nReplies) + ' Replies'
+	const nRepliesString = nReplies === 1 ? '1 reply' : `${nReplies} replies`
 
-	const nRepliesString =
-		nReplies === 1 ? '1 reply' : nReplies > 1 ? nReplies + ' replies' : ''
-
-	const handleReplySubmit = function (event: FormEvent<HTMLFormElement>) {
-		event.preventDefault() // this will prevent Remix from submitting the form
-		setShowReplyForm(false)
-		replyFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
-	}
+	const [showReplyForm, setShowReplyForm] = useState(false)
 
 	let informationRateString = Math.round(post.informationRate * 100) / 100
 	const ageString = moment(post.createdAt).fromNow()
@@ -75,79 +59,103 @@ export function PostDetails({
 					/>
 				</fetcher.Form>
 			</div>
-			<div className={'flex w-full min-w-0 flex-col'}>
+			<div className="flex w-full min-w-0 flex-col">
 				<div className="mt-1 text-right text-sm opacity-50">{ageString}</div>
 				<div className="markdown mb-4">
 					<Markdown>{post.content}</Markdown>
 				</div>
-				{note === null ? (
-					<></>
-				) : (
-					<NoteAttachment note={note} tag={tag} className="mb-4" />
-				)}
+				{note && <NoteAttachment note={note} tag={tag} className="mb-4" />}
 
 				<div className="flex w-full text-sm">
-					<Link to={`/tags/${tag}/stats/${post.id}`} className="hyperlink pr-2">
+					<Link to={`/tags/${tag}/posts/${post.id}`} className="hyperlink">
+						{nRepliesString}
+					</Link>
+					<Link to={`/tags/${tag}/stats/${post.id}`} className="hyperlink ml-2">
 						{informationRateString} bits
 					</Link>
-
 					<button
 						className="hyperlink ml-2"
 						onClick={() => {
 							setShowReplyForm(!showReplyForm)
 							return false
 						}}
-						// preventScrollReset={true}
+					// preventScrollReset={true}
 					>
 						reply
 					</button>
-					{showReplyForm ? (
+					{showReplyForm && (
 						<button
 							className="ml-auto pr-2"
 							onClick={() => setShowReplyForm(false)}
 						>
 							✕
 						</button>
-					) : (
-						<Link
-							to={`/tags/${tag}/posts/${post.id}`}
-							className="hyperlink ml-auto"
-						>
-							{nRepliesString}
-						</Link>
 					)}
 				</div>
 				{showReplyForm && (
-					<replyFetcher.Form
-						id="reply-form"
-						method="post"
-						action="/reply"
-						onSubmit={handleReplySubmit}
-					>
-						<div className="mt-1 flex flex-col items-end">
-							<input type="hidden" name="parentId" value={post.id} />
-							<input type="hidden" name="tag" value={tag} />
-
-							<Textarea
-								name="content"
-								className="mb-2 w-full"
-								style={{
-									resize: 'vertical',
-								}}
-								autoFocus={true}
-								placeholder="Enter your reply"
-							/>
-
-							<div>
-								<button className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700">
-									Reply
-								</button>
-							</div>
-						</div>
-					</replyFetcher.Form>
+					<ReplyForm
+						post={post}
+						tag={tag}
+						setShowReplyForm={setShowReplyForm}
+						className="mt-2"
+					/>
 				)}
 			</div>
 		</div>
+	)
+}
+
+function ReplyForm({
+	post,
+	tag,
+	setShowReplyForm,
+	className,
+}: {
+	post: ScoredPost
+	tag: string
+	setShowReplyForm: React.Dispatch<React.SetStateAction<boolean>>
+	className: string
+}) {
+	const replyFetcher = useFetcher<{ newPostId: number }>()
+
+	if (replyFetcher.data) {
+		console.log('Fetcher data', replyFetcher.data)
+	}
+
+	const handleReplySubmit = function(event: FormEvent<HTMLFormElement>) {
+		event.preventDefault() // this will prevent Remix from submitting the form
+		setShowReplyForm(false)
+		replyFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
+	}
+
+	return (
+		<replyFetcher.Form
+			id="reply-form"
+			method="post"
+			action="/reply"
+			onSubmit={handleReplySubmit}
+		>
+			<div className={'flex flex-col items-end ' + className}>
+				<input type="hidden" name="parentId" value={post.id} />
+				<input type="hidden" name="tag" value={tag} />
+
+				<Textarea
+					name="content"
+					className="mb-2 w-full"
+					style={{
+						resize: 'vertical',
+					}}
+					autoFocus={true}
+					placeholder="Enter your reply"
+				/>
+
+				<div>
+					<button className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700">
+						Reply
+					</button>
+				</div>
+			</div>
+		</replyFetcher.Form>
 	)
 }
 
