@@ -7,12 +7,11 @@ _default:
 # Reset and reseed database, and regenerate Keysely type definitions
 reset-db:
 	rm -f $DATABASE_PATH
-	# Create views
-	npx prisma db push --skip-generate
-	sqlite3 $DATABASE_PATH < sql/views.sql
-	npx prisma generate
-	npx prisma db seed
+	npx tsx migrate.ts
+	npx tsx seed.ts
 
+migrate:
+	npx tsx migrate.ts
 
 dev:
 	npm run dev

@@ -21,6 +21,18 @@ export async function seed() {
 			}
 		}
 	}
+	// port to kysely:
+	for (const entity of entities) {
+		for (const action of actions) {
+			for (const access of accesses) {
+				await db.insertInto('Permission').values({
+					entity,
+					action,
+					access,
+				})
+			}
+		}
+	}
 	console.timeEnd('🔑 Created permissions...')
 
 	console.time('👑 Created roles...')

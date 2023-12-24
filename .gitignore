@@ -1,10 +1,8 @@
-app/db/kysely-types.ts
-node_modules
+node_modules/
 
 /build
 /public/build
 /server-build
-/data
 
 /test-results/
 /playwright-report/
@@ -12,6 +10,7 @@ node_modules
 /tests/fixtures/email/
 /coverage
 
+data.db
 /other/cache.db
 
 # Easy way to create temporary files/folders that won't accidentally be added to git
