@@ -1,9 +1,10 @@
+import { createId } from '@paralleldrive/cuid2'
 import { sql } from 'kysely'
 import { logTagPageView, seedStats } from '#app/attention.ts'
 import { db } from '#app/db.ts'
 import { createPost } from '#app/post.ts'
 import { getRankedPosts } from '#app/ranking.ts'
-import { prisma } from '#app/utils/db.server.ts'
+// import { prisma } from '#app/utils/db.server.ts'
 // import * as fs from 'fs';
 
 import { Direction, vote } from '#app/vote.ts'
@@ -14,51 +15,69 @@ export async function seed() {
 	const entities = ['user', 'note']
 	const actions = ['create', 'read', 'update', 'delete']
 	const accesses = ['own', 'any'] as const
-	for (const entity of entities) {
-		for (const action of actions) {
-			for (const access of accesses) {
-				await prisma.permission.create({ data: { entity, action, access } })
-			}
-		}
-	}
-	// port to kysely:
-	for (const entity of entities) {
-		for (const action of actions) {
-			for (const access of accesses) {
-				await db.insertInto('Permission').values({
-					entity,
-					action,
-					access,
-				})
-			}
-		}
-	}
+
+	// // port to kysely:
+	// for (const entity of entities) {
+	// 	for (const action of actions) {
+	// 		for (const access of accesses) {
+	// 			let id = createId()
+
+	// 			await db
+	// 				.insertInto('Permission')
+	// 				.values({
+	// 					id,
+	// 					entity,
+	// 					action,
+	// 					access,
+	// 				})
+	// 				.execute()
+	// 		}
+	// 	}
+	// }
 	console.timeEnd('🔑 Created permissions...')
 
 	console.time('👑 Created roles...')
-	await prisma.role.create({
-		data: {
-			name: 'admin',
-			permissions: {
-				connect: await prisma.permission.findMany({
-					select: { id: true },
-					where: { access: 'any' },
-				}),
-			},
-		},
-	})
-	await prisma.role.create({
-		data: {
-			name: 'user',
-			permissions: {
-				connect: await prisma.permission.findMany({
-					select: { id: true },
-					where: { access: 'own' },
-				}),
-			},
-		},
-	})
-	console.timeEnd('👑 Created roles...')
+
+	// const adminRoleId = createId()
+	// await db
+	// 	.insertInto('Role')
+	// 	.values({
+	// 		name: 'admin',
+	// 		id: adminRoleId,
+	// 	})
+	// 	.execute()
+
+	// await db
+	// 	.insertInto('_PermissionToRole')
+	// 	.values({
+	// 		A: adminAnyPermission,
+	// 		B: adminRoleId,
+	// 	})
+	// 	.execute()
+
+	// await prisma.role.create({
+	// 	data: {
+	// 		name: 'admin',
+	// 		permissions: {
+	// 			connect: await prisma.permission.findMany({
+	// 				select: { id: true },
+	// 				where: { access: 'any' },
+	// 			}),
+	// 		},
+	// 	},
+	// })
+	// await prisma.role.create({
+	// 	data: {
+	// 		name: 'user',
+	// 		permissions: {
+	// 			connect: await prisma.permission.findMany({
+	// 				select: { id: true },
+	// 				where: { access: 'own' },
+	// 			}),
+	// 		},
+	// 	},
+	// })
+	// console.timeEnd('👑 Created roles...')
 
 	// since prisma provides the cuid() function (not supported by sqlite), we use prisma statements instead of sql to create users
 	// insert into user(idInt, username, email) values (100, "alice", "alice@test.com");
@@ -66,20 +85,36 @@ export async function seed() {
 	let alice = '100'
 	let bob = '101'
 	let charlie = '102'
-	await prisma.user.create({
-		data: {
+
+	await db
+		.insertInto('User')
+		.values({
 			id: alice,
 			username: 'alice',
 			email: 'alice@test.com',
-			password: { create: createPassword('alice') },
-		},
-	})
-	await prisma.user.create({
-		data: { id: '101', username: 'bob', email: 'bob@test.com' },
-	})
-	await prisma.user.create({
-		data: { id: '102', username: 'charlie', email: 'charlie@test.com' },
-	})
+			// password: { create: createPassword('alice') },
+		})
+		.execute()
+
+	await db
+		.insertInto('User')
+		.values({
+			id: bob,
+			username: 'bob',
+			email: 'bob@test.com',
+			// password: { create: createPassword('bob') },
+		})
+		.execute()
+
+	await db
+		.insertInto('User')
+		.values({
+			id: charlie,
+			username: 'charlie',
+			email: 'charlie@test.com',
+			// password: { create: createPassword('charlie') },
+		})
+		.execute()
 
 	await seedStats()
 
@@ -180,25 +215,22 @@ export async function seed() {
 	await vote(tag, charlie, post2, post3, Direction.Up, null)
 
 	// Add a developer user and session ID that is already in my browser, so I remain logged in after I reseed the DB.
-	await prisma.user.create({
-		data: {
+	await db
+		.insertInto('User')
+		.values({
 			id: 'clptz40870002cdvq8rqkbfs5',
 			username: 'developer',
 			email: 'test@test.com',
-			password: { create: createPassword('jonathan') },
-		},
-	})
+			// password: { create: createPassword('jonathan') },
+		})
+		.execute()
 
 	await sql`insert into session(id, expirationDate, createdAt, updatedAt, userId) values ('clptz40870001cdvqn4rnggxv', 1704471496999, 1701877981251, 1701877981251, 'clptz40870002cdvq8rqkbfs5')`.execute(
 		db,
 	)
 }
 
-seed()
-	.catch(e => {
-		console.error(e)
-		process.exit(1)
-	})
-	.finally(async () => {
-		await prisma.$disconnect()
-	})
+seed().catch(e => {
+	console.error(e)
+	process.exit(1)
+})
