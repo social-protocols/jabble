@@ -35,7 +35,7 @@ e2e-test:
 	npm run test:e2e:dev 
 
 reseed:
-	npx prisma db seed
+	npx tsx seed.ts
 
 sim:
 	time IN_MEMORY_DB=true npx tsx simulate-attention-share.ts
