@@ -12,11 +12,11 @@ import { ErrorList, Field } from '#app/components/forms.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { SITE_NAME } from '#app/site.ts'
 import { requireAnonymous, resetUserPassword } from '#app/utils/auth.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
 import { invariant, useIsPending } from '#app/utils/misc.tsx'
 import { PasswordAndConfirmPasswordSchema } from '#app/utils/user-validation.ts'
 import { verifySessionStorage } from '#app/utils/verification.server.ts'
 import { type VerifyFunctionArgs } from './verify.tsx'
+import { prisma } from '#app/utils/db.server.ts'
 
 const resetPasswordUsernameSessionKey = 'resetPasswordUsername'
 

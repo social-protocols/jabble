@@ -1,7 +1,6 @@
 import * as setCookieParser from 'set-cookie-parser'
 import { expect } from 'vitest'
 import { sessionKey } from '#app/utils/auth.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
 import { authSessionStorage } from '#app/utils/session.server.ts'
 import {
 	type OptionalToast,
@@ -9,6 +8,7 @@ import {
 	toastKey,
 } from '#app/utils/toast.server.ts'
 import { convertSetCookieToCookie } from '#tests/utils.ts'
+import { prisma } from '#app/utils/db.server.ts'
 
 import '@testing-library/jest-dom/vitest'
 

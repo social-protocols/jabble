@@ -14,7 +14,6 @@ import { twoFAVerificationType } from '#app/routes/settings+/profile.two-factor.
 import { type twoFAVerifyVerificationType } from '#app/routes/settings+/profile.two-factor.verify.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { validateCSRF } from '#app/utils/csrf.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
 import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { ensurePrimary } from '#app/utils/litefs.server.ts'
 import { getDomainUrl, useIsPending } from '#app/utils/misc.tsx'
@@ -26,6 +25,7 @@ import {
 } from './login.tsx'
 import { handleVerification as handleOnboardingVerification } from './onboarding.tsx'
 import { handleVerification as handleResetPasswordVerification } from './reset-password.tsx'
+import { prisma } from '#app/utils/db.server.ts'
 
 export const codeQueryParam = 'code'
 export const targetQueryParam = 'target'

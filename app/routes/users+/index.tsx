@@ -5,8 +5,8 @@ import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList } from '#app/components/forms.tsx'
 import { SearchBar } from '#app/components/search-bar.tsx'
 import { SITE_NAME } from '#app/site.ts'
-import { prisma } from '#app/utils/db.server.ts'
 import { cn, getUserImgSrc, useDelayedIsPending } from '#app/utils/misc.tsx'
+import { prisma } from '#app/utils/db.server.ts'
 
 const UserSearchResultSchema = z.object({
 	id: z.string(),

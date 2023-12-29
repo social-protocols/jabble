@@ -22,7 +22,6 @@ import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { SITE_NAME } from '#app/site.ts'
 import { requireAnonymous, sessionKey, signup } from '#app/utils/auth.server.ts'
 import { validateCSRF } from '#app/utils/csrf.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
 import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { invariant, useIsPending } from '#app/utils/misc.tsx'
 import { authSessionStorage } from '#app/utils/session.server.ts'
@@ -33,6 +32,7 @@ import {
 } from '#app/utils/user-validation.ts'
 import { verifySessionStorage } from '#app/utils/verification.server.ts'
 import { type VerifyFunctionArgs } from './verify.tsx'
+import { prisma } from '#app/utils/db.server.ts'
 
 const onboardingEmailSessionKey = 'onboardingEmail'
 
