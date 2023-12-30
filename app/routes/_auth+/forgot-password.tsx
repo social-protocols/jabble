@@ -2,10 +2,10 @@ import { conform, useForm } from '@conform-to/react'
 import { getFieldsetConstraint, parse } from '@conform-to/zod'
 import * as E from '@react-email/components'
 import {
-	json,
-	redirect,
 	type DataFunctionArgs,
+	json,
 	type MetaFunction,
+	redirect,
 } from '@remix-run/node'
 import { Link, useFetcher } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
@@ -14,13 +14,13 @@ import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList, Field } from '#app/components/forms.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { db } from '#app/db.ts'
 import { SITE_NAME } from '#app/site.ts'
 import { validateCSRF } from '#app/utils/csrf.server.ts'
 import { sendEmail } from '#app/utils/email.server.ts'
 import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { EmailSchema, UsernameSchema } from '#app/utils/user-validation.ts'
 import { prepareVerification } from './verify.tsx'
-import { prisma } from '#app/utils/db.server.ts'
 
 const ForgotPasswordSchema = z.object({
 	usernameOrEmail: z.union([EmailSchema, UsernameSchema]),
@@ -32,15 +32,18 @@ export async function action({ request }: DataFunctionArgs) {
 	checkHoneypot(formData)
 	const submission = await parse(formData, {
 		schema: ForgotPasswordSchema.superRefine(async (data, ctx) => {
-			const user = await prisma.user.findFirst({
-				where: {
-					OR: [
-						{ email: data.usernameOrEmail },
-						{ username: data.usernameOrEmail },
-					],
-				},
-				select: { id: true },
-			})
+			const user = await db
+				.selectFrom('User')
+				.select('id')
+				.where(eb =>
+					eb('email', '=', data.usernameOrEmail).or(
+						'username',
+						'=',
+						data.usernameOrEmail,
+					),
+				)
+				.executeTakeFirst()
+
 			if (!user) {
 				ctx.addIssue({
 					path: ['usernameOrEmail'],
@@ -60,10 +63,14 @@ export async function action({ request }: DataFunctionArgs) {
 	}
 	const { usernameOrEmail } = submission.value
 
-	const user = await prisma.user.findFirstOrThrow({
-		where: { OR: [{ email: usernameOrEmail }, { username: usernameOrEmail }] },
-		select: { email: true, username: true },
-	})
+	const user = await db
+		.selectFrom('User')
+		.select('email')
+		.select('username')
+		.where(eb =>
+			eb('email', '=', usernameOrEmail).or('username', '=', usernameOrEmail),
+		)
+		.executeTakeFirstOrThrow()
 
 	const { verifyUrl, redirectTo, otp } = await prepareVerification({
 		period: 10 * 60,
