@@ -4,10 +4,15 @@ const appFiles = ['app/**']
 
 /** @type {import('@types/eslint').Linter.BaseConfig} */
 module.exports = {
-	extends: ['@remix-run/eslint-config', '@remix-run/eslint-config/node'],
-	plugins: ['@typescript-eslint'],
+	extends: [
+		'@remix-run/eslint-config',
+		'@remix-run/eslint-config/node',
+		'prettier',
+	],
+	plugins: ['prettier', '@typescript-eslint'],
 
 	rules: {
+		// 'prettier/prettier': ['error'],
 		// playwright requires destructuring in fixtures even if you don't use anything 🤷‍♂️
 		'no-empty-pattern': 'off',
 		'@typescript-eslint/consistent-type-imports': [
