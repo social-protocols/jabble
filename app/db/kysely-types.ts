@@ -88,7 +88,7 @@ export type RoleToUser = {
 }
 export type Session = {
 	id: string
-	expirationDate: string
+	expirationDate: Timestamp
 	createdAt: Generated<string>
 	updatedAt: string
 	userId: string

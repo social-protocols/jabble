@@ -1,10 +1,10 @@
 import { conform, useForm } from '@conform-to/react'
 import { getFieldsetConstraint, parse } from '@conform-to/zod'
 import {
-	json,
-	redirect,
 	type DataFunctionArgs,
+	json,
 	type MetaFunction,
+	redirect,
 } from '@remix-run/node'
 import { Form, Link, useActionData, useSearchParams } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
@@ -15,6 +15,7 @@ import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { CheckboxField, ErrorList, Field } from '#app/components/forms.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { db } from '#app/db.ts'
 import { twoFAVerificationType } from '#app/routes/settings+/profile.two-factor.tsx'
 import { SITE_NAME } from '#app/site.ts'
 import {
@@ -39,7 +40,6 @@ import { redirectWithToast } from '#app/utils/toast.server.ts'
 import { PasswordSchema, UsernameSchema } from '#app/utils/user-validation.ts'
 import { verifySessionStorage } from '#app/utils/verification.server.ts'
 import { getRedirectToUrl, type VerifyFunctionArgs } from './verify.tsx'
-import { prisma } from '#app/utils/db.server.ts'
 
 const verifiedTimeKey = 'verified-time'
 const unverifiedSessionIdKey = 'unverified-session-id'
@@ -59,12 +59,12 @@ export async function handleNewSession(
 	},
 	responseInit?: ResponseInit,
 ) {
-	const verification = await prisma.verification.findUnique({
-		select: { id: true },
-		where: {
-			target_type: { target: session.userId, type: twoFAVerificationType },
-		},
-	})
+	const verification = await db
+		.selectFrom('Verification')
+		.select('id')
+		.where('target', '=', session.userId)
+		.where('type', '=', twoFAVerificationType)
+		.executeTakeFirst()
 	const userHasTwoFactor = Boolean(verification)
 
 	if (userHasTwoFactor) {
@@ -130,10 +130,11 @@ export async function handleVerification({
 
 	const unverifiedSessionId = verifySession.get(unverifiedSessionIdKey)
 	if (unverifiedSessionId) {
-		const session = await prisma.session.findUnique({
-			select: { expirationDate: true },
-			where: { id: unverifiedSessionId },
-		})
+		const session = await db
+			.selectFrom('Session')
+			.select('expirationDate')
+			.where('id', '=', unverifiedSessionId)
+			.executeTakeFirst()
 		if (!session) {
 			throw await redirectWithToast('/login', {
 				type: 'error',
@@ -174,11 +175,13 @@ export async function shouldRequestTwoFA(request: Request) {
 	if (verifySession.has(unverifiedSessionIdKey)) return true
 	const userId = await getUserId(request)
 	if (!userId) return false
-	// if it's over two hours since they last verified, we should request 2FA again
-	const userHasTwoFA = await prisma.verification.findUnique({
-		select: { id: true },
-		where: { target_type: { target: userId, type: twoFAVerificationType } },
-	})
+	const userHasTwoFA = await db
+		.selectFrom('Verification')
+		.select('id')
+		.where('target', '=', userId)
+		.where('type', '=', twoFAVerificationType)
+		.executeTakeFirst()
+
 	if (!userHasTwoFA) return false
 	const verifiedTime = authSession.get(verifiedTimeKey) ?? new Date(0)
 	const twoHours = 1000 * 60 * 2
