@@ -1,32 +1,34 @@
 import { conform, useForm } from '@conform-to/react'
 import { getFieldsetConstraint, parse } from '@conform-to/zod'
 import {
-	json,
-	redirect,
 	type DataFunctionArgs,
+	json,
 	type MetaFunction,
+	redirect,
 } from '@remix-run/node'
 import { Form, useActionData, useLoaderData } from '@remix-run/react'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList, Field } from '#app/components/forms.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { db } from '#app/db.ts'
 import { SITE_NAME } from '#app/site.ts'
 import { requireAnonymous, resetUserPassword } from '#app/utils/auth.server.ts'
 import { invariant, useIsPending } from '#app/utils/misc.tsx'
 import { PasswordAndConfirmPasswordSchema } from '#app/utils/user-validation.ts'
 import { verifySessionStorage } from '#app/utils/verification.server.ts'
 import { type VerifyFunctionArgs } from './verify.tsx'
-import { prisma } from '#app/utils/db.server.ts'
 
 const resetPasswordUsernameSessionKey = 'resetPasswordUsername'
 
 export async function handleVerification({ submission }: VerifyFunctionArgs) {
 	invariant(submission.value, 'submission.value should be defined by now')
 	const target = submission.value.target
-	const user = await prisma.user.findFirst({
-		where: { OR: [{ email: target }, { username: target }] },
-		select: { email: true, username: true },
-	})
+	const user = await db
+		.selectFrom('User')
+		.select('username')
+		.where(eb => eb('email', '=', target).or('username', '=', target))
+		.executeTakeFirst()
+
 	// we don't want to say the user is not found if the email is not found
 	// because that would allow an attacker to check if an email is registered
 	if (!user) {

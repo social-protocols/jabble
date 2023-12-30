@@ -1,10 +1,10 @@
 import { conform, useForm } from '@conform-to/react'
 import { getFieldsetConstraint, parse } from '@conform-to/zod'
 import {
-	json,
-	redirect,
 	type DataFunctionArgs,
+	json,
 	type MetaFunction,
+	redirect,
 } from '@remix-run/node'
 import {
 	Form,
@@ -19,6 +19,7 @@ import { z } from 'zod'
 import { CheckboxField, ErrorList, Field } from '#app/components/forms.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { db } from '#app/db.ts'
 import { SITE_NAME } from '#app/site.ts'
 import { requireAnonymous, sessionKey, signup } from '#app/utils/auth.server.ts'
 import { validateCSRF } from '#app/utils/csrf.server.ts'
@@ -32,7 +33,6 @@ import {
 } from '#app/utils/user-validation.ts'
 import { verifySessionStorage } from '#app/utils/verification.server.ts'
 import { type VerifyFunctionArgs } from './verify.tsx'
-import { prisma } from '#app/utils/db.server.ts'
 
 const onboardingEmailSessionKey = 'onboardingEmail'
 
@@ -73,10 +73,11 @@ export async function action({ request }: DataFunctionArgs) {
 	const submission = await parse(formData, {
 		schema: intent =>
 			SignupFormSchema.superRefine(async (data, ctx) => {
-				const existingUser = await prisma.user.findUnique({
-					where: { username: data.username },
-					select: { id: true },
-				})
+				const existingUser = await db
+					.selectFrom('User')
+					.select('id')
+					.where('username', '=', data.username)
+					.executeTakeFirst()
 				if (existingUser) {
 					ctx.addIssue({
 						path: ['username'],

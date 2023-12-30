@@ -2,10 +2,10 @@ import { conform, useForm } from '@conform-to/react'
 import { getFieldsetConstraint, parse } from '@conform-to/zod'
 import * as E from '@react-email/components'
 import {
-	json,
-	redirect,
 	type DataFunctionArgs,
+	json,
 	type MetaFunction,
+	redirect,
 } from '@remix-run/node'
 import { Form, useActionData, useSearchParams } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
@@ -14,6 +14,7 @@ import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList, Field } from '#app/components/forms.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { db } from '#app/db.ts'
 import { SITE_NAME } from '#app/site.ts'
 import {
 	ProviderConnectionForm,
@@ -25,7 +26,6 @@ import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { useIsPending } from '#app/utils/misc.tsx'
 import { EmailSchema } from '#app/utils/user-validation.ts'
 import { prepareVerification } from './verify.tsx'
-import { prisma } from '#app/utils/db.server.ts'
 
 const SignupSchema = z.object({
 	email: EmailSchema,
@@ -39,10 +39,11 @@ export async function action({ request }: DataFunctionArgs) {
 
 	const submission = await parse(formData, {
 		schema: SignupSchema.superRefine(async (data, ctx) => {
-			const existingUser = await prisma.user.findUnique({
-				where: { email: data.email },
-				select: { id: true },
-			})
+			const existingUser = await db
+				.selectFrom('User')
+				.select('id')
+				.where('email', '=', data.email)
+				.executeTakeFirst()
 			if (existingUser) {
 				ctx.addIssue({
 					path: ['email'],
