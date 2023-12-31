@@ -1,6 +1,7 @@
-import { conform, useForm, type Submission } from '@conform-to/react'
+import { conform, type Submission, useForm } from '@conform-to/react'
 import { getFieldsetConstraint, parse } from '@conform-to/zod'
-import { json, type DataFunctionArgs } from '@remix-run/node'
+import cuid2 from '@paralleldrive/cuid2'
+import { type DataFunctionArgs, json } from '@remix-run/node'
 import { Form, useActionData, useSearchParams } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
 import { HoneypotInputs } from 'remix-utils/honeypot/react'
@@ -9,6 +10,7 @@ import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList, Field } from '#app/components/forms.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { db } from '#app/db.ts'
 import { handleVerification as handleChangeEmailVerification } from '#app/routes/settings+/profile.change-email.tsx'
 import { twoFAVerificationType } from '#app/routes/settings+/profile.two-factor.tsx'
 import { type twoFAVerifyVerificationType } from '#app/routes/settings+/profile.two-factor.verify.tsx'
@@ -25,7 +27,6 @@ import {
 } from './login.tsx'
 import { handleVerification as handleOnboardingVerification } from './onboarding.tsx'
 import { handleVerification as handleResetPasswordVerification } from './reset-password.tsx'
-import { prisma } from '#app/utils/db.server.ts'
 
 export const codeQueryParam = 'code'
 export const targetQueryParam = 'target'
@@ -108,16 +109,19 @@ export async function prepareVerification({
 		period,
 	})
 	const verificationData = {
+		id: cuid2.createId(),
 		type,
 		target,
 		...verificationConfig,
 		expiresAt: new Date(Date.now() + verificationConfig.period * 1000),
 	}
-	await prisma.verification.upsert({
-		where: { target_type: { target, type } },
-		create: verificationData,
-		update: verificationData,
-	})
+	await db
+		.insertInto('Verification')
+		.values(verificationData)
+		.onConflict(oc =>
+			oc.columns(['target', 'type']).doUpdateSet(verificationData),
+		)
+		.execute()
 
 	// add the otp to the url we'll email the user.
 	verifyUrl.searchParams.set(codeQueryParam, otp)

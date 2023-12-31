@@ -152,7 +152,7 @@ export type Verification = {
 	/**
 	 * When it's safe to delete this verification
 	 */
-	expiresAt: string | null
+	expiresAt: Timestamp | null
 }
 export type VoteHistory = {
 	rowid: Generated<number>
