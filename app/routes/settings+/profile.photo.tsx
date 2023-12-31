@@ -30,7 +30,7 @@ import {
 	useIsPending,
 } from '#app/utils/misc.tsx'
 import { type BreadcrumbHandle } from './profile.tsx'
-import { prisma } from '#app/utils/db.server.ts'
+// import { prisma } from '#app/utils/db.server.ts'
 
 export const handle: BreadcrumbHandle & SEOHandle = {
 	breadcrumb: <Icon name="avatar">Photo</Icon>,

@@ -115,6 +115,7 @@ export async function prepareVerification({
 		...verificationConfig,
 		expiresAt: new Date(Date.now() + verificationConfig.period * 1000),
 	}
+	console.log("Inserting verification data", verificationData)
 	await db
 		.insertInto('Verification')
 		.values(verificationData)

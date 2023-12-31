@@ -1,10 +1,11 @@
-import { type Password, type User } from '@prisma/client'
+import { type Password, type User } from '#app/db/types.ts'
 import { redirect } from '@remix-run/node'
 import bcrypt from 'bcryptjs'
 import { safeRedirect } from 'remix-utils/safe-redirect'
-import { prisma } from './db.server.ts'
 import { combineHeaders } from './misc.tsx'
 import { authSessionStorage } from './session.server.ts'
+import { db } from '#app/db.ts'
+import { createId } from '@paralleldrive/cuid2'
 
 export const SESSION_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 30
 export const getSessionExpirationDate = () =>
@@ -18,18 +19,31 @@ export async function getUserId(request: Request) {
 	)
 	const sessionId = authSession.get(sessionKey)
 	if (!sessionId) return null
-	const session = await prisma.session.findUnique({
-		select: { user: { select: { id: true } } },
-		where: { id: sessionId, expirationDate: { gt: new Date() } },
-	})
-	if (!session?.user) {
+
+
+
+	// const session = await prisma.session.findUnique({
+	// 	select: { user: { select: { id: true } } },
+	// 	where: { id: sessionId, expirationDate: { gt: new Date() } },
+	// })
+
+
+  const session = await db
+    .selectFrom('Session')
+    .innerJoin('User', 'User.id', 'Session.userId')
+    .select(['User.id as userId'])
+    .where('Session.id', '=', sessionId)
+    .where('Session.expirationDate', '>', new Date())
+    .executeTakeFirst();
+
+	if (!session?.userId) {
 		throw redirect('/', {
 			headers: {
 				'set-cookie': await authSessionStorage.destroySession(authSession),
 			},
 		})
 	}
-	return session.user.id
+	return session.userId
 }
 
 export async function requireUserId(
@@ -59,6 +73,7 @@ export async function requireAnonymous(request: Request) {
 	}
 }
 
+
 export async function login({
 	username,
 	password,
@@ -68,13 +83,24 @@ export async function login({
 }) {
 	const user = await verifyUserPassword({ username }, password)
 	if (!user) return null
-	const session = await prisma.session.create({
-		select: { id: true, expirationDate: true, userId: true },
-		data: {
-			expirationDate: getSessionExpirationDate(),
-			userId: user.id,
-		},
-	})
+
+	const session = await db.insertInto('Session')
+	  .values({
+	  	id: createId(),
+	    expirationDate: getSessionExpirationDate(),
+	    updatedAt: new Date(),
+	    userId: user.id,
+	  })
+	  .returning(['id', 'expirationDate', 'userId'])
+	  .executeTakeFirstOrThrow();
+
+	// const session = await prisma.session.create({
+	// 	select: { id: true, expirationDate: true, userId: true },
+	// 	data: {
+	// 		expirationDate: getSessionExpirationDate(),
+	// 		userId: user.id,
+	// 	},
+	// })
 	return session
 }
 
@@ -86,16 +112,18 @@ export async function resetUserPassword({
 	password: string
 }) {
 	const hashedPassword = await bcrypt.hash(password, 10)
-	return prisma.user.update({
-		where: { username },
-		data: {
-			password: {
-				update: {
-					hash: hashedPassword,
-				},
-			},
-		},
-	})
+
+
+	const {id} = await db.selectFrom("User").select(["id"]).where("username",'=',username).executeTakeFirstOrThrow()
+
+	await db
+		.updateTable("Password")
+		// .join("User", "User.id", "userId")	
+		.where("userId", "=", id)
+		.set(() => ({
+			hash: hashedPassword
+		}))
+		.execute();
 }
 
 export async function signup({
@@ -111,26 +139,36 @@ export async function signup({
 }) {
 	const hashedPassword = await getPasswordHash(password)
 
-	const session = await prisma.session.create({
-		data: {
-			expirationDate: getSessionExpirationDate(),
-			user: {
-				create: {
-					email: email.toLowerCase(),
-					username: username.toLowerCase(),
-					name,
-					password: {
-						create: {
-							hash: hashedPassword,
-						},
-					},
-				},
-			},
-		},
-		select: { id: true, expirationDate: true },
-	})
+	const {id} = await db
+		.insertInto("User")
+		.values({
+			id: createId(),
+			email: email.toLowerCase(),
+			username: username.toLowerCase(),
+			name: name,
+		})
+		.returning('id')
+		.executeTakeFirstOrThrow()
 
-	return session
+
+	const pwRecord = await db.insertInto("Password").values({
+		hash: hashedPassword,
+		userId: id
+	}).returningAll().executeTakeFirstOrThrow()
+
+	console.log("Password is", pwRecord)
+
+
+	return await db
+		.insertInto('Session')
+		.values({
+			id: createId(),
+			expirationDate: getSessionExpirationDate(),
+			userId: id,
+			updatedAt: new Date(),
+		})
+		.returning(['id', 'expirationDate'])
+		.executeTakeFirstOrThrow()
 }
 
 export async function logout(
@@ -149,7 +187,9 @@ export async function logout(
 	const sessionId = authSession.get(sessionKey)
 	// if this fails, we still need to delete the session from the user's browser
 	// and it doesn't do any harm staying in the db anyway.
-	if (sessionId) void prisma.session.deleteMany({ where: { id: sessionId } })
+
+	if (sessionId) db.deleteFrom('Session').where('id', '=', sessionId ).execute()
+
 	throw redirect(safeRedirect(redirectTo), {
 		...responseInit,
 		headers: combineHeaders(
@@ -168,20 +208,32 @@ export async function verifyUserPassword(
 	where: Pick<User, 'username'> | Pick<User, 'id'>,
 	password: Password['hash'],
 ) {
-	const userWithPassword = await prisma.user.findUnique({
-		where,
-		select: { id: true, password: { select: { hash: true } } },
-	})
 
-	if (!userWithPassword || !userWithPassword.password) {
+	let id 
+	if ('username' in where) {
+		const user = await db.selectFrom("User").where(
+			"username", '=', where.username
+		).select(['id']).executeTakeFirst()
+
+		if(!user) {
+			return null
+		}
+		id = user.id
+	} else {
+		id = where.id
+	}
+
+	const {hash} = await db.selectFrom('Password').where('userId', '=', id).select('hash').executeTakeFirstOrThrow()
+
+	if(hash === null) {
 		return null
 	}
 
-	const isValid = await bcrypt.compare(password, userWithPassword.password.hash)
+	const isValid = await bcrypt.compare(password, hash)
 
 	if (!isValid) {
 		return null
 	}
 
-	return { id: userWithPassword.id }
+	return { id }
 }

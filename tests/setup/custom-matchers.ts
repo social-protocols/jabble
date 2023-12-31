@@ -8,7 +8,7 @@ import {
 	toastKey,
 } from '#app/utils/toast.server.ts'
 import { convertSetCookieToCookie } from '#tests/utils.ts'
-import { prisma } from '#app/utils/db.server.ts'
+// import { prisma } from '#app/utils/db.server.ts'
 
 import '@testing-library/jest-dom/vitest'
 

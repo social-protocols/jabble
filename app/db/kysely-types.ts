@@ -54,8 +54,8 @@ export type Permission = {
 	entity: string
 	access: string
 	description: Generated<string>
-	createdAt: Generated<string>
-	updatedAt: string
+	createdAt: Generated<Timestamp>
+	updatedAt: Timestamp
 }
 export type PermissionToRole = {
 	A: string
@@ -66,7 +66,7 @@ export type Post = {
 	parentId: number | null
 	content: string
 	authorId: string
-	createdAt: Generated<string>
+	createdAt: Generated<Timestamp>
 }
 export type PostStats = {
 	tagId: number
@@ -79,8 +79,8 @@ export type Role = {
 	id: string
 	name: string
 	description: Generated<string>
-	createdAt: Generated<string>
-	updatedAt: string
+	createdAt: Generated<Timestamp>
+	updatedAt: Timestamp
 }
 export type RoleToUser = {
 	A: string
@@ -89,8 +89,8 @@ export type RoleToUser = {
 export type Session = {
 	id: string
 	expirationDate: Timestamp
-	createdAt: Generated<string>
-	updatedAt: string
+	createdAt: Generated<Timestamp>
+	updatedAt: Timestamp
 	userId: string
 }
 export type Tag = {
@@ -107,20 +107,20 @@ export type User = {
 	email: string
 	username: string
 	name: string | null
-	createdAt: Generated<string>
+	createdAt: Generated<Timestamp>
 }
 export type UserImage = {
 	id: string
 	altText: string | null
 	contentType: string
 	blob: Buffer
-	createdAt: Generated<string>
-	updatedAt: string
+	createdAt: Generated<Timestamp>
+	updatedAt: Timestamp
 	userId: string
 }
 export type Verification = {
 	id: string
-	createdAt: Generated<string>
+	createdAt: Generated<Timestamp>
 	/**
 	 * The type of verification, e.g. "email" or "phone"
 	 */
@@ -161,7 +161,7 @@ export type VoteHistory = {
 	postId: number
 	noteId: number | null
 	direction: number
-	createdAt: Generated<string>
+	createdAt: Generated<Timestamp>
 }
 export type DB = {
 	_PermissionToRole: PermissionToRole

@@ -19,7 +19,7 @@ import { useIsPending } from '#app/utils/misc.tsx'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
 import { PasswordSchema } from '#app/utils/user-validation.ts'
 import { type BreadcrumbHandle } from './profile.tsx'
-import { prisma } from '#app/utils/db.server.ts'
+// import { prisma } from '#app/utils/db.server.ts'
 
 export const handle: BreadcrumbHandle & SEOHandle = {
 	breadcrumb: <Icon name="dots-horizontal">Password</Icon>,
