@@ -103,9 +103,9 @@ export async function loader({ request }: DataFunctionArgs) {
 				() =>
 					db
 						.selectFrom('User')
-						.select(['id', 'name', 'username'])
-						.innerJoin('UserImage', 'userId', 'id')
-						.where('id', '=', userId)
+						.select(['User.id', 'name', 'username'])
+						// .outerJoin('UserImage', 'userId', 'User.id')
+						.where('User.id', '=', userId)
 						.executeTakeFirstOrThrow(),
 				{ timings, type: 'find user', desc: 'find user in root' },
 		  )

@@ -113,7 +113,7 @@ export async function prepareVerification({
 		type,
 		target,
 		...verificationConfig,
-		expiresAt: new Date(Date.now() + verificationConfig.period * 1000),
+		expiresAt: new Date(Date.now() + verificationConfig.period * 1000).valueOf(),
 	}
 	console.log("Inserting verification data", verificationData)
 	await db
@@ -145,13 +145,21 @@ export async function isCodeValid({
 	type: VerificationTypes | typeof twoFAVerifyVerificationType
 	target: string
 }) {
-	const verification = await prisma.verification.findUnique({
-		where: {
-			target_type: { target, type },
-			OR: [{ expiresAt: { gt: new Date() } }, { expiresAt: null }],
-		},
-		select: { algorithm: true, secret: true, period: true, charSet: true },
-	})
+
+
+	const verification = await db
+		.selectFrom('Verification') // Replace with your actual table name if different
+		.select(['algorithm', 'secret', 'period', 'charSet']) // Select the fields you're interested in
+		.where('target', '=', target) // Replace 'type' with the actual column name for 'target'
+		.where('type', '=', type) // Replace 'type' with the actual column name for 'type'
+		.where(eb =>
+			eb.or([eb('expiresAt', '>', new Date().valueOf()), eb('expiresAt', 'is', null)]),
+		)
+		.executeTakeFirst();
+
+
+	console.log("Query", type, target, new Date().valueOf(), verification)
+
 	if (!verification) return false
 	const result = verifyTOTP({
 		otp: code,
@@ -199,14 +207,10 @@ async function validateRequest(
 	const { value: submissionValue } = submission
 
 	async function deleteVerification() {
-		await prisma.verification.delete({
-			where: {
-				target_type: {
-					type: submissionValue[typeQueryParam],
-					target: submissionValue[targetQueryParam],
-				},
-			},
-		})
+		await db.deleteFrom("Verification")
+			.where('type', '=', submissionValue[typeQueryParam])
+			.where('target', '=', submissionValue[targetQueryParam])
+			.execute()
 	}
 
 	switch (submissionValue[typeQueryParam]) {

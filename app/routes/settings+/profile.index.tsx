@@ -20,6 +20,7 @@ import { authSessionStorage } from '#app/utils/session.server.ts'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
 import { NameSchema, UsernameSchema } from '#app/utils/user-validation.ts'
 import { twoFAVerificationType } from './profile.two-factor.tsx'
+import { db } from '#app/db.ts'
 
 export const handle: SEOHandle = {
 	getSitemapEntries: () => null,
@@ -32,40 +33,70 @@ const ProfileFormSchema = z.object({
 
 export async function loader({ request }: DataFunctionArgs) {
 	const userId = await requireUserId(request)
-	const user = await prisma.user.findUniqueOrThrow({
-		where: { id: userId },
-		select: {
-			id: true,
-			name: true,
-			username: true,
-			email: true,
-			image: {
-				select: { id: true },
-			},
-			_count: {
-				select: {
-					sessions: {
-						where: {
-							expirationDate: { gt: new Date() },
-						},
-					},
-				},
-			},
-		},
-	})
+	// const user = await prisma.user.findUniqueOrThrow({
+	// 	where: { id: userId },
+	// 	select: {
+	// 		id: true,
+	// 		name: true,
+	// 		username: true,
+	// 		email: true,
+	// 		image: {
+	// 			select: { id: true },
+	// 		},
+	// 		_count: {
+	// 			select: {
+	// 				sessions: {
+	// 					where: {
+	// 						expirationDate: { gt: new Date() },
+	// 					},
+	// 				},
+	// 			},
+	// 		},
+	// 	},
+	// })
 
-	const twoFactorVerification = await prisma.verification.findUnique({
-		select: { id: true },
-		where: { target_type: { type: twoFAVerificationType, target: userId } },
-	})
+	const currentDate = new Date()
 
-	const password = await prisma.password.findUnique({
-		select: { userId: true },
-		where: { userId },
-	})
+	const user = await db
+	  .selectFrom('user')
+	  .select([
+	    'id',
+	    'name',
+	    'username',
+	    'email',
+	  ])
+	  .where('id', '=', userId)
+	  .executeTakeFirstOrThrow() 
 
+
+	const image = db.selectFrom('image')
+	      .select('id')
+	      .whereRef('userId', '=', user.id)
+
+	const sessionCount = 
+	    db.selectFrom('sessions') 
+	      .select(
+	      	({ fn }) => [ fn.count<number>('id').as('_count') ]
+		  )
+	      .where('expirationDate', '>', currentDate.valueOf())
+	      .where('userId', '=', user.id)
+
+
+	const twoFactorVerification = await db
+		.selectFrom("Verification")
+		.where("target", "=", userId)
+		.where("type", "=", twoFAVerificationType)
+		.select(["id"])
+		.executeTakeFirst()
+
+	const password = await db.selectFrom("Password").where("userId", "=", userId).select('userId').executeTakeFirst()
+
+	const u = {...user, image: image, _count: sessionCount}
+
+
+	console.log("U is", u)
 	return json({
-		user,
+		user: u,
 		hasPassword: Boolean(password),
 		isTwoFactorEnabled: Boolean(twoFactorVerification),
 	})

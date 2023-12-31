@@ -33,7 +33,7 @@ export async function getUserId(request: Request) {
     .innerJoin('User', 'User.id', 'Session.userId')
     .select(['User.id as userId'])
     .where('Session.id', '=', sessionId)
-    .where('Session.expirationDate', '>', new Date())
+    .where('Session.expirationDate', '>', new Date().valueOf())
     .executeTakeFirst();
 
 	if (!session?.userId) {
@@ -87,8 +87,8 @@ export async function login({
 	const session = await db.insertInto('Session')
 	  .values({
 	  	id: createId(),
-	    expirationDate: getSessionExpirationDate(),
-	    updatedAt: new Date(),
+	    expirationDate: getSessionExpirationDate().valueOf(),
+	    updatedAt: new Date().valueOf(),
 	    userId: user.id,
 	  })
 	  .returning(['id', 'expirationDate', 'userId'])
@@ -150,22 +150,18 @@ export async function signup({
 		.returning('id')
 		.executeTakeFirstOrThrow()
 
-
 	const pwRecord = await db.insertInto("Password").values({
 		hash: hashedPassword,
 		userId: id
 	}).returningAll().executeTakeFirstOrThrow()
 
-	console.log("Password is", pwRecord)
-
-
 	return await db
 		.insertInto('Session')
 		.values({
 			id: createId(),
-			expirationDate: getSessionExpirationDate(),
+			expirationDate: getSessionExpirationDate().valueOf(),
 			userId: id,
-			updatedAt: new Date(),
+			updatedAt: new Date().valueOf(),
 		})
 		.returning(['id', 'expirationDate'])
 		.executeTakeFirstOrThrow()

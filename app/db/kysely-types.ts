@@ -1,4 +1,4 @@
-import { type ColumnType } from 'kysely'
+import type { ColumnType } from 'kysely'
 export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 	? ColumnType<S, I | undefined, U>
 	: ColumnType<T, T | undefined, T>
@@ -54,8 +54,8 @@ export type Permission = {
 	entity: string
 	access: string
 	description: Generated<string>
-	createdAt: Generated<Timestamp>
-	updatedAt: Timestamp
+	createdAt: Generated<string>
+	updatedAt: string
 }
 export type PermissionToRole = {
 	A: string
@@ -66,7 +66,7 @@ export type Post = {
 	parentId: number | null
 	content: string
 	authorId: string
-	createdAt: Generated<Timestamp>
+	createdAt: Generated<string>
 }
 export type PostStats = {
 	tagId: number
@@ -79,8 +79,8 @@ export type Role = {
 	id: string
 	name: string
 	description: Generated<string>
-	createdAt: Generated<Timestamp>
-	updatedAt: Timestamp
+	createdAt: Generated<string>
+	updatedAt: string
 }
 export type RoleToUser = {
 	A: string
@@ -88,9 +88,9 @@ export type RoleToUser = {
 }
 export type Session = {
 	id: string
-	expirationDate: Timestamp
-	createdAt: Generated<Timestamp>
-	updatedAt: Timestamp
+	expirationDate: string
+	createdAt: Generated<string>
+	updatedAt: string
 	userId: string
 }
 export type Tag = {
@@ -107,20 +107,20 @@ export type User = {
 	email: string
 	username: string
 	name: string | null
-	createdAt: Generated<Timestamp>
+	createdAt: Generated<string>
 }
 export type UserImage = {
 	id: string
 	altText: string | null
 	contentType: string
 	blob: Buffer
-	createdAt: Generated<Timestamp>
-	updatedAt: Timestamp
+	createdAt: Generated<string>
+	updatedAt: string
 	userId: string
 }
 export type Verification = {
 	id: string
-	createdAt: Generated<Timestamp>
+	createdAt: Generated<string>
 	/**
 	 * The type of verification, e.g. "email" or "phone"
 	 */
@@ -152,7 +152,7 @@ export type Verification = {
 	/**
 	 * When it's safe to delete this verification
 	 */
-	expiresAt: Timestamp | null
+	expiresAt: string | null
 }
 export type VoteHistory = {
 	rowid: Generated<number>
@@ -161,7 +161,7 @@ export type VoteHistory = {
 	postId: number
 	noteId: number | null
 	direction: number
-	createdAt: Generated<Timestamp>
+	createdAt: Generated<string>
 }
 export type DB = {
 	_PermissionToRole: PermissionToRole
