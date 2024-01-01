@@ -4,11 +4,14 @@ set dotenv-load := true
 _default:
     @just --list --unsorted
 
-# Reset and reseed database, and regenerate Keysely type definitions
+# Reset and reseed database
 reset-db:
 	rm -f $DATABASE_PATH
 	npx tsx migrate.ts
 	npx tsx seed.ts
+
+generate-db-types:
+	DATABASE_URL="$DATABASE_PATH" npx kysely-codegen --dialect=sqlite --out-file=app/db/kysely-types.ts
 
 migrate:
 	npx tsx migrate.ts
