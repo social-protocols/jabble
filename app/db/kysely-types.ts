@@ -1,95 +1,116 @@
-import type { ColumnType } from 'kysely'
+import { type ColumnType } from 'kysely'
 export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 	? ColumnType<S, I | undefined, U>
 	: ColumnType<T, T | undefined, T>
-export type Timestamp = ColumnType<Date, Date | string, Date | string>
+
+export type PermissionToRole = {
+	A: string
+	B: string
+}
+
+export type RoleToUser = {
+	A: string
+	B: string
+}
 
 export type CurrentInformedTally = {
-	tagId: number
-	postId: number
-	noteId: number
 	count: number
+	noteId: number
+	postId: number
+	tagId: number
 	total: number
 }
 export type CurrentTally = {
-	tagId: number
-	postId: number
 	count: number
+	postId: number
+	tagId: number
 	total: number
 }
+
+export interface CurrentInformedTallyOld {
+	countGivenNotShownThisNote: string | null
+	countGivenShownThisNote: string | null
+	noteId: number | null
+	postId: number | null
+	tagId: number | null
+	totalGivenNotShownThisNote: string | null
+	totalGivenShownThisNote: string | null
+}
+
+export interface CurrentInformedVote {
+	createdAt: string | null
+	direction: number | null
+	noteId: number | null
+	postId: number | null
+	tagId: number | null
+	userId: string | null
+}
+
 export type CurrentVote = {
-	userId: string
-	tagId: number
-	postId: number
+	createdAt: string
 	direction: number
 	latest: number
-	createdAt: string
+	postId: number
+	tagId: number
+	userId: string
 }
 export type DetailedTally = {
-	tagId: number
-	postId: number
-	noteId: number
-	countGivenShownThisNote: number
-	totalGivenShownThisNote: number
 	countGivenNotShownThisNote: number
+	countGivenShownThisNote: number
+	noteId: number
+	postId: number
+	tagId: number
 	totalGivenNotShownThisNote: number
+	totalGivenShownThisNote: number
 }
 export type ExplorationStats = {
 	rowid: Generated<number>
 	votes: number
 }
 export type LocationStats = {
+	latestSitewideVotes: number
 	locationType: number
 	oneBasedRank: number
 	voteShare: number
-	latestSitewideVotes: number
 }
 export type Password = {
 	hash: string
 	userId: string
 }
 export type Permission = {
-	id: string
-	action: string
-	entity: string
 	access: string
-	description: Generated<string>
+	action: string
 	createdAt: Generated<string>
+	description: Generated<string>
+	entity: string
+	id: string
 	updatedAt: string
-}
-export type PermissionToRole = {
-	A: string
-	B: string
 }
 export type Post = {
+	authorId: string
+	content: string
+	createdAt: Generated<string>
 	id: Generated<number>
 	parentId: number | null
-	content: string
-	authorId: string
-	createdAt: Generated<string>
 }
 export type PostStats = {
-	tagId: number
-	postId: number
 	attention: number
-	views: number
+	postId: number
 	replies: number
+	tagId: number
+	views: number
 }
 export type Role = {
+	createdAt: Generated<string>
+	description: Generated<string>
 	id: string
 	name: string
-	description: Generated<string>
-	createdAt: Generated<string>
 	updatedAt: string
 }
-export type RoleToUser = {
-	A: string
-	B: string
-}
 export type Session = {
-	id: string
-	expirationDate: string
 	createdAt: Generated<string>
+	expirationDate: string
+	id: string
 	updatedAt: string
 	userId: string
 }
@@ -103,70 +124,48 @@ export type TagStats = {
 	votesPerView: number
 }
 export type User = {
-	id: string
-	email: string
-	username: string
-	name: string | null
 	createdAt: Generated<string>
+	email: string
+	id: string
+	name: string | null
+	username: string
 }
 export type UserImage = {
-	id: string
 	altText: string | null
-	contentType: string
 	blob: Buffer
+	contentType: string
 	createdAt: Generated<string>
+	id: string
 	updatedAt: string
 	userId: string
 }
 export type Verification = {
-	id: string
-	createdAt: Generated<string>
-	/**
-	 * The type of verification, e.g. "email" or "phone"
-	 */
-	type: string
-	/**
-	 * The thing we're trying to verify, e.g. a user's email or phone number
-	 */
-	target: string
-	/**
-	 * The secret key used to generate the otp
-	 */
-	secret: string
-	/**
-	 * The algorithm used to generate the otp
-	 */
 	algorithm: string
-	/**
-	 * The number of digits in the otp
-	 */
-	digits: number
-	/**
-	 * The number of seconds the otp is valid for
-	 */
-	period: number
-	/**
-	 * The valid characters for the otp
-	 */
 	charSet: string
-	/**
-	 * When it's safe to delete this verification
-	 */
+	createdAt: Generated<string>
+	digits: number
 	expiresAt: string | null
+	id: string
+	period: number
+	secret: string
+	target: string
+	type: string
 }
 export type VoteHistory = {
-	rowid: Generated<number>
-	userId: string
-	tagId: number
-	postId: number
-	noteId: number | null
-	direction: number
 	createdAt: Generated<string>
+	direction: number
+	noteId: number | null
+	postId: number
+	rowid: Generated<number>
+	tagId: number
+	userId: string
 }
 export type DB = {
 	_PermissionToRole: PermissionToRole
 	_RoleToUser: RoleToUser
 	CurrentInformedTally: CurrentInformedTally
+	currentInformedTallyOld: CurrentInformedTallyOld
+	currentInformedVote: CurrentInformedVote
 	CurrentTally: CurrentTally
 	CurrentVote: CurrentVote
 	DetailedTally: DetailedTally
