@@ -78,6 +78,12 @@ jobs:
       - name: 🖼 Build icons
         run: npm run build:icons
 
+      - name: 🛠 Setup Database
+        run: |
+          set -e # exit on error
+          npx tsx migrate.ts
+          npx tsx seed.ts
+
       - name: ⚡ Run vitest
         run: npm run test -- --coverage
 
@@ -104,23 +110,10 @@ jobs:
         run: npm run test:e2e:install
 
       - name: 🛠 Setup Database
-        run: npx prisma migrate deploy
-
-      - name: 🏦 Cache Database
-        id: db-cache
-        uses: actions/cache@v3
-        with:
-          path: prisma/data.db
-          key:
-            db-cache-schema_${{ hashFiles('./prisma/schema.prisma')
-            }}-migrations_${{ hashFiles('./prisma/migrations/*/migration.sql')
-            }}
-
-      - name: 🌱 Seed Database
-        if: steps.db-cache.outputs.cache-hit != 'true'
-        run: npx prisma db seed
-        env:
-          MINIMAL_SEED: true
+        run: |
+          set -e # exit on error
+          npx tsx migrate.ts
+          npx tsx seed.ts
 
       - name: 🏗 Build
         run: npm run build
