@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 @media screen and (min-width: 800px) {
-
 	/* by setting the breakpoint to the same value as the body-max-width, the scrollbar-margin only appears when there is centered content visible. As the jumps only occour on centered content which does not fill the space. */
 	html {
 		/* adds a margin of the same size as the scrollbar */
@@ -58,7 +57,7 @@
 
 		--post: white;
 		--postparent-foreground: #434343;
-		--postparent-threadline: #BCBFC2;
+		--postparent-threadline: #bcbfc2;
 		--note: #f1f5f9;
 		--note-foreground: #434343;
 	}
@@ -138,7 +137,6 @@
 		}
 		p {
 			@apply mb-4;
-
 		}
 		a {
 			@apply underline;
@@ -154,11 +152,11 @@
 			list-style-position: inside;
 			@apply mb-4;
 		}
-		li ul  {
+		li ul {
 			@apply pl-4;
 		}
-		li ol  {
-				@apply pl-4;
+		li ol {
+			@apply pl-4;
 		}
 
 		pre {
@@ -166,21 +164,20 @@
 			@apply mb-4;
 			@apply overflow-x-auto;
 		}
-
 	}
 
 	.markdown.postparent {
-	/*	Override font size increases for headers when shown in parent thread*/
-		h1, h2, h3, h4, h5, h6 {
-			@apply text-sm font-semibold 
-
+		/*	Override font size increases for headers when shown in parent thread*/
+		h1,
+		h2,
+		h3,
+		h4,
+		h5,
+		h6 {
+			@apply text-sm font-semibold;
 		}
 	}
 }
-
-
-
-
 
 /* useful for layout debugging: */
 /* * { */

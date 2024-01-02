@@ -80,10 +80,10 @@ export async function loader({ params, request }: DataFunctionArgs) {
 		userId === null
 			? []
 			: await getUserPositions(
-				userId,
-				tag,
-				replies.map(p => p.id).concat([post.id]),
-			)
+					userId,
+					tag,
+					replies.map(p => p.id).concat([post.id]),
+			  )
 
 	let result = json({
 		post,
@@ -167,12 +167,12 @@ function ParentThread({
 	tag: string
 }) {
 	return (
-		<div className="border-postparent-threadline border-l-4">
+		<div className="border-l-4 border-postparent-threadline">
 			{transitiveParents.map(parentPost => (
 				<Link key={parentPost.id} to={`/tags/${tag}/posts/${parentPost.id}`}>
 					<div
 						key={parentPost.id}
-						className="markdown postparent text-postparent-foreground mb-2 ml-3 rounded-lg bg-post p-3 text-sm"
+						className="markdown postparent mb-2 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"
 					>
 						<Markdown>{parentPost.content}</Markdown>
 					</div>
