@@ -1,6 +1,7 @@
-import { conform, useForm, type Submission } from '@conform-to/react'
+import { conform, type Submission, useForm } from '@conform-to/react'
 import { getFieldsetConstraint, parse } from '@conform-to/zod'
-import { json, type DataFunctionArgs } from '@remix-run/node'
+import cuid2 from '@paralleldrive/cuid2'
+import { type DataFunctionArgs, json } from '@remix-run/node'
 import { Form, useActionData, useSearchParams } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
 import { HoneypotInputs } from 'remix-utils/honeypot/react'
@@ -9,12 +10,12 @@ import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList, Field } from '#app/components/forms.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { db } from '#app/db.ts'
 import { handleVerification as handleChangeEmailVerification } from '#app/routes/settings+/profile.change-email.tsx'
 import { twoFAVerificationType } from '#app/routes/settings+/profile.two-factor.tsx'
 import { type twoFAVerifyVerificationType } from '#app/routes/settings+/profile.two-factor.verify.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { validateCSRF } from '#app/utils/csrf.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
 import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { ensurePrimary } from '#app/utils/litefs.server.ts'
 import { getDomainUrl, useIsPending } from '#app/utils/misc.tsx'
@@ -108,16 +109,22 @@ export async function prepareVerification({
 		period,
 	})
 	const verificationData = {
+		id: cuid2.createId(),
 		type,
 		target,
 		...verificationConfig,
-		expiresAt: new Date(Date.now() + verificationConfig.period * 1000),
+		expiresAt: new Date(
+			Date.now() + verificationConfig.period * 1000,
+		).valueOf(),
 	}
-	await prisma.verification.upsert({
-		where: { target_type: { target, type } },
-		create: verificationData,
-		update: verificationData,
-	})
+	console.log('Inserting verification data', verificationData)
+	await db
+		.insertInto('Verification')
+		.values(verificationData)
+		.onConflict(oc =>
+			oc.columns(['target', 'type']).doUpdateSet(verificationData),
+		)
+		.execute()
 
 	// add the otp to the url we'll email the user.
 	verifyUrl.searchParams.set(codeQueryParam, otp)
@@ -140,13 +147,21 @@ export async function isCodeValid({
 	type: VerificationTypes | typeof twoFAVerifyVerificationType
 	target: string
 }) {
-	const verification = await prisma.verification.findUnique({
-		where: {
-			target_type: { target, type },
-			OR: [{ expiresAt: { gt: new Date() } }, { expiresAt: null }],
-		},
-		select: { algorithm: true, secret: true, period: true, charSet: true },
-	})
+	const verification = await db
+		.selectFrom('Verification') // Replace with your actual table name if different
+		.select(['algorithm', 'secret', 'period', 'charSet']) // Select the fields you're interested in
+		.where('target', '=', target) // Replace 'type' with the actual column name for 'target'
+		.where('type', '=', type) // Replace 'type' with the actual column name for 'type'
+		.where(eb =>
+			eb.or([
+				eb('expiresAt', '>', new Date().valueOf()),
+				eb('expiresAt', 'is', null),
+			]),
+		)
+		.executeTakeFirst()
+
+	console.log('Query', type, target, new Date().valueOf(), verification)
+
 	if (!verification) return false
 	const result = verifyTOTP({
 		otp: code,
@@ -194,14 +209,11 @@ async function validateRequest(
 	const { value: submissionValue } = submission
 
 	async function deleteVerification() {
-		await prisma.verification.delete({
-			where: {
-				target_type: {
-					type: submissionValue[typeQueryParam],
-					target: submissionValue[targetQueryParam],
-				},
-			},
-		})
+		await db
+			.deleteFrom('Verification')
+			.where('type', '=', submissionValue[typeQueryParam])
+			.where('target', '=', submissionValue[targetQueryParam])
+			.execute()
 	}
 
 	switch (submissionValue[typeQueryParam]) {

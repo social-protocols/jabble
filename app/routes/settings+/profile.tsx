@@ -1,11 +1,11 @@
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
-import { json, type DataFunctionArgs } from '@remix-run/node'
+import { type DataFunctionArgs, json } from '@remix-run/node'
 import { Link, Outlet, useMatches } from '@remix-run/react'
 import { z } from 'zod'
 import { Spacer } from '#app/components/spacer.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
+import { db } from '#app/db.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
 import { cn, invariantResponse } from '#app/utils/misc.tsx'
 import { useUser } from '#app/utils/user.ts'
 
@@ -19,10 +19,11 @@ export const handle: BreadcrumbHandle & SEOHandle = {
 
 export async function loader({ request }: DataFunctionArgs) {
 	const userId = await requireUserId(request)
-	const user = await prisma.user.findUnique({
-		where: { id: userId },
-		select: { username: true },
-	})
+	const user = await db
+		.selectFrom('User')
+		.select('username')
+		.where('id', '=', userId)
+		.executeTakeFirst()
 	invariantResponse(user, 'User not found', { status: 404 })
 	return json({})
 }

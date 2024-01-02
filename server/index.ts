@@ -39,6 +39,8 @@ const WATCH_PATH = '../build/version.txt'
 const build = await import(BUILD_PATH)
 let devBuild = build
 
+console.log('TODO: Run migrations') // https://kysely.dev/docs/migrations#running-migrations
+
 const app = express()
 
 const getHost = (req: { get: (key: string) => string | undefined }) =>

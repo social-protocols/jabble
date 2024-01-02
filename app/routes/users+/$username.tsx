@@ -1,31 +1,35 @@
-import { json, type DataFunctionArgs } from '@remix-run/node'
-import { Form, Link, useLoaderData, type MetaFunction } from '@remix-run/react'
+import { type DataFunctionArgs, json } from '@remix-run/node'
+import { Form, Link, type MetaFunction, useLoaderData } from '@remix-run/react'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
+import { db } from '#app/db.ts'
 import { SITE_NAME } from '#app/site.ts'
-import { prisma } from '#app/utils/db.server.ts'
 import { getUserImgSrc, invariantResponse } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
 
 export async function loader({ params }: DataFunctionArgs) {
-	const user = await prisma.user.findFirst({
-		select: {
-			id: true,
-			name: true,
-			username: true,
-			createdAt: true,
-			image: { select: { id: true } },
-		},
-		where: {
-			username: params.username,
-		},
-	})
+	invariantResponse(params.username, 'Username is required', { status: 400 })
+	const user = await db
+		.selectFrom('User')
+		.leftJoin('UserImage', 'userId', 'User.id')
+		.select([
+			'User.id',
+			'User.name',
+			'User.username',
+			'User.createdAt',
+			'UserImage.id as imageId',
+		])
+		.where('username', '=', params.username)
+		.executeTakeFirst()
 
 	invariantResponse(user, 'User not found', { status: 404 })
 
-	return json({ user, userJoinedDisplay: user.createdAt.toLocaleDateString() })
+	return json({
+		user,
+		userJoinedDisplay: new Date(user.createdAt).toLocaleDateString(),
+	})
 }
 
 export default function ProfileRoute() {
@@ -44,7 +48,7 @@ export default function ProfileRoute() {
 					<div className="absolute -top-40">
 						<div className="relative">
 							<img
-								src={getUserImgSrc(data.user.image?.id)}
+								src={getUserImgSrc(data.user.imageId)}
 								alt={userDisplayName}
 								className="h-52 w-52 rounded-full object-cover"
 							/>

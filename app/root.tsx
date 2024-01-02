@@ -28,6 +28,7 @@ import { AuthenticityTokenProvider } from 'remix-utils/csrf/react'
 import { ExternalScripts } from 'remix-utils/external-scripts'
 import { HoneypotProvider } from 'remix-utils/honeypot/react'
 import { z } from 'zod'
+import { db } from '#app/db.ts'
 import { GeneralErrorBoundary } from './components/error-boundary.tsx'
 import { ErrorList } from './components/forms.tsx'
 import { EpicProgress } from './components/progress-bar.tsx'
@@ -46,7 +47,6 @@ import tailwindStyleSheetUrl from './styles/tailwind.css'
 import { getUserId, logout } from './utils/auth.server.ts'
 import { ClientHintCheck, getHints, useHints } from './utils/client-hints.tsx'
 import { csrf } from './utils/csrf.server.ts'
-import { prisma } from './utils/db.server.ts'
 import { getEnv } from './utils/env.server.ts'
 import { honeypot } from './utils/honeypot.server.ts'
 import { combineHeaders, getDomainUrl, getUserImgSrc } from './utils/misc.tsx'
@@ -56,9 +56,6 @@ import { getTheme, setTheme, type Theme } from './utils/theme.server.ts'
 import { makeTimings, time } from './utils/timing.server.ts'
 import { getToast } from './utils/toast.server.ts'
 import { useOptionalUser, useUser } from './utils/user.ts'
-// import { db } from "#app/db.ts";
-// import { Feed } from './components/ui/feed.tsx'
-// import { type Post } from '#app/db/types.ts'
 
 export const links: LinksFunction = () => {
 	return [
@@ -104,15 +101,12 @@ export async function loader({ request }: DataFunctionArgs) {
 	const user = userId
 		? await time(
 				() =>
-					prisma.user.findUniqueOrThrow({
-						select: {
-							id: true,
-							name: true,
-							username: true,
-							image: { select: { id: true } },
-						},
-						where: { id: userId },
-					}),
+					db
+						.selectFrom('User')
+						.leftJoin('UserImage', 'userId', 'User.id')
+						.where('User.id', '=', userId)
+						.select(['User.id', 'name', 'username', 'UserImage.id as imageId'])
+						.executeTakeFirstOrThrow(),
 				{ timings, type: 'find user', desc: 'find user in root' },
 		  )
 		: null
@@ -294,7 +288,7 @@ function UserDropdown() {
 						<img
 							className="h-8 w-8 rounded-full object-cover"
 							alt={user.name ?? user.username}
-							src={getUserImgSrc(user.image?.id)}
+							src={getUserImgSrc(user.imageId)}
 						/>
 						<span className="text-body-sm font-bold">
 							{user.name ?? user.username}

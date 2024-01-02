@@ -1,12 +1,13 @@
 import { conform, useForm } from '@conform-to/react'
 import { getFieldsetConstraint, parse } from '@conform-to/zod'
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
+import cuid2 from '@paralleldrive/cuid2'
 import {
+	type DataFunctionArgs,
 	json,
 	redirect,
 	unstable_createMemoryUploadHandler,
 	unstable_parseMultipartFormData,
-	type DataFunctionArgs,
 } from '@remix-run/node'
 import {
 	Form,
@@ -21,9 +22,9 @@ import { ErrorList } from '#app/components/forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { db } from '#app/db.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { validateCSRF } from '#app/utils/csrf.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
 import {
 	getUserImgSrc,
 	invariantResponse,
@@ -55,15 +56,11 @@ const PhotoFormSchema = z.union([DeleteImageSchema, NewImageSchema])
 
 export async function loader({ request }: DataFunctionArgs) {
 	const userId = await requireUserId(request)
-	const user = await prisma.user.findUnique({
-		where: { id: userId },
-		select: {
-			id: true,
-			name: true,
-			username: true,
-			image: { select: { id: true } },
-		},
-	})
+	const user = await db
+		.selectFrom('User')
+		.select(['id', 'name', 'username']) // TODO: image
+		.where('id', '=', userId)
+		.executeTakeFirst()
 	invariantResponse(user, 'User not found', { status: 404 })
 	return json({ user })
 }
@@ -101,16 +98,27 @@ export async function action({ request }: DataFunctionArgs) {
 	const { image, intent } = submission.value
 
 	if (intent === 'delete') {
-		await prisma.userImage.deleteMany({ where: { userId } })
+		await db.deleteFrom('UserImage').where('userId', '=', userId).execute()
 		return redirect('/settings/profile')
 	}
 
-	await prisma.$transaction(async $prisma => {
-		await $prisma.userImage.deleteMany({ where: { userId } })
-		await $prisma.user.update({
-			where: { id: userId },
-			data: { image: { create: image } },
-		})
+	await db.transaction().execute(async trx => {
+		await trx.deleteFrom('UserImage').where('userId', '=', userId).execute()
+		// TODO:
+		// port:
+		// 	await $prisma.user.update({
+		// 		where: { id: userId },
+		// 		data: { image: { create: image } },
+		// 	})
+		// await trx
+		// 	.insertInto('UserImage')
+		// 	.values({
+		// 		id: cuid2.createId(),
+		// 		updatedAt: new Date().valueOf(),
+		// 		userId,
+		// 		...image,
+		// 	})
+		// 	.execute()
 	})
 
 	return redirect('/settings/profile')
@@ -157,7 +165,10 @@ export default function PhotoRoute() {
 				<AuthenticityTokenInput />
 				<img
 					src={
-						newImageSrc ?? (data.user ? getUserImgSrc(data.user.image?.id) : '')
+						// TODO: image
+						// newImageSrc ??
+						// (data.user ? getUserImgSrc(data.user?.image?.id) : '')
+						''
 					}
 					className="h-52 w-52 rounded-full object-cover"
 					alt={data.user?.name ?? data.user?.username}
@@ -217,30 +228,34 @@ export default function PhotoRoute() {
 					>
 						<Icon name="trash">Reset</Icon>
 					</Button>
-					{data.user.image?.id ? (
-						<StatusButton
-							className="peer-valid:hidden"
-							variant="destructive"
-							{...doubleCheckDeleteImage.getButtonProps({
-								type: 'submit',
-								name: 'intent',
-								value: 'delete',
-							})}
-							status={
-								pendingIntent === 'delete'
-									? 'pending'
-									: lastSubmissionIntent === 'delete'
-									? actionData?.status ?? 'idle'
-									: 'idle'
-							}
-						>
-							<Icon name="trash">
-								{doubleCheckDeleteImage.doubleCheck
-									? 'Are you sure?'
-									: 'Delete'}
-							</Icon>
-						</StatusButton>
-					) : null}
+					{
+						// TODO:
+						// 	data.user.image?.id ? (
+						// 	<StatusButton
+						// 		className="peer-valid:hidden"
+						// 		variant="destructive"
+						// 		{...doubleCheckDeleteImage.getButtonProps({
+						// 			type: 'submit',
+						// 			name: 'intent',
+						// 			value: 'delete',
+						// 		})}
+						// 		status={
+						// 			pendingIntent === 'delete'
+						// 				? 'pending'
+						// 				: lastSubmissionIntent === 'delete'
+						// 				? actionData?.status ?? 'idle'
+						// 				: 'idle'
+						// 		}
+						// 	>
+						// 		<Icon name="trash">
+						// 			{doubleCheckDeleteImage.doubleCheck
+						// 				? 'Are you sure?'
+						// 				: 'Delete'}
+						// 		</Icon>
+						// 	</StatusButton>
+						// ) : null
+						null
+					}
 				</div>
 				<ErrorList errors={form.errors} />
 			</Form>

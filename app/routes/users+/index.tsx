@@ -1,12 +1,14 @@
-import { json, redirect, type DataFunctionArgs } from '@remix-run/node'
+import { type DataFunctionArgs, json, redirect } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
+import { sql } from 'kysely'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList } from '#app/components/forms.tsx'
 import { SearchBar } from '#app/components/search-bar.tsx'
+import { db } from '#app/db.ts'
 import { SITE_NAME } from '#app/site.ts'
-import { prisma } from '#app/utils/db.server.ts'
 import { cn, getUserImgSrc, useDelayedIsPending } from '#app/utils/misc.tsx'
+// import { prisma } from '#app/utils/db.server.ts'
 
 const UserSearchResultSchema = z.object({
 	id: z.string(),
@@ -24,7 +26,12 @@ export async function loader({ request }: DataFunctionArgs) {
 	}
 
 	const like = `%${searchTerm ?? ''}%`
-	const rawUsers = await prisma.$queryRaw`
+	const rawUsers = await sql<{
+		id: string
+		username: string
+		name: string
+		imageId?: string
+	}>`SELECT "id", "username", "name", "imageId"
 		SELECT User.id, User.username, User.name, UserImage.id AS imageId
 		FROM User
 		LEFT JOIN UserImage ON User.id = UserImage.userId
@@ -38,7 +45,7 @@ export async function loader({ request }: DataFunctionArgs) {
 			LIMIT 1
 		) DESC
 		LIMIT 50
-	`
+	`.execute(db)
 
 	const result = UserSearchResultsSchema.safeParse(rawUsers)
 	if (!result.success) {

@@ -15,12 +15,10 @@ beforeAll(async () => {
 // we *must* use dynamic imports here so the process.env.DATABASE_URL is set
 // before prisma is imported and initialized
 afterEach(async () => {
-	const { prisma } = await import('#app/utils/db.server.ts')
-	await cleanupDb(prisma)
+	const { db } = await import('#app/db.ts')
+	await cleanupDb(db)
 })
 
 afterAll(async () => {
-	const { prisma } = await import('#app/utils/db.server.ts')
-	await prisma.$disconnect()
 	await fsExtra.remove(databasePath)
 })

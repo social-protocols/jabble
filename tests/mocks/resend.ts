@@ -16,7 +16,7 @@ export const handlers: Array<HttpHandler> = [
 			id: faker.string.uuid(),
 			from: email.from,
 			to: email.to,
-			created_at: new Date().toISOString(),
+			created_at: new Date().valueOf(),
 		})
 	}),
 ]
