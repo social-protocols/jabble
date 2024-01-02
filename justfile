@@ -25,6 +25,7 @@ typecheck:
 
 lint:
 	npm run lint
+	npm run format
 
 format:
   npm run format
