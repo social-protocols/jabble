@@ -82,9 +82,9 @@ jobs:
         run: npm run build:icons
 
       - name: Setup tmate session
-        uses: mxschmitt/act
+        uses: mxschmitt/action-tmate@v3
         with:
-          detached: trueion-tmate@v3
+          detached: true
 
       - name: 🛠 Setup Database
         run: |
@@ -124,6 +124,7 @@ jobs:
         run: |
           set -ex # exit on error
           ls -l data
+          env | grep DATABASE
           npx tsx migrate.ts
           ls -l data
           npx tsx seed.ts
