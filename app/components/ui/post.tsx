@@ -42,6 +42,19 @@ export function PostDetails({
 	let informationRateString = Math.round(post.informationRate * 100) / 100
 	const ageString = moment(post.createdAt).fromNow()
 
+
+	const replyFetcher = useFetcher<{ newPostId: number }>()
+
+	if (replyFetcher.data) {
+		console.log('Fetcher data', replyFetcher.data)
+	}
+
+	const handleReplySubmit = function (event: FormEvent<HTMLFormElement>) {
+		replyFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
+		setShowReplyForm(false)
+	}
+
+
 	return (
 		<div
 			className={
@@ -71,7 +84,7 @@ export function PostDetails({
 						{nRepliesString}
 					</Link>
 					<Link to={`/tags/${tag}/stats/${post.id}`} className="hyperlink ml-2">
-						{informationRateString} bits
+						{informationRateString}×
 					</Link>
 					<button
 						className="hyperlink ml-2"
@@ -93,12 +106,19 @@ export function PostDetails({
 					)}
 				</div>
 				{showReplyForm && (
-					<ReplyForm
-						post={post}
-						tag={tag}
-						setShowReplyForm={setShowReplyForm}
-						className="mt-2"
-					/>
+					<replyFetcher.Form
+						id="reply-form"
+						method="POST"
+						action="/reply"
+						onSubmit={handleReplySubmit}
+					>
+						<ReplyForm
+							post={post}
+							tag={tag}
+							className="mt-2"
+						/>
+
+					</replyFetcher.Form>				
 				)}
 			</div>
 		</div>
@@ -108,33 +128,13 @@ export function PostDetails({
 function ReplyForm({
 	post,
 	tag,
-	setShowReplyForm,
 	className,
 }: {
 	post: ScoredPost
 	tag: string
-	setShowReplyForm: React.Dispatch<React.SetStateAction<boolean>>
 	className: string
 }) {
-	const replyFetcher = useFetcher<{ newPostId: number }>()
-
-	if (replyFetcher.data) {
-		console.log('Fetcher data', replyFetcher.data)
-	}
-
-	const handleReplySubmit = function (event: FormEvent<HTMLFormElement>) {
-		event.preventDefault() // this will prevent Remix from submitting the form
-		setShowReplyForm(false)
-		replyFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
-	}
-
 	return (
-		<replyFetcher.Form
-			id="reply-form"
-			method="post"
-			action="/reply"
-			onSubmit={handleReplySubmit}
-		>
 			<div className={'flex flex-col items-end ' + className}>
 				<input type="hidden" name="parentId" value={post.id} />
 				<input type="hidden" name="tag" value={tag} />
@@ -155,7 +155,6 @@ function ReplyForm({
 					</button>
 				</div>
 			</div>
-		</replyFetcher.Form>
 	)
 }
 
