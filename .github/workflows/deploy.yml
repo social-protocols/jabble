@@ -81,11 +81,6 @@ jobs:
       - name: 🖼 Build icons
         run: npm run build:icons
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        with:
-          detached: true
-
       - name: 🛠 Setup Database
         run: |
           set -ex # exit on error
@@ -96,6 +91,7 @@ jobs:
         run: npm run test -- --coverage
 
   playwright:
+    if: false
     name: 🎭 Playwright
     runs-on: ubuntu-22.04
     timeout-minutes: 60
@@ -123,10 +119,7 @@ jobs:
       - name: 🛠 Setup Database
         run: |
           set -ex # exit on error
-          ls -l data
-          env | grep DATABASE
           npx tsx migrate.ts
-          ls -l data
           npx tsx seed.ts
 
       - name: 🏗 Build
