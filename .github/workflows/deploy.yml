@@ -74,7 +74,7 @@ jobs:
 
       - name: 🏄 Copy test env vars
         run: |
-          set -e # exit on error
+          set -ex # exit on error
           cp .env.example .env
           grep -v '^\(#.*\|\s\?\)$' .env >> $GITHUB_ENV
 
@@ -83,7 +83,7 @@ jobs:
 
       - name: 🛠 Setup Database
         run: |
-          set -e # exit on error
+          set -ex # exit on error
           npx tsx migrate.ts
           npx tsx seed.ts
 
@@ -117,8 +117,10 @@ jobs:
 
       - name: 🛠 Setup Database
         run: |
-          set -e # exit on error
+          set -ex # exit on error
+          ls -l data
           npx tsx migrate.ts
+          ls -l data
           npx tsx seed.ts
 
       - name: 🏗 Build
