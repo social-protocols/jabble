@@ -1,8 +1,8 @@
 import { Link, useFetcher } from '@remix-run/react'
-import Markdown from 'markdown-to-jsx'
 import moment from 'moment'
 import { type FormEvent, useState } from 'react'
 import { type Location, LocationType } from '#app/attention.ts'
+import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { type Post } from '#app/db/types.ts'
 import { type ScoredPost } from '#app/ranking.ts'
@@ -158,6 +158,8 @@ function ReplyForm({
 	)
 }
 
+
+
 export function NoteAttachment({
 	tag,
 	note,
@@ -172,7 +174,11 @@ export function NoteAttachment({
 			<Card className={'bg-note pb-3 pt-2 text-note-foreground ' + className}>
 				<div className="pb-1 text-sm font-medium opacity-50">Top Reply</div>
 				<div className="markdown">
-					<Markdown>{note ? note.content : ''}</Markdown>
+					<Markdown
+						deactivateLinks={true} // prevents <a> tags from being rendered inside another <a> tag, which causes hydration errors
+					>
+						{note ? note.content : ''}
+					</Markdown>
 				</div>
 			</Card>
 		</Link>

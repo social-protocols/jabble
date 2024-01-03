@@ -3,7 +3,6 @@
 import { type DataFunctionArgs, json } from '@remix-run/node'
 
 import { useLoaderData } from '@remix-run/react'
-import Markdown from 'markdown-to-jsx'
 
 // import assert from 'assert';
 // import { Form, Link, useLoaderData, type MetaFunction } from '@remix-run/react'
@@ -15,6 +14,7 @@ import { z } from 'zod'
 // import { Link } from '@remix-run/react';
 
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { Markdown } from '#app/components/markdown.tsx'
 import {
 	GLOBAL_PRIOR_VOTE_RATE,
 	GLOBAL_PRIOR_UPVOTE_PROBABILITY,

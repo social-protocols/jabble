@@ -15,7 +15,6 @@ import {
 // import { Form, Link, useLoaderData, type MetaFunction } from '@remix-run/react'
 // import { db } from "#app/db.ts";
 // import { topNote, voteRate } from '#app/probabilities.ts';
-import Markdown from 'markdown-to-jsx'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 import { zfd } from 'zod-form-data'
@@ -24,6 +23,7 @@ import { zfd } from 'zod-form-data'
 
 import { logPostPageView } from '#app/attention.ts'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { Markdown } from '#app/components/markdown.tsx'
 import { PostDetails } from '#app/components/ui/post.tsx'
 import { type Post } from '#app/db/types.ts'
 
@@ -174,7 +174,11 @@ function ParentThread({
 						key={parentPost.id}
 						className="markdown postparent mb-2 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"
 					>
-						<Markdown>{parentPost.content}</Markdown>
+						<Markdown
+							deactivateLinks={true} // prevents <a> tags from being rendered inside another <a> tag, which causes hydration errors
+						>
+							{parentPost.content}
+						</Markdown>
 					</div>
 				</Link>
 			))}
