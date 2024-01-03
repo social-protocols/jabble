@@ -76,7 +76,7 @@ jobs:
         run: |
           set -e # exit on error
           cp .env.example .env
-          cat .env >> $GITHUB_ENV
+          grep -v '^\(#.*\|\s\?\)$' .env >> $GITHUB_ENV
 
       - name: 🖼 Build icons
         run: npm run build:icons
@@ -102,7 +102,7 @@ jobs:
         run: |
           set -e # exit on error
           cp .env.example .env
-          cat .env >> $GITHUB_ENV
+          grep -v '^\(#.*\|\s\?\)$' .env >> $GITHUB_ENV
 
       - name: ⎔ Setup node
         uses: actions/setup-node@v3
