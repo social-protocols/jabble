@@ -82,6 +82,7 @@ jobs:
         run: |
           set -e # exit on error
           npx tsx migrate.ts
+          sqlite3 data/data.db ".schema"
           npx tsx seed.ts
 
       - name: ⚡ Run vitest
