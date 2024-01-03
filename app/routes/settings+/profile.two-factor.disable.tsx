@@ -1,13 +1,13 @@
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
-import { json, type DataFunctionArgs } from '@remix-run/node'
+import { type DataFunctionArgs, json } from '@remix-run/node'
 import { useFetcher } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { db } from '#app/db.ts'
 import { requireRecentVerification } from '#app/routes/_auth+/verify.tsx'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { validateCSRF } from '#app/utils/csrf.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
 import { useDoubleCheck } from '#app/utils/misc.tsx'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
 import { type BreadcrumbHandle } from './profile.tsx'
@@ -27,9 +27,11 @@ export async function action({ request }: DataFunctionArgs) {
 	await requireRecentVerification(request)
 	await validateCSRF(await request.formData(), request.headers)
 	const userId = await requireUserId(request)
-	await prisma.verification.delete({
-		where: { target_type: { target: userId, type: twoFAVerificationType } },
-	})
+	await db
+		.deleteFrom('Verification')
+		.where('target', '=', userId)
+		.where('type', '=', twoFAVerificationType)
+		.execute()
 	return redirectWithToast('/settings/profile/two-factor', {
 		title: '2FA Disabled',
 		description: 'Two factor authentication has been disabled.',

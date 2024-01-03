@@ -2,13 +2,14 @@ import { conform, useForm } from '@conform-to/react'
 import { getFieldsetConstraint, parse } from '@conform-to/zod'
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
 import * as E from '@react-email/components'
-import { json, redirect, type DataFunctionArgs } from '@remix-run/node'
+import { type DataFunctionArgs, json, redirect } from '@remix-run/node'
 import { Form, useActionData, useLoaderData } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
 import { z } from 'zod'
 import { ErrorList, Field } from '#app/components/forms.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { db } from '#app/db.ts'
 import {
 	prepareVerification,
 	requireRecentVerification,
@@ -17,7 +18,6 @@ import {
 import { SITE_NAME } from '#app/site.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { validateCSRF } from '#app/utils/csrf.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
 import { sendEmail } from '#app/utils/email.server.ts'
 import { invariant, useIsPending } from '#app/utils/misc.tsx'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
@@ -49,15 +49,24 @@ export async function handleVerification({
 		]
 		return json({ status: 'error', submission } as const, { status: 400 })
 	}
-	const preUpdateUser = await prisma.user.findFirstOrThrow({
-		select: { email: true },
-		where: { id: submission.value.target },
-	})
-	const user = await prisma.user.update({
-		where: { id: submission.value.target },
-		select: { id: true, email: true, username: true },
-		data: { email: newEmail },
-	})
+	const preUpdateUser = await db
+		.selectFrom('User')
+		.select('email')
+		.where('id', '=', submission.value.target)
+		.executeTakeFirstOrThrow()
+
+	await db
+		.updateTable('User')
+		.set({
+			email: newEmail,
+		})
+		.where('id', '=', submission.value.target)
+		.execute()
+	const user = await db
+		.selectFrom('User')
+		.select(['id', 'email', 'username'])
+		.where('id', '=', submission.value.target)
+		.executeTakeFirstOrThrow()
 
 	void sendEmail({
 		to: preUpdateUser.email,
@@ -87,10 +96,11 @@ const ChangeEmailSchema = z.object({
 export async function loader({ request }: DataFunctionArgs) {
 	await requireRecentVerification(request)
 	const userId = await requireUserId(request)
-	const user = await prisma.user.findUnique({
-		where: { id: userId },
-		select: { email: true },
-	})
+	const user = await db
+		.selectFrom('User')
+		.select('email')
+		.where('id', '=', userId)
+		.executeTakeFirst()
 	if (!user) {
 		const params = new URLSearchParams({ redirectTo: request.url })
 		throw redirect(`/login?${params}`)
@@ -104,9 +114,11 @@ export async function action({ request }: DataFunctionArgs) {
 	await validateCSRF(formData, request.headers)
 	const submission = await parse(formData, {
 		schema: ChangeEmailSchema.superRefine(async (data, ctx) => {
-			const existingUser = await prisma.user.findUnique({
-				where: { email: data.email },
-			})
+			const existingUser = await db
+				.selectFrom('User')
+				.select('id')
+				.where('email', '=', data.email)
+				.executeTakeFirst()
 			if (existingUser) {
 				ctx.addIssue({
 					path: ['email'],

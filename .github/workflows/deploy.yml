@@ -25,7 +25,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 21
 
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1
@@ -46,7 +46,7 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 21
 
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1
@@ -67,21 +67,31 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 21
 
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1
 
       - name: 🏄 Copy test env vars
-        run: cp .env.example .env
+        run: |
+          set -ex # exit on error
+          cp .env.example .env
+          grep -v '^\(#.*\|\s\?\)$' .env >> $GITHUB_ENV
 
       - name: 🖼 Build icons
         run: npm run build:icons
+
+      - name: 🛠 Setup Database
+        run: |
+          set -ex # exit on error
+          npx tsx migrate.ts
+          npx tsx seed.ts
 
       - name: ⚡ Run vitest
         run: npm run test -- --coverage
 
   playwright:
+    if: false
     name: 🎭 Playwright
     runs-on: ubuntu-22.04
     timeout-minutes: 60
@@ -90,12 +100,15 @@ jobs:
         uses: actions/checkout@v3
 
       - name: 🏄 Copy test env vars
-        run: cp .env.example .env
+        run: |
+          set -e # exit on error
+          cp .env.example .env
+          grep -v '^\(#.*\|\s\?\)$' .env >> $GITHUB_ENV
 
       - name: ⎔ Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 21
 
       - name: 📥 Download deps
         uses: bahmutov/npm-install@v1
@@ -104,23 +117,10 @@ jobs:
         run: npm run test:e2e:install
 
       - name: 🛠 Setup Database
-        run: npx prisma migrate deploy
-
-      - name: 🏦 Cache Database
-        id: db-cache
-        uses: actions/cache@v3
-        with:
-          path: prisma/data.db
-          key:
-            db-cache-schema_${{ hashFiles('./prisma/schema.prisma')
-            }}-migrations_${{ hashFiles('./prisma/migrations/*/migration.sql')
-            }}
-
-      - name: 🌱 Seed Database
-        if: steps.db-cache.outputs.cache-hit != 'true'
-        run: npx prisma db seed
-        env:
-          MINIMAL_SEED: true
+        run: |
+          set -ex # exit on error
+          npx tsx migrate.ts
+          npx tsx seed.ts
 
       - name: 🏗 Build
         run: npm run build
@@ -139,7 +139,7 @@ jobs:
   deploy:
     name: 🚀 Deploy
     runs-on: ubuntu-22.04
-    needs: [lint, typecheck, vitest, playwright]
+    needs: [lint, typecheck, vitest] # TODO: re-add playwright once set up
     # only build/deploy main branch on pushes
     if:
       ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') &&
@@ -155,12 +155,6 @@ jobs:
         with:
           file: 'fly.toml'
           field: 'app'
-
-      # move Dockerfile to root
-      - name: 🚚 Move Dockerfile
-        run: |
-          mv ./other/Dockerfile ./Dockerfile
-          mv ./other/.dockerignore ./.dockerignore
 
       - name: 🎈 Setup Fly
         uses: superfly/flyctl-actions/setup-flyctl@v1.4

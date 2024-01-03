@@ -79,7 +79,7 @@ export function PostDetails({
 							setShowReplyForm(!showReplyForm)
 							return false
 						}}
-					// preventScrollReset={true}
+						// preventScrollReset={true}
 					>
 						reply
 					</button>
@@ -122,7 +122,7 @@ function ReplyForm({
 		console.log('Fetcher data', replyFetcher.data)
 	}
 
-	const handleReplySubmit = function(event: FormEvent<HTMLFormElement>) {
+	const handleReplySubmit = function (event: FormEvent<HTMLFormElement>) {
 		event.preventDefault() // this will prevent Remix from submitting the form
 		setShowReplyForm(false)
 		replyFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it

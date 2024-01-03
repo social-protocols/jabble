@@ -365,8 +365,6 @@ export async function getDefaultFeed(): Promise<TagPreview[]> {
 
 	let tags: string[] = await getRankedTags()
 
-	console.log('Tags are', tags)
-
 	for (let tag of tags) {
 		let posts: RankedPost[] = (await getRankedPosts(tag)).slice(0, 2)
 

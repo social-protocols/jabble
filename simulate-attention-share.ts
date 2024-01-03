@@ -1,11 +1,12 @@
 import assert from 'assert'
 import * as cliProgress from 'cli-progress'
+// @ts-ignore: https://github.com/jstat/jstat/pull/271
 import jStat from 'jstat'
 import {
+	flushTagPageStats,
 	GLOBAL_PRIOR_VOTES_PER_VIEW,
 	LocationType,
 	logTagPageView,
-	flushTagPageStats,
 	seedStats,
 	tagStats,
 } from '#app/attention.ts'
@@ -37,7 +38,7 @@ for each impression at each Location. Each a location is a location type
 
 In this simulation, we setup a scenario where the "true" attention
 share(expected votes) at each location is proportional to
-(1 / rank^oneBasedRankFactor), normalized so the total share adds up to one. 
+(1 / rank^oneBasedRankFactor), normalized so the total share adds up to one.
 
 We then simulate a world where we have nPosts posts, each which has a
 voteRate (how much more or likely that post is to be voted than average)
@@ -51,7 +52,7 @@ We then sample from a Poisson distribution with
 that true vote rate and simulate that number of votes. We then call
 logVoteOnRandomlyRankedPost() to log the votes. Over time, the logic
 in logVoteOnRandomlyRankedPost should update the locationStats table so that
-attentionShare approximates the true attentionShare at that location. 
+attentionShare approximates the true attentionShare at that location.
 
 We then compare the estimated attentionShare in the locationStats table with
 the true attention share and calculate average square error. This should be
@@ -152,11 +153,11 @@ async function simulateAttentionShare() {
 			tag,
 			null,
 			'Post ' +
-				i +
-				' true voteRate=' +
-				Math.exp(logVoteRates[i]) +
-				', true upvoteProbabilities=' +
-				upvoteProbabilities[i],
+			i +
+			' true voteRate=' +
+			Math.exp(logVoteRates[i]) +
+			', true upvoteProbabilities=' +
+			upvoteProbabilities[i],
 			'101',
 		)
 		postIds[i] = postId
@@ -369,7 +370,7 @@ async function simulateAttentionShare() {
 function shuffleArray<T>(array: T[]) {
 	for (let i = array.length - 1; i > 0; i--) {
 		const j = Math.floor(Math.random() * (i + 1))
-		;[array[i], array[j]] = [array[j]!, array[i]!]
+			;[array[i], array[j]] = [array[j]!, array[i]!]
 	}
 }
 

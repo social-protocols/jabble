@@ -1,13 +1,12 @@
 # This file is moved to the root directory before building the image
 
 # base node image
-FROM node:18-bookworm-slim as base
+FROM node:20-bookworm-slim as base
 
 # set for base and all layer that inherit from it
 ENV NODE_ENV production
 
-# Install openssl for Prisma
-RUN apt-get update && apt-get install -y fuse3 openssl sqlite3 ca-certificates
+RUN apt-get update && apt-get install -y fuse3 sqlite3 ca-certificates
 
 # Install all node_modules, including dev dependencies
 FROM base as deps
@@ -33,9 +32,6 @@ WORKDIR /myapp
 
 COPY --from=deps /myapp/node_modules /myapp/node_modules
 
-ADD prisma .
-RUN npx prisma generate
-
 ADD . .
 RUN npm run build
 
@@ -59,13 +55,11 @@ RUN echo "#!/bin/sh\nset -x\nsqlite3 \$DATABASE_URL" > /usr/local/bin/database-c
 WORKDIR /myapp
 
 COPY --from=production-deps /myapp/node_modules /myapp/node_modules
-COPY --from=build /myapp/node_modules/.prisma /myapp/node_modules/.prisma
 
 COPY --from=build /myapp/server-build /myapp/server-build
 COPY --from=build /myapp/build /myapp/build
 COPY --from=build /myapp/public /myapp/public
 COPY --from=build /myapp/package.json /myapp/package.json
-COPY --from=build /myapp/prisma /myapp/prisma
 COPY --from=build /myapp/app/components/ui/icons /myapp/app/components/ui/icons
 
 # prepare for litefs

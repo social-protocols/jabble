@@ -1,7 +1,7 @@
 import { conform, useForm } from '@conform-to/react'
 import { getFieldsetConstraint, parse } from '@conform-to/zod'
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
-import { json, type DataFunctionArgs } from '@remix-run/node'
+import { type DataFunctionArgs, json } from '@remix-run/node'
 import { Link, useFetcher, useLoaderData } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
 import { z } from 'zod'
@@ -9,9 +9,9 @@ import { ErrorList, Field } from '#app/components/forms.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { db } from '#app/db.ts'
 import { requireUserId, sessionKey } from '#app/utils/auth.server.ts'
 import { validateCSRF } from '#app/utils/csrf.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
 import {
 	getUserImgSrc,
 	invariantResponse,
@@ -33,40 +33,67 @@ const ProfileFormSchema = z.object({
 
 export async function loader({ request }: DataFunctionArgs) {
 	const userId = await requireUserId(request)
-	const user = await prisma.user.findUniqueOrThrow({
-		where: { id: userId },
-		select: {
-			id: true,
-			name: true,
-			username: true,
-			email: true,
-			image: {
-				select: { id: true },
-			},
-			_count: {
-				select: {
-					sessions: {
-						where: {
-							expirationDate: { gt: new Date() },
-						},
-					},
-				},
-			},
-		},
-	})
+	// const user = await prisma.user.findUniqueOrThrow({
+	// 	where: { id: userId },
+	// 	select: {
+	// 		id: true,
+	// 		name: true,
+	// 		username: true,
+	// 		email: true,
+	// 		image: {
+	// 			select: { id: true },
+	// 		},
+	// 		_count: {
+	// 			select: {
+	// 				sessions: {
+	// 					where: {
+	// 						expirationDate: { gt: new Date() },
+	// 					},
+	// 				},
+	// 			},
+	// 		},
+	// 	},
+	// })
 
-	const twoFactorVerification = await prisma.verification.findUnique({
-		select: { id: true },
-		where: { target_type: { type: twoFAVerificationType, target: userId } },
-	})
+	const currentDate = new Date()
 
-	const password = await prisma.password.findUnique({
-		select: { userId: true },
-		where: { userId },
-	})
+	const user = await db
+		.selectFrom('User')
+		.select(['id', 'name', 'username', 'email'])
+		.where('id', '=', userId)
+		.executeTakeFirstOrThrow()
 
+	const image = await db
+		.selectFrom('UserImage')
+		.select('id')
+		.where('userId', '=', user.id)
+		.executeTakeFirst()
+
+	const sessionCount = await db
+		.selectFrom('Session')
+		.select(({ fn }) => [fn.count<number>('id').as('_count')])
+		.where('expirationDate', '>', currentDate.valueOf())
+		.where('userId', '=', user.id)
+		.executeTakeFirstOrThrow()
+
+	const twoFactorVerification = await db
+		.selectFrom('Verification')
+		.where('target', '=', userId)
+		.where('type', '=', twoFAVerificationType)
+		.select(['id'])
+		.executeTakeFirst()
+
+	const password = await db
+		.selectFrom('Password')
+		.where('userId', '=', userId)
+		.select('userId')
+		.executeTakeFirst()
+
+	const u = { ...user, image: image, _count: sessionCount }
+
+	console.log('U is', u)
 	return json({
-		user,
+		user: u,
 		hasPassword: Boolean(password),
 		isTwoFactorEnabled: Boolean(twoFactorVerification),
 	})
@@ -182,10 +209,11 @@ async function profileUpdateAction({ userId, formData }: ProfileActionArgs) {
 	const submission = await parse(formData, {
 		async: true,
 		schema: ProfileFormSchema.superRefine(async ({ username }, ctx) => {
-			const existingUsername = await prisma.user.findUnique({
-				where: { username },
-				select: { id: true },
-			})
+			const existingUsername = await db
+				.selectFrom('User')
+				.select('id')
+				.where('username', '=', username)
+				.executeTakeFirst()
 			if (existingUsername && existingUsername.id !== userId) {
 				ctx.addIssue({
 					path: ['username'],
@@ -204,14 +232,14 @@ async function profileUpdateAction({ userId, formData }: ProfileActionArgs) {
 
 	const data = submission.value
 
-	await prisma.user.update({
-		select: { username: true },
-		where: { id: userId },
-		data: {
+	await db
+		.updateTable('User')
+		.set({
 			name: data.name,
 			username: data.username,
-		},
-	})
+		})
+		.where('id', '=', userId)
+		.execute()
 
 	return json({ status: 'success', submission } as const)
 }
@@ -286,12 +314,7 @@ async function signOutOfSessionsAction({ request, userId }: ProfileActionArgs) {
 		sessionId,
 		'You must be authenticated to sign out of other sessions',
 	)
-	await prisma.session.deleteMany({
-		where: {
-			userId,
-			id: { not: sessionId },
-		},
-	})
+	await db.deleteFrom('Session').where('userId', '=', userId).execute()
 	return json({ status: 'success' } as const)
 }
 
@@ -300,7 +323,7 @@ function SignOutOfSessions() {
 	const dc = useDoubleCheck()
 
 	const fetcher = useFetcher<typeof signOutOfSessionsAction>()
-	const otherSessionsCount = data.user._count.sessions - 1
+	const otherSessionsCount = data.user._count._count - 1
 	return (
 		<div>
 			{otherSessionsCount ? (
@@ -334,7 +357,7 @@ function SignOutOfSessions() {
 }
 
 async function deleteDataAction({ userId }: ProfileActionArgs) {
-	await prisma.user.delete({ where: { id: userId } })
+	await db.deleteFrom('User').where('id', '=', userId).execute()
 	return redirectWithToast('/', {
 		type: 'success',
 		title: 'Data Deleted',

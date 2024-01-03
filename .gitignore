@@ -1,10 +1,8 @@
-app/db/kysely-types.ts
-node_modules
+node_modules/
 
 /build
 /public/build
 /server-build
-/data
 
 /test-results/
 /playwright-report/

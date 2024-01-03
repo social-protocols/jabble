@@ -1,12 +1,13 @@
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
-import { json, redirect, type DataFunctionArgs } from '@remix-run/node'
+import cuid2 from '@paralleldrive/cuid2'
+import { type DataFunctionArgs, json, redirect } from '@remix-run/node'
 import { Link, useFetcher, useLoaderData } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
+import { db } from '#app/db.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { validateCSRF } from '#app/utils/csrf.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
 import { generateTOTP } from '#app/utils/totp.server.ts'
 import { twoFAVerificationType } from './profile.two-factor.tsx'
 import { twoFAVerifyVerificationType } from './profile.two-factor.verify.tsx'
@@ -17,10 +18,12 @@ export const handle: SEOHandle = {
 
 export async function loader({ request }: DataFunctionArgs) {
 	const userId = await requireUserId(request)
-	const verification = await prisma.verification.findUnique({
-		where: { target_type: { type: twoFAVerificationType, target: userId } },
-		select: { id: true },
-	})
+	const verification = db
+		.selectFrom('Verification')
+		.select('id')
+		.where('target', '=', userId)
+		.where('type', '=', twoFAVerificationType)
+		.executeTakeFirst()
 	return json({ is2FAEnabled: Boolean(verification) })
 }
 
@@ -29,17 +32,18 @@ export async function action({ request }: DataFunctionArgs) {
 	await validateCSRF(await request.formData(), request.headers)
 	const { otp: _otp, ...config } = generateTOTP()
 	const verificationData = {
+		id: cuid2.createId(),
 		...config,
 		type: twoFAVerifyVerificationType,
 		target: userId,
 	}
-	await prisma.verification.upsert({
-		where: {
-			target_type: { target: userId, type: twoFAVerifyVerificationType },
-		},
-		create: verificationData,
-		update: verificationData,
-	})
+	await db
+		.insertInto('Verification')
+		.values(verificationData)
+		.onConflict(oc =>
+			oc.columns(['target', 'type']).doUpdateSet(verificationData),
+		)
+		.execute()
 	return redirect('/settings/profile/two-factor/verify')
 }
 

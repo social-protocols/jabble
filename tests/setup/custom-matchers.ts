@@ -1,16 +1,16 @@
 import * as setCookieParser from 'set-cookie-parser'
 import { expect } from 'vitest'
 import { sessionKey } from '#app/utils/auth.server.ts'
-import { prisma } from '#app/utils/db.server.ts'
 import { authSessionStorage } from '#app/utils/session.server.ts'
 import {
 	type OptionalToast,
-	toastSessionStorage,
 	toastKey,
+	toastSessionStorage,
 } from '#app/utils/toast.server.ts'
 import { convertSetCookieToCookie } from '#tests/utils.ts'
 
 import '@testing-library/jest-dom/vitest'
+import { db } from '#app/db.ts'
 
 expect.extend({
 	toHaveRedirect(response: Response, redirectTo?: string) {
@@ -101,10 +101,12 @@ expect.extend({
 			}
 		}
 
-		const session = await prisma.session.findUnique({
-			select: { id: true },
-			where: { userId, id: sessionValue },
-		})
+		const session = await db
+			.selectFrom('Session')
+			.select('id')
+			.where('userId', '=', userId)
+			.where('id', '=', sessionValue)
+			.execute()
 
 		return {
 			pass: Boolean(session),

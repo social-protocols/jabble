@@ -24,18 +24,12 @@
               git
 
               sqlite-interactive
-              nodejs_21
+              nodejs_20
 
               flyctl
 
               # darwin.apple_sdk.frameworks.Security
             ];
-
-            shellHook = with pkgs; ''
-              export PRISMA_SCHEMA_ENGINE_BINARY="${prisma-engines}/bin/schema-engine"
-              export PRISMA_QUERY_ENGINE_BINARY="${prisma-engines}/bin/query-engine"
-              export PRISMA_QUERY_ENGINE_LIBRARY="${prisma-engines}/lib/libquery_engine.node"
-            '';
           };
         };
       }

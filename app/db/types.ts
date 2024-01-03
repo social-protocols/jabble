@@ -18,3 +18,4 @@ export type PostStats = Selectable<schema.PostStats>
 export type LocationStats = Selectable<schema.LocationStats>
 export type ExplorationStats = Selectable<schema.ExplorationStats>
 export type TagStats = Selectable<schema.TagStats>
+export type Verification = Selectable<schema.Verification>
