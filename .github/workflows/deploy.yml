@@ -78,6 +78,11 @@ jobs:
       - name: 🖼 Build icons
         run: npm run build:icons
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
+
       - name: 🛠 Setup Database
         run: |
           set -e # exit on error
