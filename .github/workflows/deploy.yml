@@ -81,6 +81,11 @@ jobs:
       - name: 🖼 Build icons
         run: npm run build:icons
 
+      - name: Setup tmate session
+        uses: mxschmitt/act
+        with:
+          detached: trueion-tmate@v3
+
       - name: 🛠 Setup Database
         run: |
           set -ex # exit on error
