@@ -8,11 +8,7 @@ import { getRankedPosts } from '#app/ranking.ts'
 import { Direction, vote } from '#app/vote.ts'
 
 export async function seed() {
-	console.time('🔑 Created permissions...')
-	console.timeEnd('🔑 Created permissions...')
-
-	console.time('👑 Created roles...')
-
+	console.log('seeding...')
 	// insert into user(idInt, username, email) values (100, "alice", "alice@test.com");
 	// insert into user(idInt, username, email) values (101, "bob", "bob@test.com");
 	let alice = '100'

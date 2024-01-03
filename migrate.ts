@@ -34,6 +34,7 @@ async function migrateToLatest() {
 	}
 
 	await db.destroy()
+	console.log('Migrations done.')
 }
 
 migrateToLatest()
