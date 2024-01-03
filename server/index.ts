@@ -24,6 +24,7 @@ import helmet from 'helmet'
 import { FileMigrationProvider, Kysely, Migrator, SqliteDialect } from 'kysely'
 import morgan from 'morgan'
 import { type DB } from '#app/db/kysely-types.ts'
+// import { clearRankingsCache } from '#app/ranking.ts'
 
 installGlobals()
 
@@ -37,10 +38,11 @@ const BUILD_PATH = '../build/index.js'
 const WATCH_PATH = '../build/version.txt'
 
 // Initial build
+console.log('Building...')
 const build = await import(BUILD_PATH)
 let devBuild = build
 
-if (MODE !== 'development') {
+if (MODE === 'production') {
 	console.log('Running migrations...') // https://kysely.dev/docs/migrations#running-migrations
 	const databasePath = process.env.DATABASE_PATH
 	const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -269,8 +271,8 @@ const server = app.listen(portToUse, () => {
 		desiredPort === portToUse
 			? desiredPort
 			: addy && typeof addy === 'object'
-				? addy.port
-				: 0
+			? addy.port
+			: 0
 
 	if (portUsed !== desiredPort) {
 		console.warn(
@@ -304,6 +306,7 @@ ${chalk.bold('Press Ctrl+C to stop')}
 })
 
 closeWithGrace(async () => {
+	// await clearRankingsCache()
 	await new Promise((resolve, reject) => {
 		server.close(e => (e ? reject(e) : resolve('ok')))
 	})
