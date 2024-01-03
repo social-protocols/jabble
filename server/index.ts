@@ -1,4 +1,5 @@
 import crypto from 'crypto'
+import { promises as fs } from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import {
@@ -12,6 +13,7 @@ import {
 } from '@remix-run/node'
 import * as Sentry from '@sentry/remix'
 import { ip as ipAddress } from 'address'
+import SQLite from 'better-sqlite3'
 import chalk from 'chalk'
 import closeWithGrace from 'close-with-grace'
 import compression from 'compression'
@@ -19,7 +21,9 @@ import express from 'express'
 import rateLimit from 'express-rate-limit'
 import getPort, { portNumbers } from 'get-port'
 import helmet from 'helmet'
+import { FileMigrationProvider, Kysely, Migrator, SqliteDialect } from 'kysely'
 import morgan from 'morgan'
+import { type DB } from '#app/db/kysely-types.ts'
 
 installGlobals()
 
@@ -32,14 +36,47 @@ const createRequestHandler = Sentry.wrapExpressCreateRequestHandler(
 const BUILD_PATH = '../build/index.js'
 const WATCH_PATH = '../build/version.txt'
 
-/**
- * Initial build
- * @type {ServerBuild}
- */
+// Initial build
 const build = await import(BUILD_PATH)
 let devBuild = build
 
-console.log('TODO: Run migrations') // https://kysely.dev/docs/migrations#running-migrations
+if (MODE !== 'development') {
+	console.log('Running migrations...') // https://kysely.dev/docs/migrations#running-migrations
+	const databasePath = process.env.DATABASE_PATH
+	const __dirname = path.dirname(fileURLToPath(import.meta.url))
+	const db = new Kysely<DB>({
+		dialect: new SqliteDialect({ database: new SQLite(databasePath) }),
+	})
+
+	const migrator = new Migrator({
+		db,
+		provider: new FileMigrationProvider({
+			fs,
+			path,
+			// This needs to be an absolute path.
+			migrationFolder: path.join(__dirname, '../migrations'),
+		}),
+	})
+
+	const { error, results } = await migrator.migrateToLatest()
+
+	results?.forEach(it => {
+		if (it.status === 'Success') {
+			console.log(`migration "${it.migrationName}" was executed successfully`)
+		} else if (it.status === 'Error') {
+			console.error(`failed to execute migration "${it.migrationName}"`)
+		}
+	})
+
+	if (error) {
+		console.error('failed to migrate')
+		console.error(error)
+		process.exit(1)
+	}
+
+	await db.destroy()
+	console.log('Migrations done.')
+}
 
 const app = express()
 
@@ -232,8 +269,8 @@ const server = app.listen(portToUse, () => {
 		desiredPort === portToUse
 			? desiredPort
 			: addy && typeof addy === 'object'
-			? addy.port
-			: 0
+				? addy.port
+				: 0
 
 	if (portUsed !== desiredPort) {
 		console.warn(
