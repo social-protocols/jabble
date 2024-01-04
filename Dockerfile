@@ -23,7 +23,7 @@ WORKDIR /myapp
 
 COPY --from=deps /myapp/node_modules /myapp/node_modules
 ADD package.json package-lock.json .npmrc ./
-RUN npm prune --omit=dev
+# RUN npm prune --omit=dev # we need to run migrations, so we need dev dependencies, better would be to bundle them
 
 # Build the app
 FROM base as build
@@ -55,11 +55,14 @@ RUN echo "#!/bin/sh\nset -x\nsqlite3 \$DATABASE_URL" > /usr/local/bin/database-c
 WORKDIR /myapp
 
 COPY --from=production-deps /myapp/node_modules /myapp/node_modules
+COPY --from=build /myapp/package.json /myapp/package.json
+# for migrations:
+COPY --from=build /myapp/migrate.ts /myapp/migrate.ts
+COPY --from=build /myapp/app /myapp/app
 
 COPY --from=build /myapp/server-build /myapp/server-build
 COPY --from=build /myapp/build /myapp/build
 COPY --from=build /myapp/public /myapp/public
-COPY --from=build /myapp/package.json /myapp/package.json
 COPY --from=build /myapp/app/components/ui/icons /myapp/app/components/ui/icons
 
 # prepare for litefs
