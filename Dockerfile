@@ -69,4 +69,5 @@ RUN mkdir -p /data ${LITEFS_DIR}
 
 ADD . .
 
+# starting the application is defined in litefs.yml
 CMD ["litefs", "mount"]
