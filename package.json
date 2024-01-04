@@ -18,6 +18,7 @@
     "start": "cross-env NODE_ENV=production node .",
     "start:mocks": "cross-env NODE_ENV=production MOCKS=true tsx .",
     "test": "vitest",
+    "migrate": "tsx migrate.ts",
     "coverage": "vitest run --coverage",
     "test:e2e": "npm run test:e2e:dev --silent",
     "test:e2e:dev": "playwright test --ui",

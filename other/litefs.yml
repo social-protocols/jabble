@@ -30,4 +30,4 @@ lease:
 
 exec:
   - cmd: node ./other/setup-swap.js
-  - cmd: npm start
+  - cmd: npm run migrate && npm start
