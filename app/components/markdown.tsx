@@ -1,8 +1,10 @@
 import MarkdownImpl from 'markdown-to-jsx'
+import { type ReactNode } from 'react'
 
-const DeactivatedLink = ({ children, ...props }) => (
-	<span {...props}>{children}</span>
-)
+const DeactivatedLink: React.FC<{ children: ReactNode }> = ({
+	children,
+	...props
+}) => <span {...props}>{children}</span>
 
 // Wrapper around the Markdown component with deactiveateLinks option, that
 // causes <a> elements to be rendered as (non-clickable) <span> elements. Use
@@ -13,7 +15,7 @@ export function Markdown({
 	deactivateLinks,
 	...props
 }: {
-	children: any
+	children: string
 	deactivateLinks: boolean
 }) {
 	// Render links as Spans.

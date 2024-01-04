@@ -42,7 +42,6 @@ export function PostDetails({
 	let informationRateString = Math.round(post.informationRate * 100) / 100
 	const ageString = moment(post.createdAt).fromNow()
 
-
 	const replyFetcher = useFetcher<{ newPostId: number }>()
 
 	if (replyFetcher.data) {
@@ -53,7 +52,6 @@ export function PostDetails({
 		replyFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
 		setShowReplyForm(false)
 	}
-
 
 	return (
 		<div
@@ -75,7 +73,7 @@ export function PostDetails({
 			<div className="flex w-full min-w-0 flex-col">
 				<div className="mt-1 text-right text-sm opacity-50">{ageString}</div>
 				<div className="markdown mb-4">
-					<Markdown>{post.content}</Markdown>
+					<Markdown deactivateLinks={false}>{post.content}</Markdown>
 				</div>
 				{note && <NoteAttachment note={note} tag={tag} className="mb-4" />}
 
@@ -112,13 +110,8 @@ export function PostDetails({
 						action="/reply"
 						onSubmit={handleReplySubmit}
 					>
-						<ReplyForm
-							post={post}
-							tag={tag}
-							className="mt-2"
-						/>
-
-					</replyFetcher.Form>				
+						<ReplyForm post={post} tag={tag} className="mt-2" />
+					</replyFetcher.Form>
 				)}
 			</div>
 		</div>
@@ -135,30 +128,28 @@ function ReplyForm({
 	className: string
 }) {
 	return (
-			<div className={'flex flex-col items-end ' + className}>
-				<input type="hidden" name="parentId" value={post.id} />
-				<input type="hidden" name="tag" value={tag} />
+		<div className={'flex flex-col items-end ' + className}>
+			<input type="hidden" name="parentId" value={post.id} />
+			<input type="hidden" name="tag" value={tag} />
 
-				<Textarea
-					name="content"
-					className="mb-2 w-full"
-					style={{
-						resize: 'vertical',
-					}}
-					autoFocus={true}
-					placeholder="Enter your reply"
-				/>
+			<Textarea
+				name="content"
+				className="mb-2 w-full"
+				style={{
+					resize: 'vertical',
+				}}
+				autoFocus={true}
+				placeholder="Enter your reply"
+			/>
 
-				<div>
-					<button className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700">
-						Reply
-					</button>
-				</div>
+			<div>
+				<button className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700">
+					Reply
+				</button>
 			</div>
+		</div>
 	)
 }
-
-
 
 export function NoteAttachment({
 	tag,

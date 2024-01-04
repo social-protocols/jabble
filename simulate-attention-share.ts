@@ -153,11 +153,11 @@ async function simulateAttentionShare() {
 			tag,
 			null,
 			'Post ' +
-			i +
-			' true voteRate=' +
-			Math.exp(logVoteRates[i]) +
-			', true upvoteProbabilities=' +
-			upvoteProbabilities[i],
+				i +
+				' true voteRate=' +
+				Math.exp(logVoteRates[i]) +
+				', true upvoteProbabilities=' +
+				upvoteProbabilities[i],
 			'101',
 		)
 		postIds[i] = postId
@@ -370,7 +370,7 @@ async function simulateAttentionShare() {
 function shuffleArray<T>(array: T[]) {
 	for (let i = array.length - 1; i > 0; i--) {
 		const j = Math.floor(Math.random() * (i + 1))
-			;[array[i], array[j]] = [array[j]!, array[i]!]
+		;[array[i], array[j]] = [array[j]!, array[i]!]
 	}
 }
 

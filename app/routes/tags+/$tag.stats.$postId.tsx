@@ -125,7 +125,7 @@ export default function PostStats() {
 
 	return (
 		<div className="markdown">
-			<Markdown>{markdown}</Markdown>
+			<Markdown deactivateLinks={false}>{markdown}</Markdown>
 		</div>
 	)
 }
