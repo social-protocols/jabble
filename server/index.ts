@@ -20,7 +20,7 @@ import rateLimit from 'express-rate-limit'
 import getPort, { portNumbers } from 'get-port'
 import helmet from 'helmet'
 import morgan from 'morgan'
-import { clearRankingsCache } from '#app/ranking.ts'
+// import { clearRankingsCache } from '#app/ranking.ts'
 
 installGlobals()
 
@@ -229,8 +229,8 @@ const server = app.listen(portToUse, () => {
 		desiredPort === portToUse
 			? desiredPort
 			: addy && typeof addy === 'object'
-			? addy.port
-			: 0
+				? addy.port
+				: 0
 
 	if (portUsed !== desiredPort) {
 		console.warn(
@@ -264,7 +264,7 @@ ${chalk.bold('Press Ctrl+C to stop')}
 })
 
 closeWithGrace(async () => {
-	await clearRankingsCache()
+	// await clearRankingsCache()
 	await new Promise((resolve, reject) => {
 		server.close(e => (e ? reject(e) : resolve('ok')))
 	})
