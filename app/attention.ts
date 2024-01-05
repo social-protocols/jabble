@@ -244,16 +244,24 @@ location.
 // a lot of data.
 const movingAverageAlpha = 0.9999
 const windowSize = 1 / (1 - movingAverageAlpha)
+const startingSitewideVotes = 1000
 
 export async function logVoteOnRandomlyRankedPost(location: Location) {
-	const result = await db
+
+	let q =  db
 		.updateTable('ExplorationStats')
 		.set(eb => ({
 			votes: eb('votes', '+', 1),
 			// votes: sql<number>`excluded.votes + 1`  // increment votes by 1
 		}))
 		.returning('votes')
-		.execute()
+
+	let result = await q.execute()
+
+	if(result.length == 0) {
+		await seedStats()
+		result = await q.execute()
+	}
 
 	const sitewideVotes: number = result[0]!.votes
 
