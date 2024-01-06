@@ -156,7 +156,7 @@ async function rankPosts(
 			}
 		}),
 	)
-	scoredPosts = scoredPosts.filter(p => p.informationValue > 0)
+	// scoredPosts = scoredPosts.filter(p => p.informationValue > 0)
 
 	let nPosts = scoredPosts.length
 
