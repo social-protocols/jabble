@@ -40,7 +40,7 @@ type PostWithStats = Post & {
 }
 
 // const fatigueFactor = .9
-const randomPoolSize = 0.1
+const RANDOM_POOL_SIZE = 0.1
 const attentionCutoff = 2 // Note all posts start with 1 unit of attention (from poster)
 
 export const MAX_RESULTS = 90
@@ -182,7 +182,7 @@ async function rankPosts(
 
 	// Finally, create nResults results by iterating through the ranked posts
 	// while randomly inserting posts from the random pool (with a
-	// probability of randomPoolSize) at each rank. When we run out of
+	// probability of RANDOM_POOL_SIZE) at each rank. When we run out of
 	// ranked posts, return random posts from the random pool until we
 	// have nResults total posts.
 
@@ -193,7 +193,7 @@ async function rankPosts(
 		let p = null
 
 		if (
-			(i < nRankedPosts && Math.random() > randomPoolSize) ||
+			(i < nRankedPosts && Math.random() >= RANDOM_POOL_SIZE) ||
 			nRandomPosts == 0
 		) {
 			p = rankedPosts[i - nInsertions]
@@ -216,14 +216,15 @@ async function rankPosts(
 		assert(p !== undefined, `p is undefined`)
 		let s = { oneBasedRank: i + 1, random: ep }
 
-		let note =
-			p.topNoteId !== null
-				? await db
-						.selectFrom('Post')
-						.where('Post.id', '=', p.topNoteId)
-						.selectAll()
-						.executeTakeFirstOrThrow()
-				: null
+		let note = await getTopNote(tagId, p)
+
+			// p.topNoteId !== null
+			// 	? await db
+			// 			.selectFrom('Post')
+			// 			.where('Post.id', '=', p.topNoteId)
+			// 			.selectAll()
+			// 			.executeTakeFirstOrThrow()
+			// 	: null
 
 		results[i] = { ...p, ...s, note }
 	}
@@ -297,6 +298,56 @@ export async function totalInformationGain(tagId: number): Promise<number> {
 
 	return informationGain.reduce((sum, current) => sum + current, 0)
 }
+
+
+
+export async function getTopNote(
+	tagId: number,
+	post: ScoredPost
+	// postId: number,
+): Promise<Post | null> {
+	console.log("Looking for top note", tagId, post.id)
+
+	// With a certain probability, select a random note
+	// if (Math.random() < RANDOM_POOL_SIZE) {
+	if (true) {
+
+		// Select random note under this post, that has at least one vote for this tag Id.
+		const randomNote: Post | undefined = await db
+			.selectFrom('Post')
+			.leftJoin('CurrentTally', 'postId', 'Post.id')
+			.where('CurrentTally.tagId', '=', tagId)
+			.where('parentId', '=', post.id)
+			.selectAll()
+			.orderBy(sql`RANDOM()`)
+			.limit(1)
+			.executeTakeFirst()
+
+		console.log("Got random note", randomNote)
+		return randomNote || null
+
+	}
+
+	const noteId = post.topNoteId
+
+	// const [noteId, _p, _q] = await findTopNoteId(tagId, postId)
+
+	console.log("Found top note id", noteId)
+
+	if (noteId == 0) {
+		return null
+	}
+
+
+	const note: Post | undefined = await db
+		.selectFrom('Post')
+		.where('id', '=', noteId)
+		.selectAll()
+		.executeTakeFirst()
+
+	return note || null
+}
+
 
 export async function getRankedReplies(
 	tag: string,

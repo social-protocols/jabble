@@ -53,6 +53,7 @@ export async function logPostPageView(
 	_tag: string,
 	_postId: number,
 	_userId: string | null,
+	_topNoteId: number | null,
 ) {
 	// todo
 }

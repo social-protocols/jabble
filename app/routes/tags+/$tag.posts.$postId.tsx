@@ -26,17 +26,18 @@ import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
 import { PostDetails } from '#app/components/ui/post.tsx'
 import { type Post } from '#app/db/types.ts'
-
 // import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno
 
 import { getUserPositions } from '#app/positions.ts'
-import { createPost, getPost, getTransitiveParents } from '#app/post.ts'
+import { createPost, getTransitiveParents } from '#app/post.ts'
 import {
 	getRankedReplies,
+	getTopNote,
 	getScoredPost,
 	type RankedPost,
 	type ScoredPost,
 } from '#app/ranking.ts'
+import { getOrInsertTagId } from '#app/tag.ts'
 import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
 
@@ -67,13 +68,11 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	let replies: RankedPost[] = await getRankedReplies(tag, post.id)
 
-	await logPostPageView(tag, post.id, userId)
+	const tagId = await getOrInsertTagId(tag)
+	// Get the top note, which may be selected randomly
+	let topNote: Post | null = await getTopNote(tagId, post)
 
-	// So the first of the replies and the top note are not necessarily the same thing?!?
-	// The top note is the most convincing one. But the replies are ordered by *information rate*.
-
-	// let topNote: Post | null = replies.length > 0 ? replies[0]! : null
-	let topNote = post.topNoteId ? await getPost(post.topNoteId) : null
+	await logPostPageView(tag, post.id, userId, topNote?.id || null)
 
 	// let positions: Map<number, Direction> = new Map<number, Direction>()
 	let positions =

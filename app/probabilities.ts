@@ -81,32 +81,6 @@ export async function informedProbability(
 	return q
 }
 
-export async function topNote(
-	tag: string,
-	postId: number,
-): Promise<Post | null> {
-	const tagId = await getOrInsertTagId(tag)
-
-	const [noteId, _p, _q] = await findTopNoteId(tagId, postId)
-
-	if (noteId == 0) {
-		return null
-	}
-
-	const notes: Post[] = await db
-		.selectFrom('Post')
-		.where('id', '=', noteId)
-		.selectAll()
-		.execute()
-
-	const note = notes[0]
-	if (note === undefined) {
-		return null
-	}
-
-	return note
-}
-
 export async function findTopNoteId(
 	tagId: number,
 	postId: number,
