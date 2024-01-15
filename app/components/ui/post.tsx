@@ -56,7 +56,7 @@ export function PostDetails({
 	return (
 		<div
 			className={
-				'mb-5 flex w-full flex-row space-x-4 rounded-lg bg-post px-5 pb-5'
+				'mb-5 flex flex-row w-full space-x-4 rounded-lg bg-post px-5 pb-5'
 			}
 		>
 			<div className="mt-5">
