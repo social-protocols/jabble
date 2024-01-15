@@ -48,19 +48,6 @@ export type Password = {
 	hash: string
 	userId: string
 }
-export type Permission = {
-	id: string
-	action: string
-	entity: string
-	access: string
-	description: Generated<string>
-	createdAt: Generated<number>
-	updatedAt: number
-}
-export type PermissionToRole = {
-	A: string
-	B: string
-}
 export type Post = {
 	id: Generated<number>
 	parentId: number | null
@@ -74,17 +61,6 @@ export type PostStats = {
 	attention: number
 	views: number
 	replies: number
-}
-export type Role = {
-	id: string
-	name: string
-	description: Generated<string>
-	createdAt: Generated<number>
-	updatedAt: number
-}
-export type RoleToUser = {
-	A: string
-	B: string
 }
 export type Session = {
 	id: string
@@ -155,8 +131,6 @@ export type VoteHistory = {
 	createdAt: Generated<number>
 }
 export type DB = {
-	_PermissionToRole: PermissionToRole
-	_RoleToUser: RoleToUser
 	CurrentInformedTally: CurrentInformedTally
 	CurrentTally: CurrentTally
 	CurrentVote: CurrentVote
@@ -164,10 +138,8 @@ export type DB = {
 	ExplorationStats: ExplorationStats
 	LocationStats: LocationStats
 	Password: Password
-	Permission: Permission
 	Post: Post
 	PostStats: PostStats
-	Role: Role
 	Session: Session
 	Tag: Tag
 	TagStats: TagStats
