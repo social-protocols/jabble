@@ -82,7 +82,6 @@ export type User = {
 	id: string
 	email: string
 	username: string
-	name: string | null
 	createdAt: Generated<number>
 }
 export type Verification = {

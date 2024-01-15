@@ -184,14 +184,6 @@ export default function SignupRoute() {
 						errors={fields.username.errors}
 					/>
 					<Field
-						labelProps={{ htmlFor: fields.name.id, children: 'Name' }}
-						inputProps={{
-							...conform.input(fields.name),
-							autoComplete: 'name',
-						}}
-						errors={fields.name.errors}
-					/>
-					<Field
 						labelProps={{ htmlFor: fields.password.id, children: 'Password' }}
 						inputProps={{
 							...conform.input(fields.password, { type: 'password' }),

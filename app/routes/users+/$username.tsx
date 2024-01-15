@@ -13,7 +13,7 @@ export async function loader({ params }: DataFunctionArgs) {
 	invariantResponse(params.username, 'Username is required', { status: 400 })
 	const user = await db
 		.selectFrom('User')
-		.select(['User.id', 'User.name', 'User.username', 'User.createdAt'])
+		.select(['id', 'username', 'createdAt'])
 		.where('username', '=', params.username)
 		.executeTakeFirst()
 
@@ -28,7 +28,7 @@ export async function loader({ params }: DataFunctionArgs) {
 export default function ProfileRoute() {
 	const data = useLoaderData<typeof loader>()
 	const user = data.user
-	const userDisplayName = user.name ?? user.username
+	const userDisplayName = user.username
 	const loggedInUser = useOptionalUser()
 	const isLoggedInUser = data.user.id === loggedInUser?.id
 
@@ -84,7 +84,7 @@ export default function ProfileRoute() {
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data, params }) => {
-	const displayName = data?.user.name ?? params.username
+	const displayName = params.username
 	return [
 		{ title: `${displayName} | ${SITE_NAME}` },
 		{

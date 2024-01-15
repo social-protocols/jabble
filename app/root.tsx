@@ -104,7 +104,7 @@ export async function loader({ request }: DataFunctionArgs) {
 					db
 						.selectFrom('User')
 						.where('User.id', '=', userId)
-						.select(['User.id', 'name', 'username'])
+						.select(['User.id', 'username'])
 						.executeTakeFirstOrThrow(),
 				{ timings, type: 'find user', desc: 'find user in root' },
 		  )
@@ -284,9 +284,7 @@ function UserDropdown() {
 						onClick={e => e.preventDefault()}
 						className="flex items-center gap-2"
 					>
-						<span className="text-body-sm font-bold">
-							{user.name ?? user.username}
-						</span>
+						<span className="text-body-sm font-bold">{user.username}</span>
 					</Link>
 				</Button>
 			</DropdownMenuTrigger>

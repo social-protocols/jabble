@@ -55,7 +55,7 @@ export async function loader({ request }: DataFunctionArgs) {
 
 	const user = await db
 		.selectFrom('User')
-		.select(['id', 'name', 'username', 'email'])
+		.select(['id', 'username', 'email'])
 		.where('id', '=', userId)
 		.executeTakeFirstOrThrow()
 
@@ -220,7 +220,6 @@ async function profileUpdateAction({ userId, formData }: ProfileActionArgs) {
 	await db
 		.updateTable('User')
 		.set({
-			name: data.name,
 			username: data.username,
 		})
 		.where('id', '=', userId)
@@ -243,7 +242,6 @@ function UpdateProfile() {
 		},
 		defaultValue: {
 			username: data.user.username,
-			name: data.user.name ?? '',
 			email: data.user.email,
 		},
 	})
