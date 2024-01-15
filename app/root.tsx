@@ -49,7 +49,7 @@ import { ClientHintCheck, getHints, useHints } from './utils/client-hints.tsx'
 import { csrf } from './utils/csrf.server.ts'
 import { getEnv } from './utils/env.server.ts'
 import { honeypot } from './utils/honeypot.server.ts'
-import { combineHeaders, getDomainUrl, getUserImgSrc } from './utils/misc.tsx'
+import { combineHeaders, getDomainUrl } from './utils/misc.tsx'
 import { useNonce } from './utils/nonce-provider.ts'
 import { useRequestInfo } from './utils/request-info.ts'
 import { getTheme, setTheme, type Theme } from './utils/theme.server.ts'
@@ -103,9 +103,8 @@ export async function loader({ request }: DataFunctionArgs) {
 				() =>
 					db
 						.selectFrom('User')
-						.leftJoin('UserImage', 'userId', 'User.id')
 						.where('User.id', '=', userId)
-						.select(['User.id', 'name', 'username', 'UserImage.id as imageId'])
+						.select(['User.id', 'name', 'username'])
 						.executeTakeFirstOrThrow(),
 				{ timings, type: 'find user', desc: 'find user in root' },
 		  )
@@ -285,11 +284,6 @@ function UserDropdown() {
 						onClick={e => e.preventDefault()}
 						className="flex items-center gap-2"
 					>
-						<img
-							className="h-8 w-8 rounded-full object-cover"
-							alt={user.name ?? user.username}
-							src={getUserImgSrc(user.imageId)}
-						/>
 						<span className="text-body-sm font-bold">
 							{user.name ?? user.username}
 						</span>

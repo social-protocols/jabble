@@ -6,21 +6,14 @@ import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { db } from '#app/db.ts'
 import { SITE_NAME } from '#app/site.ts'
-import { getUserImgSrc, invariantResponse } from '#app/utils/misc.tsx'
+import { invariantResponse } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
 
 export async function loader({ params }: DataFunctionArgs) {
 	invariantResponse(params.username, 'Username is required', { status: 400 })
 	const user = await db
 		.selectFrom('User')
-		.leftJoin('UserImage', 'userId', 'User.id')
-		.select([
-			'User.id',
-			'User.name',
-			'User.username',
-			'User.createdAt',
-			'UserImage.id as imageId',
-		])
+		.select(['User.id', 'User.name', 'User.username', 'User.createdAt'])
 		.where('username', '=', params.username)
 		.executeTakeFirst()
 
@@ -44,18 +37,6 @@ export default function ProfileRoute() {
 			<Spacer size="4xs" />
 
 			<div className="container flex flex-col items-center rounded-3xl bg-muted p-12">
-				<div className="relative w-52">
-					<div className="absolute -top-40">
-						<div className="relative">
-							<img
-								src={getUserImgSrc(data.user.imageId)}
-								alt={userDisplayName}
-								className="h-52 w-52 rounded-full object-cover"
-							/>
-						</div>
-					</div>
-				</div>
-
 				<Spacer size="sm" />
 
 				<div className="flex flex-col items-center">

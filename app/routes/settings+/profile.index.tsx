@@ -12,11 +12,7 @@ import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { db } from '#app/db.ts'
 import { requireUserId, sessionKey } from '#app/utils/auth.server.ts'
 import { validateCSRF } from '#app/utils/csrf.server.ts'
-import {
-	getUserImgSrc,
-	invariantResponse,
-	useDoubleCheck,
-} from '#app/utils/misc.tsx'
+import { invariantResponse, useDoubleCheck } from '#app/utils/misc.tsx'
 import { authSessionStorage } from '#app/utils/session.server.ts'
 import { redirectWithToast } from '#app/utils/toast.server.ts'
 import { NameSchema, UsernameSchema } from '#app/utils/user-validation.ts'
@@ -63,12 +59,6 @@ export async function loader({ request }: DataFunctionArgs) {
 		.where('id', '=', userId)
 		.executeTakeFirstOrThrow()
 
-	const image = await db
-		.selectFrom('UserImage')
-		.select('id')
-		.where('userId', '=', user.id)
-		.executeTakeFirst()
-
 	const sessionCount = await db
 		.selectFrom('Session')
 		.select(({ fn }) => [fn.count<number>('id').as('_count')])
@@ -89,7 +79,7 @@ export async function loader({ request }: DataFunctionArgs) {
 		.select('userId')
 		.executeTakeFirst()
 
-	const u = { ...user, image: image, _count: sessionCount }
+	const u = { ...user, _count: sessionCount }
 
 	console.log('U is', u)
 	return json({
@@ -136,11 +126,6 @@ export default function EditUserProfile() {
 		<div className="flex flex-col gap-12">
 			<div className="flex justify-center">
 				<div className="relative h-52 w-52">
-					<img
-						src={getUserImgSrc(data.user.image?.id)}
-						alt={data.user.username}
-						className="h-full w-full rounded-full object-cover"
-					/>
 					<Button
 						asChild
 						variant="outline"

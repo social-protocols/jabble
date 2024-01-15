@@ -109,15 +109,6 @@ export type User = {
 	name: string | null
 	createdAt: Generated<number>
 }
-export type UserImage = {
-	id: string
-	altText: string | null
-	contentType: string
-	blob: Buffer
-	createdAt: Generated<number>
-	updatedAt: number
-	userId: string
-}
 export type Verification = {
 	id: string
 	createdAt: Generated<number>
@@ -181,7 +172,6 @@ export type DB = {
 	Tag: Tag
 	TagStats: TagStats
 	User: User
-	UserImage: UserImage
 	Verification: Verification
 	VoteHistory: VoteHistory
 }
