@@ -11,6 +11,7 @@ import {
 	tagStats,
 } from '#app/attention.ts'
 import { type Tally } from '#app/beta-gamma-distribution.ts'
+import { type Post } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
 // import bloomFilters from 'bloom-filters';
 
@@ -19,12 +20,14 @@ import { db } from '#app/db.ts'
 import { createPost } from '#app/post.ts'
 
 import {
+    getRankedPosts,
 	MAX_RESULTS,
 	//getRankedPosts,
 	totalInformationGain,
-} from '#app/ranking.ts'
+ type RankedPost } from '#app/ranking.ts'
 import { getOrInsertTagId } from '#app/tag.ts'
 import { Direction, vote } from '#app/vote.ts'
+
 
 // import { SingleBar, cliProgress } from 'cli-progress'
 
@@ -82,11 +85,9 @@ m=1000, nRanks=90, votesPerPeriod=20, alpha=.99, MSE = 2.548275797826558
 " alpha=.999, MSE=0.08746957597521526
 " alpha=.9999, MSE= 0.008163008679462406
 
-
-
 */
 
-const m = 200
+const m = 400
 const nPosts = 100
 const nRanks = MAX_RESULTS
 const nUsers = 10000
@@ -103,7 +104,7 @@ const viewsPerPeriod = nUsers
 const votesPerPeriod = viewsPerPeriod * votesPerView
 console.log(votesPerView, viewsPerPeriod, votesPerPeriod)
 
-const tag = 'test'
+const tag = 'test' + Math.random()
 
 // const m = 5
 // const nPosts = 90
@@ -146,6 +147,20 @@ async function simulateAttentionShare() {
 	const upvoteProbabilities = rankedPosts.map(() => Math.random())
 	// const upvoteProbabilities = rankedPosts.map(() => jStat.uniform.sample(0, 1))
 
+
+	console.log("Creating sim user")
+	await db
+		.insertInto('User')
+		.values({
+			id: "101",
+			username: 'bob',
+			email: 'bob@test.com',
+			// password: { create: createPassword('bob') },
+		})
+		.onConflict(oc => oc.column('id').doNothing())
+		.execute()
+
+
 	console.log('Creating simulated posts')
 	let postIds = Array(nPosts)
 	for (let i = 0; i < nPosts; i++) {
@@ -164,6 +179,7 @@ async function simulateAttentionShare() {
 	}
 
 	let minPostId = postIds[0]
+
 
 	let tagId = await getOrInsertTagId(tag)
 
@@ -192,12 +208,12 @@ async function simulateAttentionShare() {
 	// for each period
 	for (let t = 0; t < m; t++) {
 		// rank posts randomly
-		let rankedPosts = [...postIds]
-		shuffleArray(rankedPosts)
-		let tagPage = rankedPosts
+		// let rankedPosts = [...postIds]
+		// shuffleArray(rankedPosts)
+		// let tagPage = rankedPosts
 		// let tagPage = rankedPosts.map(postNumber => postIds[postNumber]).slice(0, nRanks)
 
-		// let tagPage = (await getRankedPosts(tag)).map((p: Post) => p.id)
+		const tagPage = (await getRankedPosts(tag)).map((p: Post) => p.id)
 
 		// console.log("First post", rankedPosts[0])
 
