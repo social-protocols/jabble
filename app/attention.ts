@@ -248,8 +248,7 @@ const windowSize = 1 / (1 - movingAverageAlpha)
 const startingSitewideVotes = 1000
 
 export async function logVoteOnRandomlyRankedPost(location: Location) {
-
-	let q =  db
+	let q = db
 		.updateTable('ExplorationStats')
 		.set(eb => ({
 			votes: eb('votes', '+', 1),
@@ -259,7 +258,7 @@ export async function logVoteOnRandomlyRankedPost(location: Location) {
 
 	let result = await q.execute()
 
-	if(result.length == 0) {
+	if (result.length == 0) {
 		await seedStats()
 		result = await q.execute()
 	}

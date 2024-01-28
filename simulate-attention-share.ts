@@ -20,14 +20,14 @@ import { db } from '#app/db.ts'
 import { createPost } from '#app/post.ts'
 
 import {
-    getRankedPosts,
+	getRankedPosts,
 	MAX_RESULTS,
 	//getRankedPosts,
 	totalInformationGain,
- type RankedPost } from '#app/ranking.ts'
+	type RankedPost,
+} from '#app/ranking.ts'
 import { getOrInsertTagId } from '#app/tag.ts'
 import { Direction, vote } from '#app/vote.ts'
-
 
 // import { SingleBar, cliProgress } from 'cli-progress'
 
@@ -147,19 +147,17 @@ async function simulateAttentionShare() {
 	const upvoteProbabilities = rankedPosts.map(() => Math.random())
 	// const upvoteProbabilities = rankedPosts.map(() => jStat.uniform.sample(0, 1))
 
-
-	console.log("Creating sim user")
+	console.log('Creating sim user')
 	await db
 		.insertInto('User')
 		.values({
-			id: "101",
+			id: '101',
 			username: 'bob',
 			email: 'bob@test.com',
 			// password: { create: createPassword('bob') },
 		})
 		.onConflict(oc => oc.column('id').doNothing())
 		.execute()
-
 
 	console.log('Creating simulated posts')
 	let postIds = Array(nPosts)
@@ -179,7 +177,6 @@ async function simulateAttentionShare() {
 	}
 
 	let minPostId = postIds[0]
-
 
 	let tagId = await getOrInsertTagId(tag)
 

@@ -20,10 +20,10 @@ import {
 	useFetcher,
 	useFetchers,
 	useLoaderData,
-	useSubmit
+	useSubmit,
 } from '@remix-run/react'
 import { withSentry } from '@sentry/remix'
-import { useRef , useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 import { AuthenticityTokenProvider } from 'remix-utils/csrf/react'
 import { ExternalScripts } from 'remix-utils/external-scripts'
 import { HoneypotProvider } from 'remix-utils/honeypot/react'
@@ -56,7 +56,6 @@ import { getTheme, setTheme, type Theme } from './utils/theme.server.ts'
 import { makeTimings, time } from './utils/timing.server.ts'
 import { getToast } from './utils/toast.server.ts'
 import { useOptionalUser, useUser } from './utils/user.ts'
-
 
 export const links: LinksFunction = () => {
 	return [
@@ -223,18 +222,17 @@ function App() {
 	const searchBar = null // isOnSearchPage ? null : <SearchBar status="idle" />
 
 	useEffect(() => {
-	  const script = document.createElement('script');
+		const script = document.createElement('script')
 
-	  script.src = "/show-more.js";
-	  script.async = true;
+		script.src = '/show-more.js'
+		script.async = true
 
-	  document.body.appendChild(script);
+		document.body.appendChild(script)
 
-	  return () => {
-	    document.body.removeChild(script);
-	  }
-	}, []);
-
+		return () => {
+			document.body.removeChild(script)
+		}
+	}, [])
 
 	return (
 		<Document nonce={nonce} theme={theme} env={data.ENV}>

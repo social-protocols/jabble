@@ -8,9 +8,6 @@ import { type Post } from '#app/db/types.ts'
 import { type ScoredPost } from '#app/ranking.ts'
 import { Direction } from '#app/vote.ts'
 import { Card } from './card.tsx'
-import { useEffect } from 'react';
-
-
 
 export function PostDetails({
 	tag,
@@ -19,7 +16,7 @@ export function PostDetails({
 	teaser,
 	randomLocation,
 	position,
-	notePosition,
+	_notePosition,
 }: {
 	tag: string
 	post: ScoredPost
@@ -59,7 +56,7 @@ export function PostDetails({
 	return (
 		<div
 			className={
-				'mb-5 flex flex-row w-full space-x-4 rounded-lg bg-post px-5 pb-5'
+				'mb-5 flex w-full flex-row space-x-4 rounded-lg bg-post px-5 pb-5'
 			}
 		>
 			<div className="mt-5">
@@ -73,15 +70,21 @@ export function PostDetails({
 					/>
 				</fetcher.Form>
 			</div>
-			<div className={"flex w-full min-w-0 flex-col" + (teaser ? " postteaser" : "")}>
+			<div
+				className={
+					'flex w-full min-w-0 flex-col' + (teaser ? ' postteaser' : '')
+				}
+			>
 				<div className="mt-1 text-right text-sm opacity-50">{ageString}</div>
-				<div className={"markdown postcontent" + (teaser ? " truncated" : "")}>
+				<div className={'markdown postcontent' + (teaser ? ' truncated' : '')}>
 					<Markdown deactivateLinks={false}>{post.content}</Markdown>
 				</div>
-				<Link to={`/tags/${tag}/posts/${post.id}`} className="show-more">Show more</Link>
+				<Link to={`/tags/${tag}/posts/${post.id}`} className="show-more">
+					Show more
+				</Link>
 				{note && <NoteAttachment note={note} tag={tag} className="mt-2" />}
 
-				<div className="flex w-full text-sm mt-2">
+				<div className="mt-2 flex w-full text-sm">
 					<Link to={`/tags/${tag}/stats/${post.id}`} className="hyperlink">
 						{informedProbabilityString}%
 					</Link>

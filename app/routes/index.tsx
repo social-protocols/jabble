@@ -44,8 +44,8 @@ export async function loader({ request }: DataFunctionArgs) {
 export function UserFeed({ feed }: { feed: TagPreview[] }) {
 	console.log('user feed is', feed)
 	return (
-		<div className='container'>
-			<h1 className='text-3xl mb-5'>Home</h1>
+		<div className="container">
+			<h1 className="mb-5 text-3xl">Home</h1>
 			{feed.map(tagPreview => {
 				let posts = tagPreview.posts
 				let tag = tagPreview.tag
@@ -59,11 +59,14 @@ export function UserFeed({ feed }: { feed: TagPreview[] }) {
 				console.log('Tag preview', tag)
 
 				return (
-					<div key={tag} className='mx-auto w-full'>
-						<h2 className='text-lg mb-3'>
-							Top posts in <span className='font-bold'><Link to={`/tags/${tag}`}>#{tag}</Link></span>
+					<div key={tag} className="mx-auto w-full">
+						<h2 className="mb-3 text-lg">
+							Top posts in{' '}
+							<span className="font-bold">
+								<Link to={`/tags/${tag}`}>#{tag}</Link>
+							</span>
 						</h2>
-						<div className="flex-col flex place-items-start items-stretch">
+						<div className="flex flex-col place-items-start items-stretch">
 							<ul>
 								{posts.map((post: RankedPost, i: number) => {
 									let position = p.get(post.id) || Direction.Neutral
@@ -78,21 +81,21 @@ export function UserFeed({ feed }: { feed: TagPreview[] }) {
 										: null
 
 									return (
-                    <div className='flex-1 items-stretch'>
-                      <li key={post.id}>
-                        <div className="w-full flex-1 justify-self-center">
-                          <PostDetails
-                            post={post}
-                            note={post.note}
-                            tag={tag}
-                            teaser={true}
-                            randomLocation={randomLocation}
-                            position={position}
-                            notePosition={notePosition}
-                          />
-                        </div>
-                      </li>
-                    </div>
+										<div className="flex-1 items-stretch">
+											<li key={post.id}>
+												<div className="w-full flex-1 justify-self-center">
+													<PostDetails
+														post={post}
+														note={post.note}
+														tag={tag}
+														teaser={true}
+														randomLocation={randomLocation}
+														position={position}
+														notePosition={notePosition}
+													/>
+												</div>
+											</li>
+										</div>
 									)
 								})}
 							</ul>

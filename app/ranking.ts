@@ -218,13 +218,13 @@ async function rankPosts(
 
 		let note = await getTopNote(tagId, p)
 
-			// p.topNoteId !== null
-			// 	? await db
-			// 			.selectFrom('Post')
-			// 			.where('Post.id', '=', p.topNoteId)
-			// 			.selectAll()
-			// 			.executeTakeFirstOrThrow()
-			// 	: null
+		// p.topNoteId !== null
+		// 	? await db
+		// 			.selectFrom('Post')
+		// 			.where('Post.id', '=', p.topNoteId)
+		// 			.selectAll()
+		// 			.executeTakeFirstOrThrow()
+		// 	: null
 
 		results[i] = { ...p, ...s, note }
 	}
@@ -299,17 +299,14 @@ export async function totalInformationGain(tagId: number): Promise<number> {
 	return informationGain.reduce((sum, current) => sum + current, 0)
 }
 
-
-
 export async function getTopNote(
 	tagId: number,
-	post: ScoredPost
+	post: ScoredPost,
 	// postId: number,
 ): Promise<Post | null> {
 	// With a certain probability, select a random note
 	// if (Math.random() < RANDOM_POOL_SIZE) {
 	if (true) {
-
 		// Select random note under this post, that has at least one vote for this tag Id.
 		const randomNote: Post | undefined = await db
 			.selectFrom('Post')
@@ -322,19 +319,17 @@ export async function getTopNote(
 			.executeTakeFirst()
 
 		return randomNote || null
-
 	}
 
 	const noteId = post.topNoteId
 
 	// const [noteId, _p, _q] = await findTopNoteId(tagId, postId)
 
-	console.log("Found top note id", noteId)
+	console.log('Found top note id', noteId)
 
 	if (noteId == 0) {
 		return null
 	}
-
 
 	const note: Post | undefined = await db
 		.selectFrom('Post')
@@ -344,7 +339,6 @@ export async function getTopNote(
 
 	return note || null
 }
-
 
 export async function getRankedReplies(
 	tag: string,

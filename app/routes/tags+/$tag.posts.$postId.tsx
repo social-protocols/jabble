@@ -169,17 +169,17 @@ function ParentThread({
 		<div className="border-l-4 border-postparent-threadline">
 			{transitiveParents.map(parentPost => (
 				<Link key={parentPost.id} to={`/tags/${tag}/posts/${parentPost.id}`}>
-						<div
-							key={parentPost.id}
-							className="mb-2 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground postparent"
-						>
-							<div className="markdown postcontent truncated ">
-								<Markdown
-									deactivateLinks={true} // prevents <a> tags from being rendered inside another <a> tag, which causes hydration errors
-								>
-									{parentPost.content}
-								</Markdown>
-							</div>
+					<div
+						key={parentPost.id}
+						className="postparent mb-2 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"
+					>
+						<div className="markdown postcontent truncated ">
+							<Markdown
+								deactivateLinks={true} // prevents <a> tags from being rendered inside another <a> tag, which causes hydration errors
+							>
+								{parentPost.content}
+							</Markdown>
+						</div>
 					</div>
 				</Link>
 			))}
