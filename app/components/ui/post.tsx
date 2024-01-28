@@ -16,7 +16,7 @@ export function PostDetails({
 	teaser,
 	randomLocation,
 	position,
-	_notePosition,
+	notePosition,
 }: {
 	tag: string
 	post: ScoredPost
