@@ -306,8 +306,6 @@ export async function getTopNote(
 	post: ScoredPost
 	// postId: number,
 ): Promise<Post | null> {
-	console.log("Looking for top note", tagId, post.id)
-
 	// With a certain probability, select a random note
 	// if (Math.random() < RANDOM_POOL_SIZE) {
 	if (true) {
@@ -323,7 +321,6 @@ export async function getTopNote(
 			.limit(1)
 			.executeTakeFirst()
 
-		console.log("Got random note", randomNote)
 		return randomNote || null
 
 	}

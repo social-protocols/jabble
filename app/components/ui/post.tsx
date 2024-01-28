@@ -8,6 +8,9 @@ import { type Post } from '#app/db/types.ts'
 import { type ScoredPost } from '#app/ranking.ts'
 import { Direction } from '#app/vote.ts'
 import { Card } from './card.tsx'
+import { useEffect } from 'react';
+
+
 
 export function PostDetails({
 	tag,
@@ -70,19 +73,20 @@ export function PostDetails({
 					/>
 				</fetcher.Form>
 			</div>
-			<div className="flex w-full min-w-0 flex-col">
+			<div className={"flex w-full min-w-0 flex-col" + (teaser ? " postteaser" : "")}>
 				<div className="mt-1 text-right text-sm opacity-50">{ageString}</div>
-				<div className="markdown mb-4">
+				<div className={"markdown postcontent" + (teaser ? " truncated" : "")}>
 					<Markdown deactivateLinks={false}>{post.content}</Markdown>
 				</div>
-				{note && <NoteAttachment note={note} tag={tag} className="mb-4" />}
+				<Link to={`/tags/${tag}/posts/${post.id}`} className="show-more">Show more</Link>
+				{note && <NoteAttachment note={note} tag={tag} className="mt-2" />}
 
-				<div className="flex w-full text-sm">
-					<Link to={`/tags/${tag}/posts/${post.id}`} className="hyperlink">
-						{nRepliesString}
-					</Link>
-					<Link to={`/tags/${tag}/stats/${post.id}`} className="hyperlink ml-2">
+				<div className="flex w-full text-sm mt-2">
+					<Link to={`/tags/${tag}/stats/${post.id}`} className="hyperlink">
 						{informedProbabilityString}%
+					</Link>
+					<Link to={`/tags/${tag}/posts/${post.id}`} className="hyperlink ml-2">
+						{nRepliesString}
 					</Link>
 					<button
 						className="hyperlink ml-2"
@@ -164,7 +168,7 @@ export function NoteAttachment({
 		<Link to={`/tags/${tag}/posts/${note.id}`}>
 			<Card className={'bg-note pb-3 pt-2 text-note-foreground ' + className}>
 				<div className="pb-1 text-sm font-medium opacity-50">Top Reply</div>
-				<div className="markdown">
+				<div className="markdown postcontent truncated">
 					<Markdown
 						deactivateLinks={true} // prevents <a> tags from being rendered inside another <a> tag, which causes hydration errors
 					>
