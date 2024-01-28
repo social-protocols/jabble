@@ -136,6 +136,7 @@
 			@apply text-sm font-semibold;
 		}
 		p {
+			@apply mb-4;
 		}
 		a {
 			@apply underline;
@@ -145,10 +146,12 @@
 		ul {
 			list-style-type: circle;
 			list-style-position: inside;
+			@apply mb-4;
 		}
 		ol {
 			list-style-type: upper-roman;
 			list-style-position: inside;
+			@apply mb-4;
 		}
 		li ul {
 			@apply pl-4;
@@ -159,30 +162,10 @@
 
 		pre {
 			@apply p-2;
+			@apply mb-4;
 			@apply overflow-x-auto;
 		}
 
-		/* 
-			Use ::after elements instead of margin-bottom to add space after paragraphs, etc. And then don't put the space after the last paragraph.
-			Otherwise, what happens is a post with 2 1-line paragraphs has a height of 4 lines, and so it gets truncated at 3 lines and an ellipsis and "Show more" link.
-		*/
-
-		p::after,
-		ol::after,
-		ul::after,
-		pre::after {
-			content: '';
-			display: block;
-			height: 20px; /* Height for space between paragraphs */
-		}
-
-		/*  Remove the added space after the last paragraph */
-		p:last-child::after,
-		ol:last-child::after,
-		ul:last-child::after,
-		pre:last-child::after {
-			height: 0;
-		}
 	}
 
 	.postparent .markdown {
@@ -211,28 +194,35 @@
 	}
 
 
-	/* Cut off the post content after 3 lines. Set the line height to 20 and the max height to 60 so there is a clean cutoff after 3 lines. */
-	/* Three lines is a good number. One line is often too short to get context. Two lines is awkward if there is a single line paragraph followed by another paragraph, because you
-	end up just seeing a single line then a blank line, and the ellipsis is not displayed. */
-	.truncated.postcontent {
-		max-height: 60px;
+	/* Cut off the post content after a few lines. Set the line height to 20
+	   so there is a clean cutoff.
+	*/
+	.truncated.postcontent { 
 		line-height: 20px;
 
 		overflow: hidden;
 		text-overflow: ellipsis;
 
-		/* Normally, the ellipsis will only be shown if there is a single line with a horizontal overflow. The CSS below makes the ellipsis be shown if there are multiple lines
-		with a vertical overflow. */  
+		/* Normally, the ellipsis will only be shown if there is a single line
+		   with a horizontal overflow. The CSS below makes the ellipsis be
+		   shown if there are multiple lines with a vertical overflow. */  		
 		display: -webkit-box;
-		-webkit-line-clamp: 2;
+		-webkit-line-clamp: 5; /* Twitter also cuts off at about 5 lines */
 		-webkit-box-orient: vertical;
 	}
 
+
+	/* Cutoff parents at only two lines. For the parent thread (for providing
+	   context), two or three lines is a good number. One line is often too
+	   short to get context, but two or three is often plenty. */
+	.postparent .truncated.postcontent { 
+		-webkit-line-clamp: 2;
+	}
+
+
 	.show-more {
 		display: none;
-
 		padding-left: 0px;
-
 		@apply text-blue-500;
 	}
 }
