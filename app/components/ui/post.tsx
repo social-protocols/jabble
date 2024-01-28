@@ -58,7 +58,7 @@ export function PostDetails({
 	const readMoreLinkRef = useRef(null)
 
 	const showOrHideReadMoreLink = function () {
-		var element = readMoreLinkRef.current!
+		var element: HTMLElement = readMoreLinkRef.current!
 		if (element.scrollHeight > element.clientHeight) {
 			setShowReadMoreLink(true)
 		} else {
