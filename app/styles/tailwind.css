@@ -165,7 +165,6 @@
 			@apply mb-4;
 			@apply overflow-x-auto;
 		}
-
 	}
 
 	.postparent .markdown {
@@ -193,11 +192,10 @@
 		}
 	}
 
-
 	/* Cut off the post content after a few lines. Set the line height to 20
 	   so there is a clean cutoff.
 	*/
-	.truncated.postcontent { 
+	.truncated.postcontent {
 		line-height: 20px;
 
 		overflow: hidden;
@@ -205,23 +203,20 @@
 
 		/* Normally, the ellipsis will only be shown if there is a single line
 		   with a horizontal overflow. The CSS below makes the ellipsis be
-		   shown if there are multiple lines with a vertical overflow. */  		
+		   shown if there are multiple lines with a vertical overflow. */
 		display: -webkit-box;
-		-webkit-line-clamp: 10;
+		-webkit-line-clamp: 6;
 		-webkit-box-orient: vertical;
 	}
-
 
 	/* Cutoff parents at only two lines. For the parent thread (for providing
 	   context), two or three lines is a good number. One line is often too
 	   short to get context, but two or three is often plenty. */
-	.postparent .truncated.postcontent { 
+	.postparent .truncated.postcontent {
 		-webkit-line-clamp: 2;
 	}
 
-
 	.show-more {
-		display: none;
 		padding-left: 0px;
 		@apply text-blue-500;
 	}

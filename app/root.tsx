@@ -221,19 +221,6 @@ function App() {
 	// const isOnSearchPage = matches.find(m => m.id === 'routes/users+/index')
 	const searchBar = null // isOnSearchPage ? null : <SearchBar status="idle" />
 
-	useEffect(() => {
-		const script = document.createElement('script')
-
-		script.src = '/show-more.js'
-		script.async = true
-
-		document.body.appendChild(script)
-
-		return () => {
-			document.body.removeChild(script)
-		}
-	}, [])
-
 	return (
 		<Document nonce={nonce} theme={theme} env={data.ENV}>
 			<div className="flex h-screen flex-col">

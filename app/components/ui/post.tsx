@@ -1,6 +1,6 @@
 import { Link, useFetcher } from '@remix-run/react'
 import moment from 'moment'
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useState, useRef, useLayoutEffect } from 'react'
 import { type Location, LocationType } from '#app/attention.ts'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
@@ -53,6 +53,34 @@ export function PostDetails({
 		setShowReplyForm(false)
 	}
 
+	/* Show or hide the "Show more" link depending on whether the element has been cutoff or not */
+	const [showReadMoreLink, setShowReadMoreLink] = useState(true)
+	const readMoreLinkRef = useRef(null)
+
+	const showOrHideReadMoreLink = function () {
+		var element = readMoreLinkRef.current!
+		if (element.scrollHeight > element.clientHeight) {
+			setShowReadMoreLink(true)
+		} else {
+			setShowReadMoreLink(false)
+		}
+	}
+
+	// useEffect(() => {
+	// 	showOrHideReadMoreLink()
+	// }, []);
+
+	/* use useLayoutEffect to set the value of showReadMoreLink based on the
+	   content of the DOM. Specifically, whether or not the post content div
+	   is being cut off or not. The code below updates the state correctly
+	   when the browser window is resized.*/
+
+	useLayoutEffect(() => {
+		window.addEventListener('resize', showOrHideReadMoreLink)
+		showOrHideReadMoreLink()
+		return () => window.removeEventListener('resize', showOrHideReadMoreLink)
+	})
+
 	return (
 		<div
 			className={
@@ -76,12 +104,17 @@ export function PostDetails({
 				}
 			>
 				<div className="mt-1 text-right text-sm opacity-50">{ageString}</div>
-				<div className={'markdown postcontent' + (teaser ? ' truncated' : '')}>
+				<div
+					className={'markdown postcontent' + (teaser ? ' truncated' : '')}
+					ref={readMoreLinkRef}
+				>
 					<Markdown deactivateLinks={false}>{post.content}</Markdown>
 				</div>
-				<Link to={`/tags/${tag}/posts/${post.id}`} className="show-more">
-					Show more
-				</Link>
+				{showReadMoreLink && (
+					<Link to={`/tags/${tag}/posts/${post.id}`} className="show-more">
+						Show more
+					</Link>
+				)}
 				{note && <NoteAttachment note={note} tag={tag} className="mt-2" />}
 
 				<div className="mt-2 flex w-full text-sm">
