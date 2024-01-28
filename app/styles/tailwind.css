@@ -207,7 +207,7 @@
 		   with a horizontal overflow. The CSS below makes the ellipsis be
 		   shown if there are multiple lines with a vertical overflow. */  		
 		display: -webkit-box;
-		-webkit-line-clamp: 5; /* Twitter also cuts off at about 5 lines */
+		-webkit-line-clamp: 10;
 		-webkit-box-orient: vertical;
 	}
 
