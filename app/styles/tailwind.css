@@ -201,12 +201,17 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 
+		max-height: 60px;
+
 		/* Normally, the ellipsis will only be shown if there is a single line
 		   with a horizontal overflow. The CSS below makes the ellipsis be
-		   shown if there are multiple lines with a vertical overflow. */
-		display: -webkit-box;
+		   shown if there are multiple lines with a vertical overflow. 
+
+		   However, this is broken in Internet Explorer */
+/*		display: -webkit-box;
 		-webkit-line-clamp: 10;
 		-webkit-box-orient: vertical;
+*/
 	}
 
 	/* Cutoff parents at only two lines. For the parent thread (for providing
