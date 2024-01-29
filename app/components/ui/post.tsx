@@ -9,6 +9,15 @@ import { type ScoredPost } from '#app/ranking.ts'
 import { Direction } from '#app/vote.ts'
 import { Card } from './card.tsx'
 
+/* Keep this relatively high, so people don't often have to click "read more"
+   to read most content. But also not too high, so people don't have to
+   scroll past big walls of text of posts they are not interested in */
+const postTeaserMaxLines = 20
+
+const noteMaxLines = 20
+
+const postContentLineHeight = 1.2 // This should match --post-content-line-height in the CSS
+
 export function PostContent({
 	content,
 	maxLines,
@@ -16,41 +25,89 @@ export function PostContent({
 	deactivateLinks,
 }: {
 	content: string
-	maxLines: number | null
+	maxLines?: number
 	deactivateLinks: boolean
 	showMoreLink?: string
 }) {
-	/* Show or hide the "Show more" link depending on whether the element has been truncated or not */
 	const [isTruncated, setIsTruncated] = useState(false)
-	const showMoreLinkRef = useRef(null)
+	const postContentRef = useRef(null)
 
-	const showOrHideReadMoreLink = function () {
-		var element: HTMLElement = showMoreLinkRef.current!
-		if (element.scrollHeight > element.clientHeight) {
+	const showOrHideEllipsis = function () {
+		var element: HTMLElement = postContentRef.current!
+
+		/* Show all child elements, because we may have hidden some of them last time this function ran */
+		const contentDiv = element.firstChild as ChildNode & {
+			children: HTMLCollection
+		}
+
+		if (!contentDiv.children) {
+			return
+		}
+
+		const children: HTMLCollection = contentDiv.children!
+
+		let n = children.length
+		for (let i = 0; i < n; i++) {
+			let child = children[i]! as HTMLElement
+			child.style.display = 'inline-block'
+		}
+
+		/* Set the isTruncated state to true if there is any content that has been cut off */
+		const maxHeight = element.clientHeight
+		if (element.scrollHeight > maxHeight) {
 			setIsTruncated(true)
 		} else {
 			setIsTruncated(false)
 		}
+
+		/* The following eliminates the one-line gap that occurs between the
+		   first paragraph of the content and the ellipsis in some cases.
+		   Specifically, when the content happens to be cut off between
+		   paragraphs after the vertical gap between one paragraph but before
+		   the next paragraph, then the we end up with an unnecessary gap. 
+		
+		The content div uses a vertical flexbox layout with a gap, and the gap
+		is only shown **between** elements. So if we set display=none for
+		elements that are completely cutoff, then no gap will be placed
+		after the preceding element. */
+
+		if (maxLines !== undefined) {
+			const elementTop = element.offsetTop
+			let n = children.length
+
+			for (let i = 0; i < n; i++) {
+				let child = children[i]! as HTMLElement
+
+				let relativeTop = child.offsetTop - elementTop
+				if (relativeTop >= maxHeight - 2 && i > 0) {
+					child.style.display = 'none'
+				}
+			}
+		}
 	}
 
-	/* Set the value of isTruncated based on the
+	/* Show or hide the ellipsis and readMoreLink based on the
 	   content of the DOM: specifically, whether or not the post content div
 	   is being cut off or not. The code below updates the state correctly
 	   when the browser window is resized.*/
 	useEffect(() => {
-		window.addEventListener('resize', showOrHideReadMoreLink)
-		showOrHideReadMoreLink()
-		return () => window.removeEventListener('resize', showOrHideReadMoreLink)
+		window.addEventListener('resize', showOrHideEllipsis)
+		showOrHideEllipsis()
+		return () => window.removeEventListener('resize', showOrHideEllipsis)
 	}, [])
 
 	return (
 		<>
 			<div
 				className={
-					'markdown postcontent' + (maxLines !== null ? ' truncated' : '')
+					'markdown postcontent' + (maxLines !== undefined ? ' truncated' : '')
 				}
-				style={maxLines !== null ? { maxHeight: `${maxLines * 20}px` } : {}}
-				ref={showMoreLinkRef}
+				style={
+					maxLines !== undefined
+						? { maxHeight: `${maxLines * postContentLineHeight}em` }
+						: {}
+				}
+				ref={postContentRef}
 			>
 				<Markdown deactivateLinks={deactivateLinks}>{content}</Markdown>
 			</div>
@@ -115,7 +172,7 @@ export function PostDetails({
 	/* Show or hide the "Show more" link depending on whether the element has been cutoff or not */
 
 	// useEffect(() => {
-	// 	showOrHideReadMoreLink()
+	// 	showOrHideEllipsis()
 	// }, []);
 
 	return (
@@ -144,7 +201,7 @@ export function PostDetails({
 
 				<PostContent
 					content={post.content}
-					maxLines={teaser ? 20 : null}
+					maxLines={teaser ? postTeaserMaxLines : undefined}
 					deactivateLinks={false}
 					showMoreLink={`/tags/${tag}/posts/${post.id}`}
 				/>
@@ -241,7 +298,7 @@ export function NoteAttachment({
 				{note && (
 					<PostContent
 						content={note.content}
-						maxLines={20}
+						maxLines={noteMaxLines}
 						deactivateLinks={true}
 					/>
 				)}

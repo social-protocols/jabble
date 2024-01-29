@@ -18,16 +18,22 @@ export function Markdown({
 	children: string
 	deactivateLinks: boolean
 }) {
-	// Render links as Spans.
-	let options = deactivateLinks
+	const overrides = deactivateLinks
 		? {
 				overrides: {
 					a: {
+						// Render links as Spans.
 						component: DeactivatedLink,
 					},
 				},
 		  }
 		: {}
+
+	const options = {
+		...overrides,
+		forceWrapper: true,
+		forceBlock: true,
+	}
 
 	return (
 		<MarkdownImpl options={options} {...props}>

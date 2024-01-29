@@ -60,6 +60,12 @@
 		--postparent-threadline: #bcbfc2;
 		--note: #f1f5f9;
 		--note-foreground: #434343;
+
+		/* this must be large enough so that scrollHeight is always equal to clientHeight as described here: 
+		https://stackoverflow.com/questions/52815758/why-are-an-elements-scrollheight-and-clientheight-not-the-same-for-some-fonts 
+		This is necessary for the cutoff/see-more/ellipsis logic to work in the PostContent component*/
+
+		--post-content-line-height: 1.2em;
 	}
 
 	.dark {
@@ -114,17 +120,24 @@
 	}
 
 	.markdown {
+		/* Markdown element will always contain a single div because of the forceWrapper option passed in markdown.tsx  */
+		> div {
+			display: flex;
+			flex-direction: column;
+			gap: var(--post-content-line-height);
+		}
+
 		h1 {
 			@apply text-xl font-bold;
-			@apply mb-1;
+			@apply mb-0;
 		}
 		h2 {
 			@apply text-xl font-semibold;
-			@apply mb-1;
+			@apply mb-0;
 		}
 		h3 {
 			@apply text-lg font-semibold;
-			@apply mb-1;
+			@apply mb-0;
 		}
 		h4 {
 			@apply text-base font-semibold;
@@ -158,31 +171,8 @@
 		}
 
 		pre {
-			@apply p-2;
-			@apply mb-4;
+			/*			@apply p-2;*/
 			@apply overflow-x-auto;
-		}
-
-		/*
-		   Use ::after elements instead of margin-bottom to add space after paragraphs, etc. And then don't put the space after the last paragraph.
-		   Otherwise, what happens is a post with 2 1-line paragraphs has a height of 4 lines, and so it gets truncated at 3 lines and an ellipsis and "Show more" link.
-		*/
-
-		p::after,
-		ol::after,
-		ul::after,
-		pre::after {
-			content: '';
-			display: block;
-			height: 20px; /* Height for space between paragraphs */
-		}
-
-		/*  Remove the added space after the last paragraph */
-		p:last-child::after,
-		ol:last-child::after,
-		ul:last-child::after,
-		pre:last-child::after {
-			height: 0;
 		}
 	}
 
@@ -195,8 +185,8 @@
 		h5,
 		h6 {
 			@apply text-sm font-semibold;
-			line-height: 20px;
-			margin-bottom: 20px;
+			line-height: var(--post-content-line-height);
+			margin-bottom: 0px;
 		}
 	}
 
@@ -210,48 +200,42 @@
 		h5,
 		h6 {
 			@apply text-base font-semibold;
-			line-height: 20px;
-			margin-bottom: 20px;
+			line-height: var(--post-content-line-height);
+			margin-bottom: 0px;
 		}
 	}
 
-	/* Cut off the post content after a few lines. Set the line height to 20
-	   so there is a clean cutoff.
-	*/
 	.truncated {
-		line-height: 20px;
-
+		line-height: var(--post-content-line-height);
 		overflow: hidden;
 		text-overflow: ellipsis;
 
 		/* Normally, the ellipsis will only be shown if there is a single line
 		   with a horizontal overflow. The CSS below makes the ellipsis be
 		   shown if there are multiple lines with a vertical overflow. 
-
 		   However, this is broken in Internet Explorer */
 		/*		display: -webkit-box;
 		-webkit-line-clamp: 10;
 		-webkit-box-orient: vertical;
-*/
+		*/
 	}
 
 	/* ellipsis appears immediately after fade to white complete. */
 	.ellipsis {
-		/* Hidden unless the fade-out style is set */
 		position: relative;
 
 		color: #888;
 		font-size: 24px;
 		padding-left: 0px;
-		line-height: 15px;
+		line-height: 0.75em;
 		top: 0px;
 		padding-top: 0px;
-		margin-top: -8px;
+		margin-top: -0.4em;
 	}
 
 	.show-more {
 		padding-left: 0px;
-		margin-top: 4px;
+		margin-top: 0.24em;
 		@apply text-blue-500;
 	}
 }
