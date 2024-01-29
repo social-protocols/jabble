@@ -1,5 +1,6 @@
 // import { Spacer } from '#app/components/spacer.tsx'
 // import { Icon } from '#app/components/ui/icon.tsx'
+import { PostContent, PostDetails } from "#app/components/ui/post.tsx"
 import {
 	type ActionFunctionArgs,
 	type DataFunctionArgs,
@@ -23,8 +24,6 @@ import { zfd } from 'zod-form-data'
 
 import { logPostPageView } from '#app/attention.ts'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { Markdown } from '#app/components/markdown.tsx'
-import { PostDetails } from '#app/components/ui/post.tsx'
 import { type Post } from '#app/db/types.ts'
 // import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno
 
@@ -42,7 +41,6 @@ import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
 
 import { Direction } from '#app/vote.ts'
-
 // const GLOBAL_TAG = "global";
 
 const postIdSchema = z.coerce.number()
@@ -173,13 +171,7 @@ function ParentThread({
 						key={parentPost.id}
 						className="postparent mb-2 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"
 					>
-						<div className="markdown postcontent truncated ">
-							<Markdown
-								deactivateLinks={true} // prevents <a> tags from being rendered inside another <a> tag, which causes hydration errors
-							>
-								{parentPost.content}
-							</Markdown>
-						</div>
+						<PostContent content={parentPost.content} maxLines={3} deactivateLinks={true}/>
 					</div>
 				</Link>
 			))}

@@ -1,6 +1,6 @@
 import { Link, useFetcher } from '@remix-run/react'
 import moment from 'moment'
-import { type FormEvent, useState, useRef, useLayoutEffect } from 'react'
+import { type FormEvent, useState, useRef, useEffect } from 'react'
 import { type Location, LocationType } from '#app/attention.ts'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
@@ -8,6 +8,64 @@ import { type Post } from '#app/db/types.ts'
 import { type ScoredPost } from '#app/ranking.ts'
 import { Direction } from '#app/vote.ts'
 import { Card } from './card.tsx'
+
+
+export function PostContent({
+	content,
+	maxLines,
+	showMoreLink,
+	deactivateLinks,
+}: {
+	content: string
+	maxLines: number | null,
+	deactivateLinks: boolean,
+	showMoreLink: string | null,
+}) {
+
+	/* Show or hide the "Show more" link depending on whether the element has been truncated or not */
+	const [isTruncated, setIsTruncated] = useState(false)
+	const showMoreLinkRef = useRef(null)
+
+	const showOrHideReadMoreLink = function () {
+		var element: HTMLElement = showMoreLinkRef.current!
+		if (element.scrollHeight > element.clientHeight) {
+			setIsTruncated(true)
+		} else {
+			setIsTruncated(false)
+		}
+	}
+
+	/* Set the value of isTruncated based on the
+	   content of the DOM: specifically, whether or not the post content div
+	   is being cut off or not. The code below updates the state correctly
+	   when the browser window is resized.*/
+	useEffect(() => {
+		window.addEventListener('resize', showOrHideReadMoreLink)
+		showOrHideReadMoreLink()
+		return () => window.removeEventListener('resize', showOrHideReadMoreLink)
+	}, [])
+
+
+	return (<>
+		<div
+			className={'markdown postcontent' + (maxLines !== null ? ' truncated' : '')}
+			style={  maxLines !== null ? {maxHeight: `${maxLines*20}px`} : {}}
+			ref={showMoreLinkRef}
+		>
+			<Markdown deactivateLinks={deactivateLinks}>{content}</Markdown>
+		</div>
+		{isTruncated && (<>
+			<div className="ellipsis">...</div>
+			{showMoreLink && (
+				<Link to={showMoreLink} className="show-more">
+					Show more
+				</Link>
+			)}
+		</>)}
+	</>)
+
+}
+
 
 export function PostDetails({
 	tag,
@@ -54,32 +112,11 @@ export function PostDetails({
 	}
 
 	/* Show or hide the "Show more" link depending on whether the element has been cutoff or not */
-	const [showReadMoreLink, setShowReadMoreLink] = useState(true)
-	const readMoreLinkRef = useRef(null)
-
-	const showOrHideReadMoreLink = function () {
-		var element: HTMLElement = readMoreLinkRef.current!
-		if (element.scrollHeight > element.clientHeight) {
-			setShowReadMoreLink(true)
-		} else {
-			setShowReadMoreLink(false)
-		}
-	}
 
 	// useEffect(() => {
 	// 	showOrHideReadMoreLink()
 	// }, []);
 
-	/* use useLayoutEffect to set the value of showReadMoreLink based on the
-	   content of the DOM. Specifically, whether or not the post content div
-	   is being cut off or not. The code below updates the state correctly
-	   when the browser window is resized.*/
-
-	useLayoutEffect(() => {
-		window.addEventListener('resize', showOrHideReadMoreLink)
-		showOrHideReadMoreLink()
-		return () => window.removeEventListener('resize', showOrHideReadMoreLink)
-	})
 
 	return (
 		<div
@@ -104,17 +141,8 @@ export function PostDetails({
 				}
 			>
 				<div className="mt-1 text-right text-sm opacity-50">{ageString}</div>
-				<div
-					className={'markdown postcontent' + (teaser ? ' truncated' : '')}
-					ref={readMoreLinkRef}
-				>
-					<Markdown deactivateLinks={false}>{post.content}</Markdown>
-				</div>
-				{showReadMoreLink && (
-					<Link to={`/tags/${tag}/posts/${post.id}`} className="show-more">
-						Show more
-					</Link>
-				)}
+
+				<PostContent content={post.content} maxLines={(teaser ? 20 : null)} deactivateLinks={false} showMoreLink={`/tags/${tag}/posts/${post.id}`}/>
 				{note && <NoteAttachment note={note} tag={tag} className="mt-2" />}
 
 				<div className="mt-2 flex w-full text-sm">
@@ -204,13 +232,11 @@ export function NoteAttachment({
 		<Link to={`/tags/${tag}/posts/${note.id}`}>
 			<Card className={'bg-note pb-3 pt-2 text-note-foreground ' + className}>
 				<div className="pb-1 text-sm font-medium opacity-50">Top Reply</div>
-				<div className="markdown postcontent truncated">
-					<Markdown
-						deactivateLinks={true} // prevents <a> tags from being rendered inside another <a> tag, which causes hydration errors
-					>
-						{note ? note.content : ''}
-					</Markdown>
-				</div>
+
+				{ note && ( 	
+					<PostContent content={note.content} maxLines={20} deactivateLinks={true}/>
+				)}
+
 			</Card>
 		</Link>
 	)

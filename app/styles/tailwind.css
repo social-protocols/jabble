@@ -136,7 +136,6 @@
 			@apply text-sm font-semibold;
 		}
 		p {
-			@apply mb-4;
 		}
 		a {
 			@apply underline;
@@ -146,12 +145,10 @@
 		ul {
 			list-style-type: circle;
 			list-style-position: inside;
-			@apply mb-4;
 		}
 		ol {
 			list-style-type: upper-roman;
 			list-style-position: inside;
-			@apply mb-4;
 		}
 		li ul {
 			@apply pl-4;
@@ -165,6 +162,29 @@
 			@apply mb-4;
 			@apply overflow-x-auto;
 		}
+
+		/*
+		   Use ::after elements instead of margin-bottom to add space after paragraphs, etc. And then don't put the space after the last paragraph.
+		   Otherwise, what happens is a post with 2 1-line paragraphs has a height of 4 lines, and so it gets truncated at 3 lines and an ellipsis and "Show more" link.
+		*/
+
+		p::after,
+		ol::after,
+		ul::after,
+		pre::after {
+		   content: '';
+		   display: block;
+		   height: 20px; /* Height for space between paragraphs */
+		}
+
+		/*  Remove the added space after the last paragraph */
+		p:last-child::after,
+		ol:last-child::after,
+		ul:last-child::after,
+		pre:last-child::after {
+		       height: 0;
+		}
+
 	}
 
 	.postparent .markdown {
@@ -176,6 +196,8 @@
 		h5,
 		h6 {
 			@apply text-sm font-semibold;
+			line-height: 20px;
+			margin-bottom: 0px;
 		}
 	}
 
@@ -189,19 +211,19 @@
 		h5,
 		h6 {
 			@apply text-base font-semibold;
+			line-height: 20px;
+			margin-bottom: 0px;
 		}
 	}
 
 	/* Cut off the post content after a few lines. Set the line height to 20
 	   so there is a clean cutoff.
 	*/
-	.truncated.postcontent {
+	.truncated {
 		line-height: 20px;
 
 		overflow: hidden;
 		text-overflow: ellipsis;
-
-		max-height: 60px;
 
 		/* Normally, the ellipsis will only be shown if there is a single line
 		   with a horizontal overflow. The CSS below makes the ellipsis be
@@ -214,15 +236,26 @@
 */
 	}
 
-	/* Cutoff parents at only two lines. For the parent thread (for providing
-	   context), two or three lines is a good number. One line is often too
-	   short to get context, but two or three is often plenty. */
-	.postparent .truncated.postcontent {
-		-webkit-line-clamp: 2;
+
+
+	/* ellipsis appears immediately after fade to white complete. */
+	.ellipsis {
+		/* Hidden unless the fade-out style is set */
+		position: relative;
+
+		color: #888;
+		font-size: 24px;
+		padding-left: 0px;
+		line-height: 15px;
+		top: 0px;
+		padding-top: 0px;
+		margin-top: -8px;
 	}
+
 
 	.show-more {
 		padding-left: 0px;
+		margin-top: 4px;
 		@apply text-blue-500;
 	}
 }
