@@ -172,9 +172,9 @@
 		ol::after,
 		ul::after,
 		pre::after {
-		   content: '';
-		   display: block;
-		   height: 20px; /* Height for space between paragraphs */
+			content: '';
+			display: block;
+			height: 20px; /* Height for space between paragraphs */
 		}
 
 		/*  Remove the added space after the last paragraph */
@@ -182,9 +182,8 @@
 		ol:last-child::after,
 		ul:last-child::after,
 		pre:last-child::after {
-		       height: 0;
+			height: 0;
 		}
-
 	}
 
 	.postparent .markdown {
@@ -197,7 +196,7 @@
 		h6 {
 			@apply text-sm font-semibold;
 			line-height: 20px;
-			margin-bottom: 0px;
+			margin-bottom: 20px;
 		}
 	}
 
@@ -212,7 +211,7 @@
 		h6 {
 			@apply text-base font-semibold;
 			line-height: 20px;
-			margin-bottom: 0px;
+			margin-bottom: 20px;
 		}
 	}
 
@@ -230,13 +229,11 @@
 		   shown if there are multiple lines with a vertical overflow. 
 
 		   However, this is broken in Internet Explorer */
-/*		display: -webkit-box;
+		/*		display: -webkit-box;
 		-webkit-line-clamp: 10;
 		-webkit-box-orient: vertical;
 */
 	}
-
-
 
 	/* ellipsis appears immediately after fade to white complete. */
 	.ellipsis {
@@ -251,7 +248,6 @@
 		padding-top: 0px;
 		margin-top: -8px;
 	}
-
 
 	.show-more {
 		padding-left: 0px;

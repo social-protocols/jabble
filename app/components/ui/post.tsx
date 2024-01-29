@@ -9,7 +9,6 @@ import { type ScoredPost } from '#app/ranking.ts'
 import { Direction } from '#app/vote.ts'
 import { Card } from './card.tsx'
 
-
 export function PostContent({
 	content,
 	maxLines,
@@ -17,11 +16,10 @@ export function PostContent({
 	deactivateLinks,
 }: {
 	content: string
-	maxLines: number | null,
-	deactivateLinks: boolean,
-	showMoreLink: string | null,
+	maxLines: number | null
+	deactivateLinks: boolean
+	showMoreLink?: string
 }) {
-
 	/* Show or hide the "Show more" link depending on whether the element has been truncated or not */
 	const [isTruncated, setIsTruncated] = useState(false)
 	const showMoreLinkRef = useRef(null)
@@ -45,27 +43,30 @@ export function PostContent({
 		return () => window.removeEventListener('resize', showOrHideReadMoreLink)
 	}, [])
 
-
-	return (<>
-		<div
-			className={'markdown postcontent' + (maxLines !== null ? ' truncated' : '')}
-			style={  maxLines !== null ? {maxHeight: `${maxLines*20}px`} : {}}
-			ref={showMoreLinkRef}
-		>
-			<Markdown deactivateLinks={deactivateLinks}>{content}</Markdown>
-		</div>
-		{isTruncated && (<>
-			<div className="ellipsis">...</div>
-			{showMoreLink && (
-				<Link to={showMoreLink} className="show-more">
-					Show more
-				</Link>
+	return (
+		<>
+			<div
+				className={
+					'markdown postcontent' + (maxLines !== null ? ' truncated' : '')
+				}
+				style={maxLines !== null ? { maxHeight: `${maxLines * 20}px` } : {}}
+				ref={showMoreLinkRef}
+			>
+				<Markdown deactivateLinks={deactivateLinks}>{content}</Markdown>
+			</div>
+			{isTruncated && (
+				<>
+					<div className="ellipsis">...</div>
+					{showMoreLink && (
+						<Link to={showMoreLink} className="show-more">
+							Show more
+						</Link>
+					)}
+				</>
 			)}
-		</>)}
-	</>)
-
+		</>
+	)
 }
-
 
 export function PostDetails({
 	tag,
@@ -117,7 +118,6 @@ export function PostDetails({
 	// 	showOrHideReadMoreLink()
 	// }, []);
 
-
 	return (
 		<div
 			className={
@@ -142,7 +142,12 @@ export function PostDetails({
 			>
 				<div className="mt-1 text-right text-sm opacity-50">{ageString}</div>
 
-				<PostContent content={post.content} maxLines={(teaser ? 20 : null)} deactivateLinks={false} showMoreLink={`/tags/${tag}/posts/${post.id}`}/>
+				<PostContent
+					content={post.content}
+					maxLines={teaser ? 20 : null}
+					deactivateLinks={false}
+					showMoreLink={`/tags/${tag}/posts/${post.id}`}
+				/>
 				{note && <NoteAttachment note={note} tag={tag} className="mt-2" />}
 
 				<div className="mt-2 flex w-full text-sm">
@@ -233,10 +238,13 @@ export function NoteAttachment({
 			<Card className={'bg-note pb-3 pt-2 text-note-foreground ' + className}>
 				<div className="pb-1 text-sm font-medium opacity-50">Top Reply</div>
 
-				{ note && ( 	
-					<PostContent content={note.content} maxLines={20} deactivateLinks={true}/>
+				{note && (
+					<PostContent
+						content={note.content}
+						maxLines={20}
+						deactivateLinks={true}
+					/>
 				)}
-
 			</Card>
 		</Link>
 	)
