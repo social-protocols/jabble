@@ -125,8 +125,6 @@ export async function flushTagPageStats(tag: string, rankedPosts: RankedPosts) {
 
 		let decayFactor = movingAverageAlpha ** weightedDeltaViews
 
-		console.log("Insert into tag stats", tagId, prior.weight, prior.mean)
-
 		const query = db
 			.insertInto('TagStats')
 			.values({

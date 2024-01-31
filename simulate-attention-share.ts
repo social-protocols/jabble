@@ -1,4 +1,5 @@
 import assert from 'assert'
+import { exit } from 'process'
 import * as cliProgress from 'cli-progress'
 // @ts-ignore: https://github.com/jstat/jstat/pull/271
 import jStat from 'jstat'
@@ -13,19 +14,22 @@ import {
 import { type Tally } from '#app/beta-gamma-distribution.ts'
 import { type Post } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
+
+import { createPost } from '#app/post.ts'
+import {
+	getRankedPosts,
+	getRandomlyRankedPosts,
+	MAX_RESULTS,
+	invalidateTagPage,
+	//getRankedPosts,
+	totalInformationGain,
+} from '#app/ranking.ts'
 // import bloomFilters from 'bloom-filters';
 
 // import { sql } from 'kysely';
 
 import { createPost } from '#app/post.ts'
 
-import {
-	getRankedPosts,
-	MAX_RESULTS,
-	//getRankedPosts,
-	totalInformationGain,
-	type RankedPost,
-} from '#app/ranking.ts'
 import { getOrInsertTagId } from '#app/tag.ts'
 import { Direction, vote } from '#app/vote.ts'
 
@@ -89,7 +93,8 @@ m=1000, nRanks=90, votesPerPeriod=20, alpha=.99, MSE = 2.548275797826558
 
 const m = 400
 const nPosts = 100
-const nRanks = MAX_RESULTS
+const nRanks = 20
+// MAX_RESULTS
 const nUsers = 10000
 // const votesPerPeriod = 20
 
@@ -102,9 +107,11 @@ const nUsers = 10000
 const votesPerView = GLOBAL_PRIOR_VOTES_PER_VIEW.mean
 const viewsPerPeriod = nUsers
 const votesPerPeriod = viewsPerPeriod * votesPerView
-console.log(votesPerView, viewsPerPeriod, votesPerPeriod)
+console.log('Votes per view', votesPerView, viewsPerPeriod, votesPerPeriod)
 
 const tag = 'test' + Math.random()
+const debugPostNum = null
+// const debugPostNum = 1
 
 // const m = 5
 // const nPosts = 90
@@ -147,17 +154,17 @@ async function simulateAttentionShare() {
 	const upvoteProbabilities = rankedPosts.map(() => Math.random())
 	// const upvoteProbabilities = rankedPosts.map(() => jStat.uniform.sample(0, 1))
 
-	console.log('Creating sim user')
-	await db
-		.insertInto('User')
-		.values({
-			id: '101',
-			username: 'bob',
-			email: 'bob@test.com',
-			// password: { create: createPassword('bob') },
-		})
-		.onConflict(oc => oc.column('id').doNothing())
-		.execute()
+	// console.log('Creating sim user')
+	// await db
+	// 	.insertInto('User')
+	// 	.values({
+	// 		id: '101',
+	// 		username: 'bob',
+	// 		email: 'bob@test.com',
+	// 		// password: { create: createPassword('bob') },
+	// 	})
+	// 	.onConflict(oc => oc.column('id').doNothing())
+	// 	.execute()
 
 	console.log('Creating simulated posts')
 	let postIds = Array(nPosts)
@@ -208,6 +215,7 @@ async function simulateAttentionShare() {
 		// let rankedPosts = [...postIds]
 		// shuffleArray(rankedPosts)
 		// let tagPage = rankedPosts
+
 		// let tagPage = rankedPosts.map(postNumber => postIds[postNumber]).slice(0, nRanks)
 
 		// let tagPage = (await getRankedPosts(tag)).map((p: Post) => p.id)
@@ -264,6 +272,30 @@ async function simulateAttentionShare() {
 			// continue;
 			// get a random number of votes from a Poisson distribution with the actual vote rate
 			let votes = jStat.poisson.sample(actualVoteRate)
+
+			if (postNumber == debugPostNum) {
+				console.log(
+					'Iteration',
+					t,
+					'Rank',
+					oneBasedRank,
+					'Post',
+					postNumber,
+					'voteRate',
+					voteRate,
+					'voteShare',
+					voteShare,
+					'votesPerPeriod',
+					votesPerPeriod,
+					'actualVoteRate',
+					actualVoteRate,
+					'votes',
+					votes,
+					'post',
+					post,
+				)
+			}
+
 			// console.log("Votes for rank", i, votes, actualVoteRate, voteShare, voteRate)
 
 			// let upvoteProbability = upvoteProbabilities[postNumber]
@@ -272,23 +304,27 @@ async function simulateAttentionShare() {
 
 			// Log the votes
 			for (let j = 0; j < votes; j++) {
-				let location = {
-					locationType: locationType,
-					oneBasedRank: oneBasedRank,
-				}
+				let randomLocation = post.random
+					? {
+							locationType: locationType,
+							oneBasedRank: oneBasedRank,
+					  }
+					: null
 
 				// cycle through the users when choosing a user to vote...
-				let userId = (1000 + (t % nUsers)).toString()
+				let userId = (1000 + (totalVotes % nUsers)).toString()
 
-				await vote(tag, userId, postId, null, direction, location)
+				await vote(tag, userId, postId, null, direction, randomLocation)
 				totalVotes++
 			}
 		}
-		bar1.update(t)
+		debugPostNum == null && bar1.update(t)
 
 		// update stats in the DB. logTagPageView just increments counters in memory which
 		// need to be update periodically.
-		await flushTagPageStats(tag, tagPage)
+		// console.log('Clearing tag page cache')
+		await invalidateTagPage(tag)
+		// await flushTagPageStats(tag, tagPage)
 	}
 	bar1.stop()
 
@@ -305,7 +341,7 @@ async function simulateAttentionShare() {
 		.orderBy('oneBasedRank')
 		.execute()
 
-	assert(voteShares.length == nRanks, 'voteShares.length == nRanks')
+	// assert(voteShares.length == nRanks, 'voteShares.length == nRanks')
 
 	let squareErrorLocations = 0
 	for (let i = 0; i < nRanks; i++) {
@@ -366,7 +402,10 @@ async function simulateAttentionShare() {
 		}
 		let t = tally.total
 
-		let estimatedVoteRate = t / a
+		// let fatigueFactor = 0.01
+		// let adjustedAttention = (1 - Math.exp(-fatigueFactor * a)) / fatigueFactor
+		let adjustedAttention = a
+		let estimatedVoteRate = t / adjustedAttention
 
 		let error = (actualVoteRate - estimatedVoteRate) / actualVoteRate
 		console.log(
