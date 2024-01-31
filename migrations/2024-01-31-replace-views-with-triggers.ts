@@ -4,8 +4,6 @@ import { type Kysely, sql } from 'kysely'
 // https://kysely.dev/docs/migrations
 // https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html
 
-
-
 export async function up(db: Kysely<any>): Promise<void> {
 	await sql`
 		drop view if exists currentVote
@@ -26,7 +24,6 @@ export async function up(db: Kysely<any>): Promise<void> {
 	await sql`
 		drop view if exists detailedTally
 	`.execute(db)
-
 
 	await sql`
 		create table if not exists CurrentVote (

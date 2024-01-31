@@ -236,6 +236,4 @@ CREATE UNIQUE INDEX "_RoleToUser_AB_unique" ON "_RoleToUser"("A", "B");
 	await sql`
 CREATE INDEX "_RoleToUser_B_index" ON "_RoleToUser"("B");
 `.execute(db)
-
-
 }

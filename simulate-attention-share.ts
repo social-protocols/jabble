@@ -1,10 +1,8 @@
 import assert from 'assert'
-import { exit } from 'process'
 import * as cliProgress from 'cli-progress'
 // @ts-ignore: https://github.com/jstat/jstat/pull/271
 import jStat from 'jstat'
 import {
-	flushTagPageStats,
 	GLOBAL_PRIOR_VOTES_PER_VIEW,
 	LocationType,
 	logTagPageView,
@@ -12,14 +10,12 @@ import {
 	tagStats,
 } from '#app/attention.ts'
 import { type Tally } from '#app/beta-gamma-distribution.ts'
-import { type Post } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
 
 import { createPost } from '#app/post.ts'
 import {
 	getRankedPosts,
 	getRandomlyRankedPosts,
-	MAX_RESULTS,
 	invalidateTagPage,
 	//getRankedPosts,
 	totalInformationGain,
@@ -27,8 +23,6 @@ import {
 // import bloomFilters from 'bloom-filters';
 
 // import { sql } from 'kysely';
-
-import { createPost } from '#app/post.ts'
 
 import { getOrInsertTagId } from '#app/tag.ts'
 import { Direction, vote } from '#app/vote.ts'
@@ -50,22 +44,22 @@ share(expected votes) at each location is proportional to
 We then simulate a world where we have nPosts posts, each which has a
 voteRate (how much more or likely that post is to be voted than average)
 drawn from a log-normal distribution. We go through m time steps, and at each
-time step, we generate a page with randomly sorted, then calculate the "true" vote rate for
-each post given the rank it is shown at and it's voteRate. Specifically:
+time step, we generate a page with randomly sorted, then calculate the "true"
+vote rate for each post given the rank it is shown at and it's voteRate.
+Specifically:
 
 	trueVoteRate = voteRate * attentionShare[location]
 
-We then sample from a Poisson distribution with
-that true vote rate and simulate that number of votes. We then call
-logVoteOnRandomlyRankedPost() to log the votes. Over time, the logic
-in logVoteOnRandomlyRankedPost should update the locationStats table so that
-attentionShare approximates the true attentionShare at that location.
+We then sample from a Poisson distribution with that true vote rate and
+simulate that number of votes. Over time, the logic in attention.ts should
+update the locationStats table so that attentionShare approximates the true
+attentionShare at that location.
 
 We then compare the estimated attentionShare in the locationStats table with
 the true attention share and calculate average square error. This should be
 reasonably low -- e.g. under 0.1 is probably acceptable.
 
-We also track the cumulative attention of each vote, where on each impression
+We also track the cumulative attention of each post. On each impression
 the delta attention for a post is the total expected votes per impression
 times the vote share for the location the post was shown at.
 
@@ -75,7 +69,7 @@ Bayesian averaging). We then calculate the total error between the estimated
 vote factor and the known vote factors for each post.
 
 
-logVoteOnRandomlyRankedPost uses an exponentially weighted moving average in
+Use an exponentially weighted moving average in
 LocationStats. There is a tradeoff in the selection of this alpha. Too big ,
 and the estimates for locations at large ranks(large value of oneBasedRank)
 will be way off, because we get few votes at those locations, and so the
@@ -85,17 +79,45 @@ behavior changes. As of writing it seems at least .9999 (window of
 approximately 1,000 to 10,000) is necessary to get small errors. Roughly it is saying we do
 calculations over the last 10k sitewide votes.
 
-m=1000, nRanks=90, votesPerPeriod=20, alpha=.99, MSE = 2.548275797826558
-" alpha=.999, MSE=0.08746957597521526
-" alpha=.9999, MSE= 0.008163008679462406
+
+WARMUP
+
+Before running the real simulation, run a "warmup" with a different set of
+posts. The purpose of the warmup is to get accurate locationStats estimates,
+without which our cumulative attention stats will be way off, resulting in
+bad voteRate estimates.  
+
+
+RANDOM_POOL_SIZE
+
+ The random pool serves two purposes. One is for the system
+to learn the value of the LocationStats table by inserting random posts at
+different positions and seeing how many votes they get (the randomness
+removes the confounding factor of the story's vote rate). But the other is
+to learn the voteRates of the individual posts. 
+
+The results of the simulation depend a great deal on the selection of
+RANDOM_POOL_SIZE. It sets our exploration/exploitation tradeoff. Increasing this will 
+reduce the error of our voteRate estimates, but there is some point where reducing it too much
+results in too much exploring and not enough exploiting, and information gain per view
+goes down. 
+
+Once we implement Thompson sampling we would no longer need a random pool for
+the second reason. We would only need a very small random pool for the first
+purpose -- keeping our LocationStats table up-to-date (based on the
+assumption that user behavior resulting in different attention deltas at
+different ranks gradually shifts over time). The success of Thomson sampling would
+be manifest in an increased information gain per view (the last output of this script).
+
 
 */
 
+const warmupEpochs = 100
 const m = 400
 const nPosts = 100
 const nRanks = 20
 // MAX_RESULTS
-const nUsers = 10000
+// const nUsers = 10000
 // const votesPerPeriod = 20
 
 // If the actual votesPerView is very different from the global prior, then
@@ -105,8 +127,13 @@ const nUsers = 10000
 // the true average.
 
 const votesPerView = GLOBAL_PRIOR_VOTES_PER_VIEW.mean
-const viewsPerPeriod = nUsers
+const viewsPerPeriod = 10000
 const votesPerPeriod = viewsPerPeriod * votesPerView
+
+// Make this big to prevent a "fatigue" phenomenon causing a gradual reduction in vote rate,
+// because the more view a post gets, the more
+// likely it is that a user has already seen (and voted on) the post
+const nUsers = votesPerPeriod * m
 console.log('Votes per view', votesPerView, viewsPerPeriod, votesPerPeriod)
 
 const tag = 'test' + Math.random()
@@ -166,30 +193,12 @@ async function simulateAttentionShare() {
 	// 	.onConflict(oc => oc.column('id').doNothing())
 	// 	.execute()
 
-	console.log('Creating simulated posts')
-	let postIds = Array(nPosts)
-	for (let i = 0; i < nPosts; i++) {
-		let postId = await createPost(
-			tag,
-			null,
-			'Post ' +
-				i +
-				' true voteRate=' +
-				Math.exp(logVoteRates[i]) +
-				', true upvoteProbabilities=' +
-				upvoteProbabilities[i],
-			'101',
-		)
-		postIds[i] = postId
-	}
-
-	let minPostId = postIds[0]
-
 	let tagId = await getOrInsertTagId(tag)
 
 	console.log('Creating simulated users')
+	const startingUserId = 1000
 	for (let i = 0; i < nUsers; i++) {
-		let userId = i + 1000
+		let userId = i + startingUserId
 		await db
 			.insertInto('User')
 			.values({
@@ -202,47 +211,24 @@ async function simulateAttentionShare() {
 			.execute()
 	}
 
-	console.log('Running simulation')
-
-	const bar1 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
-	bar1.start(m, 0)
-
 	let totalVotes = 0
 
-	// for each period
-	for (let t = 0; t < m; t++) {
-		// rank posts randomly
-		// let rankedPosts = [...postIds]
-		// shuffleArray(rankedPosts)
-		// let tagPage = rankedPosts
+	const simulateOneEpoch = async function (
+		tag: string,
+		t: number,
+		startPostId: number,
+		random: boolean,
+	) {
+		let rankedPosts = random
+			? await getRandomlyRankedPosts(tag)
+			: await getRankedPosts(tag)
 
-		// let tagPage = rankedPosts.map(postNumber => postIds[postNumber]).slice(0, nRanks)
-
-		// let tagPage = (await getRankedPosts(tag)).map((p: Post) => p.id)
-		// let rankedPosts = await getRandomlyRankedPosts(tag)
-
-		// time the query
-		let rankedPosts = await getRankedPosts(tag)
-
-		let tagPage = rankedPosts.posts
-		if (t == 30) {
-			// console.log(rankedPosts)
-			// throw new Error('Done')
-			// process.exit(1)
-		}
-		// console.log(tagPage)
-		// let tagPage = await getRandomlyRankedPosts(tag)
-
-		// .map(p => p.id)
-
-		// console.log("First post", rankedPosts[0])
-
-		// cycle through users
-		// let userId = (1000 + t % nUsers).toString()
+		// let tagPage = rankedPosts.posts
 
 		// assume all users views the tag page
 		for (let i = 0; i < viewsPerPeriod; i++) {
-			let userId = (1000 + i).toString()
+			// let userId = ((startingUserId + i) % nUsers).toString()
+			let userId = (startingUserId + (i % nUsers)).toString()
 			logTagPageView(userId, tag, rankedPosts)
 		}
 
@@ -253,10 +239,12 @@ async function simulateAttentionShare() {
 			const post = rankedPosts.posts[i]!
 			let postId = post.id
 
-			let postNumber = postId - minPostId
+			let postNumber = postId - startPostId
 
 			// assert(postNumber != undefined, "postNumber is not undefined")
 			// let postId = postIds[postNumber]
+
+			// console.log("i, postNumber, postId", i,  postNumber, postId)
 
 			// get the actual vote rate for this post at this rank
 			let voteRate = Math.exp(logVoteRates[postNumber])
@@ -266,7 +254,6 @@ async function simulateAttentionShare() {
 
 			let actualVoteRate = votesPerPeriod * voteShare * voteRate
 
-			// console.log("Actual vote rate", actualVoteRate, votesPerPeriod, voteShare, voteRate)
 			assert(actualVoteRate > 0)
 
 			// continue;
@@ -318,15 +305,44 @@ async function simulateAttentionShare() {
 				totalVotes++
 			}
 		}
-		debugPostNum == null && bar1.update(t)
 
-		// update stats in the DB. logTagPageView just increments counters in memory which
-		// need to be update periodically.
-		// console.log('Clearing tag page cache')
+		// update stats in the DB. Otherwise the same tag page gets server over and over gain.
 		await invalidateTagPage(tag)
-		// await flushTagPageStats(tag, tagPage)
 	}
-	bar1.stop()
+
+	// First do a warmup. The purpose of the warmup is to get accurate locationStats estimates, without which
+	// our cumulative attention stats will be way off, resulting in bad voteRate estimates.
+	{
+		console.log('Creating simulated posts')
+		let minPostId = await createSimulatedPosts(tag + '-warmup', nPosts)
+
+		const bar1 = new cliProgress.SingleBar(
+			{},
+			cliProgress.Presets.shades_classic,
+		)
+		bar1.start(warmupEpochs, 0)
+		// for each period
+		for (let t = 0; t < warmupEpochs; t++) {
+			await simulateOneEpoch(tag + '-warmup', t, minPostId, true)
+			debugPostNum == null && bar1.update(t)
+		}
+
+		bar1.stop()
+	}
+
+	// Now do the proper simulation. Since we've done the warmup, we can
+	// can more or less accurately estimate cumulative attention and therefore make better voteRate estimates.
+	let minPostId = await createSimulatedPosts(tag, nPosts)
+
+	const bar2 = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic)
+	bar2.start(m, 0)
+	// for each period
+	for (let t = 0; t < m; t++) {
+		await simulateOneEpoch(tag, t, minPostId, false)
+		debugPostNum == null && bar2.update(t)
+	}
+
+	bar2.stop()
 
 	console.log(
 		'Total votes',
@@ -366,7 +382,7 @@ async function simulateAttentionShare() {
 	let postStats = await db
 		.selectFrom('PostStats')
 		// where postId > minPostId
-		.where('postId', '>=', postIds[0])
+		.where('postId', '>=', minPostId)
 		.where('tagId', '=', tagId)
 		.selectAll()
 		.orderBy('postId')
@@ -374,7 +390,7 @@ async function simulateAttentionShare() {
 
 	let postTally = await db
 		.selectFrom('CurrentTally')
-		.where('postId', '>=', postIds[0])
+		.where('postId', '>=', minPostId)
 		.where('tagId', '=', tagId)
 		.selectAll()
 		.orderBy('postId')
@@ -386,7 +402,7 @@ async function simulateAttentionShare() {
 
 	let squareErrorPosts = 0
 	for (let i = 0; i < nPosts; i++) {
-		let postId = postIds[i]
+		let postId = minPostId
 
 		let actualVoteRate = Math.exp(logVoteRates[i])
 		let stats = postStats[i]
@@ -436,11 +452,17 @@ async function simulateAttentionShare() {
 	console.log('Information gain per view', totalGain / totalViews)
 }
 
-function shuffleArray<T>(array: T[]) {
-	for (let i = array.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1))
-		;[array[i], array[j]] = [array[j]!, array[i]!]
+async function createSimulatedPosts(
+	tag: string,
+	nPosts: number,
+): Promise<number> {
+	let postIds = Array(nPosts)
+	for (let i = 0; i < nPosts; i++) {
+		let postId = await createPost(tag, null, 'Post ' + i, '101')
+		postIds[i] = postId
 	}
+
+	return postIds[0]
 }
 
 await simulateAttentionShare()

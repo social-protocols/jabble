@@ -5,13 +5,13 @@ import { db } from '#app/db.ts'
 
 import { GammaDistribution } from './beta-gamma-distribution.ts'
 import { initPostStats } from './post.ts'
-import { MAX_RESULTS } from './ranking.ts'
+import { MAX_RESULTS, type RankedPosts } from './ranking.ts'
 import { getOrInsertTagId } from './tag.ts'
 
 // Global prior votes/view. The TagStats table keeps track of votes/view per tag, but
 // we need to start with some prior. This value is currently just a wild guess.
 export const GLOBAL_PRIOR_VOTES_PER_VIEW = new GammaDistribution(0.002, 10000)
-export const RANDOM_POOL_SIZE = 0.4
+export const RANDOM_POOL_SIZE = 0.25
 
 export enum LocationType {
 	NewPost = 0,
