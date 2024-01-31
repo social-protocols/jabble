@@ -36,8 +36,8 @@ export async function up(db: Kysely<any>): Promise<void> {
 			direction Integer not null,
 			latest integer NOT NULL,
 			createdAt DATETIME NOT NULL,
-			primary key(userId, tagId, postId
-		)
+			primary key(userId, tagId, postId)
+		);
 
 	`.execute(db)
 
@@ -194,5 +194,6 @@ export async function up(db: Kysely<any>): Promise<void> {
 			from currentInformedTally
 			group by tagId, postId, noteId 
 		)
+		select * from a where noteId is not null;
 	`.execute(db)
 }

@@ -224,7 +224,7 @@
 	.ellipsis {
 		position: relative;
 
-		color: #888;
+/*		color: #888;*/
 		font-size: 24px;
 		padding-left: 0px;
 		line-height: 0.75em;
