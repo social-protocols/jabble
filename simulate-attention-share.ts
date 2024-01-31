@@ -210,7 +210,22 @@ async function simulateAttentionShare() {
 		// let tagPage = rankedPosts
 		// let tagPage = rankedPosts.map(postNumber => postIds[postNumber]).slice(0, nRanks)
 
-		const tagPage = (await getRankedPosts(tag)).map((p: Post) => p.id)
+		// let tagPage = (await getRankedPosts(tag)).map((p: Post) => p.id)
+		// let rankedPosts = await getRandomlyRankedPosts(tag)
+
+		// time the query
+		let rankedPosts = await getRankedPosts(tag)
+
+		let tagPage = rankedPosts.posts
+		if (t == 30) {
+			// console.log(rankedPosts)
+			// throw new Error('Done')
+			// process.exit(1)
+		}
+		// console.log(tagPage)
+		// let tagPage = await getRandomlyRankedPosts(tag)
+
+		// .map(p => p.id)
 
 		// console.log("First post", rankedPosts[0])
 
@@ -220,13 +235,15 @@ async function simulateAttentionShare() {
 		// assume all users views the tag page
 		for (let i = 0; i < viewsPerPeriod; i++) {
 			let userId = (1000 + i).toString()
-			logTagPageView(userId, tag)
+			logTagPageView(userId, tag, rankedPosts)
 		}
 
 		// for each rank
 		for (let i = 0; i < nRanks; i++) {
 			let oneBasedRank = i + 1
-			let postId = tagPage[i]!
+
+			const post = rankedPosts.posts[i]!
+			let postId = post.id
 
 			let postNumber = postId - minPostId
 

@@ -5,6 +5,7 @@ import { type Post } from '#app/db/types.ts' // this is the Database interface w
 import { db } from '#app/db.ts'
 // import { cumulativeAttention } from './attention.ts';
 import {
+	RANDOM_POOL_SIZE,
 	// logTagPageView,
 	logTagPreview,
 	flushTagPageStats,
@@ -40,12 +41,16 @@ type PostWithStats = Post & {
 }
 
 // const fatigueFactor = .9
-const RANDOM_POOL_SIZE = 0.1
 const attentionCutoff = 2 // Note all posts start with 1 unit of attention (from poster)
 
-export const MAX_RESULTS = 90
+export const MAX_RESULTS = 100
 
-let rankingsCache = new LRUCache<string, RankedPost[]>({
+export type RankedPosts = {
+	posts: RankedPost[]
+	effectiveRandomPoolSize: number
+}
+
+let rankingsCache = new LRUCache<string, RankedPosts>({
 	max: 100,
 	ttl: 1000 * 60, // one minute
 
@@ -57,15 +62,17 @@ let rankingsCache = new LRUCache<string, RankedPost[]>({
 
 	// when we dispose of the page from the cache, call flushTagPageStats to update attention
 	// stats in the DB for each post on the tag page.
-	dispose: (posts, tag, _reason) => {
-		flushTagPageStats(
-			tag,
-			posts.map(p => p.id),
-		)
+	dispose: (rankedPosts, tag, _reason) => {
+		flushTagPageStats(tag, rankedPosts)
 	},
 })
 
-export async function clearRankingsCacheForTagPage(tag: string) {
+export async function invalidateTagPage(tag: string) {
+	const rankedPosts = rankingsCache.get(tag)!
+	if (rankedPosts !== undefined) {
+		await flushTagPageStats(tag, rankedPosts)
+	}
+
 	rankingsCache.delete(tag)
 }
 
@@ -408,7 +415,7 @@ export async function getDefaultFeed(): Promise<TagPreview[]> {
 	let tags: string[] = await getRankedTags()
 
 	for (let tag of tags) {
-		let posts: RankedPost[] = (await getRankedPosts(tag)).slice(0, 2)
+		let posts: RankedPost[] = (await getRankedPosts(tag)).posts.slice(0, 2)
 
 		if (posts.length == 0) {
 			continue

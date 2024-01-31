@@ -1,13 +1,17 @@
+import assert from 'assert'
 import { sql } from 'kysely'
 import { type TagStats } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
 
 import { GammaDistribution } from './beta-gamma-distribution.ts'
 import { initPostStats } from './post.ts'
+import { MAX_RESULTS } from './ranking.ts'
 import { getOrInsertTagId } from './tag.ts'
+
 // Global prior votes/view. The TagStats table keeps track of votes/view per tag, but
 // we need to start with some prior. This value is currently just a wild guess.
-export const GLOBAL_PRIOR_VOTES_PER_VIEW = new GammaDistribution(0.002, 1000)
+export const GLOBAL_PRIOR_VOTES_PER_VIEW = new GammaDistribution(0.002, 10000)
+export const RANDOM_POOL_SIZE = 0.4
 
 export enum LocationType {
 	NewPost = 0,
@@ -45,7 +49,6 @@ function getOrCreateStatsForTag(tag: string): TagStatsAccumulator {
 export function logTagVote(tag: string) {
 	let stats = getOrCreateStatsForTag(tag)
 
-	// console.log("Logging tag vote", tag)
 	stats.votes += 1
 }
 
@@ -69,8 +72,13 @@ export function logTagPreview(userId: string, tag: string) {
 	}
 }
 
-export function logTagPageView(userId: string, tag: string) {
+export function logTagPageView(
+	userId: string,
+	tag: string,
+	rankedPosts: RankedPosts,
+) {
 	let stats = getOrCreateStatsForTag(tag)
+
 	let filter = stats.filter
 	let key = userId
 
@@ -80,7 +88,10 @@ export function logTagPageView(userId: string, tag: string) {
 	}
 }
 
-export async function flushTagPageStats(tag: string, posts: number[]) {
+export async function flushTagPageStats(tag: string, rankedPosts: RankedPosts) {
+	assert(rankedPosts.posts, 'rankedPosts.posts')
+	// assert(rankedPosts.posts.length > 0, 'rankedPosts.posts.length > 0')
+	const posts = rankedPosts.posts
 	let tagId = await getOrInsertTagId(tag)
 
 	let deltaViews = 0
@@ -99,18 +110,22 @@ export async function flushTagPageStats(tag: string, posts: number[]) {
 		return
 	}
 
+	const weightedDeltaViews = deltaViews * rankedPosts.effectiveRandomPoolSize
+
 	const prior = GLOBAL_PRIOR_VOTES_PER_VIEW.update({
 		count: deltaVotes,
-		total: deltaViews,
+		total: weightedDeltaViews,
 	})
 
 	let votesPerView = 0
 	// Update tag stats, including total votes, views, and a moving average votesPerView
 	{
-		let movingAverageAlpha = 0.9999
+		let movingAverageAlpha = 0.99999
 		let windowSize = 1 / (1 - movingAverageAlpha)
 
-		let decayFactor = movingAverageAlpha ** deltaViews
+		let decayFactor = movingAverageAlpha ** weightedDeltaViews
+
+		console.log("Insert into tag stats", tagId, prior.weight, prior.mean)
 
 		const query = db
 			.insertInto('TagStats')
@@ -121,13 +136,13 @@ export async function flushTagPageStats(tag: string, posts: number[]) {
 			})
 			.onConflict(oc =>
 				oc.column('tagId').doUpdateSet({
-					views: eb => eb('views', '+', deltaViews),
+					views: eb => eb('views', '+', weightedDeltaViews),
 					votesPerView: sql<number>`
 						case 
-						when views < ${windowSize} || ${deltaViews} == 0 then
-							(votesPerView*views + ${deltaVotes}) / (views + ${deltaViews})
+						when views < ${windowSize} || ${weightedDeltaViews} == 0 then
+							(votesPerView*views + ${deltaVotes}) / (views + ${weightedDeltaViews})
 						else 
-							votesPerView * ${decayFactor} + ${deltaVotes}/${deltaViews}*(1 - ${decayFactor})
+							votesPerView * ${decayFactor} + ${deltaVotes}/${weightedDeltaViews}*(1 - ${decayFactor})
 						end
 					`,
 				}),
@@ -136,19 +151,42 @@ export async function flushTagPageStats(tag: string, posts: number[]) {
 
 		const result = await query.execute()
 
-		// console.log("REturned valuefrom udate tag stats", result)
+		// console.log(
+		// 	'REturned value from update tag stats',
+		// 	'weightedDeltaViews',
+		// 	weightedDeltaViews.toFixed(1),
+		// 	'deltaVotes',
+		// 	deltaVotes,
+		// 	'rankedPosts.effectiveRandomPoolSize',
+		// 	rankedPosts.effectiveRandomPoolSize,
+		// 	'votesPerView',
+		// 	result[0]!.votesPerView.toFixed(5),
+		// 	'views',
+		// 	result[0]!.views.toFixed(3),
+		// 	'votes',
+		// 	(result[0]!.votesPerView * result[0]!.views).toFixed(1),
+		// 	'deltaVotes/weightedDeltaViews',
+		// 	(deltaVotes / weightedDeltaViews).toFixed(3),
+		// )
 		votesPerView = result[0]!.votesPerView
 	}
 
-	// instead of using actual deltaVotes, use votesPerView*deltaViews, which is equal to deltaVotes
+	// instead of using actual deltaVotes, use votesPerView*weightedDeltaViews, which is equal to deltaVotes
 	// on average, but will be "smoother".
 	let deltaAttention = votesPerView * deltaViews
+
+	// console.log(
+	// 	'Saving post stats',
+	// 	votesPerView,
+	// 	weightedDeltaViews,
+	// 	deltaAttention,
+	// )
 
 	// Update individual post stats
 	for (let i = 0; i < posts.length; i++) {
 		await savePostStats(
 			tagId,
-			posts[i]!,
+			posts[i]!.id,
 			{ locationType: LocationType.TagPage, oneBasedRank: i + 1 },
 
 			deltaAttention,
@@ -179,9 +217,11 @@ async function savePostStats(
 ) {
 	await initPostStats(tagId, postId)
 
-	// console.log("REsult of initial insert", tagId, postId, result)
+	// if (postId === 2803) {
+	// 	console.log('Updating post stats', tagId, postId, location, deltaAttention)
+	// }
 
-	await db
+	const _result = await db
 		.updateTable('PostStats')
 		.from('LocationStats')
 		// .from('TagStats')
@@ -290,12 +330,9 @@ export async function logVoteOnRandomlyRankedPost(location: Location) {
 				`,
 			latestSitewideVotes: sitewideVotes,
 		}))
-
-	// console.log("Update location stats Query is", query.compile())
+		.returningAll()
 
 	await query.execute()
-
-	// console.log("Logged exploration vote", result)
 }
 
 // Seed locationStats with a good guess about the relative number of votes at each location
@@ -315,7 +352,7 @@ export async function seedStats() {
 	let locationType = LocationType.TagPage
 
 	// loop i from 1 to 90
-	for (let i = 1; i <= 90; i++) {
+	for (let i = 1; i <= MAX_RESULTS; i++) {
 		let oneBasedRank = i
 		let voteShare = rankOneVoteShare / oneBasedRank
 

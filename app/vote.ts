@@ -31,9 +31,9 @@ export async function vote(
 
 	// Todo: dedupe in case user toggles vote multiple times
 	if (added) {
-		logTagVote(tag)
 		if (randomLocation != null) {
-			logVoteOnRandomlyRankedPost(randomLocation)
+			await logTagVote(tag)
+			await logVoteOnRandomlyRankedPost(randomLocation)
 		}
 	}
 }

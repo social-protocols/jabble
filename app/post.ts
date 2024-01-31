@@ -4,7 +4,7 @@ import { db } from '#app/db.ts'
 import { Direction, insertVoteRecord } from '#app/vote.ts'
 
 import { logAuthorView } from './attention.ts'
-import { clearRankingsCacheForTagPage } from './ranking.ts'
+import { invalidateTagPage } from './ranking.ts'
 import { getOrInsertTagId } from './tag.ts'
 
 // express the above fn in typescript with kysely queries
@@ -46,7 +46,7 @@ export async function createPost(
 		tagIds.map(tagId => logAuthorView(authorId, tagId, createdPostId)),
 	)
 
-	await Promise.all(allTags.map(tag => clearRankingsCacheForTagPage(tag)))
+	await Promise.all(allTags.map(tag => invalidateTagPage(tag)))
 
 	return createdPostId
 }

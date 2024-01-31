@@ -43,14 +43,15 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	const userId: string | null = await getUserId(request)
 
-	const posts = await getRankedPosts(tag)
+	const rankedPosts = await getRankedPosts(tag)
+	const posts = rankedPosts.posts
 	let positions: Position[] = []
 	if (userId) {
-		logTagPageView(userId, tag)
+		logTagPageView(userId, tag, rankedPosts)
 		positions = await getUserPositions(
 			userId,
 			tag,
-			posts.map(p => p.id),
+			rankedPosts.posts.map(p => p.id),
 		)
 	}
 
