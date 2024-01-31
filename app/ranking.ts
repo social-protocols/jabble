@@ -134,13 +134,52 @@ export async function getScoredPost(
 	return { ...postWithStats, ...scoreData }
 }
 
-export async function getRankedPosts(tag: string): Promise<RankedPost[]> {
+export async function getRankedPosts(tag: string): Promise<RankedPosts> {
 	let tagId = await getOrInsertTagId(tag)
 
 	let result = rankingsCache.get(tag)
 	if (result == undefined) {
 		let allPosts = await getPostsWithStats(tagId)
-		result = await rankPosts(tagId, allPosts)
+
+		const rankedPosts = await rankPosts(tagId, allPosts)
+		result = {
+			posts: rankedPosts,
+			effectiveRandomPoolSize:
+				rankedPosts.filter(p => p.random).length / rankedPosts.length,
+		}
+		rankingsCache.set(tag, result)
+	}
+	// logTagPageView(userId, tag)
+
+	return result
+}
+
+export async function getRandomlyRankedPosts(
+	tag: string,
+): Promise<RankedPosts> {
+	let tagId = await getOrInsertTagId(tag)
+
+	let result = rankingsCache.get(tag)
+	if (result == undefined) {
+		let allPosts: PostWithStats[] = await getPostsWithStats(tagId)
+
+		const rankedPosts = await Promise.all(
+			allPosts.slice(0, MAX_RESULTS).map(async (p, i) => {
+				const s = await score(tagId, p)
+				return {
+					oneBasedRank: i + 1,
+					random: true,
+					note: null,
+					...p,
+					...s,
+				}
+			}),
+		)
+		shuffleArray(rankedPosts)
+		result = {
+			posts: rankedPosts,
+			effectiveRandomPoolSize: 1,
+		}
 		rankingsCache.set(tag, result)
 	}
 	// logTagPageView(userId, tag)
@@ -163,29 +202,27 @@ async function rankPosts(
 			}
 		}),
 	)
-	// scoredPosts = scoredPosts.filter(p => p.informationValue > 0)
 
-	let nPosts = scoredPosts.length
-
-	// Then split into two pools: rankedPosts, and randomPosts, based on
-	// whether cumulative attention is above or below the cutoff.
-
-	let rankedPosts = scoredPosts
-		.filter(p => p.attention >= attentionCutoff)
+	let sortedPosts = scoredPosts
+		.filter(p => p.informationValue > 0 || p.attention < attentionCutoff)
 		.sort((a, b) => {
 			return b.score - a.score
 		})
-	let nRankedPosts = rankedPosts.length
 
-	let randomPosts = scoredPosts.filter(p => p.attention < attentionCutoff)
-	let nRandomPosts = randomPosts.length
+	let nPosts = sortedPosts.length
 
-	let nResults = nRankedPosts + nRandomPosts
+	let rankablePosts = sortedPosts.filter(p => p.attention >= attentionCutoff)
+	let nRankablePosts = rankablePosts.length
+
+	// let randomPosts = scoredPosts.filter(p => p.attention < attentionCutoff)
+	// let nRandomPosts = randomPosts.length
+
+	let nResults = nPosts
 	if (nResults > MAX_RESULTS) {
 		nResults = MAX_RESULTS
 	}
 
-	// console.log("Number of posts", nResults, nPosts, nRandomPosts, nRankedPosts)
+	// console.log("Number of posts", nResults, nPosts, nRandomPosts, nRankablePosts)
 
 	// Finally, create nResults results by iterating through the ranked posts
 	// while randomly inserting posts from the random pool (with a
@@ -194,34 +231,94 @@ async function rankPosts(
 	// have nResults total posts.
 
 	let results: RankedPost[] = Array(nResults)
-	let nInsertions = 0
-	for (let i = 0; i < nResults; i++) {
-		let ep
-		let p = null
 
-		if (
-			(i < nRankedPosts && Math.random() >= RANDOM_POOL_SIZE) ||
-			nRandomPosts == 0
-		) {
-			p = rankedPosts[i - nInsertions]
-			// console.log("Taking post ranked", i, i - nInsertions)
-			ep = false
+	let nRankedPosts = 0
+	let nRandomPosts = 0
+
+	let randomlySortedPosts = scoredPosts.map((_p, i) => i)
+	shuffleArray(randomlySortedPosts)
+	let randomlySelectedPosts = new Set<number>()
+	let randomPosts: number[] = Array(nResults)
+
+	let randoms = [...Array(nResults).keys()]
+	shuffleArray(randoms)
+	randoms = randoms.slice(0, RANDOM_POOL_SIZE * nResults)
+	randoms.forEach((rank, i) => {
+		let randomPostNum = randomlySortedPosts[i]!
+		nRandomPosts += 1
+		randomPosts[rank] = randomPostNum
+		randomlySelectedPosts.add(randomPostNum)
+	})
+
+	// First, choose which ranks will show a random post, and which post will be randomly shown
+	// console.log(
+	// 	'Random pool ranking',
+	// 	nResults,
+	// 	randomPosts,
+	// 	randomlySelectedPosts,
+	// )
+
+	// Now create the final ranking by iterating over each rank and:
+	// - Using the random post, if there is one
+	// - Use the next rankable posts -- if it is has not been selected as a random post
+	let nextRankedPostNum = 0
+	for (let i = 0; i < nResults; i++) {
+		let random = false
+		let p = null
+		let postNum: number | null = null
+		if (randomPosts[i] !== undefined) {
+			random = true
+			postNum = randomPosts[i]!
+		} else if (nRankedPosts + nRandomPosts >= nRankablePosts) {
+			// If we have run out of rankable posts, select more
+			// random posts to fill in.
+			random = true
+
+			let randomPostNum = randomlySortedPosts[nRandomPosts]!
+			nRandomPosts += 1
+
+			// console.log(
+			// 	'Random fill',
+			// 	i,
+			// 	nRankedPosts,
+			// 	nRandomPosts,
+			// 	nRankablePosts,
+			// 	randomPostNum,
+			// )
+
+			postNum = randomPostNum
 		} else {
-			assert(nRandomPosts > 0, 'nRandomPosts > 0') // this must be true if my logic is correct. But is my logic correct.
-			let randomPostNum = Math.floor(Math.random() * nRandomPosts)
-			// console.log("Taking random post", i, nRandomPosts, randomPostNum)
-			p = randomPosts[randomPostNum]
-			randomPosts.splice(randomPostNum, 1)
-			nRandomPosts--
-			assert(
-				nRandomPosts == randomPosts.length,
-				'nRandomPosts == randomPosts.length',
-			)
-			nInsertions += 1
-			ep = true
+			while (
+				randomlySelectedPosts.has(nextRankedPostNum) ||
+				sortedPosts[nextRankedPostNum]!.attention < attentionCutoff
+			) {
+				nextRankedPostNum += 1
+			}
+			// console.log('NExt ranked post', nextRankedPostNum, nRankedPosts)
+			nRankedPosts++
+			assert(nRankedPosts <= nRankablePosts)
+			postNum = nextRankedPostNum
+			nextRankedPostNum++
 		}
-		assert(p !== undefined, `p is undefined`)
-		let s = { oneBasedRank: i + 1, random: ep }
+		// console.log('i, postNum', i, postNum, random, nPosts)
+		randomPosts[i] = postNum
+		assert(postNum !== null, `postNum is null`)
+
+		p = sortedPosts[postNum]
+		if (p == undefined) {
+			console.log(
+				i,
+				randomPosts,
+				postNum,
+				nRankedPosts,
+				nRankablePosts,
+				nRandomPosts,
+				nextRankedPostNum,
+			)
+			assert(p !== undefined, `p is undefined`)
+		}
+
+		let s = { oneBasedRank: i + 1, random: random }
 
 		let note = await getTopNote(tagId, p)
 
@@ -235,6 +332,7 @@ async function rankPosts(
 
 		results[i] = { ...p, ...s, note }
 	}
+	// console.log('Final ranking', randomPosts)
 
 	return results
 }
@@ -426,4 +524,11 @@ export async function getDefaultFeed(): Promise<TagPreview[]> {
 	}
 
 	return feed
+}
+
+function shuffleArray<T>(array: T[]) {
+	for (let i = array.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1))
+		;[array[i], array[j]] = [array[j]!, array[i]!]
+	}
 }
