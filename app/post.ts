@@ -1,7 +1,7 @@
 import assert from 'assert'
 import { type Post } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { db } from '#app/db.ts'
-import { Direction, insertVoteRecord } from '#app/vote.ts'
+import { Direction, vote } from '#app/vote.ts'
 
 import { logAuthorView } from './attention.ts'
 import { invalidateTagPage } from './ranking.ts'
@@ -26,16 +26,17 @@ export async function createPost(
 
 	const createdPostId = results[0]!.id
 
-	const tagIds: number[] = await Promise.all(
-		allTags.map(tag => getOrInsertTagId(tag)),
-	)
 
 	const direction: Direction = Direction.Up
 
 	await Promise.all(
-		tagIds.map(tagId =>
-			insertVoteRecord(tagId, authorId, createdPostId, null, direction),
+		allTags.map(tag =>
+			vote(tag, authorId, createdPostId, null, direction, null),
 		),
+	)
+
+	const tagIds: number[] = await Promise.all(
+		allTags.map(tag => getOrInsertTagId(tag)),
 	)
 
 	if (parentId != null) {

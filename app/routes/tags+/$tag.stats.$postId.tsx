@@ -15,10 +15,6 @@ import { z } from 'zod'
 
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
-import {
-	GLOBAL_PRIOR_VOTE_RATE,
-	GLOBAL_PRIOR_UPVOTE_PROBABILITY,
-} from '#app/probabilities.ts'
 
 // import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno
 
@@ -69,13 +65,19 @@ function relativeEntropy(p: number, q: number): number {
 export default function PostStats() {
 	const { post, tag } = useLoaderData<typeof loader>()
 
-	const totalCrossEntropy = post.voteTotal * relativeEntropy(post.p, post.q)
+	const totalCrossEntropy = post.sampleSize * relativeEntropy(post.p, post.q)
 
 	// const voteRatePrior = GLOBAL_PRIOR_VOTE_RATE
 	// const upvoteProbabilityPrior = GLOBAL_PRIOR_UPVOTE_PROBABILITY
 
-	const informationValueNewVotes = post.voteTotal * (1 + Math.log2(post.p))
+	const informationValueNewVotes = post.sampleSize * (1 + Math.log2(post.p))
 	const informationValueTotal = informationValueNewVotes - totalCrossEntropy
+
+// - **attention:** ${post.attention.toFixed(3)}
+// - **vote rate:** ${post.voteRate.toFixed(3)}
+//   - voteRate = Bayesian Average(votes/attention, voteRatePrior)
+// - **information rate (new votes):** ${post.informationRate.toFixed(3)}
+//   - informationRate = voteRate * (1 + log(p)) 
 
 	const markdown = `
 # Stats for post [${post.id}](/tags/${tag}/posts/${
@@ -87,12 +89,9 @@ export default function PostStats() {
 			? 'null'
 			: `[${post.parentId}](/tags/${tag}/stats/${post.parentId})`
 	}
-- **upvotes:** ${post.voteCount}
-- **downvotes:** ${post.voteTotal - post.voteCount}
-- **votes:** ${post.voteTotal}
-- **attention:** ${post.attention.toFixed(3)}
-- **vote rate:** ${post.voteRate.toFixed(3)}
-  - voteRate = Bayesian Average(votes/attention, voteRatePrior)
+- **upvotes:** ${post.count}
+- **downvotes:** ${post.sampleSize - post.count}
+- **votes:** ${post.sampleSize}
 - **q**: ${post.q.toFixed(3)}
   - q = Bayesian Average(upvotes/votes), upvoteProbabilityPrior)
   - see [Docs on Rating and Evaluating Content](https://social-protocols.org/global-brain/rating-and-evaluating-content.html)
@@ -119,8 +118,6 @@ export default function PostStats() {
   - see [Docs on Information Value](https://social-protocols.org/global-brain/information-value.html)
 - **information value created (total)**: ${informationValueTotal.toFixed(3)}
   - informationValue = informationValueNewVotes - cognitiveDissonance
-- **information rate (new votes):** ${post.informationRate.toFixed(3)}
-  - informationRate = voteRate * (1 + log(p)) 
 	`
 
 	return (

@@ -1,4 +1,4 @@
-import { type Selectable } from 'kysely'
+import { type Selectable, type Insertable } from 'kysely'
 import type * as schema from '#app/db/kysely-types.ts'
 
 // The types exported from kysely-types (which are generated from prisma.schema) are not used directly in app code.
@@ -9,9 +9,6 @@ import type * as schema from '#app/db/kysely-types.ts'
 
 export type User = Selectable<schema.User>
 export type Post = Selectable<schema.Post>
-export type CurrentTally = Selectable<schema.CurrentTally>
-export type CurrentInformedTally = Selectable<schema.CurrentInformedTally>
-export type DetailedTally = Selectable<schema.DetailedTally>
 export type Tag = Selectable<schema.Tag>
 export type Password = Selectable<schema.Password>
 export type PostStats = Selectable<schema.PostStats>
@@ -19,3 +16,6 @@ export type LocationStats = Selectable<schema.LocationStats>
 export type ExplorationStats = Selectable<schema.ExplorationStats>
 export type TagStats = Selectable<schema.TagStats>
 export type Verification = Selectable<schema.Verification>
+export type ScoreData = Selectable<schema.ScoreData>
+export type VoteEvent = Selectable<schema.VoteEvent>
+export type InsertableVoteEvent = Insertable<schema.VoteEvent>

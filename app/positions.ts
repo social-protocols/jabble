@@ -5,22 +5,9 @@ import { type Direction } from './vote.ts'
 
 export type Position = {
 	postId: number
-	direction: Direction
+	vote: Direction
 }
 
-// let isPostId: unique symbol = Symbol();
-
-// export async function getPositions(userId: string, tag: string, postIds: number[]): Promise<Position[]> {
-//   let tagId = await getOrInsertTagId(tag)
-
-//   return await db
-//     .selectFrom("CurrentVote")
-//     .where("userId", "=", userId)
-//     .where("tagId", "=", tagId)
-//     .where("postId", "in", postIds)
-//     .select(["postId", "direction"])
-//     .execute()
-// }
 
 export async function getUserPositions(
 	userId: string,
@@ -30,14 +17,14 @@ export async function getUserPositions(
 	let tagId = await getOrInsertTagId(tag)
 
 	return await db
-		.selectFrom('CurrentVote')
+		.selectFrom('Vote')
 		.innerJoin('Post', 'postId', 'Post.id')
 		.where('userId', '=', userId)
 		.where('tagId', '=', tagId)
 		.where(eb =>
 			eb.or([eb('parentId', 'in', postIds), eb('id', 'in', postIds)]),
 		)
-		.select(['postId', 'direction'])
+		.select(['postId', 'vote'])
 		.execute()
 }
 

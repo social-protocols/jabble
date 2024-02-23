@@ -4,36 +4,17 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 	: ColumnType<T, T | undefined, T>
 export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
-export type CurrentInformedTally = {
-	tagId: number
-	postId: number
-	noteId: number
-	count: number
-	total: number
-}
-export type CurrentTally = {
-	tagId: number
-	postId: number
-	count: number
-	total: number
-}
-export type CurrentVote = {
+
+export type Vote = {
 	userId: string
 	tagId: number
 	postId: number
-	direction: number
+	vote: number
 	latest: number
 	createdAt: number
 }
-export type DetailedTally = {
-	tagId: number
-	postId: number
-	noteId: number
-	countGivenShownThisNote: number
-	totalGivenShownThisNote: number
-	countGivenNotShownThisNote: number
-	totalGivenNotShownThisNote: number
-}
+
+
 export type ExplorationStats = {
 	rowid: Generated<number>
 	votes: number
@@ -120,20 +101,35 @@ export type Verification = {
 	 */
 	expiresAt: number | null
 }
-export type VoteHistory = {
-	rowid: Generated<number>
+
+export type VoteEvent = {
+	voteEventId: Generated<number>
 	userId: string
 	tagId: number
+	parentId: number | null
 	postId: number
 	noteId: number | null
-	direction: number
+	vote: number
 	createdAt: Generated<number>
 }
+
+export type ScoreData = {
+      tagId: number|null
+    , parentId: number|null
+    , postId: number
+    , topNoteId: number|null
+    , parentP: number|null
+    , parentQ: number|null
+    , p: number
+    , q: number
+    , count: number
+    , sampleSize: number
+    , updatedAt: Generated<number>
+}
+
+
 export type DB = {
-	CurrentInformedTally: CurrentInformedTally
-	CurrentTally: CurrentTally
-	CurrentVote: CurrentVote
-	DetailedTally: DetailedTally
+	Vote: Vote
 	ExplorationStats: ExplorationStats
 	LocationStats: LocationStats
 	Password: Password
@@ -144,5 +140,6 @@ export type DB = {
 	TagStats: TagStats
 	User: User
 	Verification: Verification
-	VoteHistory: VoteHistory
+	VoteEvent: VoteEvent
+	ScoreData: ScoreData
 }

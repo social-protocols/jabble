@@ -1,5 +1,7 @@
 import crypto from 'crypto'
+import { createReadStream , watch } from 'fs';
 import path from 'path'
+import { createInterface } from 'readline';
 import { fileURLToPath } from 'url'
 import {
 	createRequestHandler as _createRequestHandler,
@@ -19,8 +21,12 @@ import express from 'express'
 import rateLimit from 'express-rate-limit'
 import getPort, { portNumbers } from 'get-port'
 import helmet from 'helmet'
+import { type Kysely } from 'kysely'
 import morgan from 'morgan'
 // import { clearRankingsCache } from '#app/ranking.ts'
+
+
+import { processScoreEvents } from '#app/score-events.ts'
 
 installGlobals()
 
@@ -223,6 +229,10 @@ const portToUse = await getPort({
 	port: portNumbers(desiredPort, desiredPort + 100),
 })
 
+
+let scoreEventsWatcher = await processScoreEvents()
+
+
 const server = app.listen(portToUse, () => {
 	const addy = server.address()
 	const portUsed =
@@ -264,6 +274,12 @@ ${chalk.bold('Press Ctrl+C to stop')}
 })
 
 closeWithGrace(async () => {
+
+	if (scoreEventsWatcher) {
+	    scoreEventsWatcher.close();
+	    // scoreEventsWatcher = null;
+	}
+
 	// await clearRankingsCache()
 	await new Promise((resolve, reject) => {
 		server.close(e => (e ? reject(e) : resolve('ok')))

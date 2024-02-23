@@ -18,7 +18,7 @@ import {
 	getRandomlyRankedPosts,
 	invalidateTagPage,
 	//getRankedPosts,
-	totalInformationGain,
+	// totalInformationGain,
 } from '#app/ranking.ts'
 // import bloomFilters from 'bloom-filters';
 
@@ -166,6 +166,10 @@ function voteShareAtRank(oneBasedRank: number): number {
 	return rankFactor(oneBasedRank) / normalizationConstant
 }
 
+
+// TODO +flaw here: votesPerView shouldn't be constant, should increase as we put higher voteRate stories higher up
+// +plus is it votesPerView or votesPerEpoch
+
 async function simulateAttentionShare() {
 	console.log(
 		`Simulating ${m} time periods, ${nUsers} users, {votesPerPeriod} votes/period, {nRanks} ranks, randomly selected posts`,
@@ -176,10 +180,10 @@ async function simulateAttentionShare() {
 	assert(nPosts >= nRanks, 'nPosts >= nRanks')
 	assert(nUsers >= nPosts, 'nUsers >= nPosts')
 
-	const rankedPosts = Array.from(Array(nPosts).keys())
-	const logVoteRates = rankedPosts.map(() => jStat.normal.sample(0, 0.3))
-	const upvoteProbabilities = rankedPosts.map(() => Math.random())
-	// const upvoteProbabilities = rankedPosts.map(() => jStat.uniform.sample(0, 1))
+	const scoredPosts = Array.from(Array(nPosts).keys())
+	const logVoteRates = scoredPosts.map(() => jStat.normal.sample(0, 0.3))
+	const upvoteProbabilities = scoredPosts.map(() => Math.random())
+	// const upvoteProbabilities = scoredPosts.map(() => jStat.uniform.sample(0, 1))
 
 	// console.log('Creating sim user')
 	// await db
@@ -223,7 +227,7 @@ async function simulateAttentionShare() {
 			? await getRandomlyRankedPosts(tag)
 			: await getRankedPosts(tag)
 
-		// let tagPage = rankedPosts.posts
+		// let tagPage = ScoredPosts.posts
 
 		// assume all users views the tag page
 		for (let i = 0; i < viewsPerPeriod; i++) {
@@ -389,7 +393,7 @@ async function simulateAttentionShare() {
 		.execute()
 
 	let postTally = await db
-		.selectFrom('CurrentTally')
+		.selectFrom('Tally')
 		.where('postId', '>=', minPostId)
 		.where('tagId', '=', tagId)
 		.selectAll()
@@ -447,9 +451,9 @@ async function simulateAttentionShare() {
 	)
 	console.log('Mean Square error for vote rate', squareErrorPosts / nPosts)
 
-	let totalGain = await totalInformationGain(tagId)
-	let totalViews = ts.views
-	console.log('Information gain per view', totalGain / totalViews)
+	// let totalGain = await totalInformationGain(tagId)
+	// let totalViews = ts.views
+	// console.log('Information gain per view', totalGain / totalViews)
 }
 
 async function createSimulatedPosts(

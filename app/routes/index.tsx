@@ -53,7 +53,7 @@ export function UserFeed({ feed }: { feed: TagPreview[] }) {
 
 				let p = new Map<number, Direction>()
 				for (let position of positions) {
-					p.set(position.postId, position.direction)
+					p.set(position.postId, position.vote)
 				}
 
 				console.log('Tag preview', tag)
@@ -81,8 +81,8 @@ export function UserFeed({ feed }: { feed: TagPreview[] }) {
 										: null
 
 									return (
-										<div className="flex-1 items-stretch">
-											<li key={post.id}>
+										<div key={post.id} className="flex-1 items-stretch">
+											<li>
 												<div className="w-full flex-1 justify-self-center">
 													<PostDetails
 														post={post}

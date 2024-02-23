@@ -75,7 +75,7 @@ export function logTagPreview(userId: string, tag: string) {
 export function logTagPageView(
 	userId: string,
 	tag: string,
-	rankedPosts: RankedPosts,
+	_rankedPosts: RankedPosts,
 ) {
 	let stats = getOrCreateStatsForTag(tag)
 

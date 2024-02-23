@@ -132,7 +132,7 @@ export function PostDetails({
 	teaser,
 	randomLocation,
 	position,
-	notePosition,
+	notePosition
 }: {
 	tag: string
 	post: ScoredPost
@@ -142,6 +142,7 @@ export function PostDetails({
 	position: Direction
 	notePosition: Direction
 }) {
+
 	// The vote buttons use the fetcher and shouldRevalidate to do a post without reloading the page.
 	// So we need to get the current state of the user's vote on this post from the fetcher
 	const fetcher = useFetcher<{ state: Direction; postId: number }>()
@@ -150,8 +151,7 @@ export function PostDetails({
 			? fetcher.data.state
 			: position
 
-	const nReplies = post.nReplies
-	const nRepliesString = nReplies === 1 ? '1 reply' : `${nReplies} replies`
+	const nRepliesString = post.nReplies === 1 ? '1 reply' : `${post.nReplies} replies`
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
 

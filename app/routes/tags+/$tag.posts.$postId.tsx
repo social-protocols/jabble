@@ -34,6 +34,7 @@ import {
 	getTopNote,
 	getScoredPost,
 	type RankedPost,
+	// type RankedPosts,
 	type ScoredPost,
 } from '#app/ranking.ts'
 import { getOrInsertTagId } from '#app/tag.ts'
@@ -60,11 +61,14 @@ export async function loader({ params, request }: DataFunctionArgs) {
 	const userId: string | null = await getUserId(request)
 	const post: ScoredPost = await getScoredPost(tag, postId)
 
+	console.log('Post is', post)
+
+
 	invariantResponse(post, 'Post not found', { status: 404 })
 
 	const transitiveParents = await getTransitiveParents(post.id)
 
-	let replies: RankedPost[] = await getRankedReplies(tag, post.id)
+	let replies: RankedPost[] = (await getRankedReplies(tag, post.id)).posts
 
 	const tagId = await getOrInsertTagId(tag)
 	// Get the top note, which may be selected randomly
@@ -88,7 +92,7 @@ export async function loader({ params, request }: DataFunctionArgs) {
 		replies,
 		tag,
 		positions,
-		topNote,
+		topNote
 	})
 
 	return result
@@ -127,7 +131,7 @@ export default function Post() {
 
 	let p = new Map<number, Direction>()
 	for (let position of positions) {
-		p.set(position.postId, position.direction)
+		p.set(position.postId, position.vote)
 	}
 
 	let position = p.get(post.id) || Direction.Neutral
