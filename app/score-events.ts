@@ -1,9 +1,7 @@
-import { createReadStream, watch } from "fs";
+import { spawn } from 'child_process';
 import { env } from "process";
-import { createInterface } from "readline";
 import { type InsertableScoreEvent } from './db/types.ts';
 import { db } from "./db.ts";
-import { spawn } from 'child_process';
 
 const scoreEventsPath = env.SCORE_EVENTS_PATH!
 
@@ -48,5 +46,7 @@ export async function processScoreEvents() {
   tail.on('close', (code) => {
       console.log(`tail child process exited with code ${code}`);
   });
+
+  return tail
 
 }
