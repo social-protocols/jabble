@@ -25,7 +25,7 @@ export async function vote(
 	postId: number,
 	noteId: number | null,
 	direction: Direction,
-	randomLocation: Location | null,
+	randomLocation?: Location | null,
 ) {
 	const tagId = await getOrInsertTagId(tag)
 
