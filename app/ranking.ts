@@ -140,6 +140,8 @@ export async function getRankedPosts(tag: string): Promise<RankedPosts> {
 		.selectAll('Score')
 		.select(sql<number>`replies`.as('nReplies'))
 		.where('Score.tagId', "=", tagId)
+		.orderBy('Score.score', 'desc')
+		.limit(MAX_RESULTS)
 
 	const scoredPosts: ScoredPost[] = await query.execute()
 

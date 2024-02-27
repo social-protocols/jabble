@@ -209,7 +209,7 @@ export function PostDetails({
 
 				<div className="mt-2 flex w-full text-sm">
 					<Link to={`/tags/${tag}/stats/${post.id}`} className="hyperlink">
-						{informedProbabilityString}%
+						{informedProbabilityString}% ({post.score} bits)
 					</Link>
 					<Link to={`/tags/${tag}/posts/${post.id}`} className="hyperlink ml-2">
 						{nRepliesString}
