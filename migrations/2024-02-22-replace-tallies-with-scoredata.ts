@@ -105,17 +105,20 @@ export async function up(db: Kysely<any>): Promise<void> {
 
     await sql`
         create table if not exists ScoreData(
-            tagId               integer
+            scoreEventId        integer
+            , tagId               integer
             , parentId          integer
             , postId            integer not null
             , topNoteId         integer
             , parentP           real
             , parentQ           real
-            , p                 real not null
-            , q                 real not null
+            , p                 real
+            , q                 real
             , count             integer not null
             , sampleSize       integer not null
-            , updatedAt integer not null default (unixepoch('subsec')*1000)
+            , overallP             real not null    
+            , voteEventId      integer not null
+            , voteEventTime    integer not null
             , primary key(tagId, postId)
         ) strict;
     `.execute(db)

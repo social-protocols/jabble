@@ -114,17 +114,20 @@ export type VoteEvent = {
 }
 
 export type ScoreData = {
-      tagId: number|null
+	scoreEventId: number
+    , tagId: number|null
     , parentId: number|null
     , postId: number
     , topNoteId: number|null
     , parentP: number|null
     , parentQ: number|null
-    , p: number
-    , q: number
+    , p: number|null
+    , q: number|null
     , count: number
     , sampleSize: number
-    , updatedAt: Generated<number>
+    , overallP: number
+    , voteEventId: number
+    , voteEventTime: number
 }
 
 
