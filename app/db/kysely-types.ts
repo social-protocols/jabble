@@ -121,8 +121,8 @@ export type ScoreEvent = {
     , topNoteId: number|null
     , parentP: number|null
     , parentQ: number|null
-    , p: number|null
-    , q: number|null
+    , p: number
+    , q: number
     , count: number
     , sampleSize: number
     , overallP: number
