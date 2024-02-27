@@ -5,7 +5,7 @@
 import { type DataFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import { LocationType, type Location } from '#app/attention.ts'
-import { PostDetails } from '#app/components/ui/post.tsx'
+import { PostDetails , ParentPost } from '#app/components/ui/post.tsx'
 import {
 	getDefaultFeed,
 	getUserFeed,
@@ -84,6 +84,7 @@ export function UserFeed({ feed }: { feed: TagPreview[] }) {
 										<div key={post.id} className="flex-1 items-stretch">
 											<li>
 												<div className="w-full flex-1 justify-self-center">
+													{ post.parent && <ParentPost parentPost={post.parent!} tag={tag} /> }
 													<PostDetails
 														post={post}
 														note={post.note}

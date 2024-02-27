@@ -22,7 +22,7 @@ export type ScoredPost = Post & Score & {nReplies: number}
 
 export const MAX_RESULTS = 100
 
-export type RankedPost = ScoredPost & { random: boolean; note: Post | null }
+export type RankedPost = ScoredPost & { random: boolean; note: Post | null; parent: Post | null }
 
 export type RankedPosts = {
 	posts: RankedPost[]
@@ -150,6 +150,7 @@ export async function getRankedPosts(tag: string): Promise<RankedPosts> {
 			return { 
 				...post ,
 				note: post.topNoteId == null ? null : (await getPost(post.topNoteId!)),
+				parent: post.parentId == null ? null : (await getPost(post.parentId!)),
 				random: false,
 			} 
 		}

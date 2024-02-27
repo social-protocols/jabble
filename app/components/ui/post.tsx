@@ -248,6 +248,34 @@ export function PostDetails({
 	)
 }
 
+export function ParentPost({
+	parentPost,
+	tag,
+}: {
+	parentPost: Post
+	tag: string
+}) {
+
+	console.log("In <ParentPost>", parentPost)
+	return (
+		<div className="border-l-4 border-postparent-threadline">
+				<Link key={parentPost.id} to={`/tags/${tag}/posts/${parentPost.id}`}>
+					<div
+						key={parentPost.id}
+						className="postparent mb-2 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"
+					>
+						<PostContent
+							content={parentPost.content}
+							maxLines={3}
+							deactivateLinks={true}
+						/>
+					</div>
+				</Link>
+		</div>
+	)
+}
+
+
 function ReplyForm({
 	post,
 	tag,
