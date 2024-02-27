@@ -12,6 +12,11 @@ reset-db:
 	npx tsx migrate.ts
 	npx tsx seed.ts
 
+reset-all:
+	rm -rf ~/social-protocols-data/*
+	touch $SCORE_EVENTS_PATH
+	just reset-db
+
 migrate:
 	npx tsx migrate.ts
 
