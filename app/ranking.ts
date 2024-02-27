@@ -1,7 +1,7 @@
 import assert from 'assert'
 import { sql } from 'kysely'
 import { LRUCache } from 'lru-cache'
-import { type ScoreData, type Post } from '#app/db/types.ts' // this is the Database interface we defined earlier
+import { type Score, type Post } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { db } from '#app/db.ts'
 // import { cumulativeAttention } from './attention.ts';
 import {
@@ -15,7 +15,7 @@ import { getPost } from './post.ts'
 import { getOrInsertTagId } from './tag.ts'
 
 
-export type ScoredPost = Post & ScoreData & {nReplies: number}
+export type ScoredPost = Post & Score & {nReplies: number}
 
 // const fatigueFactor = .9
 // const attentionCutoff = 2 // Note all posts start with 1 unit of attention (from poster)
@@ -93,19 +93,20 @@ export async function getScoredPost(
 
 	const tagId = await getOrInsertTagId(tag)
 
+
 	let query = db
 		.selectFrom('Post')
-		.innerJoin('ScoreData', 'ScoreData.postId', 'Post.id')
+		.innerJoin('Score', 'Score.postId', 'Post.id')
               .leftJoin('PostStats', join =>
                       join
                               .onRef('PostStats.postId', '=', 'Post.id')
                               .on('PostStats.tagId', '=', tagId),
                       )
 		.selectAll('Post')
-		.selectAll('ScoreData')
+		.selectAll('Score')
 		.select(sql<number>`replies`.as('nReplies'))
 		.where('Post.id', "=", postId)
-		.where('ScoreData.tagId', "=", tagId)
+		.where('Score.tagId', "=", tagId)
 
 	const scoredPost: ScoredPost = (await query.execute())[0]!
 
@@ -129,16 +130,16 @@ export async function getRankedPosts(tag: string): Promise<RankedPosts> {
 
 	let query = db
 		.selectFrom('Post')
-		.innerJoin('ScoreData', 'ScoreData.postId', 'Post.id')
+		.innerJoin('Score', 'Score.postId', 'Post.id')
               .leftJoin('PostStats', join =>
                       join
                               .onRef('PostStats.postId', '=', 'Post.id')
                               .on('PostStats.tagId', '=', tagId)
               )
 		.selectAll('Post')
-		.selectAll('ScoreData')
+		.selectAll('Score')
 		.select(sql<number>`replies`.as('nReplies'))
-		.where('ScoreData.tagId', "=", tagId)
+		.where('Score.tagId', "=", tagId)
 
 	const scoredPosts: ScoredPost[] = await query.execute()
 

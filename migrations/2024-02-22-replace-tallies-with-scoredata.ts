@@ -103,24 +103,70 @@ export async function up(db: Kysely<any>): Promise<void> {
         end;
     `.execute(db)
 
+
     await sql`
-        create table if not exists ScoreData(
-            scoreEventId        integer
-            , tagId               integer
-            , parentId          integer
-            , postId            integer not null
-            , topNoteId         integer
-            , parentP           real
-            , parentQ           real
-            , p                 real
-            , q                 real
-            , count             integer not null
-            , sampleSize       integer not null
-            , overallP             real not null    
-            , voteEventId      integer not null
-            , voteEventTime    integer not null
+        create table ScoreEvent (
+            scoreEventId integer
+            , tagId integer
+            , parentId integer
+            , postId integer not null
+            , topNoteId integer
+            , parentP real
+            , parentQ real
+            , p real
+            , q real
+            , count integer not null
+            , sampleSize integer not null
+            , overallP real not null    
+            , score real
+            , voteEventId integer not null
+            , voteEventTime integer not null
+            , primary key(scoreEventId)
+        ) strict;
+    `.execute(db)
+
+    await sql`
+        create table Score(
+            tagId integer
+            , parentId integer
+            , postId integer not null
+            , topNoteId integer
+            , parentP real
+            , parentQ real
+            , p real
+            , q real
+            , count integer not null
+            , sampleSize integer not null
+            , overallP real not null    
+            , score real
+            , voteEventId integer not null
+            , voteEventTime integer not null
             , primary key(tagId, postId)
         ) strict;
     `.execute(db)
+
+    await sql`
+
+        create trigger afterInsertOnScoreEvent after insert on ScoreEvent
+        begin
+            insert or replace into Score values (
+                new.tagId, 
+                new.parentId, 
+                new.postId, 
+                new.topNoteId, 
+                new.parentP, 
+                new.parentQ, 
+                new.p, 
+                new.q, 
+                new.count, 
+                new.sampleSize, 
+                new.overallP, 
+                new.score, 
+                new.voteEventId, 
+                new.voteEventTime 
+            );
+        end;
+    `.execute(db)
+
 
 }

@@ -1,7 +1,7 @@
 import { createReadStream, watch } from "fs";
 import { env } from "process";
 import { createInterface } from "readline";
-import { type ScoreData } from '#app/db/types.ts'
+import { type InsertableScoreEvent } from './db/types.ts';
 import { db } from "./db.ts";
 import { spawn } from 'child_process';
 
@@ -20,18 +20,17 @@ export async function processScoreEvents() {
 	  buffer = lines.pop() || ''; // Keep the incomplete line in the buffer
 	  lines.forEach(async (line: string) => {
 		  try {
-		    console.log("Got score data line: ",line, line.length)
 
 		    if (line === "") {
 		      return
 		    }
-		    const data: ScoreData = JSON.parse(line) as ScoreData;
+		    const data: InsertableScoreEvent = JSON.parse(line) as InsertableScoreEvent;
 		    // await db.insertInto('yourTableName').values(data).execute();
 
 		    const result = await db
-		      .insertInto('ScoreData')
+		      .insertInto('ScoreEvent')
 		      .values(data)
-		      .onConflict((oc) => oc.columns(['postId', 'tagId']).doUpdateSet({ ...data }))
+		      .onConflict((oc) => oc.columns(['scoreEventId']).doNothing())
 		      .execute()
 
 		    console.log("Result of inserting score data ", result)

@@ -12,5 +12,4 @@ const voteEventsFH = fs.openSync(voteEventsPath, "a");
 export function writeVoteEvent(voteEvent: VoteEvent) {
 	const json = JSON.stringify(voteEvent)
 	fs.writeSync(voteEventsFH, json + "\n");
-	console.log("Write json to ", voteEventsPath, json)
 }

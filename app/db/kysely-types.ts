@@ -113,7 +113,7 @@ export type VoteEvent = {
 	createdAt: Generated<number>
 }
 
-export type ScoreData = {
+export type ScoreEvent = {
 	scoreEventId: number
     , tagId: number|null
     , parentId: number|null
@@ -126,10 +126,27 @@ export type ScoreData = {
     , count: number
     , sampleSize: number
     , overallP: number
+    , score: number
     , voteEventId: number
     , voteEventTime: number
 }
 
+export type Score = {
+    tagId: number|null
+    , parentId: number|null
+    , postId: number
+    , topNoteId: number|null
+    , parentP: number|null
+    , parentQ: number|null
+    , p: number
+    , q: number
+    , count: number
+    , sampleSize: number
+    , overallP: number
+    , score: number
+    , voteEventId: number
+    , voteEventTime: number
+}
 
 export type DB = {
 	Vote: Vote
@@ -144,5 +161,6 @@ export type DB = {
 	User: User
 	Verification: Verification
 	VoteEvent: VoteEvent
-	ScoreData: ScoreData
+	ScoreEvent: ScoreEvent
+	Score: Score
 }
