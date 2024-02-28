@@ -15,7 +15,7 @@
     "dev": "remix dev -c \"node ./server/dev-server.js\" --manual",
     "format": "prettier --write .",
     "lint": "eslint . --fix",
-    "start": "cross-env NODE_ENV=production node .",
+    "start": "cross-env NODE_ENV=production npx tsx .",
     "start:mocks": "cross-env NODE_ENV=production MOCKS=true tsx .",
     "test": "vitest",
     "migrate": "tsx migrate.ts",

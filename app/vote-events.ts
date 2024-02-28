@@ -7,9 +7,14 @@ import { type VoteEvent } from "./db/types.ts"
 // Grab vote events path environment
 const voteEventsPath = env.VOTE_EVENTS_PATH!
 
+if (!voteEventsPath) {
+  throw new Error("VOTE_EVENTS_PATH must be set")
+}
+
 const voteEventsFH = fs.openSync(voteEventsPath, "a");
 
 export function writeVoteEvent(voteEvent: VoteEvent) {
 	const json = JSON.stringify(voteEvent)
 	fs.writeSync(voteEventsFH, json + "\n");
+	console.log("Write json to ", voteEventsPath, json)
 }
