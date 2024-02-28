@@ -1,5 +1,4 @@
-// import { createId } from '@paralleldrive/cuid2'
-import { sql } from 'kysely'
+import bcrypt from 'bcryptjs'
 import { logTagPageView } from '#app/attention.ts'
 import { db } from '#app/db.ts'
 import { createPost } from '#app/post.ts'
@@ -151,23 +150,27 @@ export async function seed() {
 	await vote(tag, alice, 4, null, -1);
 
 
-
-
-
-	// Add a developer user and session ID that is already in my browser, so I remain logged in after I reseed the DB.
+	// Create developer user with password 'password'. Can login with this user by pointing browser to /dev-login
+	const id = 'developer'
 	await db
 		.insertInto('User')
 		.values({
-			id: 'clptz40870002cdvq8rqkbfs5',
+			id: id,
 			username: 'developer',
 			email: 'test@test.com',
-			// password: { create: createPassword('jonathan') },
 		})
 		.execute()
 
-	await sql`insert into session(id, expirationDate, createdAt, updatedAt, userId) values ('clptz40870001cdvqn4rnggxv', 1704471496999, 1701877981251, 1701877981251, 'clptz40870002cdvq8rqkbfs5')`.execute(
-		db,
-	)
+	const hashedPassword = await bcrypt.hash("password", 10)
+
+	await db
+		.insertInto('Password')
+		.values({
+			hash: hashedPassword,
+			userId: id,
+		})
+		.returningAll()
+		.executeTakeFirstOrThrow()
 }
 
 seed().catch(e => {
