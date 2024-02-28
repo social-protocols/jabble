@@ -256,7 +256,6 @@ export function ParentPost({
 	tag: string
 }) {
 
-	console.log("In <ParentPost>", parentPost)
 	return (
 		<div className="border-l-4 border-postparent-threadline">
 				<Link key={parentPost.id} to={`/tags/${tag}/posts/${parentPost.id}`}>

@@ -61,9 +61,6 @@ export async function loader({ params, request }: DataFunctionArgs) {
 	const userId: string | null = await getUserId(request)
 	const post: ScoredPost = await getScoredPost(tag, postId)
 
-	console.log('Post is', post)
-
-
 	invariantResponse(post, 'Post not found', { status: 404 })
 
 	const transitiveParents = await getTransitiveParents(post.id)

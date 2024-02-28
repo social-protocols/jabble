@@ -31,7 +31,7 @@ export async function vote(
 
 	let vote_event: VoteEvent = await insertVoteEvent(tagId, userId, postId, noteId, direction)
 
-	writeVoteEvent(vote_event)
+	await writeVoteEvent(vote_event)
 
 	// console.log("result of inserting vote record", vote_event)
 

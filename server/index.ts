@@ -22,6 +22,7 @@ import helmet from 'helmet'
 import morgan from 'morgan'
 
 
+import { initVoteEventStream } from '#app/vote-events.ts'
 import { processScoreEvents } from '../app/score-events.ts'
 
 installGlobals()
@@ -226,7 +227,9 @@ const portToUse = await getPort({
 })
 
 
+
 let scoreEventsWatcher = await processScoreEvents()
+await initVoteEventStream()
 
 
 const server = app.listen(portToUse, () => {
