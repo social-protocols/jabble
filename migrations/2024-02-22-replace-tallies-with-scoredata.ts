@@ -106,22 +106,25 @@ export async function up(db: Kysely<any>): Promise<void> {
 
     await sql`
         create table ScoreEvent (
-            scoreEventId integer
-            , tagId integer
+            tagId integer
             , parentId integer
             , postId integer not null
             , topNoteId integer
             , parentP real
             , parentQ real
-            , p real
-            , q real
+            , p real not null
+            , q real not null
+            , overallProb real not null    
+            , parentPSampleSize    integer
+            , parentQSampleSize  integer
+            , pSampleSize    integer not null
+            , qSampleSize  integer not null
             , count integer not null
             , sampleSize integer not null
-            , overallP real not null    
-            , score real
+            , score real not null
             , voteEventId integer not null
             , voteEventTime integer not null
-            , primary key(scoreEventId)
+            , primary key(voteEventId, postId)
         ) strict;
     `.execute(db)
 
@@ -133,12 +136,16 @@ export async function up(db: Kysely<any>): Promise<void> {
             , topNoteId integer
             , parentP real
             , parentQ real
-            , p real
-            , q real
+            , p real not null
+            , q real not null
+            , overallProb real not null    
+            , parentPSampleSize    integer
+            , parentQSampleSize  integer
+            , pSampleSize    integer not null
+            , qSampleSize  integer not null
             , count integer not null
             , sampleSize integer not null
-            , overallP real not null    
-            , score real
+            , score real not null
             , voteEventId integer not null
             , voteEventTime integer not null
             , primary key(tagId, postId)
@@ -150,20 +157,24 @@ export async function up(db: Kysely<any>): Promise<void> {
         create trigger afterInsertOnScoreEvent after insert on ScoreEvent
         begin
             insert or replace into Score values (
-                new.tagId, 
-                new.parentId, 
-                new.postId, 
-                new.topNoteId, 
-                new.parentP, 
-                new.parentQ, 
-                new.p, 
-                new.q, 
-                new.count, 
-                new.sampleSize, 
-                new.overallP, 
-                new.score, 
-                new.voteEventId, 
-                new.voteEventTime 
+                new.tagId
+                , new.parentId
+                , new.postId
+                , new.topNoteId
+                , new.parentP
+                , new.parentQ
+                , new.p
+                , new.q
+                , new.overallProb
+                , new.parentPSampleSize
+                , new.parentQSampleSiz
+                , new.pSampleSiz
+                , new.qSampleSiz
+                , new.count
+                , new.sampleSize
+                , new.score
+                , new.voteEventId
+                , new.voteEventTime
             );
         end;
     `.execute(db)

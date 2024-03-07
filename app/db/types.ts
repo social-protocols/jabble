@@ -17,6 +17,6 @@ export type ExplorationStats = Selectable<schema.ExplorationStats>
 export type TagStats = Selectable<schema.TagStats>
 export type Verification = Selectable<schema.Verification>
 export type Score = Selectable<schema.Score>
-export type InsertableScoreEvent = Insertable<schema.ScoreEvent>
+export type InsertableScore = Insertable<schema.Score>
 export type VoteEvent = Selectable<schema.VoteEvent>
 export type InsertableVoteEvent = Insertable<schema.VoteEvent>

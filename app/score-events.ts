@@ -1,6 +1,6 @@
 import { spawn } from 'child_process';
 import { env } from "process";
-import { type InsertableScoreEvent } from './db/types.ts';
+import { type InsertableScore } from './db/types.ts';
 import { db } from "./db.ts";
 
 const scoreEventsPath = env.SCORE_EVENTS_PATH!
@@ -22,13 +22,13 @@ export async function processScoreEvents() {
 		    if (line === "") {
 		      return
 		    }
-		    const data: InsertableScoreEvent = JSON.parse(line) as InsertableScoreEvent;
+		    const data: InsertableScore = JSON.parse(line) as InsertableScore;
 		    // await db.insertInto('yourTableName').values(data).execute();
 
 		    const result = await db
 		      .insertInto('ScoreEvent')
 		      .values(data)
-		      .onConflict((oc) => oc.columns(['scoreEventId']).doNothing())
+		      .onConflict((oc) => oc.columns(['voteEventId','postId']).doNothing())
 		      .execute()
 
 		    console.log("Result of inserting score data ", result)
