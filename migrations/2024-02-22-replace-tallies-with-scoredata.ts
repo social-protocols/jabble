@@ -167,9 +167,9 @@ export async function up(db: Kysely<any>): Promise<void> {
                 , new.q
                 , new.overallProb
                 , new.parentPSampleSize
-                , new.parentQSampleSiz
-                , new.pSampleSiz
-                , new.qSampleSiz
+                , new.parentQSampleSize
+                , new.pSampleSize
+                , new.qSampleSize
                 , new.count
                 , new.sampleSize
                 , new.score
