@@ -15,13 +15,31 @@ const voteEventsFH = fs.openSync(voteEventsPath, "a");
 
 let voteEventsFD: number = 0
 
+
+function camelToSnakeCase(str: string): string {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}
+
 export async function writeVoteEvent(voteEvent: VoteEvent) {
 
 	if (voteEventsFD == 0) {
 		await initVoteEventStream()
 	}
 
-	const json = JSON.stringify(voteEvent)
+	// The global brain service uses snake_case field names.
+	const json = JSON.stringify(voteEvent, (key, value) => {
+	  if (value && typeof value === 'object' && !Array.isArray(value)) {
+	    const replacement: any = {};
+	    for (const k in value) {
+	      if (Object.hasOwnProperty.call(value, k)) {
+	        replacement[camelToSnakeCase(k)] = value[k];
+	      }
+	    }
+	    return replacement;
+	  }
+	  return value;
+	});
+
 
 	fs.writeSync(voteEventsFD, json + "\n");
 }

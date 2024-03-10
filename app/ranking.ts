@@ -1,7 +1,7 @@
 import assert from 'assert'
 import { sql } from 'kysely'
 import { LRUCache } from 'lru-cache'
-import { type Score, type Post } from '#app/db/types.ts' // this is the Database interface we defined earlier
+import { type Score, type Effect, type Post } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { db } from '#app/db.ts'
 // import { cumulativeAttention } from './attention.ts';
 import {
@@ -15,7 +15,7 @@ import { getPost } from './post.ts'
 import { getOrInsertTagId } from './tag.ts'
 
 
-export type ScoredPost = Post & Score & {nReplies: number}
+export type ScoredPost = Post & Score & Effect & {nReplies: number}
 
 // const fatigueFactor = .9
 // const attentionCutoff = 2 // Note all posts start with 1 unit of attention (from poster)
@@ -96,17 +96,17 @@ export async function getScoredPost(
 
 	let query = db
 		.selectFrom('Post')
-		.innerJoin('Score', 'Score.postId', 'Post.id')
-              .leftJoin('PostStats', join =>
-                      join
-                              .onRef('PostStats.postId', '=', 'Post.id')
-                              .on('PostStats.tagId', '=', tagId),
-                      )
+		.innerJoin('ScoreWithTopEffect', 'ScoreWithTopEffect.postId', 'Post.id')
+              // .leftJoin('PostStats', join =>
+              //         join
+              //                 .onRef('PostStats.postId', '=', 'Post.id')
+              //                 .on('PostStats.tagId', '=', tagId),
+              //         )
 		.selectAll('Post')
-		.selectAll('Score')
+		.selectAll('ScoreWithTopEffect')
 		.select(sql<number>`replies`.as('nReplies'))
 		.where('Post.id', "=", postId)
-		.where('Score.tagId', "=", tagId)
+		.where('ScoreWithTopEffect.tagId', "=", tagId)
 
 	const scoredPost: ScoredPost = (await query.execute())[0]!
 
@@ -130,17 +130,17 @@ export async function getRankedPosts(tag: string): Promise<RankedPosts> {
 
 	let query = db
 		.selectFrom('Post')
-		.innerJoin('Score', 'Score.postId', 'Post.id')
+		.innerJoin('ScoreWithTopEffect', 'ScoreWithTopEffect.postId', 'Post.id')
               .leftJoin('PostStats', join =>
                       join
                               .onRef('PostStats.postId', '=', 'Post.id')
                               .on('PostStats.tagId', '=', tagId)
               )
 		.selectAll('Post')
-		.selectAll('Score')
+		.selectAll('ScoreWithTopEffect')
 		.select(sql<number>`replies`.as('nReplies'))
-		.where('Score.tagId', "=", tagId)
-		.orderBy('Score.score', 'desc')
+		.where('ScoreWithTopEffect.tagId', "=", tagId)
+		.orderBy('ScoreWithTopEffect.score', 'desc')
 		.limit(MAX_RESULTS)
 
 	const scoredPosts: ScoredPost[] = await query.execute()

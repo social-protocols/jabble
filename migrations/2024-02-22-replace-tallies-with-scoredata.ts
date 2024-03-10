@@ -16,7 +16,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     `.execute(db)
 
     await sql`
-        alter table Vote add column updatedAt integer
+        alter table Vote rename column createdAt to voteEventTime
     `.execute(db)
 
     await sql`
@@ -40,8 +40,13 @@ export async function up(db: Kysely<any>): Promise<void> {
     `.execute(db)
 
     await sql`
+        alter table VoteEvent rename column createdAt to voteEventTime
+    `.execute(db)
+
+    await sql`
         alter table VoteEvent add column parentId integer
     `.execute(db)
+
 
     await sql`
         drop trigger insertCurrentTally;
@@ -87,18 +92,17 @@ export async function up(db: Kysely<any>): Promise<void> {
         create trigger afterInsertOnVoteEvent after insert on VoteEvent
         begin
             -- Insert/update the vote record
-            insert into Vote(userId, tagId, postId, vote, latestVoteEventId, createdAt, updatedAt) values (
+            insert into Vote(userId, tagId, postId, vote, latestVoteEventId, voteEventTime) values (
                 new.userId,
                 new.tagId,
                 new.postId,
                 new.vote,
                 new.voteEventId,
-                new.createdAt,
-                new.createdAt
+                new.voteEventTime
             ) on conflict(userId, tagId, postId) do update set
                 vote = new.vote
                 , latestVoteEventId = new.voteEventId
-                , updatedAt = new.createdAt
+                , voteEventTime = new.voteEventTime
             ;
         end;
     `.execute(db)
@@ -106,50 +110,37 @@ export async function up(db: Kysely<any>): Promise<void> {
 
     await sql`
         create table ScoreEvent (
-            tagId integer
-            , parentId integer
+            voteEventId integer not null
+            , voteEventTime integer not null
+            , tagId integer
             , postId integer not null
             , topNoteId integer
-            , parentP real
-            , parentQ real
+            , o real not null
+            , oCount integer not null
+            , oSize integer not null
             , p real not null
-            , q real not null
-            , overallProb real not null    
-            , parentPSampleSize    integer
-            , parentQSampleSize  integer
-            , pSampleSize    integer not null
-            , qSampleSize  integer not null
-            , count integer not null
-            , sampleSize integer not null
             , score real not null
-            , voteEventId integer not null
-            , voteEventTime integer not null
             , primary key(voteEventId, postId)
         ) strict;
     `.execute(db)
 
     await sql`
+
         create table Score(
-            tagId integer
-            , parentId integer
+            voteEventId integer not null
+            , voteEventTime integer not null
+            , tagId integer
             , postId integer not null
             , topNoteId integer
-            , parentP real
-            , parentQ real
+            , o real not null
+            , oCount integer not null
+            , oSize integer not null
             , p real not null
-            , q real not null
-            , overallProb real not null    
-            , parentPSampleSize    integer
-            , parentQSampleSize  integer
-            , pSampleSize    integer not null
-            , qSampleSize  integer not null
-            , count integer not null
-            , sampleSize integer not null
             , score real not null
-            , voteEventId integer not null
-            , voteEventTime integer not null
             , primary key(tagId, postId)
         ) strict;
+
+
     `.execute(db)
 
     await sql`
@@ -157,27 +148,126 @@ export async function up(db: Kysely<any>): Promise<void> {
         create trigger afterInsertOnScoreEvent after insert on ScoreEvent
         begin
             insert or replace into Score values (
-                new.tagId
-                , new.parentId
+                new.voteEventId
+                , new.voteEventTime
+                , new.tagId
                 , new.postId
                 , new.topNoteId
-                , new.parentP
-                , new.parentQ
-                , new.p
-                , new.q
-                , new.overallProb
-                , new.parentPSampleSize
-                , new.parentQSampleSize
-                , new.pSampleSize
-                , new.qSampleSize
-                , new.count
-                , new.sampleSize
-                , new.score
-                , new.voteEventId
-                , new.voteEventTime
+                , new.o 
+                , new.oCount 
+                , new.oSize 
+                , new.p 
+                , new.score 
             );
         end;
     `.execute(db)
+
+
+
+    await sql`
+        create table if not exists EffectEvent(
+            voteEventId         integer not null
+            , voteEventTime     integer not null
+            , tagId             integer not null
+            , postId           integer not null 
+            , noteId            integer not null
+            , p                 real not null
+            , q                 real not null
+            , r                 real not null
+            , pCount       integer not null
+            , qCount       integer not null
+            , rCount       integer not null
+            , pSize       integer not null
+            , qSize       integer not null
+            , rSize       integer not null
+            , primary key(voteEventId, postId, noteId)
+        ) strict;
+    `.execute(db)
+
+    await sql`
+        create table if not exists Effect(
+            voteEventId         integer not null
+            , voteEventTime     integer not null
+            , tagId             integer not null
+            , postId           integer not null 
+            , noteId            integer not null
+            , p                 real not null
+            , q                 real not null
+            , r                 real not null
+            , pCount       integer not null
+            , qCount       integer not null
+            , rCount       integer not null
+            , pSize       integer not null
+            , qSize       integer not null
+            , rSize       integer not null
+            , primary key(tagId, postId, noteId)
+        ) strict;
+    `.execute(db)
+
+    await sql`
+
+        create trigger afterInsertEffectEvent after insert on EffectEvent begin
+            insert or replace into Effect(
+                voteEventId,
+                voteEventTime,
+                tagId,
+                postId,
+                noteId,
+                p,
+                q,
+                r,
+                pCount,
+                qCount,
+                rCount,
+                pSize,
+                qSize,
+                rSize
+            ) values (
+                new.voteEventId,
+                new.voteEventTime,
+                new.tagId,
+                new.postId,
+                new.noteId,
+                new.p,
+                new.q,
+                new.r,
+                new.pCount,
+                new.qCount,
+                new.rCount,
+                new.pSize,
+                new.qSize,
+                new.rSize
+            ) on conflict(tagId, postId, noteId) do update set
+                voteEventId = new.voteEventId,
+                voteEventTime = new.voteEventTime,
+                p = new.p,
+                q = new.q,
+                r = new.r,
+                pCount = new.pCount,
+                qCount = new.qCount,
+                rCount = new.rCount,
+                pSize = new.pSize,
+                qSize = new.qSize,
+                rSize = new.rSize
+            ;
+        end;
+
+    `.execute(db)
+
+
+    await sql`
+        create view ScoreWithTopEffect as
+        select
+            Effect.*
+            , o
+            , oCount
+            , oSize
+            , score
+        from Score
+        left join effect using (tagId, postId)
+        where noteId = topNoteId; 
+    `.execute(db)
+
 
 
 }

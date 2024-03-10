@@ -65,12 +65,9 @@ function relativeEntropy(p: number, q: number): number {
 export default function PostStats() {
 	const { post, tag } = useLoaderData<typeof loader>()
 
-	const totalCrossEntropy = post.sampleSize * relativeEntropy(post.p, post.q)
+	const totalCrossEntropy = post.qSize * relativeEntropy(post.p, post.q)
 
-	// const voteRatePrior = GLOBAL_PRIOR_VOTE_RATE
-	// const upvoteProbabilityPrior = GLOBAL_PRIOR_UPVOTE_PROBABILITY
-
-	const informationValueNewVotes = post.sampleSize * (1 + Math.log2(post.p))
+	const informationValueNewVotes = post.oCount * (1 + Math.log2(post.p))
 	const informationValueTotal = informationValueNewVotes - totalCrossEntropy
 
 // - **attention:** ${post.attention.toFixed(3)}
@@ -89,9 +86,9 @@ export default function PostStats() {
 			? 'null'
 			: `[${post.parentId}](/tags/${tag}/stats/${post.parentId})`
 	}
-- **upvotes:** ${post.count}
-- **downvotes:** ${post.sampleSize - post.count}
-- **votes:** ${post.sampleSize}
+- **upvotes:** ${post.oCount}
+- **downvotes:** ${post.oSize - post.oCount}
+- **votes:** ${post.oCount}
 - **q**: ${post.q.toFixed(3)}
   - q = Bayesian Average(upvotes/votes), upvoteProbabilityPrior)
   - see [Docs on Rating and Evaluating Content](https://social-protocols.org/global-brain/rating-and-evaluating-content.html)

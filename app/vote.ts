@@ -64,7 +64,7 @@ async function insertVoteEvent(
     }
 
     // Copilot now use kysely to insert
-    const query = db.insertInto("VoteEvent").values(vote_event).returning(["voteEventId", "createdAt"])
+    const query = db.insertInto("VoteEvent").values(vote_event).returning(["voteEventId", "voteEventTime"])
 
 	let results = await query.execute()
 
@@ -79,7 +79,7 @@ async function insertVoteEvent(
 		...vote_event,
 		noteId: vote_event.noteId!,
 		parentId: parentId,
-		createdAt: result.createdAt!,
+		voteEventTime: result.voteEventTime!,
 		voteEventId: voteEventId,
 	}
 

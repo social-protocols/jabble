@@ -2,11 +2,70 @@ import { spawn } from 'child_process';
 import { env } from "process";
 import { type InsertableScore } from './db/types.ts';
 import { db } from "./db.ts";
+import { type Score } from "./db/types.ts";
 
 const scoreEventsPath = env.SCORE_EVENTS_PATH!
 
+function snakeToCamelCase(str: string): string {
+  return str.replace(/([-_][a-z])/g, (group) => group.toUpperCase().replace('-', '').replace('_', ''));
+}
+
+function snakeToCamelCaseObject(obj: any): any {
+  if (obj instanceof Array) {
+    return obj.map((v) => snakeToCamelCaseObject(v));
+  } else if (obj !== null && obj.constructor === Object) {
+    return Object.keys(obj).reduce((result, key) => {
+      result[snakeToCamelCase(key)] = snakeToCamelCaseObject(obj[key]);
+      return result;
+    }, {} as any);
+  }
+  return obj;
+}
+
+type EventInput = {
+	vote_event_id: number
+	vote_event_time: number
+}
+
+// type ScoreEventInput = Event & {score: Score}
+// type EventInput = ScoreEventInput
+// type ScoreEventInput = Event & {score: EventInput}
+
+
+async function insertScoreEvent(data: any) {
+    const data_flat = {
+    	voteEventId: data['vote_event_id'],
+    	voteEventTime: data['vote_event_time'],
+    	...snakeToCamelCaseObject(data['score']),
+    } 
+
+    const result = await db
+      .insertInto('ScoreEvent')
+      .values(data_flat)
+      .onConflict((oc) => oc.columns(['voteEventId','postId']).doNothing())
+      .execute()
+
+    console.log("Result of inserting score event ", result)
+}
+
+async function insertEffectEvent(data: any) {
+    const data_flat = {
+    	voteEventId: data['vote_event_id'],
+    	voteEventTime: data['vote_event_time'],
+    	...snakeToCamelCaseObject(data['effect']),
+    } 
+
+    const result = await db
+      .insertInto('EffectEvent')
+      .values(data_flat)
+      .onConflict((oc) => oc.columns(['voteEventId', 'postId', 'noteId']).doNothing())
+      .execute()
+
+    console.log("Result of inserting effect event ", result)
+}
+
 export async function processScoreEvents() {
-  console.log("Processing score events")
+  console.log("Processing event input")
 
   const tail = spawn('tail', ['-F', '-n', '+0', scoreEventsPath]);
 
@@ -22,19 +81,20 @@ export async function processScoreEvents() {
 		    if (line === "") {
 		      return
 		    }
-		    const data: InsertableScore = JSON.parse(line) as InsertableScore;
-		    // await db.insertInto('yourTableName').values(data).execute();
 
-		    const result = await db
-		      .insertInto('ScoreEvent')
-		      .values(data)
-		      .onConflict((oc) => oc.columns(['voteEventId','postId']).doNothing())
-		      .execute()
+		    const data: any = JSON.parse(line);
 
-		    console.log("Result of inserting score data ", result)
+		    if (data['score'] !== undefined) {
+		    	insertScoreEvent(data)
+			  } else if (data['effect'] !== undefined) {
+		    	insertEffectEvent(data)
+			  } else {
+			  	throw new Error("Unknown event type")
+			  }
 
 		  } catch (error) {
-		    console.error('Error parsing JSON or writing to DB:', error);
+		    console.error('Error writing score JSON or writing to DB:', error);
+		    tail.kill('SIGTERM')
 		  }
 		});
 	});

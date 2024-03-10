@@ -10,10 +10,9 @@ export type Vote = {
 	tagId: number
 	postId: number
 	vote: number
-	latest: number
-	createdAt: number
+	latestVoteEventId: number
+	voteEventTime: number
 }
-
 
 export type ExplorationStats = {
 	rowid: Generated<number>
@@ -104,34 +103,69 @@ export type Verification = {
 
 export type VoteEvent = {
 	voteEventId: Generated<number>
+	voteEventTime: Generated<number>
 	userId: string
 	tagId: number
 	parentId: number | null
 	postId: number
 	noteId: number | null
 	vote: number
-	createdAt: Generated<number>
 }
 
 export type Score = {
-    tagId: number|null
+    voteEventId: number
+    , voteEventTime: number
+    , tagId: number|null
     , parentId: number|null
     , postId: number
     , topNoteId: number|null
-    , parentP: number|null
-    , parentQ: number|null
+    , o: number
+    , oCount: number
+    , oSize: number
     , p: number
-    , q: number
-    , parentPSampleSize: number|null
-    , parentQSampleSize: number|null
-    , pSampleSize: number
-    , qSampleSize: number
-    , count: number
-    , sampleSize: number
     , score: number
-    , voteEventId: number
-    , voteEventTime: number
 }
+
+export type Effect = {
+    voteEventId: number;
+    voteEventTime: number;
+    tagId: number;
+    postId: number;
+    noteId: number | null;
+    p: number;
+    q: number;
+    r: number;
+    pCount: number;
+    qCount: number;
+    rCount: number;
+    pSize: number;
+    qSize: number;
+    rSize: number;
+};
+
+
+export type ScoreWithTopEffect = {
+    voteEventId: number;
+    voteEventTime: number;
+    tagId: number;
+    postId: number;
+    noteId: number | null;
+    p: number;
+    q: number;
+    r: number;
+    pCount: number;
+    qCount: number;
+    rCount: number;
+    pSize: number;
+    qSize: number;
+    rSize: number;
+    topNoteId: number | null;
+    o: number
+    oCount: number
+    oSize: number
+    score: number
+};
+
 
 export type DB = {
 	Vote: Vote
@@ -148,4 +182,7 @@ export type DB = {
 	VoteEvent: VoteEvent
 	Score: Score
 	ScoreEvent: Score
+	Effect: Effect
+	EffectEvent: Effect
+	ScoreWithTopEffect: ScoreWithTopEffect
 }
