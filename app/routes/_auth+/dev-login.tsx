@@ -1,3 +1,4 @@
+import  assert  from "assert"
 import { type DataFunctionArgs } from "@remix-run/server-runtime"
 import { login } from "#app/utils/auth.server.ts"
 import { handleNewSession } from "./login.tsx"
@@ -9,13 +10,8 @@ export async function loader({ request }: DataFunctionArgs) {
 		password:"password"
 	})
 
-	if (session === null) {
-		throw new Error("Session userId is undefined")
-	}
-
-	if (session.userId === undefined) {
-		throw new Error("Session userId is undefined")
-	}
+	assert(session !== null, "Session is null")
+	assert(session.userId !== undefined, "session.userId is defined")
 
 	const validSession = {
 		...session,
