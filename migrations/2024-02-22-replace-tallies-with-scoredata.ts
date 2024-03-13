@@ -172,14 +172,11 @@ export async function up(db: Kysely<any>): Promise<void> {
             , postId           integer not null 
             , noteId            integer not null
             , p                 real not null
-            , q                 real not null
-            , r                 real not null
             , pCount       integer not null
-            , qCount       integer not null
-            , rCount       integer not null
             , pSize       integer not null
+            , q                 real not null
+            , qCount       integer not null
             , qSize       integer not null
-            , rSize       integer not null
             , primary key(voteEventId, postId, noteId)
         ) strict;
     `.execute(db)
@@ -192,14 +189,11 @@ export async function up(db: Kysely<any>): Promise<void> {
             , postId           integer not null 
             , noteId            integer not null
             , p                 real not null
-            , q                 real not null
-            , r                 real not null
             , pCount       integer not null
-            , qCount       integer not null
-            , rCount       integer not null
             , pSize       integer not null
+            , q                 real not null
+            , qCount       integer not null
             , qSize       integer not null
-            , rSize       integer not null
             , primary key(tagId, postId, noteId)
         ) strict;
     `.execute(db)
@@ -214,14 +208,11 @@ export async function up(db: Kysely<any>): Promise<void> {
                 postId,
                 noteId,
                 p,
-                q,
-                r,
                 pCount,
-                qCount,
-                rCount,
                 pSize,
-                qSize,
-                rSize
+                q,
+                qCount,
+                qSize
             ) values (
                 new.voteEventId,
                 new.voteEventTime,
@@ -229,26 +220,20 @@ export async function up(db: Kysely<any>): Promise<void> {
                 new.postId,
                 new.noteId,
                 new.p,
-                new.q,
-                new.r,
                 new.pCount,
-                new.qCount,
-                new.rCount,
                 new.pSize,
-                new.qSize,
-                new.rSize
+                new.q,
+                new.qCount,
+                new.qSize
             ) on conflict(tagId, postId, noteId) do update set
                 voteEventId = new.voteEventId,
                 voteEventTime = new.voteEventTime,
                 p = new.p,
-                q = new.q,
-                r = new.r,
                 pCount = new.pCount,
-                qCount = new.qCount,
-                rCount = new.rCount,
                 pSize = new.pSize,
-                qSize = new.qSize,
-                rSize = new.rSize
+                q = new.q,
+                qCount = new.qCount,
+                qSize = new.qSize
             ;
         end;
 
@@ -256,7 +241,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 
 
     await sql`
-        create view ScoreWithTopEffect as
+        create view FullScore as
         select
             Effect.*
             , o

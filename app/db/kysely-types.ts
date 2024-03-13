@@ -133,32 +133,26 @@ export type Effect = {
     postId: number;
     noteId: number | null;
     p: number;
-    q: number;
-    r: number;
     pCount: number;
-    qCount: number;
-    rCount: number;
     pSize: number;
+    q: number;
+    qCount: number;
     qSize: number;
-    rSize: number;
 };
 
 
-export type ScoreWithTopEffect = {
+export type FullScore = {
     voteEventId: number;
     voteEventTime: number;
     tagId: number;
     postId: number;
     noteId: number | null;
     p: number;
-    q: number;
-    r: number;
     pCount: number;
-    qCount: number;
-    rCount: number;
     pSize: number;
+    q: number;
+    qCount: number;
     qSize: number;
-    rSize: number;
     topNoteId: number | null;
     o: number
     oCount: number
@@ -184,5 +178,5 @@ export type DB = {
 	ScoreEvent: Score
 	Effect: Effect
 	EffectEvent: Effect
-	ScoreWithTopEffect: ScoreWithTopEffect
+	FullScore: FullScore
 }

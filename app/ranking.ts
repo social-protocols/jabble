@@ -96,17 +96,17 @@ export async function getScoredPost(
 
 	let query = db
 		.selectFrom('Post')
-		.innerJoin('ScoreWithTopEffect', 'ScoreWithTopEffect.postId', 'Post.id')
+		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
               // .leftJoin('PostStats', join =>
               //         join
               //                 .onRef('PostStats.postId', '=', 'Post.id')
               //                 .on('PostStats.tagId', '=', tagId),
               //         )
 		.selectAll('Post')
-		.selectAll('ScoreWithTopEffect')
+		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))
 		.where('Post.id', "=", postId)
-		.where('ScoreWithTopEffect.tagId', "=", tagId)
+		.where('FullScore.tagId', "=", tagId)
 
 	const scoredPost: ScoredPost = (await query.execute())[0]!
 
@@ -130,17 +130,17 @@ export async function getRankedPosts(tag: string): Promise<RankedPosts> {
 
 	let query = db
 		.selectFrom('Post')
-		.innerJoin('ScoreWithTopEffect', 'ScoreWithTopEffect.postId', 'Post.id')
+		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
               .leftJoin('PostStats', join =>
                       join
                               .onRef('PostStats.postId', '=', 'Post.id')
                               .on('PostStats.tagId', '=', tagId)
               )
 		.selectAll('Post')
-		.selectAll('ScoreWithTopEffect')
+		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))
-		.where('ScoreWithTopEffect.tagId', "=", tagId)
-		.orderBy('ScoreWithTopEffect.score', 'desc')
+		.where('FullScore.tagId', "=", tagId)
+		.orderBy('FullScore.score', 'desc')
 		.limit(MAX_RESULTS)
 
 	const scoredPosts: ScoredPost[] = await query.execute()
