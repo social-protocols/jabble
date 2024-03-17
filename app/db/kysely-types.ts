@@ -138,6 +138,7 @@ export type Effect = {
     q: number;
     qCount: number;
     qSize: number;
+    r: number;
 };
 
 
@@ -153,6 +154,7 @@ export type FullScore = {
     q: number;
     qCount: number;
     qSize: number;
+    r: number;
     topNoteId: number | null;
     o: number
     oCount: number

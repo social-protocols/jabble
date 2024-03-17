@@ -177,6 +177,7 @@ export async function up(db: Kysely<any>): Promise<void> {
             , q                 real not null
             , qCount       integer not null
             , qSize       integer not null
+            , r                 real not null
             , primary key(voteEventId, postId, noteId)
         ) strict;
     `.execute(db)
@@ -194,6 +195,7 @@ export async function up(db: Kysely<any>): Promise<void> {
             , q                 real not null
             , qCount       integer not null
             , qSize       integer not null
+            , r                 real not null
             , primary key(tagId, postId, noteId)
         ) strict;
     `.execute(db)
@@ -201,19 +203,8 @@ export async function up(db: Kysely<any>): Promise<void> {
     await sql`
 
         create trigger afterInsertEffectEvent after insert on EffectEvent begin
-            insert or replace into Effect(
-                voteEventId,
-                voteEventTime,
-                tagId,
-                postId,
-                noteId,
-                p,
-                pCount,
-                pSize,
-                q,
-                qCount,
-                qSize
-            ) values (
+            insert or replace into Effect
+            values (
                 new.voteEventId,
                 new.voteEventTime,
                 new.tagId,
@@ -224,17 +215,9 @@ export async function up(db: Kysely<any>): Promise<void> {
                 new.pSize,
                 new.q,
                 new.qCount,
-                new.qSize
-            ) on conflict(tagId, postId, noteId) do update set
-                voteEventId = new.voteEventId,
-                voteEventTime = new.voteEventTime,
-                p = new.p,
-                pCount = new.pCount,
-                pSize = new.pSize,
-                q = new.q,
-                qCount = new.qCount,
-                qSize = new.qSize
-            ;
+                new.qSize,
+                new.r
+            );
         end;
 
     `.execute(db)
@@ -243,16 +226,24 @@ export async function up(db: Kysely<any>): Promise<void> {
     await sql`
         create view FullScore as
         select
-            Effect.*
+              score.voteEventTime
+            , score.tagId
+            , score.postId
+            , topNoteId
             , o
             , oCount
             , oSize
+            , score.p
+            , pCount
+            , pSize
+            , q
+            , qCount
+            , qSize
+            , r
             , score
         from Score
         left join effect using (tagId, postId)
-        where noteId = topNoteId; 
+        where ifnull(noteId = topNoteId, true);
     `.execute(db)
-
-
 
 }
