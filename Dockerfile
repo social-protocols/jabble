@@ -65,7 +65,7 @@ COPY --from=production-deps /myapp/node_modules /myapp/node_modules
 COPY --from=build /myapp/package.json /myapp/package.json
 # for migrations:
 COPY --from=build /myapp/migrate.ts /myapp/migrate.ts
-COPY --from=build /myapp/run.sh /myapp/run.sh
+COPY --from=build /myapp/startup.sh /myapp/startup.sh
 COPY --from=build /myapp/app /myapp/app
 
 COPY --from=build /myapp/server-build /myapp/server-build
