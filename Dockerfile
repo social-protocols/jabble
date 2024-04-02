@@ -6,7 +6,12 @@ FROM node:20-bookworm-slim as base
 # set for base and all layer that inherit from it
 ENV NODE_ENV production
 
-RUN apt-get update && apt-get install -y fuse3 sqlite3 ca-certificates
+RUN apt-get update && apt-get install -y fuse3 sqlite3 ca-certificates wget
+
+# Julie 1.10 segfaults when run in docker image on my mac
+#RUN wget https://julialang-s3.julialang.org/bin/linux/x64/1.10/julia-1.10.2-linux-x86_64.tar.gz && tar zxvf julia-1.10.2-linux-x86_64.tar.gz --directory=/opt
+
+RUN wget https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.4-linux-x86_64.tar.gz  && tar zxvf julia-1.9.4-linux-x86_64.tar.gz --directory=/opt
 
 # Install all node_modules, including dev dependencies
 FROM base as deps
@@ -48,6 +53,8 @@ ENV CACHE_DATABASE_PATH="/$LITEFS_DIR/$CACHE_DATABASE_FILENAME"
 ENV INTERNAL_PORT="8080"
 ENV PORT="8081"
 ENV NODE_ENV="production"
+ENV VOTE_EVENTS_PATH=/data/vote-events.jsonl
+ENV SCORE_EVENTS_PATH=/data/score-events.jsonl
 
 # add shortcut for connecting to database CLI
 RUN echo "#!/bin/sh\nset -x\nsqlite3 \$DATABASE_URL" > /usr/local/bin/database-cli && chmod +x /usr/local/bin/database-cli
@@ -58,12 +65,18 @@ COPY --from=production-deps /myapp/node_modules /myapp/node_modules
 COPY --from=build /myapp/package.json /myapp/package.json
 # for migrations:
 COPY --from=build /myapp/migrate.ts /myapp/migrate.ts
+COPY --from=build /myapp/run.sh /myapp/run.sh
 COPY --from=build /myapp/app /myapp/app
 
 COPY --from=build /myapp/server-build /myapp/server-build
 COPY --from=build /myapp/build /myapp/build
 COPY --from=build /myapp/public /myapp/public
 COPY --from=build /myapp/app/components/ui/icons /myapp/app/components/ui/icons
+
+RUN wget https://github.com/social-protocols/GlobalBrain.jl/archive/refs/tags/0.1.tar.gz && tar zxvf 0.1.tar.gz --directory=/myapp/build
+RUN cd build/GlobalBrain.jl-0.1 && /opt/julia-1.9.4/bin/julia --project -e 'using Pkg; Pkg.instantiate()'
+RUN touch $VOTE_EVENTS_PATH
+
 
 # prepare for litefs
 COPY --from=flyio/litefs:0.5.10 /usr/local/bin/litefs /usr/local/bin/litefs

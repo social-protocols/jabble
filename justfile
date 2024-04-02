@@ -63,3 +63,6 @@ download-prod-db:
   rm -f "$DATABASE_PATH"-wal
   flyctl ssh console -C "sqlite3 /litefs/data/sqlite.db '.backup /data/backup.db'"
   flyctl ssh sftp get /data/backup.db "$DATABASE_PATH" || true
+
+docker-build-mac:
+	docker build --platform linux/amd64 .
