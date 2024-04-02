@@ -75,7 +75,6 @@ COPY --from=build /myapp/app/components/ui/icons /myapp/app/components/ui/icons
 
 RUN wget https://github.com/social-protocols/GlobalBrain.jl/archive/refs/tags/0.1.tar.gz && tar zxvf 0.1.tar.gz --directory=/myapp/build
 RUN cd build/GlobalBrain.jl-0.1 && /opt/julia-1.9.4/bin/julia --project -e 'using Pkg; Pkg.instantiate()'
-RUN touch $VOTE_EVENTS_PATH
 
 
 # prepare for litefs
