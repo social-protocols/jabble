@@ -1,60 +1,58 @@
-# This file is moved to the root directory before building the image
-
-# base node image
 FROM node:20-bookworm-slim as base
 
-# set for base and all layer that inherit from it
+WORKDIR /myapp
+
 ENV NODE_ENV production
+ENV FLY="true"
+
 
 RUN apt-get update && apt-get install -y fuse3 sqlite3 ca-certificates wget
 
+# litefs
+ENV LITEFS_DIR="/litefs/data"
+COPY --from=flyio/litefs:0.5.10 /usr/local/bin/litefs /usr/local/bin/litefs
+COPY other/litefs.yml /etc/litefs.yml
+RUN mkdir -p /data ${LITEFS_DIR}
+
+
+# GlobalBrain service
 # Julie 1.10 segfaults when run in docker image on my mac
 #RUN wget https://julialang-s3.julialang.org/bin/linux/x64/1.10/julia-1.10.2-linux-x86_64.tar.gz && tar zxvf julia-1.10.2-linux-x86_64.tar.gz --directory=/opt
+ARG JULIA_VERSION=1.9.4
+ARG GLOBALBRAIN_VERSION=0.1
+RUN  wget https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-$JULIA_VERSION-linux-x86_64.tar.gz \
+  && tar zxvf julia-$JULIA_VERSION-linux-x86_64.tar.gz --directory=/opt \
+  && rm julia-$JULIA_VERSION-linux-x86_64.tar.gz
+RUN  wget https://github.com/social-protocols/GlobalBrain.jl/archive/refs/tags/$GLOBALBRAIN_VERSION.tar.gz \
+  && tar zxvf $GLOBALBRAIN_VERSION.tar.gz --directory=/myapp \
+  && rm $GLOBALBRAIN_VERSION.tar.gz
+RUN cd GlobalBrain.jl-0.1 && /opt/julia-1.9.4/bin/julia --project -e 'using Pkg; Pkg.instantiate()'
 
-RUN wget https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.4-linux-x86_64.tar.gz  && tar zxvf julia-1.9.4-linux-x86_64.tar.gz --directory=/opt
 
-
-
-
-# Install all node_modules, including dev dependencies
-FROM base as deps
-
-WORKDIR /myapp
-
-ADD package.json package-lock.json .npmrc ./
+# npm install
+COPY package.json package-lock.json .npmrc ./
 RUN npm install --include=dev
 
 
-
-
-
-
-
-# Build the app
-FROM deps as build
-
-WORKDIR /myapp
-
-
+# npm run build
 COPY other other/
 COPY app app/
 COPY server server/
 COPY public public/
 COPY types types/
 COPY index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
-
-
 RUN npm run build
 
 
 
 
 
-# Finally, build the production image with minimal footprint
-FROM deps
 
-ENV FLY="true"
-ENV LITEFS_DIR="/litefs/data"
+
+# startup & migrations
+COPY migrate.ts startup.sh index.js ./
+COPY migrations migrations/
+
 ENV APP_DATABASE_FILENAME="social-network.db"
 ENV APP_DATABASE_PATH="$LITEFS_DIR/$APP_DATABASE_FILENAME"
 ENV GB_DATABASE_PATH="$LITEFS_DIR/global-brain.db"
@@ -63,34 +61,12 @@ ENV CACHE_DATABASE_FILENAME="cache.db"
 ENV CACHE_DATABASE_PATH="/$LITEFS_DIR/$CACHE_DATABASE_FILENAME"
 ENV INTERNAL_PORT="8080"
 ENV PORT="8081"
-ENV NODE_ENV="production"
 ENV VOTE_EVENTS_PATH=/data/vote-events.jsonl
 ENV SCORE_EVENTS_PATH=/data/score-events.jsonl
 
 # add shortcut for connecting to database CLI
 RUN echo "#!/bin/sh\nset -x\nsqlite3 \$APP_DATABASE_URL" > /usr/local/bin/database-cli && chmod +x /usr/local/bin/database-cli
 
-WORKDIR /myapp
-
-RUN wget https://github.com/social-protocols/GlobalBrain.jl/archive/refs/tags/0.1.tar.gz && tar zxvf 0.1.tar.gz --directory=/myapp
-RUN cd GlobalBrain.jl-0.1 && /opt/julia-1.9.4/bin/julia --project -e 'using Pkg; Pkg.instantiate()'
-
-COPY --from=build /myapp/package.json /myapp/package.json
-# for migrations:
-COPY migrate.ts startup.sh index.js ./
-COPY --from=build /myapp/app /myapp/app
-
-COPY --from=build /myapp/server-build /myapp/server-build
-COPY --from=build /myapp/build /myapp/build
-COPY --from=build /myapp/public /myapp/public
-COPY --from=build /myapp/app/components/ui/icons /myapp/app/components/ui/icons
-COPY migrations migrations/
-
-
-# prepare for litefs
-COPY --from=flyio/litefs:0.5.10 /usr/local/bin/litefs /usr/local/bin/litefs
-ADD other/litefs.yml /etc/litefs.yml
-RUN mkdir -p /data ${LITEFS_DIR}
 
 # starting the application is defined in litefs.yml
 # test locally without litefs:
