@@ -72,7 +72,7 @@ docker-build:
 	docker build . -t deploy-sn
 
 docker-run:
-	docker run -it -p 8081:8081 -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET --name deploy-sn deploy-sn bash startup.sh 
+	docker run --rm -it -p 8081:8081 -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET --name deploy-sn deploy-sn bash startup.sh 
 
 docker-kill:
 	docker rm -f deploy-sn
