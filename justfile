@@ -8,7 +8,7 @@ _default:
 
 # Reset and reseed database, and regenerate Keysely type definitions
 reset-db:
-	rm -f $DATABASE_PATH
+	rm -f $APP_DATABASE_PATH
 	npx tsx migrate.ts
 	npx tsx seed.ts
 
@@ -22,10 +22,11 @@ migrate:
 	npx tsx migrate.ts
 
 dev:
-	npm run dev
+  npm install
+  npm run dev
 
 sqlite:
-	sqlite3 $DATABASE_PATH
+	sqlite3 $APP_DATABASE_PATH
 
 typecheck:
 	npm run typecheck
@@ -58,11 +59,11 @@ import-hn:
 
 # delete local database, download production database
 download-prod-db:
-  rm -f "$DATABASE_PATH"
-  rm -f "$DATABASE_PATH"-shm
-  rm -f "$DATABASE_PATH"-wal
+  rm -f "$APP_DATABASE_PATH"
+  rm -f "$APP_DATABASE_PATH"-shm
+  rm -f "$APP_DATABASE_PATH"-wal
   flyctl ssh console -C "sqlite3 /litefs/data/sqlite.db '.backup /data/backup.db'"
-  flyctl ssh sftp get /data/backup.db "$DATABASE_PATH" || true
+  flyctl ssh sftp get /data/backup.db "$APP_DATABASE_PATH" || true
 
 docker-build-mac:
 	docker build --platform linux/amd64 .

@@ -3,7 +3,7 @@ import { Kysely, SqliteDialect } from 'kysely'
 
 import { type DB } from '#app/db/kysely-types.ts' // this is the Database interface we defined earlier
 
-const databasePath = process.env.DATABASE_PATH
+const databasePath = process.env.APP_DATABASE_PATH
 
 var sqliteInstance = new SQLite(databasePath)
 

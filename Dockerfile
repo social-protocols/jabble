@@ -45,9 +45,10 @@ FROM base
 
 ENV FLY="true"
 ENV LITEFS_DIR="/litefs/data"
-ENV DATABASE_FILENAME="social-network.db"
-ENV DATABASE_PATH="$LITEFS_DIR/$DATABASE_FILENAME"
-ENV DATABASE_URL="file:$DATABASE_PATH"
+ENV APP_DATABASE_FILENAME="social-network.db"
+ENV APP_DATABASE_PATH="$LITEFS_DIR/$APP_DATABASE_FILENAME"
+ENV GB_DATABASE_PATH="$LITEFS_DIR/global-brain.db"
+ENV APP_DATABASE_URL="file:$APP_DATABASE_PATH"
 ENV CACHE_DATABASE_FILENAME="cache.db"
 ENV CACHE_DATABASE_PATH="/$LITEFS_DIR/$CACHE_DATABASE_FILENAME"
 ENV INTERNAL_PORT="8080"
@@ -57,9 +58,12 @@ ENV VOTE_EVENTS_PATH=/data/vote-events.jsonl
 ENV SCORE_EVENTS_PATH=/data/score-events.jsonl
 
 # add shortcut for connecting to database CLI
-RUN echo "#!/bin/sh\nset -x\nsqlite3 \$DATABASE_URL" > /usr/local/bin/database-cli && chmod +x /usr/local/bin/database-cli
+RUN echo "#!/bin/sh\nset -x\nsqlite3 \$APP_DATABASE_URL" > /usr/local/bin/database-cli && chmod +x /usr/local/bin/database-cli
 
 WORKDIR /myapp
+
+RUN wget https://github.com/social-protocols/GlobalBrain.jl/archive/refs/tags/0.1.tar.gz && tar zxvf 0.1.tar.gz --directory=/myapp
+RUN cd GlobalBrain.jl-0.1 && /opt/julia-1.9.4/bin/julia --project -e 'using Pkg; Pkg.instantiate()'
 
 COPY --from=production-deps /myapp/node_modules /myapp/node_modules
 COPY --from=build /myapp/package.json /myapp/package.json
@@ -73,8 +77,6 @@ COPY --from=build /myapp/build /myapp/build
 COPY --from=build /myapp/public /myapp/public
 COPY --from=build /myapp/app/components/ui/icons /myapp/app/components/ui/icons
 
-RUN wget https://github.com/social-protocols/GlobalBrain.jl/archive/refs/tags/0.1.tar.gz && tar zxvf 0.1.tar.gz --directory=/myapp/build
-RUN cd build/GlobalBrain.jl-0.1 && /opt/julia-1.9.4/bin/julia --project -e 'using Pkg; Pkg.instantiate()'
 
 
 # prepare for litefs
@@ -85,4 +87,6 @@ RUN mkdir -p /data ${LITEFS_DIR}
 ADD . .
 
 # starting the application is defined in litefs.yml
+# test locally without litefs:
+# docker run -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET sha256:xyzxyz bash /myapp/startup.sh
 CMD ["litefs", "mount"]
