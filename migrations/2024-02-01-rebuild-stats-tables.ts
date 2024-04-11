@@ -5,38 +5,35 @@ import { type Kysely, sql } from 'kysely'
 // https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html
 
 export async function up(db: Kysely<any>): Promise<void> {
-  await sql`
+	await sql`
     delete from currentVote where 1=1;
   `.execute(db)
 
-  await sql`
+	await sql`
     delete from currentTally where 1=1;
   `.execute(db)
 
-  await sql`
+	await sql`
     delete from currentInformedVote where 1=1;
   `.execute(db)
 
-  await sql`
+	await sql`
     delete from currentInformedTally where 1=1; 
   `.execute(db)
 
-
-  await sql`
+	await sql`
     create table savedRowId as select max(rowId) as maxRowId from voteHistory;
   `.execute(db)
 
-  await sql`
+	await sql`
     insert into voteHistory(userId, tagId, postId, noteId, direction, createdAt) select userId, tagId, postId, noteId, direction, createdAt from voteHistory;
   `.execute(db)
 
-
-  await sql`
+	await sql`
     delete from voteHistory where rowId > (select maxRowId from savedRowId);
   `.execute(db)
 
-  await sql`
+	await sql`
     drop table savedRowId;
   `.execute(db)
-
 }

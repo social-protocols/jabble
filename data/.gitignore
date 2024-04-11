@@ -1,6 +1,0 @@
-# ignore
-*
-
-# but include .gitignore itself
-!.gitignore
-

@@ -12,7 +12,7 @@ proxy:
   # matches the internal_port in fly.toml
   addr: ':${INTERNAL_PORT}'
   target: 'localhost:${PORT}'
-  db: '${DATABASE_FILENAME}'
+  db: '${APP_DATABASE_FILENAME}'
 
 # The lease section specifies how the cluster will be managed. We're using the
 # "consul" lease type so that our application can dynamically change the primary.
@@ -30,4 +30,4 @@ lease:
 
 exec:
   - cmd: node ./other/setup-swap.js
-  - cmd: bash -c 'npm run migrate && npm start'
+  - cmd: bash -c ./startup.sh

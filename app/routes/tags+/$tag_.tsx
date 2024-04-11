@@ -64,7 +64,7 @@ export default function TagPage() {
 	// We lose the type info for positions after serializing and deserializing JSON
 	let p = new Map<number, Direction>()
 	for (let position of positions) {
-		p.set(position.postId, position.direction)
+		p.set(position.postId, position.vote)
 	}
 
 	return (
@@ -98,6 +98,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export const shouldRevalidate: ShouldRevalidateFunction = (args: {
 	formAction?: string | undefined
 }) => {
+	console.log('shouldRevalidate', args)
 	// Optimization that makes it so /votes don't reload the page
 	if (args.formAction == '/vote') {
 		return false

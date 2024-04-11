@@ -150,8 +150,8 @@ export function PostDetails({
 			? fetcher.data.state
 			: position
 
-	const nReplies = post.nReplies
-	const nRepliesString = nReplies === 1 ? '1 reply' : `${nReplies} replies`
+	const nRepliesString =
+		post.nReplies === 1 ? '1 reply' : `${post.nReplies} replies`
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
@@ -209,7 +209,7 @@ export function PostDetails({
 
 				<div className="mt-2 flex w-full text-sm">
 					<Link to={`/tags/${tag}/stats/${post.id}`} className="hyperlink">
-						{informedProbabilityString}%
+						{informedProbabilityString}% ({post.score} bits)
 					</Link>
 					<Link to={`/tags/${tag}/posts/${post.id}`} className="hyperlink ml-2">
 						{nRepliesString}
@@ -244,6 +244,31 @@ export function PostDetails({
 					</replyFetcher.Form>
 				)}
 			</div>
+		</div>
+	)
+}
+
+export function ParentPost({
+	parentPost,
+	tag,
+}: {
+	parentPost: Post
+	tag: string
+}) {
+	return (
+		<div className="border-l-4 border-postparent-threadline">
+			<Link key={parentPost.id} to={`/tags/${tag}/posts/${parentPost.id}`}>
+				<div
+					key={parentPost.id}
+					className="postparent mb-2 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"
+				>
+					<PostContent
+						content={parentPost.content}
+						maxLines={3}
+						deactivateLinks={true}
+					/>
+				</div>
+			</Link>
 		</div>
 	)
 }

@@ -4,36 +4,15 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 	: ColumnType<T, T | undefined, T>
 export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
-export type CurrentInformedTally = {
-	tagId: number
-	postId: number
-	noteId: number
-	count: number
-	total: number
-}
-export type CurrentTally = {
-	tagId: number
-	postId: number
-	count: number
-	total: number
-}
-export type CurrentVote = {
+export type Vote = {
 	userId: string
 	tagId: number
 	postId: number
-	direction: number
-	latest: number
-	createdAt: number
+	vote: number
+	latestVoteEventId: number
+	voteEventTime: number
 }
-export type DetailedTally = {
-	tagId: number
-	postId: number
-	noteId: number
-	countGivenShownThisNote: number
-	totalGivenShownThisNote: number
-	countGivenNotShownThisNote: number
-	totalGivenNotShownThisNote: number
-}
+
 export type ExplorationStats = {
 	rowid: Generated<number>
 	votes: number
@@ -120,20 +99,69 @@ export type Verification = {
 	 */
 	expiresAt: number | null
 }
-export type VoteHistory = {
-	rowid: Generated<number>
+
+export type VoteEvent = {
+	voteEventId: Generated<number>
+	voteEventTime: Generated<number>
 	userId: string
+	tagId: number
+	parentId: number | null
+	postId: number
+	noteId: number | null
+	vote: number
+}
+
+export type Score = {
+	voteEventId: number
+	voteEventTime: number
+	tagId: number | null
+	parentId: number | null
+	postId: number
+	topNoteId: number | null
+	o: number
+	oCount: number
+	oSize: number
+	p: number
+	score: number
+}
+
+export type Effect = {
+	voteEventId: number
+	voteEventTime: number
 	tagId: number
 	postId: number
 	noteId: number | null
-	direction: number
-	createdAt: Generated<number>
+	p: number
+	pCount: number
+	pSize: number
+	q: number
+	qCount: number
+	qSize: number
+	r: number
 }
+
+export type FullScore = {
+	voteEventId: number
+	voteEventTime: number
+	tagId: number
+	postId: number
+	noteId: number | null
+	p: number
+	pCount: number
+	pSize: number
+	q: number
+	qCount: number
+	qSize: number
+	r: number
+	topNoteId: number | null
+	o: number
+	oCount: number
+	oSize: number
+	score: number
+}
+
 export type DB = {
-	CurrentInformedTally: CurrentInformedTally
-	CurrentTally: CurrentTally
-	CurrentVote: CurrentVote
-	DetailedTally: DetailedTally
+	Vote: Vote
 	ExplorationStats: ExplorationStats
 	LocationStats: LocationStats
 	Password: Password
@@ -144,5 +172,10 @@ export type DB = {
 	TagStats: TagStats
 	User: User
 	Verification: Verification
-	VoteHistory: VoteHistory
+	VoteEvent: VoteEvent
+	Score: Score
+	ScoreEvent: Score
+	Effect: Effect
+	EffectEvent: Effect
+	FullScore: FullScore
 }

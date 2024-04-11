@@ -1,6 +1,5 @@
-import { createId } from '@paralleldrive/cuid2'
-import { sql } from 'kysely'
-import { logTagPageView, seedStats } from '#app/attention.ts'
+import bcrypt from 'bcryptjs'
+import { logTagPageView } from '#app/attention.ts'
 import { db } from '#app/db.ts'
 import { createPost } from '#app/post.ts'
 import { getRankedPosts } from '#app/ranking.ts'
@@ -69,7 +68,7 @@ export async function seed() {
 	)
 
 	// And also downvotes (with their own post as a note -- this is an important detail)
-	await vote(tag, bob, post1, post2, Direction.Down, null)
+	await vote(tag, bob, post1, post2, Direction.Down)
 
 	// bob views home page
 	await getRankedPosts(tag)
@@ -123,40 +122,53 @@ export async function seed() {
 		"The tweet's claim about real wages contains a factual error. On 3/15/20 when US COVID lockdowns began real wages adjusted for inflation (AFI) were $11.15. As of 7/16/23 real wages AFI are $11.05. Real wages AFI remain lower (not higher) than before the pandemic.",
 		bob,
 	)
-	await vote(tag, alice, post6, post7, Direction.Down, null)
+	await vote(tag, alice, post6, post7, Direction.Down)
 
 	// agreed with 2 (shown 3)
-	await vote(tag, charlie, post2, post3, Direction.Up, null)
+	await vote(tag, charlie, post2, post3, Direction.Up)
 	// changed mind after seeing 2
-	await vote(tag, charlie, post1, post2, Direction.Down, null)
+	await vote(tag, charlie, post1, post2, Direction.Down)
 	// changed mind back (for no particular reason)
-	await vote(tag, charlie, post1, post2, Direction.Up, null)
+	await vote(tag, charlie, post1, post2, Direction.Up)
 
 	// duplicate vote
-	await vote(tag, charlie, post1, post2, Direction.Up, null)
+	await vote(tag, charlie, post1, post2, Direction.Up)
 
 	// changed mind back again
-	await vote(tag, charlie, post1, post2, Direction.Down, null)
+	await vote(tag, charlie, post1, post2, Direction.Down)
 
 	// and toggles some other votes
-	await vote(tag, charlie, post1, post2, Direction.Down, null)
-	await vote(tag, charlie, post2, post3, Direction.Down, null)
-	await vote(tag, charlie, post2, post3, Direction.Up, null)
+	await vote(tag, charlie, post1, post2, Direction.Down)
+	await vote(tag, charlie, post2, post3, Direction.Down)
+	await vote(tag, charlie, post2, post3, Direction.Up)
 
-	// Add a developer user and session ID that is already in my browser, so I remain logged in after I reseed the DB.
+	await vote(tag, charlie, 3, null, 1)
+	await vote(tag, charlie, 2, null, -1)
+	await vote(tag, bob, 6, null, -1)
+	await vote(tag, alice, 5, null, -1)
+	await vote(tag, alice, 4, null, -1)
+
+	// Create developer user with password 'password'. Can login with this user by pointing browser to /dev-login
+	const id = 'developer'
 	await db
 		.insertInto('User')
 		.values({
-			id: 'clptz40870002cdvq8rqkbfs5',
+			id: id,
 			username: 'developer',
 			email: 'test@test.com',
-			// password: { create: createPassword('jonathan') },
 		})
 		.execute()
 
-	await sql`insert into session(id, expirationDate, createdAt, updatedAt, userId) values ('clptz40870001cdvqn4rnggxv', 1704471496999, 1701877981251, 1701877981251, 'clptz40870002cdvq8rqkbfs5')`.execute(
-		db,
-	)
+	const hashedPassword = await bcrypt.hash('password', 10)
+
+	await db
+		.insertInto('Password')
+		.values({
+			hash: hashedPassword,
+			userId: id,
+		})
+		.returningAll()
+		.executeTakeFirstOrThrow()
 }
 
 seed().catch(e => {
