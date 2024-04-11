@@ -23,7 +23,7 @@ import {
 	useSubmit,
 } from '@remix-run/react'
 import { withSentry } from '@sentry/remix'
-import { useRef, useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { AuthenticityTokenProvider } from 'remix-utils/csrf/react'
 import { ExternalScripts } from 'remix-utils/external-scripts'
 import { HoneypotProvider } from 'remix-utils/honeypot/react'
@@ -100,14 +100,14 @@ export async function loader({ request }: DataFunctionArgs) {
 
 	const user = userId
 		? await time(
-				() =>
-					db
-						.selectFrom('User')
-						.where('User.id', '=', userId)
-						.select(['User.id', 'username'])
-						.executeTakeFirstOrThrow(),
-				{ timings, type: 'find user', desc: 'find user in root' },
-		  )
+			() =>
+				db
+					.selectFrom('User')
+					.where('User.id', '=', userId)
+					.select(['User.id', 'username'])
+					.executeTakeFirstOrThrow(),
+			{ timings, type: 'find user', desc: 'find user in root' },
+		)
 		: null
 	if (userId && !user) {
 		console.info('something weird happened')
@@ -186,6 +186,9 @@ function Document({
 	theme?: Theme
 	env?: Record<string, string>
 }) {
+	const handleClick = () => {
+		subscribeUserToPush().catch(console.error)
+	}
 	return (
 		<html lang="en" className={`${theme} h-full overflow-x-hidden`}>
 			<head>
@@ -197,6 +200,7 @@ function Document({
 				<ExternalScripts />
 			</head>
 			<body className="bg-background text-foreground">
+				<button onClick={handleClick}>Subscribe to Notifications</button>
 				{children}
 				<script
 					nonce={nonce}
@@ -417,4 +421,25 @@ export function ErrorBoundary() {
 			<GeneralErrorBoundary />
 		</Document>
 	)
+}
+
+async function subscribeUserToPush() {
+	const registration =
+		await navigator.serviceWorker.register('/service-worker.js')
+	const subscription = await registration.pushManager.subscribe({
+		userVisibleOnly: true,
+		applicationServerKey:
+			'BHptG7bpLYEJ3Q_xB8plvNFQLCizZr_tsEdvS5wgVl9C0g7T8H4-zh2AOe3sHPKzouxYX-XHDFZu0WpjHf-QhnE', // TODO: don't hardcode
+	})
+
+	console.log('subscription', subscription)
+
+	// Send the subscription details to the backend for storage
+	// fetch('/api/subscribe', {
+	// 	method: 'POST',
+	// 	headers: {
+	// 		'Content-Type': 'application/json',
+	// 	},
+	// 	body: JSON.stringify(subscription),
+	// })
 }
