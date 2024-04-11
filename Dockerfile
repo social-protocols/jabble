@@ -31,7 +31,7 @@ RUN cd GlobalBrain.jl-0.1 && /opt/julia-1.9.4/bin/julia --project -e 'using Pkg;
 
 # npm install
 COPY package.json package-lock.json .npmrc ./
-RUN npm install --include=dev
+RUN npm install --include=dev && rm -rf /root/.npm /root/.node-gyp
 
 
 # npm run build
