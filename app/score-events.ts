@@ -91,13 +91,11 @@ export async function processScoreEvents() {
 				if (data['score'] !== undefined) {
 					insertScoreEvent(data)
 
-					console.log('Got event here', data)
 					const idStr = scoreEventIdStr({
 						voteEventId: data['vote_event_id'],
 						tagId: data['score']['tag_id'],
 						postId: data['score']['post_id'],
 					})
-					console.log('emit score event', data, idStr)
 					scoreEventEmitter.emit(idStr, data)
 				} else if (data['effect'] !== undefined) {
 					insertEffectEvent(data)
@@ -141,11 +139,9 @@ export function waitForScoreEvent(voteEvent: VoteEvent): Promise<void> {
 		}, 10000) // Timeout after 10 seconds, for example
 
 		const listener = (scoreEvent: any) => {
-			console.log('Have score event with id', scoreEventIdStr)
 			if (scoreEventIdStr(scoreEvent) === idStr) {
 				clearTimeout(timeout)
 				scoreEventEmitter.removeListener(idStr, listener)
-				console.log('Resolving')
 				resolve()
 			}
 		}
