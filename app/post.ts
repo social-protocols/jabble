@@ -13,7 +13,7 @@ export async function createPost(
   parentId: number | null, // TODO: use parentId?: number
   content: string,
   authorId: string,
-): Promise<{ postId: number; voteEventId: number }> {
+): Promise<number> {
   const results: { id: number }[] = await db
     .insertInto('Post')
     .values({ content, parentId, authorId })
@@ -23,7 +23,7 @@ export async function createPost(
 
   const direction: Direction = Direction.Up
 
-  const voteEvent = await vote(tag, authorId, postId, null, direction, null)
+  await vote(tag, authorId, postId, null, direction, null)
 
   const tagId = await getOrInsertTagId(tag)
 
@@ -35,7 +35,7 @@ export async function createPost(
 
   await invalidateTagPage(tag)
 
-  return { postId, voteEventId: voteEvent.voteEventId }
+  return postId
 }
 
 export async function initPostStats(tagId: number, postId: number) {

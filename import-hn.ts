@@ -68,7 +68,7 @@ async function importHNPostsFromFile(tag: string, filename: string) {
           }
         }
 
-        const { postId } = await createPost(tag, parentId, markdown, ourUserId)
+        const postId = await createPost(tag, parentId, markdown, ourUserId)
 
         idMap.set(item.id, postId)
         bar1.update(++i)

@@ -53,6 +53,7 @@ export async function seed() {
     .execute()
 
   // await seedStats()
+
   /*
   // First, alice creates a post
   const tag = 'global'

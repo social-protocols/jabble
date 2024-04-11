@@ -8,32 +8,32 @@ import { getOrInsertTagId } from '#app/tag.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
 const replySchema = zfd.formData({
-	parentId: z.coerce.number().optional(),
-	tag: z.coerce.string(),
-	content: z.coerce.string(),
+  parentId: z.coerce.number().optional(),
+  tag: z.coerce.string(),
+  content: z.coerce.string(),
 })
 
 export const action = async (args: ActionFunctionArgs) => {
-	let request = args.request
-	const formData = await request.formData()
+  let request = args.request
+  const formData = await request.formData()
 
-	const userId: string = await requireUserId(request)
+  const userId: string = await requireUserId(request)
 
-	const parsedData = replySchema.parse(formData)
+  const parsedData = replySchema.parse(formData)
 
-	console.log('Reply action', parsedData)
+  console.log('Reply action', parsedData)
 
-	const content = parsedData.content
-	const parentId = parsedData.parentId || null
-	const tag = parsedData.tag
-	const tagId = await getOrInsertTagId(tag)
+  const content = parsedData.content
+  const parentId = parsedData.parentId || null
+  const tag = parsedData.tag
+  const tagId = await getOrInsertTagId(tag)
 
-	console.log('Got params', parentId, tag, tagId, content)
+  console.log('Got params', parentId, tag, tagId, content)
 
-	invariant(content, 'content !== undefined')
-	invariant(tag, "tag !== ''")
+  invariant(content, 'content !== undefined')
+  invariant(tag, "tag !== ''")
 
-	let { postId } = await createPost(tag, parentId, content, userId)
+  let postId = await createPost(tag, parentId, content, userId)
 
-	return json({ postId: postId })
+  return json({ postId: postId })
 }
