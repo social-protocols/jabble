@@ -13,6 +13,9 @@ RUN apt-get update && apt-get install -y fuse3 sqlite3 ca-certificates wget
 
 RUN wget https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-1.9.4-linux-x86_64.tar.gz  && tar zxvf julia-1.9.4-linux-x86_64.tar.gz --directory=/opt
 
+
+
+
 # Install all node_modules, including dev dependencies
 FROM base as deps
 
@@ -21,33 +24,34 @@ WORKDIR /myapp
 ADD package.json package-lock.json .npmrc ./
 RUN npm install --include=dev
 
-# Setup production node_modules
-FROM base as production-deps
 
-WORKDIR /myapp
 
-COPY --from=deps /myapp/node_modules /myapp/node_modules
-ADD package.json package-lock.json .npmrc ./
-# RUN npm prune --omit=dev # we need to run migrations, so we need dev dependencies, better would be to bundle them
+
+
+
 
 # Build the app
-FROM base as build
+FROM deps as build
 
 WORKDIR /myapp
 
-COPY --from=deps /myapp/node_modules /myapp/node_modules
 
 COPY other other/
 COPY app app/
 COPY server server/
 COPY public public/
-COPY package.json package-lock.json index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
+COPY types types/
+COPY index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
 
 
 RUN npm run build
 
+
+
+
+
 # Finally, build the production image with minimal footprint
-FROM base
+FROM deps
 
 ENV FLY="true"
 ENV LITEFS_DIR="/litefs/data"
@@ -71,7 +75,6 @@ WORKDIR /myapp
 RUN wget https://github.com/social-protocols/GlobalBrain.jl/archive/refs/tags/0.1.tar.gz && tar zxvf 0.1.tar.gz --directory=/myapp
 RUN cd GlobalBrain.jl-0.1 && /opt/julia-1.9.4/bin/julia --project -e 'using Pkg; Pkg.instantiate()'
 
-COPY --from=production-deps /myapp/node_modules /myapp/node_modules
 COPY --from=build /myapp/package.json /myapp/package.json
 # for migrations:
 COPY migrate.ts startup.sh index.js ./
