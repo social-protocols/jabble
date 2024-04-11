@@ -37,7 +37,13 @@ WORKDIR /myapp
 
 COPY --from=deps /myapp/node_modules /myapp/node_modules
 
-ADD . .
+COPY other other/
+COPY app app/
+COPY server server/
+COPY public public/
+COPY package.json package-lock.json index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
+
+
 RUN npm run build
 
 # Finally, build the production image with minimal footprint
@@ -68,23 +74,20 @@ RUN cd GlobalBrain.jl-0.1 && /opt/julia-1.9.4/bin/julia --project -e 'using Pkg;
 COPY --from=production-deps /myapp/node_modules /myapp/node_modules
 COPY --from=build /myapp/package.json /myapp/package.json
 # for migrations:
-COPY --from=build /myapp/migrate.ts /myapp/migrate.ts
-COPY --from=build /myapp/startup.sh /myapp/startup.sh
+COPY migrate.ts startup.sh index.js ./
 COPY --from=build /myapp/app /myapp/app
 
 COPY --from=build /myapp/server-build /myapp/server-build
 COPY --from=build /myapp/build /myapp/build
 COPY --from=build /myapp/public /myapp/public
 COPY --from=build /myapp/app/components/ui/icons /myapp/app/components/ui/icons
-
+COPY migrations migrations/
 
 
 # prepare for litefs
 COPY --from=flyio/litefs:0.5.10 /usr/local/bin/litefs /usr/local/bin/litefs
 ADD other/litefs.yml /etc/litefs.yml
 RUN mkdir -p /data ${LITEFS_DIR}
-
-ADD . .
 
 # starting the application is defined in litefs.yml
 # test locally without litefs:

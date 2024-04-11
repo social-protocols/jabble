@@ -27,5 +27,9 @@ export async function loader({ request }: DataFunctionArgs) {
 		redirectTo: '/',
 	}
 
-	return await handleNewSession(args)
+
+	const result = await handleNewSession(args)
+
+
+	return result
 }

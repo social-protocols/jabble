@@ -76,26 +76,34 @@ export async function processScoreEvents() {
 
 	let buffer = ''
 
+  console.log("Spawned tail process")
+
 	tail.stdout.on('data', data => {
+    console.log("Got data from tail process", data)
 		buffer += data.toString()
 		let lines = buffer.split('\n')
 		buffer = lines.pop() || '' // Keep the incomplete line in the buffer
 		lines.forEach(async (line: string) => {
 			try {
+        console.log("Got line")
 				if (line === '') {
+          console.log("Line is empty")
 					return
 				}
 
 				const data: any = JSON.parse(line)
 
 				if (data['score'] !== undefined) {
-					insertScoreEvent(data)
+          console.log("Is score event")
+					await insertScoreEvent(data)
+          console.log("Inserted score event")
 
 					const idStr = scoreEventIdStr({
 						voteEventId: data['vote_event_id'],
 						tagId: data['score']['tag_id'],
 						postId: data['score']['post_id'],
 					})
+					console.log('emit score event', data, idStr)
 					scoreEventEmitter.emit(idStr, data)
 				} else if (data['effect'] !== undefined) {
 					insertEffectEvent(data)

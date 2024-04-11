@@ -68,5 +68,17 @@ download-prod-db:
 docker-build-mac:
 	docker build --platform linux/amd64 . -t deploy-sn
 
+docker-build:
+	docker build . -t deploy-sn
+
 docker-run:
-	docker run -it -p 8081:8081 -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET deploy-sn bash startup.sh 
+	docker run -it -p 8081:8081 -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET --name deploy-sn deploy-sn bash startup.sh 
+
+docker-kill:
+	docker rm -f deploy-sn
+
+docker-exec:
+	docker exec -it deploy-sn /bin/bash
+
+
+
