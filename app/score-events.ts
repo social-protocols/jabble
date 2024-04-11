@@ -2,7 +2,7 @@ import { spawn } from 'child_process'
 import EventEmitter from 'events'
 import { env } from 'process'
 // import { type InsertableScore , type Score } from './db/types.ts';
-import { type VoteEvent } from './db/types.ts'
+// import { type VoteEvent } from './db/types.ts'
 import { db } from './db.ts'
 
 const scoreEventsPath = env.SCORE_EVENTS_PATH!
@@ -76,35 +76,42 @@ export async function processScoreEvents() {
 
 	let buffer = ''
 
-  console.log("Spawned tail process")
+	// const testEvent = {voteEventId: 101, tagId: 202, postId: 303}
+	// console.log("Waiting for test event", testEvent)
+	// 	const promise = waitForScoreEvent(testEvent)
+	// 	const idStr = scoreEventIdStr(testEvent)
+	// 	console.log("Emitting event", idStr)
+	// 	scoreEventEmitter.emit(idStr)
+	// 	console.log("Awaiting promise")
+	// 	await promise
+	// 	console.log("promise Resolved")
 
 	tail.stdout.on('data', data => {
-    console.log("Got data from tail process", data)
 		buffer += data.toString()
 		let lines = buffer.split('\n')
 		buffer = lines.pop() || '' // Keep the incomplete line in the buffer
 		lines.forEach(async (line: string) => {
 			try {
-        console.log("Got line")
+				console.log('Got line from score events stream', line)
 				if (line === '') {
-          console.log("Line is empty")
+					console.log('Line is empty')
 					return
 				}
 
 				const data: any = JSON.parse(line)
 
 				if (data['score'] !== undefined) {
-          console.log("Is score event")
+					console.log('Is score event')
 					await insertScoreEvent(data)
-          console.log("Inserted score event")
+					console.log('Inserted score event')
 
 					const idStr = scoreEventIdStr({
 						voteEventId: data['vote_event_id'],
 						tagId: data['score']['tag_id'],
 						postId: data['score']['post_id'],
 					})
-					console.log('emit score event', data, idStr)
-					scoreEventEmitter.emit(idStr, data)
+					console.log('emit score event', idStr)
+					scoreEventEmitter.emit(idStr)
 				} else if (data['effect'] !== undefined) {
 					insertEffectEvent(data)
 				} else {
@@ -137,8 +144,14 @@ function scoreEventIdStr(event: {
 }
 
 // Wait until a score event for the vote on this post has been written to the database.
-export function waitForScoreEvent(voteEvent: VoteEvent): Promise<void> {
+export function waitForScoreEvent(voteEvent: {
+	voteEventId: Number
+	tagId: Number
+	postId: Number
+}): Promise<void> {
+	console.log('Waiting for score event ', voteEvent)
 	const idStr = scoreEventIdStr(voteEvent)
+	console.log('event id', idStr)
 
 	return new Promise((resolve, reject) => {
 		const timeout = setTimeout(() => {
@@ -146,14 +159,13 @@ export function waitForScoreEvent(voteEvent: VoteEvent): Promise<void> {
 			reject(new Error('Timeout waiting for score event: ' + idStr))
 		}, 10000) // Timeout after 10 seconds, for example
 
-		const listener = (scoreEvent: any) => {
-			if (scoreEventIdStr(scoreEvent) === idStr) {
-				clearTimeout(timeout)
-				scoreEventEmitter.removeListener(idStr, listener)
-				resolve()
-			}
+		const listener = () => {
+			console.log('Got score event in listener')
+			clearTimeout(timeout)
+			resolve()
 		}
 
-		scoreEventEmitter.on(idStr, listener)
+		console.log('Attaching to scoreEventEmitter', idStr)
+		scoreEventEmitter.once(idStr, listener)
 	})
 }

@@ -96,6 +96,7 @@ export function handleError(
 	error: unknown,
 	{ request }: DataFunctionArgs,
 ): void {
+	console.log(error)
 	if (error instanceof Error) {
 		Sentry.captureRemixServerException(error, 'remix.server', request)
 	} else {

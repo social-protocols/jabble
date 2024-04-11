@@ -1,6 +1,7 @@
 import assert from 'assert'
 import { type VoteEvent, type InsertableVoteEvent } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
+import { waitForScoreEvent } from '#app/score-events.ts'
 import { writeVoteEvent } from '#app/vote-events.ts'
 import {
 	type Location,
@@ -24,10 +25,10 @@ export async function vote(
 	noteId: number | null,
 	direction: Direction,
 	randomLocation?: Location | null,
-) {
+): Promise<VoteEvent> {
 	const tagId = await getOrInsertTagId(tag)
 
-	let vote_event: VoteEvent = await insertVoteEvent(
+	let voteEvent: VoteEvent = await insertVoteEvent(
 		tagId,
 		userId,
 		postId,
@@ -35,9 +36,19 @@ export async function vote(
 		direction,
 	)
 
-	await writeVoteEvent(vote_event)
+	const scoreEventPromise = waitForScoreEvent({
+		postId: postId,
+		tagId: tagId,
+		voteEventId: voteEvent.voteEventId,
+	})
+	console.log('Got score event promise')
+	await writeVoteEvent(voteEvent)
+	console.log('Wrote vote event')
 
-	// console.log("result of inserting vote record", vote_event)
+	await scoreEventPromise
+
+	console.log('Promise resolved')
+	// console.log("result of inserting vote record", voteEvent)
 
 	// Todo: dedupe in case user toggles vote multiple times
 	if (randomLocation != null) {
@@ -45,7 +56,7 @@ export async function vote(
 		logVoteOnRandomlyRankedPost(randomLocation)
 	}
 
-	return vote_event
+	return voteEvent
 }
 
 async function insertVoteEvent(

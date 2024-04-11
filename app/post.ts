@@ -13,42 +13,29 @@ export async function createPost(
 	parentId: number | null,
 	content: string,
 	authorId: string,
-): Promise<number> {
+): Promise<{ postId: number; voteEventId: number }> {
 	const results: { id: number }[] = await db
 		.insertInto('Post')
 		.values({ content, parentId, authorId })
 		.returning('id')
 		.execute()
-
-	const additionalExtractedTags = extractTags(content)
-	const allTags = [tag, ...additionalExtractedTags]
-	// console.log("All tags", allTags);
-
-	const createdPostId = results[0]!.id
+	const postId = results[0]!.id
 
 	const direction: Direction = Direction.Up
 
-	await Promise.all(
-		allTags.map(tag =>
-			vote(tag, authorId, createdPostId, null, direction, null),
-		),
-	)
+	const voteEvent = await vote(tag, authorId, postId, null, direction, null)
 
-	const tagIds: number[] = await Promise.all(
-		allTags.map(tag => getOrInsertTagId(tag)),
-	)
+	const tagId = await getOrInsertTagId(tag)
 
 	if (parentId != null) {
-		await Promise.all(tagIds.map(tagId => incrementReplyCount(tagId, parentId)))
+		await incrementReplyCount(tagId, parentId)
 	}
 
-	await Promise.all(
-		tagIds.map(tagId => logAuthorView(authorId, tagId, createdPostId)),
-	)
+	await logAuthorView(authorId, tagId, postId)
 
-	await Promise.all(allTags.map(tag => invalidateTagPage(tag)))
+	await invalidateTagPage(tag)
 
-	return createdPostId
+	return { postId, voteEventId: voteEvent.voteEventId }
 }
 
 export async function initPostStats(tagId: number, postId: number) {

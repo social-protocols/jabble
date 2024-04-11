@@ -1,5 +1,3 @@
-// import { Spacer } from '#app/components/spacer.tsx'
-// import { Icon } from '#app/components/ui/icon.tsx'
 import {
 	type ActionFunctionArgs,
 	type DataFunctionArgs,
@@ -11,21 +9,14 @@ import {
 	type ShouldRevalidateFunction,
 	useLoaderData,
 } from '@remix-run/react'
-// import assert from 'assert';
-// import { Form, Link, useLoaderData, type MetaFunction } from '@remix-run/react'
-// import { db } from "#app/db.ts";
-// import { topNote, voteRate } from '#app/probabilities.ts';
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 import { zfd } from 'zod-form-data'
-// import { Button } from '#app/components/ui/button.tsx';
-// import { Link } from '@remix-run/react';
 
 import { logPostPageView } from '#app/attention.ts'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { PostContent, PostDetails } from '#app/components/ui/post.tsx'
 import { type Post } from '#app/db/types.ts'
-// import type { LinksFunction } from "@remix-run/node"; // or cloudflare/deno
 
 import { getUserPositions } from '#app/positions.ts'
 import { createPost, getTransitiveParents } from '#app/post.ts'
@@ -34,23 +25,18 @@ import {
 	getTopNote,
 	getScoredPost,
 	type RankedPost,
-	// type RankedPosts,
 	type ScoredPost,
 } from '#app/ranking.ts'
+import { waitForScoreEvent } from '#app/score-events.ts'
 import { getOrInsertTagId } from '#app/tag.ts'
 import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
 
 import { Direction } from '#app/vote.ts'
-// const GLOBAL_TAG = "global";
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
 const contentSchema = z.coerce.string()
-
-// export const handle = {
-//   scripts: () => [{ src: '/js/vote.js' }]
-// }
 
 export async function loader({ params, request }: DataFunctionArgs) {
 	invariant(params.postId, 'Missing postid param')
@@ -111,15 +97,21 @@ export const action = async (args: ActionFunctionArgs) => {
 	const content = parsedData.content
 	const parentId = parsedData.parentId
 	const tag = parsedData.tag
+	const tagId = await getOrInsertTagId(tag)
 
 	invariant(content, 'content !== undefined')
 	invariant(tag, "tag !== ''")
 
-	let newPostId = await createPost(tag, parentId, content, userId)
+	let { postId, voteEventId } = await createPost(tag, parentId, content, userId)
+	await waitForScoreEvent({
+		postId: postId,
+		tagId: tagId,
+		voteEventId: voteEventId,
+	})
 
-	console.log('New post id', newPostId)
+	console.log('New post id', postId)
 
-	return json({ newPostId: newPostId })
+	return json({ newPostId: postId })
 }
 
 export default function Post() {

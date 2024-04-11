@@ -225,11 +225,11 @@ const portToUse = await getPort({
 	port: portNumbers(desiredPort, desiredPort + 100),
 })
 
-console.log("Calling processScoreEvents")
+console.log('Calling processScoreEvents')
 let scoreEventsWatcher = await processScoreEvents()
-console.log("Calling initVoteEventStream")
+console.log('Calling initVoteEventStream')
 await initVoteEventStream()
-console.log("Done")
+console.log('Done')
 
 const server = app.listen(portToUse, () => {
 	const addy = server.address()

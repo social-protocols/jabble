@@ -116,9 +116,9 @@ export const action = async (args: ActionFunctionArgs) => {
 	// newly submitted post appearing or not appearing on the refreshed
 	// page, because getRankedPosts only includes posts with a score record.
 
-	console.log("Waiting for score event")
+	console.log('Waiting for score event')
 	await waitForScoreEvent(vote_event)
-	console.log("Waited for score event")
+	console.log('Waited for score event')
 
 	return { state: newState, postId: parsedData.postId }
 }
