@@ -22,6 +22,7 @@
           default = with pkgs; pkgs.mkShellNoCC {
             buildInputs = [
               git
+              just
 
               sqlite-interactive
               nodejs_20
