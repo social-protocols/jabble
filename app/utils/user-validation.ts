@@ -12,8 +12,8 @@ export const UsernameSchema = z
 
 export const PasswordSchema = z
 	.string({ required_error: 'Password is required' })
-	.min(6, { message: 'Password is too short' })
-	.max(100, { message: 'Password is too long' })
+	.min(6, { message: 'Password is too short, min 6 characters' })
+	.max(100, { message: 'Password is too long, max 100 characters' })
 export const NameSchema = z
 	.string({ required_error: 'Name is required' })
 	.min(3, { message: 'Name is too short' })
