@@ -26,7 +26,7 @@ RUN  wget https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-$JULIA_VERS
 RUN  wget https://github.com/social-protocols/GlobalBrain.jl/archive/refs/tags/$GLOBALBRAIN_VERSION.tar.gz \
   && tar zxvf $GLOBALBRAIN_VERSION.tar.gz --directory=/myapp \
   && rm $GLOBALBRAIN_VERSION.tar.gz
-RUN cd GlobalBrain.jl-0.1 && /opt/julia-1.9.4/bin/julia --project -e 'using Pkg; Pkg.instantiate()'
+RUN cd GlobalBrain.jl-$GLOBALBRAIN_VERSION && /opt/julia-$JULIA_VERSION/bin/julia --project -e 'using Pkg; Pkg.instantiate()'
 
 
 # npm install
@@ -44,11 +44,6 @@ COPY index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js
 RUN npm run build
 
 
-
-
-
-
-
 # startup & migrations
 COPY migrate.ts startup.sh index.js ./
 COPY migrations migrations/
@@ -63,9 +58,6 @@ ENV INTERNAL_PORT="8080"
 ENV PORT="8081"
 ENV VOTE_EVENTS_PATH=/data/vote-events.jsonl
 ENV SCORE_EVENTS_PATH=/data/score-events.jsonl
-
-# add shortcut for connecting to database CLI
-RUN echo "#!/bin/sh\nset -x\nsqlite3 \$APP_DATABASE_URL" > /usr/local/bin/database-cli && chmod +x /usr/local/bin/database-cli
 
 
 # starting the application is defined in litefs.yml
