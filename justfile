@@ -66,4 +66,7 @@ download-prod-db:
   flyctl ssh sftp get /data/backup.db "$APP_DATABASE_PATH" || true
 
 docker-build-mac:
-	docker build --platform linux/amd64 .
+	docker build --platform linux/amd64 . -t deploy-sn
+
+docker-run:
+	docker run -it -p 8081:8081 -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET deploy-sn bash startup.sh 
