@@ -1,94 +1,88 @@
 import { type Kysely, sql } from 'kysely'
 
 export async function up(db: Kysely<any>): Promise<void> {
-
-    await sql`
+	await sql`
         alter table CurrentVote rename to Vote
     `.execute(db)
 
-
-    await sql`
+	await sql`
         alter table Vote rename column direction to vote
     `.execute(db)
 
-    await sql`
+	await sql`
         alter table Vote rename column latest to latestVoteEventId
     `.execute(db)
 
-    await sql`
+	await sql`
         alter table Vote rename column createdAt to voteEventTime
     `.execute(db)
 
-    await sql`
+	await sql`
         drop view currentInformedTallyOld;
     `.execute(db)
 
-   await sql`
+	await sql`
         drop view detailedTally;
     `.execute(db)
 
-    await sql`
+	await sql`
         alter table VoteHistory rename to VoteEvent
     `.execute(db)
 
-    await sql`
+	await sql`
         alter table VoteEvent rename column direction to vote
     `.execute(db)
 
-    await sql`
+	await sql`
         alter table VoteEvent rename column rowid to voteEventId
     `.execute(db)
 
-    await sql`
+	await sql`
         alter table VoteEvent rename column createdAt to voteEventTime
     `.execute(db)
 
-    await sql`
+	await sql`
         alter table VoteEvent add column parentId integer
     `.execute(db)
 
-
-    await sql`
+	await sql`
         drop trigger insertCurrentTally;
     `.execute(db)
 
-    await sql`
+	await sql`
         drop trigger updateCurrentTally;
     `.execute(db)
 
-    await sql`
+	await sql`
         drop trigger insertCurrentInformedTally;
     `.execute(db)
 
-    await sql`
+	await sql`
         drop trigger updateCurrentInformedTally;
     `.execute(db)
 
-    await sql`
+	await sql`
         drop trigger insertCurrentInformedVote
     `.execute(db)
 
-
-    await sql`
+	await sql`
         drop trigger insertCurrentVote
     `.execute(db)
 
-
-    await sql`
+	await sql`
         drop table CurrentTally
     `.execute(db)
 
-    await sql`
+	await sql`
         drop table CurrentInformedTally
     `.execute(db)
 
-    await sql`
+	await sql`
         drop table CurrentInformedVote
 
     `.execute(db)
 
-
-    await sql`
+	await sql`
         create trigger afterInsertOnVoteEvent after insert on VoteEvent
         begin
             -- Insert/update the vote record
@@ -107,8 +101,7 @@ export async function up(db: Kysely<any>): Promise<void> {
         end;
     `.execute(db)
 
-
-    await sql`
+	await sql`
         create table ScoreEvent (
             voteEventId integer not null
             , voteEventTime integer not null
@@ -124,7 +117,7 @@ export async function up(db: Kysely<any>): Promise<void> {
         ) strict;
     `.execute(db)
 
-    await sql`
+	await sql`
 
         create table Score(
             voteEventId integer not null
@@ -143,7 +136,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 
     `.execute(db)
 
-    await sql`
+	await sql`
 
         create trigger afterInsertOnScoreEvent after insert on ScoreEvent
         begin
@@ -162,9 +155,7 @@ export async function up(db: Kysely<any>): Promise<void> {
         end;
     `.execute(db)
 
-
-
-    await sql`
+	await sql`
         create table if not exists EffectEvent(
             voteEventId         integer not null
             , voteEventTime     integer not null
@@ -182,7 +173,7 @@ export async function up(db: Kysely<any>): Promise<void> {
         ) strict;
     `.execute(db)
 
-    await sql`
+	await sql`
         create table if not exists Effect(
             voteEventId         integer not null
             , voteEventTime     integer not null
@@ -200,7 +191,7 @@ export async function up(db: Kysely<any>): Promise<void> {
         ) strict;
     `.execute(db)
 
-    await sql`
+	await sql`
 
         create trigger afterInsertEffectEvent after insert on EffectEvent begin
             insert or replace into Effect
@@ -222,8 +213,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 
     `.execute(db)
 
-
-    await sql`
+	await sql`
         create view FullScore as
         select
               score.voteEventTime
@@ -245,5 +235,4 @@ export async function up(db: Kysely<any>): Promise<void> {
         left join effect using (tagId, postId)
         where ifnull(noteId = topNoteId, true);
     `.execute(db)
-
 }

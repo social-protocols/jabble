@@ -142,13 +142,11 @@ export async function seed() {
 	await vote(tag, charlie, post2, post3, Direction.Down)
 	await vote(tag, charlie, post2, post3, Direction.Up)
 
-
-	await vote(tag, charlie, 3, null, 1);
-	await vote(tag, charlie, 2, null, -1);
-	await vote(tag, bob, 6, null, -1);
-	await vote(tag, alice, 5, null, -1);
-	await vote(tag, alice, 4, null, -1);
-
+	await vote(tag, charlie, 3, null, 1)
+	await vote(tag, charlie, 2, null, -1)
+	await vote(tag, bob, 6, null, -1)
+	await vote(tag, alice, 5, null, -1)
+	await vote(tag, alice, 4, null, -1)
 
 	// Create developer user with password 'password'. Can login with this user by pointing browser to /dev-login
 	const id = 'developer'
@@ -161,7 +159,7 @@ export async function seed() {
 		})
 		.execute()
 
-	const hashedPassword = await bcrypt.hash("password", 10)
+	const hashedPassword = await bcrypt.hash('password', 10)
 
 	await db
 		.insertInto('Password')

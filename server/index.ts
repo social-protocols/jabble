@@ -21,7 +21,6 @@ import getPort, { portNumbers } from 'get-port'
 import helmet from 'helmet'
 import morgan from 'morgan'
 
-
 import { initVoteEventStream } from '#app/vote-events.ts'
 import { processScoreEvents } from '../app/score-events.ts'
 
@@ -226,11 +225,8 @@ const portToUse = await getPort({
 	port: portNumbers(desiredPort, desiredPort + 100),
 })
 
-
-
 let scoreEventsWatcher = await processScoreEvents()
 await initVoteEventStream()
-
 
 const server = app.listen(portToUse, () => {
 	const addy = server.address()
@@ -273,10 +269,9 @@ ${chalk.bold('Press Ctrl+C to stop')}
 })
 
 closeWithGrace(async () => {
-
 	if (scoreEventsWatcher) {
-	    scoreEventsWatcher.disconnect();
-	    // scoreEventsWatcher = null;
+		scoreEventsWatcher.disconnect()
+		// scoreEventsWatcher = null;
 	}
 
 	// await clearRankingsCache()

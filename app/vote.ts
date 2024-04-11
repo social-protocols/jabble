@@ -1,7 +1,6 @@
 import assert from 'assert'
 import { type VoteEvent, type InsertableVoteEvent } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
-
 import { writeVoteEvent } from '#app/vote-events.ts'
 import {
 	type Location,
@@ -17,7 +16,6 @@ export enum Direction {
 }
 // TODO: if a new post is untagged, do we post in in #global?
 
-
 // The vote function inserts a vote record in voteHistory, and also updates attention stats
 export async function vote(
 	tag: string,
@@ -29,7 +27,13 @@ export async function vote(
 ) {
 	const tagId = await getOrInsertTagId(tag)
 
-	let vote_event: VoteEvent = await insertVoteEvent(tagId, userId, postId, noteId, direction)
+	let vote_event: VoteEvent = await insertVoteEvent(
+		tagId,
+		userId,
+		postId,
+		noteId,
+		direction,
+	)
 
 	await writeVoteEvent(vote_event)
 
@@ -40,6 +44,8 @@ export async function vote(
 		logTagVote(tag)
 		logVoteOnRandomlyRankedPost(randomLocation)
 	}
+
+	return vote_event
 }
 
 async function insertVoteEvent(
@@ -52,19 +58,28 @@ async function insertVoteEvent(
 	// TODO: transaction
 	const voteInt = vote as number
 
-	const parentId = (await db.selectFrom("Post").where("id", "=", postId).select("parentId").execute())[0]!.parentId;
+	const parentId = (
+		await db
+			.selectFrom('Post')
+			.where('id', '=', postId)
+			.select('parentId')
+			.execute()
+	)[0]!.parentId
 
-    const vote_event: InsertableVoteEvent = {
+	const vote_event: InsertableVoteEvent = {
 		userId: userId,
-    	tagId: tagId,
-    	parentId: parentId,
-    	postId: postId,
-    	noteId: noteId,
-    	vote: voteInt
-    }
+		tagId: tagId,
+		parentId: parentId,
+		postId: postId,
+		noteId: noteId,
+		vote: voteInt,
+	}
 
-    // Copilot now use kysely to insert
-    const query = db.insertInto("VoteEvent").values(vote_event).returning(["voteEventId", "voteEventTime"])
+	// Copilot now use kysely to insert
+	const query = db
+		.insertInto('VoteEvent')
+		.values(vote_event)
+		.returning(['voteEventId', 'voteEventTime'])
 
 	let results = await query.execute()
 

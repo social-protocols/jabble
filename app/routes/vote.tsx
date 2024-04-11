@@ -6,6 +6,7 @@ import { zfd } from 'zod-form-data'
 import { LocationType, type Location } from '#app/attention.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { Direction, vote } from '#app/vote.ts'
+import { waitForScoreEvent } from '#app/score-events.ts'
 
 const postIdSchema = z.coerce.number()
 const noteIdSchema = z.coerce.number().optional()
@@ -69,7 +70,6 @@ export const action = async (args: ActionFunctionArgs) => {
 	let request = args.request
 	const formData = await request.formData()
 
-	console.log('In vote action', formData)
 	const parsedData = voteSchema.parse(formData)
 	const direction: Direction = parseDirection(parsedData.direction)
 	const state: Direction = parseDirection(parsedData.state)
@@ -102,7 +102,7 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	const noteId = parsedData.noteId === undefined ? null : parsedData.noteId
 
-	await vote(
+	const vote_event = await vote(
 		parsedData.tag,
 		userId,
 		parsedData.postId,
@@ -110,6 +110,13 @@ export const action = async (args: ActionFunctionArgs) => {
 		newState,
 		location,
 	)
+
+	// Wait for the score event for this post to be written to the DB.
+	// Otherwise, there is a race condition here that will result in the
+	// newly submitted post appearing or not appearing on the refreshed
+	// page, because getRankedPosts only includes posts with a score record.
+
+	await waitForScoreEvent(vote_event)
 
 	return { state: newState, postId: parsedData.postId }
 }

@@ -55,22 +55,17 @@ export async function loader({ params, request }: DataFunctionArgs) {
 		)
 	}
 
-
 	return json({ posts, userId, positions, tag })
 }
 
 export default function TagPage() {
 	const { tag, posts, positions } = useLoaderData<typeof loader>()
 
-	console.log("Used loader data")
-
 	// We lose the type info for positions after serializing and deserializing JSON
 	let p = new Map<number, Direction>()
 	for (let position of positions) {
 		p.set(position.postId, position.vote)
 	}
-
-	console.log("Here")
 
 	return (
 		<>
@@ -103,6 +98,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export const shouldRevalidate: ShouldRevalidateFunction = (args: {
 	formAction?: string | undefined
 }) => {
+	console.log('shouldRevalidate', args)
 	// Optimization that makes it so /votes don't reload the page
 	if (args.formAction == '/vote') {
 		return false

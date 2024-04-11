@@ -4,7 +4,6 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
 	: ColumnType<T, T | undefined, T>
 export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
-
 export type Vote = {
 	userId: string
 	tagId: number
@@ -113,55 +112,53 @@ export type VoteEvent = {
 }
 
 export type Score = {
-    voteEventId: number
-    , voteEventTime: number
-    , tagId: number|null
-    , parentId: number|null
-    , postId: number
-    , topNoteId: number|null
-    , o: number
-    , oCount: number
-    , oSize: number
-    , p: number
-    , score: number
+	voteEventId: number
+	voteEventTime: number
+	tagId: number | null
+	parentId: number | null
+	postId: number
+	topNoteId: number | null
+	o: number
+	oCount: number
+	oSize: number
+	p: number
+	score: number
 }
 
 export type Effect = {
-    voteEventId: number;
-    voteEventTime: number;
-    tagId: number;
-    postId: number;
-    noteId: number | null;
-    p: number;
-    pCount: number;
-    pSize: number;
-    q: number;
-    qCount: number;
-    qSize: number;
-    r: number;
-};
-
+	voteEventId: number
+	voteEventTime: number
+	tagId: number
+	postId: number
+	noteId: number | null
+	p: number
+	pCount: number
+	pSize: number
+	q: number
+	qCount: number
+	qSize: number
+	r: number
+}
 
 export type FullScore = {
-    voteEventId: number;
-    voteEventTime: number;
-    tagId: number;
-    postId: number;
-    noteId: number | null;
-    p: number;
-    pCount: number;
-    pSize: number;
-    q: number;
-    qCount: number;
-    qSize: number;
-    r: number;
-    topNoteId: number | null;
-    o: number
-    oCount: number
-    oSize: number
-    score: number
-};
-
+	voteEventId: number
+	voteEventTime: number
+	tagId: number
+	postId: number
+	noteId: number | null
+	p: number
+	pCount: number
+	pSize: number
+	q: number
+	qCount: number
+	qSize: number
+	r: number
+	topNoteId: number | null
+	o: number
+	oCount: number
+	oSize: number
+	score: number
+}
 
 export type DB = {
 	Vote: Vote

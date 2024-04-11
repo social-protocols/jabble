@@ -1,5 +1,5 @@
 import { type Location, LocationType } from '#app/attention.ts'
-import { PostDetails , ParentPost } from '#app/components/ui/post.tsx'
+import { PostDetails, ParentPost } from '#app/components/ui/post.tsx'
 import { type RankedPost } from '#app/ranking.ts'
 import { Direction } from '#app/vote.ts'
 // import { type PostId } from '#app/post.ts'
@@ -29,16 +29,16 @@ export function TagFeed({
 
 				return (
 					<div key={post.id}>
-					{ post.parent && <ParentPost parentPost={post.parent!} tag={tag} /> }
-					<PostDetails
-						post={post}
-						note={post.note}
-						tag={tag}
-						teaser={true}
-						randomLocation={randomLocation}
-						position={position}
-						notePosition={notePosition}
-					/>
+						{post.parent && <ParentPost parentPost={post.parent!} tag={tag} />}
+						<PostDetails
+							post={post}
+							note={post.note}
+							tag={tag}
+							teaser={true}
+							randomLocation={randomLocation}
+							position={position}
+							notePosition={notePosition}
+						/>
 					</div>
 				)
 			})}

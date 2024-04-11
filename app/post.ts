@@ -26,7 +26,6 @@ export async function createPost(
 
 	const createdPostId = results[0]!.id
 
-
 	const direction: Direction = Direction.Up
 
 	await Promise.all(

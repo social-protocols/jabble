@@ -132,7 +132,7 @@ export function PostDetails({
 	teaser,
 	randomLocation,
 	position,
-	notePosition
+	notePosition,
 }: {
 	tag: string
 	post: ScoredPost
@@ -142,7 +142,6 @@ export function PostDetails({
 	position: Direction
 	notePosition: Direction
 }) {
-
 	// The vote buttons use the fetcher and shouldRevalidate to do a post without reloading the page.
 	// So we need to get the current state of the user's vote on this post from the fetcher
 	const fetcher = useFetcher<{ state: Direction; postId: number }>()
@@ -151,7 +150,8 @@ export function PostDetails({
 			? fetcher.data.state
 			: position
 
-	const nRepliesString = post.nReplies === 1 ? '1 reply' : `${post.nReplies} replies`
+	const nRepliesString =
+		post.nReplies === 1 ? '1 reply' : `${post.nReplies} replies`
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
@@ -255,25 +255,23 @@ export function ParentPost({
 	parentPost: Post
 	tag: string
 }) {
-
 	return (
 		<div className="border-l-4 border-postparent-threadline">
-				<Link key={parentPost.id} to={`/tags/${tag}/posts/${parentPost.id}`}>
-					<div
-						key={parentPost.id}
-						className="postparent mb-2 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"
-					>
-						<PostContent
-							content={parentPost.content}
-							maxLines={3}
-							deactivateLinks={true}
-						/>
-					</div>
-				</Link>
+			<Link key={parentPost.id} to={`/tags/${tag}/posts/${parentPost.id}`}>
+				<div
+					key={parentPost.id}
+					className="postparent mb-2 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"
+				>
+					<PostContent
+						content={parentPost.content}
+						maxLines={3}
+						deactivateLinks={true}
+					/>
+				</div>
+			</Link>
 		</div>
 	)
 }
-
 
 function ReplyForm({
 	post,

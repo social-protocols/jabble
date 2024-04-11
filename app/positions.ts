@@ -8,7 +8,6 @@ export type Position = {
 	vote: Direction
 }
 
-
 export async function getUserPositions(
 	userId: string,
 	tag: string,

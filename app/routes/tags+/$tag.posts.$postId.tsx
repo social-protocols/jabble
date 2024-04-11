@@ -89,7 +89,7 @@ export async function loader({ params, request }: DataFunctionArgs) {
 		replies,
 		tag,
 		positions,
-		topNote
+		topNote,
 	})
 
 	return result

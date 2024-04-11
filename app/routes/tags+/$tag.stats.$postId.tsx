@@ -70,11 +70,11 @@ export default function PostStats() {
 	const informationValueNewVotes = post.oCount * (1 + Math.log2(post.p))
 	const informationValueTotal = informationValueNewVotes - totalCrossEntropy
 
-// - **attention:** ${post.attention.toFixed(3)}
-// - **vote rate:** ${post.voteRate.toFixed(3)}
-//   - voteRate = Bayesian Average(votes/attention, voteRatePrior)
-// - **information rate (new votes):** ${post.informationRate.toFixed(3)}
-//   - informationRate = voteRate * (1 + log(p)) 
+	// - **attention:** ${post.attention.toFixed(3)}
+	// - **vote rate:** ${post.voteRate.toFixed(3)}
+	//   - voteRate = Bayesian Average(votes/attention, voteRatePrior)
+	// - **information rate (new votes):** ${post.informationRate.toFixed(3)}
+	//   - informationRate = voteRate * (1 + log(p))
 
 	const markdown = `
 # Stats for post [${post.id}](/tags/${tag}/posts/${

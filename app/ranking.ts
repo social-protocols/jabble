@@ -14,19 +14,22 @@ import { getUserPositions, type Position } from './positions.ts'
 import { getPost } from './post.ts'
 import { getOrInsertTagId } from './tag.ts'
 
-
-export type ScoredPost = Post & Score & Effect & {nReplies: number}
+export type ScoredPost = Post & Score & Effect & { nReplies: number }
 
 // const fatigueFactor = .9
 // const attentionCutoff = 2 // Note all posts start with 1 unit of attention (from poster)
 
 export const MAX_RESULTS = 100
 
-export type RankedPost = ScoredPost & { random: boolean; note: Post | null; parent: Post | null }
+export type RankedPost = ScoredPost & {
+	random: boolean
+	note: Post | null
+	parent: Post | null
+}
 
 export type RankedPosts = {
 	posts: RankedPost[]
-	effectiveRandomPoolSize: number,
+	effectiveRandomPoolSize: number
 }
 
 let rankingsCache = new LRUCache<string, RankedPosts>({
@@ -90,71 +93,68 @@ export async function getScoredPost(
 	tag: string,
 	postId: number,
 ): Promise<ScoredPost> {
-
 	const tagId = await getOrInsertTagId(tag)
-
 
 	let query = db
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
-              // .leftJoin('PostStats', join =>
-              //         join
-              //                 .onRef('PostStats.postId', '=', 'Post.id')
-              //                 .on('PostStats.tagId', '=', tagId),
-              //         )
+		// .leftJoin('PostStats', join =>
+		//         join
+		//                 .onRef('PostStats.postId', '=', 'Post.id')
+		//                 .on('PostStats.tagId', '=', tagId),
+		//         )
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))
-		.where('Post.id', "=", postId)
-		.where('FullScore.tagId', "=", tagId)
+		.where('Post.id', '=', postId)
+		.where('FullScore.tagId', '=', tagId)
 
 	const scoredPost: ScoredPost = (await query.execute())[0]!
 
-	console.log("Got score post", scoredPost)
+	console.log('Got score post', scoredPost)
 
 	return scoredPost
 }
 
 export async function getTopNote(
-       tagId: number,
-       post: ScoredPost,
-       // postId: number,
+	tagId: number,
+	post: ScoredPost,
+	// postId: number,
 ): Promise<Post | null> {
 	// TODO: this is a placeholder
 	return null
 }
 
 export async function getRankedPosts(tag: string): Promise<RankedPosts> {
-
 	const tagId = await getOrInsertTagId(tag)
 
 	let query = db
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
-              .leftJoin('PostStats', join =>
-                      join
-                              .onRef('PostStats.postId', '=', 'Post.id')
-                              .on('PostStats.tagId', '=', tagId)
-              )
+		.leftJoin('PostStats', join =>
+			join
+				.onRef('PostStats.postId', '=', 'Post.id')
+				.on('PostStats.tagId', '=', tagId),
+		)
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))
-		.where('FullScore.tagId', "=", tagId)
+		.where('FullScore.tagId', '=', tagId)
 		.orderBy('FullScore.score', 'desc')
 		.limit(MAX_RESULTS)
 
 	const scoredPosts: ScoredPost[] = await query.execute()
 
-	const rankedPosts: RankedPost[] = await Promise.all(scoredPosts.map(
-		async (post: ScoredPost) => { 
-			return { 
-				...post ,
-				note: post.topNoteId == null ? null : (await getPost(post.topNoteId!)),
-				parent: post.parentId == null ? null : (await getPost(post.parentId!)),
+	const rankedPosts: RankedPost[] = await Promise.all(
+		scoredPosts.map(async (post: ScoredPost) => {
+			return {
+				...post,
+				note: post.topNoteId == null ? null : await getPost(post.topNoteId!),
+				parent: post.parentId == null ? null : await getPost(post.parentId!),
 				random: false,
-			} 
-		}
-	))
+			}
+		}),
+	)
 
 	// {
 	// 	...post,
@@ -180,13 +180,11 @@ export async function getRandomlyRankedPosts(
 // 	allPosts: PostWithStats[],
 // ): Promise<RankedPosts> {
 
-
 // 	return {
 // 		posts: [],
 // 		effectiveRandomPoolSize: 0,
 // 	}
 // }
-
 
 // export async function totalInformationGain(tagId: number): Promise<number> {
 // 	let allPosts = await getPostsWithStats(tagId)
@@ -205,7 +203,6 @@ export async function getRandomlyRankedPosts(
 
 // 	return informationGain.reduce((sum, current) => sum + current, 0)
 // }
-
 
 export async function getRankedReplies(
 	tag: string,
