@@ -46,7 +46,7 @@ export async function vote(
 		})
 	}
 
-	console.log('Got score event promise')
+	console.log('Got score event promise. Writing vote event')
 	await writeVoteEvent(voteEvent)
 	console.log('Wrote vote event')
 

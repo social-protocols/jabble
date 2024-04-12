@@ -208,8 +208,38 @@ export async function getRankedReplies(
 	tag: string,
 	postId: number,
 ): Promise<RankedPosts> {
+	const tagId = await getOrInsertTagId(tag)
+	let query = db
+		.selectFrom('Post')
+		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
+		.leftJoin('PostStats', join =>
+			join
+				.onRef('PostStats.postId', '=', 'Post.id')
+				.on('PostStats.tagId', '=', tagId),
+		)
+		.selectAll('Post')
+		.selectAll('FullScore')
+		.select(sql<number>`replies`.as('nReplies'))
+		.where('FullScore.tagId', '=', tagId)
+		.where('Post.parentId', '=', postId)
+		.orderBy('FullScore.score', 'desc')
+		.limit(MAX_RESULTS)
+
+	const scoredPosts: ScoredPost[] = await query.execute()
+
+	const rankedPosts: RankedPost[] = await Promise.all(
+		scoredPosts.map(async (post: ScoredPost) => {
+			return {
+				...post,
+				note: post.topNoteId == null ? null : await getPost(post.topNoteId!),
+				// parent: post.parentId == null ? null : await getPost(post.parentId!),
+				random: false,
+			}
+		}),
+	)
+
 	return {
-		posts: [],
+		posts: rankedPosts,
 		effectiveRandomPoolSize: 0,
 	}
 }
