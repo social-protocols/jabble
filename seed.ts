@@ -54,7 +54,6 @@ export async function seed() {
 
   // await seedStats()
 
-  /*
   // First, alice creates a post
   const tag = 'global'
   let post1 = await createPost(
@@ -150,7 +149,6 @@ export async function seed() {
   await vote(tag, charlie, post1, post2, Direction.Down)
   await vote(tag, charlie, post2, post3, Direction.Down)
   await vote(tag, charlie, post2, post3, Direction.Up)
-  */
 
   await vote(tag, charlie, 3, null, 1)
   await vote(tag, charlie, 2, null, -1)

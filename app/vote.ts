@@ -1,7 +1,7 @@
 import assert from 'assert'
 import { type VoteEvent, type InsertableVoteEvent } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
-import { waitForScoreEvent } from '#app/score-events.ts'
+import * as scoreEvents from '#app/score-events.ts'
 import { writeVoteEvent } from '#app/vote-events.ts'
 import {
 	type Location,
@@ -25,6 +25,7 @@ export async function vote(
 	noteId: number | null,
 	direction: Direction,
 	randomLocation?: Location | null,
+	waitForScoreEvent: Boolean = false,
 ): Promise<VoteEvent> {
 	const tagId = await getOrInsertTagId(tag)
 
@@ -36,16 +37,22 @@ export async function vote(
 		direction,
 	)
 
-	const scoreEventPromise = waitForScoreEvent({
-		postId: postId,
-		tagId: tagId,
-		voteEventId: voteEvent.voteEventId,
-	})
+	let scoreEventPromise
+	if (waitForScoreEvent) {
+		scoreEventPromise = scoreEvents.waitForScoreEvent({
+			postId: postId,
+			tagId: tagId,
+			voteEventId: voteEvent.voteEventId,
+		})
+	}
+
 	console.log('Got score event promise')
 	await writeVoteEvent(voteEvent)
 	console.log('Wrote vote event')
 
-	await scoreEventPromise
+	if (waitForScoreEvent) {
+		await scoreEventPromise
+	}
 
 	console.log('Promise resolved')
 	// console.log("result of inserting vote record", voteEvent)

@@ -6,7 +6,6 @@ import { zfd } from 'zod-form-data'
 import { LocationType, type Location } from '#app/attention.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { Direction, vote } from '#app/vote.ts'
-import { waitForScoreEvent } from '#app/score-events.ts'
 
 const postIdSchema = z.coerce.number()
 const noteIdSchema = z.coerce.number().optional()
@@ -109,16 +108,13 @@ export const action = async (args: ActionFunctionArgs) => {
 		noteId,
 		newState,
 		location,
+		true,
 	)
 
 	// Wait for the score event for this post to be written to the DB.
 	// Otherwise, there is a race condition here that will result in the
 	// newly submitted post appearing or not appearing on the refreshed
 	// page, because getRankedPosts only includes posts with a score record.
-
-	console.log('Waiting for score event')
-	await waitForScoreEvent(vote_event)
-	console.log('Waited for score event')
 
 	return { state: newState, postId: parsedData.postId }
 }
