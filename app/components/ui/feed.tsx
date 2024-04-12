@@ -27,14 +27,20 @@ export function TagFeed({
 					  }
 					: null
 
+				let followsParent = (i > 0 && posts[i-1]!.id) == post.parentId;
+				let followedByTopnote = (i < posts.length-1 && posts[i+1]!.id) == post.topNoteId;
 				return (
 					<div key={post.id}>
-						{post.parent && <ParentPost parentPost={post.parent!} tag={tag} />}
+
+						{post.parent && (
+							followsParent ? <div className='link-to-parent threadline'/> : <ParentPost parentPost={post.parent!} tag={tag} />)
+						}
 						<PostDetails
 							post={post}
-							note={post.note}
+							note={!followedByTopnote && post.note}
 							tag={tag}
 							teaser={true}
+							showParentContext={!followsParent}
 							randomLocation={randomLocation}
 							position={position}
 							notePosition={notePosition}

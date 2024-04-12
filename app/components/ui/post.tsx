@@ -256,11 +256,11 @@ export function ParentPost({
 	tag: string
 }) {
 	return (
-		<div className="border-l-4 border-postparent-threadline">
+		<div className="threadline">
 			<Link key={parentPost.id} to={`/tags/${tag}/posts/${parentPost.id}`}>
 				<div
 					key={parentPost.id}
-					className="postparent mb-2 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"
+					className="postparent mb-1 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"
 				>
 					<PostContent
 						content={parentPost.content}

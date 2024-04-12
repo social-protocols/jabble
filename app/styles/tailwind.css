@@ -238,6 +238,21 @@
 		margin-top: 0.24em;
 		@apply text-blue-500;
 	}
+
+	.threadline {
+		@apply border-l-4;
+		border-color: var(--postparent-threadline);
+		margin-left: 8px;
+	}
+
+	.link-to-parent {
+		@apply threadline;
+		padding: 0;
+		height: 10px;
+		margin-top: -21px;
+		color: red;
+	}
+
 }
 
 /* useful for layout debugging: */
