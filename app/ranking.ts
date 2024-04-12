@@ -99,10 +99,10 @@ export async function getScoredPost(
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
 		.leftJoin('PostStats', join =>
-		        join
-		                .onRef('PostStats.postId', '=', 'Post.id')
-		                .on('PostStats.tagId', '=', tagId),
-		        )
+			join
+				.onRef('PostStats.postId', '=', 'Post.id')
+				.on('PostStats.tagId', '=', tagId),
+		)
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))
@@ -175,35 +175,6 @@ export async function getRandomlyRankedPosts(
 	}
 }
 
-// async function rankPosts(
-// 	tagId: number,
-// 	allPosts: PostWithStats[],
-// ): Promise<RankedPosts> {
-
-// 	return {
-// 		posts: [],
-// 		effectiveRandomPoolSize: 0,
-// 	}
-// }
-
-// export async function totalInformationGain(tagId: number): Promise<number> {
-// 	let allPosts = await getPostsWithStats(tagId)
-// 	// console.log("All posts", allPosts.length, tagId)
-
-// 	// Then score each post
-// 	let informationGain = await Promise.all(
-// 		allPosts.map(async post => {
-// 			let s = await score(tagId, post)
-
-// 			let informationGain = s.voteTotal * s.informationValue
-// 			// console.log("Information gain ", post.id, s.voteTotal, s.q, s.informationValue)
-// 			return informationGain
-// 		}),
-// 	)
-
-// 	return informationGain.reduce((sum, current) => sum + current, 0)
-// }
-
 export async function getRankedReplies(
 	tag: string,
 	postId: number,
@@ -227,12 +198,14 @@ export async function getRankedReplies(
 
 	const scoredPosts: ScoredPost[] = await query.execute()
 
+	const thisPost = await getPost(postId)
+
 	const rankedPosts: RankedPost[] = await Promise.all(
 		scoredPosts.map(async (post: ScoredPost) => {
 			return {
 				...post,
 				note: post.topNoteId == null ? null : await getPost(post.topNoteId!),
-				// parent: post.parentId == null ? null : await getPost(post.parentId!),
+				parent: thisPost, // We don't really need this but the RankedPost type requires it.
 				random: false,
 			}
 		}),
@@ -290,10 +263,3 @@ export async function getDefaultFeed(): Promise<TagPreview[]> {
 
 	return feed
 }
-
-// function shuffleArray<T>(array: T[]) {
-// 	for (let i = array.length - 1; i > 0; i--) {
-// 		const j = Math.floor(Math.random() * (i + 1))
-// 		;[array[i], array[j]] = [array[j]!, array[i]!]
-// 	}
-// }
