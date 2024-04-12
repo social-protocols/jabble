@@ -33,7 +33,7 @@ export const action = async (args: ActionFunctionArgs) => {
   invariant(content, 'content !== undefined')
   invariant(tag, "tag !== ''")
 
-  let postId = await createPost(tag, parentId, content, userId)
+  let postId = await createPost(tag, parentId, content, userId, true)
 
   return json({ postId: postId })
 }

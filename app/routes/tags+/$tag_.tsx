@@ -79,22 +79,6 @@ export default function TagPage() {
 	)
 }
 
-// export const action = async ({ request }: ActionFunctionArgs) => {
-// 	const userId: string = await requireUserId(request)
-
-// 	const formData = await request.formData()
-// 	const d = Object.fromEntries(formData)
-
-// 	const tag: string = tagSchema.parse(d.tag)
-// 	const content: string = contentSchema.parse(d.newPostContent)
-// 	invariant(content, 'content !== undefined')
-// 	invariant(tag, "tag !== ''")
-
-// 	const _newPostId = await createPost(tag, null, content, userId)
-
-// 	return true
-// }
-
 export const shouldRevalidate: ShouldRevalidateFunction = (args: {
 	formAction?: string | undefined
 }) => {

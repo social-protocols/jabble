@@ -113,6 +113,7 @@ export async function processScoreEvents() {
             postId: data['score']['post_id'],
           })
           console.log('score event listeners', scoreEventEmitter.listenerCount(idStr))
+          console.log('score event emitter', scoreEventEmitter)
           console.log('emit score event', idStr)
           scoreEventEmitter.emit(idStr)
         } else if (data['effect'] !== undefined) {
@@ -157,6 +158,8 @@ export function waitForScoreEvent(voteEvent: {
   console.log('event id', idStr)
 
   return new Promise((resolve, reject) => {
+
+    console.log("Score event emitter in waitForScoreEvent", scoreEventEmitter)
     const timeout = setTimeout(() => {
       scoreEventEmitter.removeListener(idStr, listener)
       reject(new Error('Timeout waiting for score event: ' + idStr))

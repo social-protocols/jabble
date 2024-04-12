@@ -14,6 +14,7 @@ export async function createPost(
   parentId: number | null, // TODO: use parentId?: number
   content: string,
   authorId: string,
+  waitForScoreEvent: boolean = false,
 ): Promise<number> {
   const results: { id: number }[] = await db
     .insertInto('Post')
@@ -24,7 +25,7 @@ export async function createPost(
 
   const direction: Direction = Direction.Up
 
-  await vote(tag, authorId, postId, null, direction, null, true)
+  await vote(tag, authorId, postId, null, direction, null, waitForScoreEvent)
 
   const tagId = await getOrInsertTagId(tag)
 

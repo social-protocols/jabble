@@ -98,11 +98,11 @@ export async function getScoredPost(
 	let query = db
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
-		// .leftJoin('PostStats', join =>
-		//         join
-		//                 .onRef('PostStats.postId', '=', 'Post.id')
-		//                 .on('PostStats.tagId', '=', tagId),
-		//         )
+		.leftJoin('PostStats', join =>
+		        join
+		                .onRef('PostStats.postId', '=', 'Post.id')
+		                .on('PostStats.tagId', '=', tagId),
+		        )
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))
