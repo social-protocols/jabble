@@ -69,7 +69,7 @@ async function insertEffectEvent(data: any) {
 }
 
 (global as any)["scoreEventEmitter"] = ((global as any)["scoreEventEmitter"]) || new EventEmitter()
-export const scoreEventEmitter = (global as any)["scoreEventEmitter"]
+export const scoreEventEmitter: EventEmitter = (global as any)["scoreEventEmitter"]
 
 export async function processScoreEvents() {
   console.log('Processing event input')
