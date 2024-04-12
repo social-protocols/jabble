@@ -1,8 +1,8 @@
 import * as fs from 'fs'
 import { env } from 'process'
+import { json } from 'express'
 import { type VoteEvent } from './db/types.ts'
 import { db } from './db.ts'
-import { json } from 'express'
 
 // Grab vote events path environment
 const voteEventsPath = env.VOTE_EVENTS_PATH!

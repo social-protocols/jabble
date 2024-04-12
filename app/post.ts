@@ -5,8 +5,8 @@ import { Direction, vote } from '#app/vote.ts'
 
 import { logAuthorView } from './attention.ts'
 import { invalidateTagPage } from './ranking.ts'
-import { getOrInsertTagId } from './tag.ts'
 import { waitForScoreEvent } from './score-events.ts'
+import { getOrInsertTagId } from './tag.ts'
 
 // express the above fn in typescript with kysely queries
 export async function createPost(
