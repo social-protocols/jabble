@@ -48,7 +48,7 @@ RUN npm run build
 COPY migrate.ts startup.sh index.js ./
 COPY migrations migrations/
 
-ENV APP_DATABASE_FILENAME="social-network.db"
+ENV APP_DATABASE_FILENAME="sqlite.db"
 ENV APP_DATABASE_PATH="$LITEFS_DIR/$APP_DATABASE_FILENAME"
 ENV GB_DATABASE_PATH="$LITEFS_DIR/global-brain.db"
 ENV APP_DATABASE_URL="file:$APP_DATABASE_PATH"
