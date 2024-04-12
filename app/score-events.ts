@@ -5,8 +5,6 @@ import { env } from 'process'
 // import { type VoteEvent } from './db/types.ts'
 import { db } from './db.ts'
 
-console.log('Score events path', env.SCORE_EVENTS_PATH)
-
 const scoreEventsPath = env.SCORE_EVENTS_PATH!
 
 function snakeToCamelCase(str: string): string {
@@ -87,30 +85,21 @@ export async function processScoreEvents() {
 		buffer = lines.pop() || '' // Keep the incomplete line in the buffer
 		lines.forEach(async (line: string) => {
 			try {
-				console.log('Got line from score events stream', line)
 				if (line === '') {
-					console.log('Line is empty')
+					console.warn('empty line from score events stream empty')
 					return
 				}
 
 				const data: any = JSON.parse(line)
 
 				if (data['score'] !== undefined) {
-					console.log('Is score event')
 					await insertScoreEvent(data)
-					console.log('Inserted score event')
 
 					const idStr = scoreEventIdStr({
 						voteEventId: data['vote_event_id'],
 						tagId: data['score']['tag_id'],
 						postId: data['score']['post_id'],
 					})
-					console.log(
-						'score event listeners',
-						scoreEventEmitter.listenerCount(idStr),
-					)
-					console.log('score event emitter', scoreEventEmitter)
-					console.log('emit score event', idStr)
 					scoreEventEmitter.emit(idStr)
 				} else if (data['effect'] !== undefined) {
 					insertEffectEvent(data)
@@ -149,24 +138,19 @@ export function waitForScoreEvent(voteEvent: {
 	tagId: Number
 	postId: Number
 }): Promise<void> {
-	console.log('Waiting for score event ', voteEvent)
 	const idStr = scoreEventIdStr(voteEvent)
-	console.log('event id', idStr)
 
 	return new Promise((resolve, reject) => {
-		console.log('Score event emitter in waitForScoreEvent', scoreEventEmitter)
 		const timeout = setTimeout(() => {
 			scoreEventEmitter.removeListener(idStr, listener)
 			reject(new Error('Timeout waiting for score event: ' + idStr))
 		}, 10000) // Timeout after 10 seconds, for example
 
 		const listener = () => {
-			console.log('Got score event in listener')
 			clearTimeout(timeout)
 			resolve()
 		}
 
-		console.log('Attaching to scoreEventEmitter', idStr)
 		scoreEventEmitter.once(idStr, listener)
 	})
 }
