@@ -155,7 +155,7 @@ export function PostDetails({
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
-	let informedProbabilityString = Math.round(post.p * 100) / 100
+	let informedProbabilityString = Math.round(post.p * 100)
 	const ageString = moment(post.createdAt).fromNow()
 
 	const replyFetcher = useFetcher<{ newPostId: number }>()
@@ -168,13 +168,6 @@ export function PostDetails({
 		replyFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
 		setShowReplyForm(false)
 	}
-
-	/* Show or hide the "Show more" link depending on whether the element has been cutoff or not */
-
-	// useEffect(() => {
-	// 	showOrHideEllipsis()
-	// }, []);
-
 	return (
 		<div
 			className={

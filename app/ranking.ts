@@ -12,6 +12,7 @@ import { type Position } from './positions.ts'
 import { getPost } from './post.ts'
 import { getOrInsertTagId } from './tag.ts'
 
+// Post with score and the effect of its top note
 export type ScoredPost = Post & Score & Effect & { nReplies: number }
 
 // Post with its effect on its parent
@@ -175,6 +176,33 @@ async function getScoredNoteInternal(
 	return scoredNote
 }
 
+export async function getEffectOnParent(
+	tag: string,
+	postId: number,
+): Promise<Effect | null> {
+	const tagId = await getOrInsertTagId(tag)
+	let query = db
+		.selectFrom('Post')
+		.innerJoin('Effect', join =>
+			join
+				.on('Effect.tagId', '=', tagId)
+				.on('Effect.noteId', '=', postId)
+				.onRef('Effect.postId', '=', 'Post.parentId'),
+		)
+		.selectAll('Effect')
+		.where('Post.id', '=', postId)
+
+	const effect = (await query.execute())[0]
+
+	if (effect === undefined) {
+		throw new Error(
+			`Failed to read scored post tagId=${tagId} postId=${postId}`,
+		)
+	}
+
+	return effect
+}
+
 export async function getRankedPosts(tag: string): Promise<RankedPosts> {
 	const tagId = await getOrInsertTagId(tag)
 
@@ -196,7 +224,7 @@ export async function getRankedPosts(tag: string): Promise<RankedPosts> {
 	const scoredPosts: ScoredPost[] = await query.execute()
 
 	const rankedPosts: RankedPost[] = await Promise.all(
-		scoredPosts.map(async (post: ScoredPost) => {
+		scoredPosts.map(async post => {
 			return {
 				...post,
 				note:
@@ -208,10 +236,6 @@ export async function getRankedPosts(tag: string): Promise<RankedPosts> {
 			}
 		}),
 	)
-
-	// {
-	// 	...post,
-	// }
 
 	return {
 		posts: rankedPosts,
@@ -242,15 +266,6 @@ export async function getChronologicalToplevelPosts(
 
 	return await query.execute()
 }
-
-// export async function getRandomlyRankedPosts(
-// 	tag: string,
-// ): Promise<RankedPosts> {
-// 	return {
-// 		posts: [],
-// 		effectiveRandomPoolSize: 0,
-// 	}
-// }
 
 export async function getRankedReplies(
 	tag: string,

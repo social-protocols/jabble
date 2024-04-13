@@ -13,7 +13,6 @@ if (!voteEventsPath) {
 
 const voteEventsFH = fs.openSync(voteEventsPath, 'a')
 
-
 function camelToSnakeCase(str: string): string {
 	return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)
 }
@@ -41,7 +40,7 @@ export async function writeVoteEvent(voteEvent: VoteEvent) {
 }
 
 export async function initVoteEventStream() {
-	(global as any)['voteEventsFD'] = fs.openSync(voteEventsPath, 'w')
+	;(global as any)['voteEventsFD'] = fs.openSync(voteEventsPath, 'w')
 
 	const voteEvents = await db.selectFrom('VoteEvent').selectAll().execute()
 
