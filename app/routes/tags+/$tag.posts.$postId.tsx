@@ -124,7 +124,6 @@ export default function Post() {
 			<div className="mb-5">
 				<Link to={`/`}>Home</Link>
 				&nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
-				&nbsp; &gt; View post
 			</div>
 			<ParentThread transitiveParents={transitiveParents} tag={tag} />
 			<PostDetails
