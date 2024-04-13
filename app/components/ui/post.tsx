@@ -315,17 +315,22 @@ export function NoteAttachment({
 	tag: string
 	className: string
 }) {
-
 	// TODO: what is a reasonable relativeEntropy cutoff? The algorithm now, using the simplified Bayesian algorithm calculation (to avoid MCMC or variational methods)
 	// results in a different p and q even if there are no informed votes. So there will always be some relative entropy...
 
-	const effectString = relativeEntropy(note.p, note.q) < .01 ? "" : (note.p > note.q ? "↑" : "↓") + Math.abs(Math.round((note.p - note.q)*100)) + "%"
+	const effectString =
+		relativeEntropy(note.p, note.q) < 0.01
+			? ''
+			: (note.p > note.q ? '↑' : '↓') +
+			  Math.abs(Math.round((note.p - note.q) * 100)) +
+			  '%'
 
 	return (
 		<Link to={`/tags/${tag}/posts/${note.id}`}>
 			<Card className={'bg-note pb-3 pt-2 text-note-foreground ' + className}>
-				<div className="pb-1 text-sm font-medium opacity-50">Featured Reply <span>{effectString}</span>
-				{/*<a href="/faq#noteEffect"> ⓘ</a>*/}
+				<div className="pb-1 text-sm font-medium opacity-50">
+					Featured Reply <span>{effectString}</span>
+					{/*<a href="/faq#noteEffect"> ⓘ</a>*/}
 					{/*<span>Debug info: {relativeEntropy(note.p, note.q)} / {note.p} / {note.q} / {note.pCount}/{note.pSize} {note.qCount}/{note.qSize}</span>*/}
 				</div>
 

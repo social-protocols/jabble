@@ -9,15 +9,21 @@ export default function Index() {
 	// the error boundary just in case.
 	let data = useLoaderData<typeof loader>()
 
-	return <FrontpageFeed feed={data.feed} />
+	return <FrontpageFeed feed={data.feed} tag="global" />
 }
 
 export async function loader({}: DataFunctionArgs) {
-	const feed = await rankingTs.getChronologicalToplevelPosts()
+	const feed = await rankingTs.getChronologicalToplevelPosts('gobal')
 	return { feed }
 }
 
-export function FrontpageFeed({ feed }: { feed: rankingTs.ScoredPost[] }) {
+export function FrontpageFeed({
+	feed,
+	tag,
+}: {
+	feed: rankingTs.ScoredPost[]
+	tag: string
+}) {
 	console.log('user feed is', feed)
 	return (
 		<div className="container">
@@ -26,7 +32,7 @@ export function FrontpageFeed({ feed }: { feed: rankingTs.ScoredPost[] }) {
 					return (
 						<div key={post.id} className="flex-1 items-stretch">
 							<div className="flex-1">
-								<TopLevelPost post={post} />
+								<TopLevelPost post={post} tag={tag} />
 							</div>
 						</div>
 					)
@@ -36,7 +42,13 @@ export function FrontpageFeed({ feed }: { feed: rankingTs.ScoredPost[] }) {
 	)
 }
 
-export function TopLevelPost({ post }: { post: rankingTs.ScoredPost }) {
+export function TopLevelPost({
+	post,
+	tag,
+}: {
+	post: rankingTs.ScoredPost
+	tag: string
+}) {
 	const nRepliesString =
 		post.nReplies === 1 ? '1 reply' : `${post.nReplies} replies`
 
@@ -55,16 +67,10 @@ export function TopLevelPost({ post }: { post: rankingTs.ScoredPost }) {
 				/>
 
 				<div className="mt-2 flex w-full text-sm">
-					<Link
-						to={`/tags/${null /*TODO*/}/stats/${post.id}`}
-						className="hyperlink"
-					>
+					<Link to={`/tags/${tag}/stats/${post.id}`} className="hyperlink">
 						{informedProbabilityString}%
 					</Link>
-					<Link
-						to={`/tags/${null /*TODO*/}/posts/${post.id}`}
-						className="hyperlink ml-2"
-					>
+					<Link to={`/tags/${tag}/posts/${post.id}`} className="hyperlink ml-2">
 						{nRepliesString}
 					</Link>
 				</div>

@@ -219,19 +219,24 @@ export async function getRankedPosts(tag: string): Promise<RankedPosts> {
 	}
 }
 
-export async function getChronologicalToplevelPosts(): Promise<ScoredPost[]> {
+export async function getChronologicalToplevelPosts(
+	tag: string,
+): Promise<ScoredPost[]> {
+	const tagId = await getOrInsertTagId(tag)
+
 	let query = db
 		.selectFrom('Post')
 		.where('Post.parentId', 'is', null)
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
-		.leftJoin(
-			'PostStats',
-			join => join.onRef('PostStats.postId', '=', 'Post.id'), // TODO: is this correct without tag?
-			// .on('PostStats.tagId', '=', tagId),
+		.leftJoin('PostStats', join =>
+			join
+				.onRef('PostStats.postId', '=', 'Post.id')
+				.on('PostStats.tagId', '=', tagId),
 		)
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))
+		.where('FullScore.tagId', '=', tagId)
 		.orderBy('Post.createdAt', 'desc')
 		.limit(MAX_RESULTS)
 
