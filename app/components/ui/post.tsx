@@ -94,7 +94,7 @@ export function PostContent({
 		window.addEventListener('resize', showOrHideEllipsis)
 		showOrHideEllipsis()
 		return () => window.removeEventListener('resize', showOrHideEllipsis)
-	}, [])
+	}, [showOrHideEllipsis])
 
 	return (
 		<>
