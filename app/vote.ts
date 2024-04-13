@@ -46,16 +46,11 @@ export async function vote(
 		})
 	}
 
-	console.log('Got score event promise. Writing vote event')
 	await writeVoteEvent(voteEvent)
-	console.log('Wrote vote event')
 
 	if (waitForScoreEvent) {
 		await scoreEventPromise
 	}
-
-	console.log('Promise resolved')
-	// console.log("result of inserting vote record", voteEvent)
 
 	// Todo: dedupe in case user toggles vote multiple times
 	if (randomLocation != null) {
