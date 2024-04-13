@@ -318,7 +318,7 @@ export function NoteAttachment({
 	return (
 		<Link to={`/tags/${tag}/posts/${note.id}`}>
 			<Card className={'bg-note pb-3 pt-2 text-note-foreground ' + className}>
-				<div className="pb-1 text-sm font-medium opacity-50">Top Reply</div>
+				<div className="pb-1 text-sm font-medium opacity-50">Featured Reply</div>
 
 				{note && (
 					<PostContent
