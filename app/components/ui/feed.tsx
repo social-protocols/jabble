@@ -40,7 +40,7 @@ export function TagFeed({
 							))}
 						<PostDetails
 							post={post}
-							note={followedByTopnote ? post.note : null}
+							note={!followedByTopnote ? post.note : null}
 							tag={tag}
 							teaser={true}
 							randomLocation={randomLocation}
