@@ -70,12 +70,12 @@ export default function PostStats() {
 			? 'null'
 			: `[${post.parentId}](/tags/${tag}/stats/${post.parentId})`
 	}
-- **overall votes:** ▲ ${post.oCount} ▼ ${post.oSize - post.oCount}
-- **o:** ${post.o.toFixed(3)}
-- **p:** ${post.p.toFixed(3)}
+- **overall votes:** ${post.oCount} ▲ ${post.oSize - post.oCount} ▼ &nbsp; **o**: ${(post.o * 100).toFixed(1)}%
+- **p:** ${(post.p*100).toFixed(1)}%
 - **score:** ${post.score}
 `
 
+// - **p:** ${post.p.toFixed(3)}
 	// - p = ${
 	// 	post.topNoteId === null
 	// 		? 'q'
@@ -93,8 +93,8 @@ export default function PostStats() {
 						? 'null'
 						: `[${post.topNoteId}](/tags/${tag}/stats/${post.topNoteId})`
 			  }
-- **uninformed votes:** ▲ ${post.qCount} ▼ ${post.qSize - post.pCount}
-- **q:** ${post.q.toFixed(3)}
+- **informed votes:** &nbsp;&nbsp;&nbsp;&nbsp; ${post.pCount} ▲ ${post.pSize - post.pCount} ▼ &nbsp; **p**: ${(post.p * 100).toFixed(1)}%
+- **uninformed votes:** ${post.qCount} ▲ ${post.qSize - post.qCount} ▼ &nbsp; **q**: ${(post.q * 100).toFixed(1)}%
 - **r**: ${post.r.toFixed(3)}
 `
 
@@ -108,19 +108,16 @@ export default function PostStats() {
 			: `
 ## Effect on Parent
 
-- **informed votes:** ▲ ${e.pCount} ▼ ${e.pSize - e.pCount}
-- **p:** ${e.p}
-- **uninformed votes:** ▲ ${e.qCount} ▼ ${e.qSize - e.pCount}
-- **q:** ${e.q}
-- **relativeEntropy:** ${relativeEntropy(e.p, e.q).toFixed(3)}
-	- relativeEntropy = DKL(p, q)
-- **cognitive dissonance (existing votes):** ${(
+- **informed votes:** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${e.pCount} ▲  ${e.pSize - e.pCount} ▼ &nbsp;  **p**: ${(e.p*100).toFixed(1)}%
+- **uninformed votes:** ${e.qCount} ▲ ${e.qSize - e.qCount} ▼ &nbsp; **q:** ${(e.q*100).toFixed(1)}%
+- **relative entropy:** ${relativeEntropy(e.p, e.q).toFixed(3)}
+- **cognitive dissonance:** ${(
 					relativeEntropy(e.p, e.q) * e.qCount
 			  ).toFixed(3)} bits
-	- cognitiveDissonance = votesTotal * Dkl(p,q)
-	- see [Docs on Cognitive Dissonance](https://social-protocols.org/global-brain/cognitive-dissonance.html)
-	}`
-
+	`
+	// - cognitiveDissonance = votesTotal * Dkl(p,q)
+	// - see [Docs on Cognitive Dissonance](https://social-protocols.org/global-brain/cognitive-dissonance.html)
+	// - relativeEntropy = DKL(p, q)
 	// - **information value created (new votes)**: ${informationValueNewVotes.toFixed(
 	// 		3,
 	// 	)}
