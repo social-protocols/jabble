@@ -136,7 +136,7 @@ export function PostDetails({
 }: {
 	tag: string
 	post: ScoredPost
-	note: Post | null
+	note: ScoredPost | null
 	teaser: boolean
 	randomLocation: Location | null
 	position: Direction
@@ -311,7 +311,7 @@ export function NoteAttachment({
 	note,
 	className,
 }: {
-	note: Post
+	note: ScoredPost
 	tag: string
 	className: string
 }) {

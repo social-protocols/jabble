@@ -44,7 +44,8 @@ export async function loader({ params, request }: DataFunctionArgs) {
 	const tag: string = tagSchema.parse(params.tag)
 
 	const userId: string | null = await getUserId(request)
-	const post: ScoredPost = await getScoredPost(tag, postId)
+	const tagId = await getOrInsertTagId(tag)
+	const post: ScoredPost = await getScoredPost(tagId, postId)
 
 	invariantResponse(post, 'Post not found', { status: 404 })
 
@@ -52,9 +53,8 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	let replies: RankedPost[] = (await getRankedReplies(tag, post.id)).posts
 
-	const tagId = await getOrInsertTagId(tag)
 	// Get the top note, which may be selected randomly
-	let topNote: Post | null = await getTopNote(tagId, post)
+	let topNote: ScoredPost | null = await getTopNote(tagId, post)
 
 	await logPostPageView(tag, post.id, userId, topNote?.id || null)
 

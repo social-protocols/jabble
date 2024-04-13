@@ -23,7 +23,7 @@ export const MAX_RESULTS = 100
 
 export type RankedPost = ScoredPost & {
 	random: boolean
-	note: Post | null
+	note: ScoredPost | null
 	parent: Post | null
 }
 
@@ -90,10 +90,9 @@ export async function clearRankingsCache() {
 // }
 
 export async function getScoredPost(
-	tag: string,
+	tagId: number,
 	postId: number,
 ): Promise<ScoredPost> {
-	const tagId = await getOrInsertTagId(tag)
 
 	let query = db
 		.selectFrom('Post')
@@ -111,8 +110,6 @@ export async function getScoredPost(
 
 	const scoredPost: ScoredPost = (await query.execute())[0]!
 
-	console.log('Got score post', scoredPost)
-
 	return scoredPost
 }
 
@@ -120,9 +117,8 @@ export async function getTopNote(
 	tagId: number,
 	post: ScoredPost,
 	// postId: number,
-): Promise<Post | null> {
-	// TODO: this is a placeholder
-	return null
+): Promise<ScoredPost | null> {
+	return post.topNoteId !== null ? getScoredPost(tagId, post.topNoteId) : null
 }
 
 export async function getRankedPosts(tag: string): Promise<RankedPosts> {
@@ -149,7 +145,7 @@ export async function getRankedPosts(tag: string): Promise<RankedPosts> {
 		scoredPosts.map(async (post: ScoredPost) => {
 			return {
 				...post,
-				note: post.topNoteId == null ? null : await getPost(post.topNoteId!),
+				note: post.topNoteId == null ? null : await getScoredPost(tagId, post.topNoteId!),
 				parent: post.parentId == null ? null : await getPost(post.parentId!),
 				random: false,
 			}
@@ -166,14 +162,14 @@ export async function getRankedPosts(tag: string): Promise<RankedPosts> {
 	}
 }
 
-export async function getRandomlyRankedPosts(
-	tag: string,
-): Promise<RankedPosts> {
-	return {
-		posts: [],
-		effectiveRandomPoolSize: 0,
-	}
-}
+// export async function getRandomlyRankedPosts(
+// 	tag: string,
+// ): Promise<RankedPosts> {
+// 	return {
+// 		posts: [],
+// 		effectiveRandomPoolSize: 0,
+// 	}
+// }
 
 export async function getRankedReplies(
 	tag: string,
@@ -204,7 +200,7 @@ export async function getRankedReplies(
 		scoredPosts.map(async (post: ScoredPost) => {
 			return {
 				...post,
-				note: post.topNoteId == null ? null : await getPost(post.topNoteId!),
+				note: post.topNoteId == null ? null : await getScoredPost(tagId, post.topNoteId!),
 				parent: thisPost, // We don't really need this but the RankedPost type requires it.
 				random: false,
 			}
