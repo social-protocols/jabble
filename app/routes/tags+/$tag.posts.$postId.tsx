@@ -26,12 +26,13 @@ import {
 	getScoredPost,
 	type RankedPost,
 	type ScoredPost,
+	type ScoredNote,
 } from '#app/ranking.ts'
-import { getOrInsertTagId } from '#app/tag.ts'
 import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
 
 import { Direction } from '#app/vote.ts'
+
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
@@ -44,8 +45,7 @@ export async function loader({ params, request }: DataFunctionArgs) {
 	const tag: string = tagSchema.parse(params.tag)
 
 	const userId: string | null = await getUserId(request)
-	const tagId = await getOrInsertTagId(tag)
-	const post: ScoredPost = await getScoredPost(tagId, postId)
+	const post: ScoredPost = await getScoredPost(tag, postId)
 
 	invariantResponse(post, 'Post not found', { status: 404 })
 
@@ -54,7 +54,7 @@ export async function loader({ params, request }: DataFunctionArgs) {
 	let replies: RankedPost[] = (await getRankedReplies(tag, post.id)).posts
 
 	// Get the top note, which may be selected randomly
-	let topNote: ScoredPost | null = await getTopNote(tagId, post)
+	let topNote: ScoredNote | null = await getTopNote(tag, post)
 
 	await logPostPageView(tag, post.id, userId, topNote?.id || null)
 

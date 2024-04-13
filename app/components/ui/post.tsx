@@ -5,10 +5,10 @@ import { type Location, LocationType } from '#app/attention.ts'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { type Post } from '#app/db/types.ts'
-import { type ScoredPost } from '#app/ranking.ts'
+import { type ScoredPost, type ScoredNote } from '#app/ranking.ts'
+import { relativeEntropy } from '#app/utils/entropy.ts'
 import { Direction } from '#app/vote.ts'
 import { Card } from './card.tsx'
-
 /* Keep this relatively high, so people don't often have to click "read more"
    to read most content. But also not too high, so people don't have to
    scroll past big walls of text of posts they are not interested in */
@@ -136,7 +136,7 @@ export function PostDetails({
 }: {
 	tag: string
 	post: ScoredPost
-	note: ScoredPost | null
+	note: ScoredNote | null
 	teaser: boolean
 	randomLocation: Location | null
 	position: Direction
@@ -311,14 +311,23 @@ export function NoteAttachment({
 	note,
 	className,
 }: {
-	note: ScoredPost
+	note: ScoredNote
 	tag: string
 	className: string
 }) {
+
+	// TODO: what is a reasonable relativeEntropy cutoff? The algorithm now, using the simplified Bayesian algorithm calculation (to avoid MCMC or variational methods)
+	// results in a different p and q even if there are no informed votes. So there will always be some relative entropy...
+
+	const effectString = relativeEntropy(note.p, note.q) < .01 ? "" : (note.p > note.q ? "↑" : "↓") + Math.abs(Math.round((note.p - note.q)*100)) + "%"
+
 	return (
 		<Link to={`/tags/${tag}/posts/${note.id}`}>
 			<Card className={'bg-note pb-3 pt-2 text-note-foreground ' + className}>
-				<div className="pb-1 text-sm font-medium opacity-50">Featured Reply</div>
+				<div className="pb-1 text-sm font-medium opacity-50">Featured Reply <span>{effectString}</span>
+				{/*<a href="/faq#noteEffect"> ⓘ</a>*/}
+					{/*<span>Debug info: {relativeEntropy(note.p, note.q)} / {note.p} / {note.q} / {note.pCount}/{note.pSize} {note.qCount}/{note.qSize}</span>*/}
+				</div>
 
 				{note && (
 					<PostContent

@@ -16,6 +16,9 @@ import { getOrInsertTagId } from './tag.ts'
 
 export type ScoredPost = Post & Score & Effect & { nReplies: number }
 
+// Post with its effect on its parent
+export type ScoredNote = Post & Effect
+
 // const fatigueFactor = .9
 // const attentionCutoff = 2 // Note all posts start with 1 unit of attention (from poster)
 
@@ -23,13 +26,14 @@ export const MAX_RESULTS = 100
 
 export type RankedPost = ScoredPost & {
 	random: boolean
-	note: ScoredPost | null
+	note: ScoredNote | null
 	parent: Post | null
 }
 
 export type RankedPosts = {
 	posts: RankedPost[]
 	effectiveRandomPoolSize: number
+
 }
 
 let rankingsCache = new LRUCache<string, RankedPosts>({
@@ -90,10 +94,17 @@ export async function clearRankingsCache() {
 // }
 
 export async function getScoredPost(
+	tag: string,
+	postId: number,
+): Promise<ScoredPost> {
+	const tagId = await getOrInsertTagId(tag)
+	return getScoredPostInternal(tagId, postId)
+}
+
+async function getScoredPostInternal(
 	tagId: number,
 	postId: number,
 ): Promise<ScoredPost> {
-
 	let query = db
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
@@ -108,17 +119,56 @@ export async function getScoredPost(
 		.where('Post.id', '=', postId)
 		.where('FullScore.tagId', '=', tagId)
 
-	const scoredPost: ScoredPost = (await query.execute())[0]!
+	const scoredPost = (await query.execute())[0]
 
-	return scoredPost
+	if (scoredPost === undefined) {
+		throw new Error(`Failed to read scored post tagId=${tagId} postId=${postId}`)
+	}
+
+	return {
+		...scoredPost,
+		effectOnParent: await getEffectOnParent(tagId, postId),
+	}
 }
 
 export async function getTopNote(
-	tagId: number,
+	tag: string,
 	post: ScoredPost,
 	// postId: number,
-): Promise<ScoredPost | null> {
-	return post.topNoteId !== null ? getScoredPost(tagId, post.topNoteId) : null
+): Promise<ScoredNote | null> {
+	const tagId = await getOrInsertTagId(tag)
+	return post.topNoteId !== null ? getScoredNoteInternal(tagId, post.topNoteId) : null
+}
+
+async function getScoredNoteInternal(
+	tagId: number,
+	postId: number,
+): Promise<ScoredNote> {
+	let query = db
+		.selectFrom('Post')
+		.innerJoin('Effect', join =>
+			join
+				.on('Effect.tagId', '=', tagId)
+				.on('Effect.noteId', '=', postId)
+				.onRef('Effect.postId', '=', 'Post.parentId')
+		)
+		.leftJoin('PostStats', join =>
+			join
+				.onRef('PostStats.postId', '=', 'Post.id')
+				.on('PostStats.tagId', '=', tagId),
+		)
+		.selectAll('Post')
+		.selectAll('Effect')
+		.select(sql<number>`replies`.as('nReplies'))
+		.where('Post.id', '=', postId)
+
+	const scoredNote = (await query.execute())[0]
+
+	if (scoredNote === undefined) {
+		throw new Error(`Failed to read scored post tagId=${tagId} postId=${postId}`)
+	}
+
+	return scoredNote
 }
 
 export async function getRankedPosts(tag: string): Promise<RankedPosts> {
@@ -145,7 +195,7 @@ export async function getRankedPosts(tag: string): Promise<RankedPosts> {
 		scoredPosts.map(async (post: ScoredPost) => {
 			return {
 				...post,
-				note: post.topNoteId == null ? null : await getScoredPost(tagId, post.topNoteId!),
+				note: post.topNoteId == null ? null : await getScoredNoteInternal(tagId, post.topNoteId!),
 				parent: post.parentId == null ? null : await getPost(post.parentId!),
 				random: false,
 			}
@@ -200,7 +250,7 @@ export async function getRankedReplies(
 		scoredPosts.map(async (post: ScoredPost) => {
 			return {
 				...post,
-				note: post.topNoteId == null ? null : await getScoredPost(tagId, post.topNoteId!),
+				note: post.topNoteId == null ? null : await getScoredNoteInternal(tagId, post.topNoteId!),
 				parent: thisPost, // We don't really need this but the RankedPost type requires it.
 				random: false,
 			}
