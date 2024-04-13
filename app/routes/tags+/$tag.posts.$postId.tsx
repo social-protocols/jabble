@@ -33,7 +33,6 @@ import { invariantResponse } from '#app/utils/misc.tsx'
 
 import { Direction } from '#app/vote.ts'
 
-
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
 const contentSchema = z.coerce.string()

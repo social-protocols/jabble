@@ -1,111 +1,74 @@
-// import { Link, useLocation } from '@remix-run/react'
-// import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-// import { Icon } from '#app/components/ui/icon.tsx'
-
 import { type DataFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
-import { LocationType, type Location } from '#app/attention.ts'
-import { PostDetails, ParentPost } from '#app/components/ui/post.tsx'
-import {
-	getDefaultFeed,
-	getUserFeed,
-	type RankedPost,
-	type TagPreview,
-} from '#app/ranking.ts'
-import { getUserId } from '#app/utils/auth.server.ts'
-import { Direction } from '#app/vote.ts'
-// export async function loader() {
-// }
+import moment from 'moment'
+import { PostContent } from '#app/components/ui/post.tsx'
+import * as rankingTs from '#app/ranking.ts'
 
 export default function Index() {
 	// due to the loader, this component will never be rendered, but we'll return
 	// the error boundary just in case.
 	let data = useLoaderData<typeof loader>()
 
-	return <UserFeed feed={data.feed} />
+	return <FrontpageFeed feed={data.feed} />
 }
 
-export async function loader({ request }: DataFunctionArgs) {
-	const userId = await getUserId(request)
-
-	console.log('userId', userId)
-
-	let feed: TagPreview[] = []
-
-	if (userId) {
-		feed = await getUserFeed(userId)
-	} else {
-		feed = await getDefaultFeed()
-	}
-
+export async function loader({}: DataFunctionArgs) {
+	const feed = await rankingTs.getChronologicalToplevelPosts()
 	return { feed }
 }
 
-export function UserFeed({ feed }: { feed: TagPreview[] }) {
+export function FrontpageFeed({ feed }: { feed: rankingTs.ScoredPost[] }) {
 	console.log('user feed is', feed)
 	return (
 		<div className="container">
-			<h1 className="mb-5 text-3xl">Home</h1>
-			{feed.map(tagPreview => {
-				let posts = tagPreview.posts
-				let tag = tagPreview.tag
-				let positions = tagPreview.positions
-
-				let p = new Map<number, Direction>()
-				for (let position of positions) {
-					p.set(position.postId, position.vote)
-				}
-
-				console.log('Tag preview', tag)
-
-				return (
-					<div key={tag} className="mx-auto w-full">
-						<h2 className="mb-3 text-lg">
-							Top posts in{' '}
-							<span className="font-bold">
-								<Link to={`/tags/${tag}`}>#{tag}</Link>
-							</span>
-						</h2>
-						<div className="flex flex-col place-items-start items-stretch">
-							<ul>
-								{posts.map((post: RankedPost, i: number) => {
-									let position = p.get(post.id) || Direction.Neutral
-									let notePosition: Direction =
-										(post.note && p.get(post.note.id)) || Direction.Neutral
-
-									let randomLocation: Location | null = post.random
-										? {
-												oneBasedRank: i + 1,
-												locationType: LocationType.TagPage,
-										  }
-										: null
-
-									return (
-										<div key={post.id} className="flex-1 items-stretch">
-											<li>
-												<div className="w-full flex-1 justify-self-center">
-													{post.parent && (
-														<ParentPost parentPost={post.parent!} tag={tag} />
-													)}
-													<PostDetails
-														post={post}
-														note={post.note}
-														tag={tag}
-														teaser={true}
-														randomLocation={randomLocation}
-														position={position}
-														notePosition={notePosition}
-													/>
-												</div>
-											</li>
-										</div>
-									)
-								})}
-							</ul>
+			<div className="mx-auto w-full">
+				{feed.map(post => {
+					return (
+						<div key={post.id} className="flex-1 items-stretch">
+							<div className="flex-1">
+								<TopLevelPost post={post} />
+							</div>
 						</div>
-					</div>
-				)
-			})}
+					)
+				})}
+			</div>
+		</div>
+	)
+}
+
+export function TopLevelPost({ post }: { post: rankingTs.ScoredPost }) {
+	const nRepliesString =
+		post.nReplies === 1 ? '1 reply' : `${post.nReplies} replies`
+
+	let informedProbabilityString = Math.round(post.p * 100) / 100
+	const ageString = moment(post.createdAt).fromNow()
+
+	return (
+		<div className="mb-5 flex w-full flex-row space-x-4 rounded-lg bg-post px-5 pb-5">
+			<div className="postteaser flex w-full min-w-0 flex-col">
+				<div className="mt-1 text-right text-sm opacity-50">{ageString}</div>
+
+				<PostContent
+					content={post.content}
+					maxLines={3}
+					deactivateLinks={false}
+				/>
+
+				<div className="mt-2 flex w-full text-sm">
+					<Link
+						to={`/tags/${null /*TODO*/}/stats/${post.id}`}
+						className="hyperlink"
+					>
+						{informedProbabilityString}%
+					</Link>
+					<Link
+						to={`/tags/${null /*TODO*/}/posts/${post.id}`}
+						className="hyperlink ml-2"
+					>
+						{nRepliesString}
+					</Link>
+				</div>
+			</div>
 		</div>
 	)
 }

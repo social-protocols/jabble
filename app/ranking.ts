@@ -1,4 +1,3 @@
-import assert from 'assert'
 import { sql } from 'kysely'
 import { LRUCache } from 'lru-cache'
 import { type Score, type Effect, type Post } from '#app/db/types.ts' // this is the Database interface we defined earlier
@@ -6,10 +5,9 @@ import { db } from '#app/db.ts'
 // import { cumulativeAttention } from './attention.ts';
 import {
 	// logTagPageView,
-	logTagPreview,
 	flushTagPageStats,
 } from './attention.ts'
-import { getUserPositions, type Position } from './positions.ts'
+import { type Position } from './positions.ts'
 // import { GLOBAL_PRIOR_VOTE_RATE, findTopNoteId } from './probabilities.ts'
 import { getPost } from './post.ts'
 import { getOrInsertTagId } from './tag.ts'
@@ -33,7 +31,6 @@ export type RankedPost = ScoredPost & {
 export type RankedPosts = {
 	posts: RankedPost[]
 	effectiveRandomPoolSize: number
-
 }
 
 let rankingsCache = new LRUCache<string, RankedPosts>({
@@ -122,7 +119,9 @@ async function getScoredPostInternal(
 	const scoredPost = (await query.execute())[0]
 
 	if (scoredPost === undefined) {
-		throw new Error(`Failed to read scored post tagId=${tagId} postId=${postId}`)
+		throw new Error(
+			`Failed to read scored post tagId=${tagId} postId=${postId}`,
+		)
 	}
 
 	return scoredPost
@@ -138,7 +137,9 @@ export async function getTopNote(
 	// postId: number,
 ): Promise<ScoredNote | null> {
 	const tagId = await getOrInsertTagId(tag)
-	return post.topNoteId !== null ? getScoredNoteInternal(tagId, post.topNoteId) : null
+	return post.topNoteId !== null
+		? getScoredNoteInternal(tagId, post.topNoteId)
+		: null
 }
 
 async function getScoredNoteInternal(
@@ -151,7 +152,7 @@ async function getScoredNoteInternal(
 			join
 				.on('Effect.tagId', '=', tagId)
 				.on('Effect.noteId', '=', postId)
-				.onRef('Effect.postId', '=', 'Post.parentId')
+				.onRef('Effect.postId', '=', 'Post.parentId'),
 		)
 		.leftJoin('PostStats', join =>
 			join
@@ -166,7 +167,9 @@ async function getScoredNoteInternal(
 	const scoredNote = (await query.execute())[0]
 
 	if (scoredNote === undefined) {
-		throw new Error(`Failed to read scored post tagId=${tagId} postId=${postId}`)
+		throw new Error(
+			`Failed to read scored post tagId=${tagId} postId=${postId}`,
+		)
 	}
 
 	return scoredNote
@@ -196,7 +199,10 @@ export async function getRankedPosts(tag: string): Promise<RankedPosts> {
 		scoredPosts.map(async (post: ScoredPost) => {
 			return {
 				...post,
-				note: post.topNoteId == null ? null : await getScoredNoteInternal(tagId, post.topNoteId!),
+				note:
+					post.topNoteId == null
+						? null
+						: await getScoredNoteInternal(tagId, post.topNoteId!),
 				parent: post.parentId == null ? null : await getPost(post.parentId!),
 				random: false,
 			}
@@ -211,6 +217,25 @@ export async function getRankedPosts(tag: string): Promise<RankedPosts> {
 		posts: rankedPosts,
 		effectiveRandomPoolSize: 0,
 	}
+}
+
+export async function getChronologicalToplevelPosts(): Promise<ScoredPost[]> {
+	let query = db
+		.selectFrom('Post')
+		.where('Post.parentId', 'is', null)
+		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
+		.leftJoin(
+			'PostStats',
+			join => join.onRef('PostStats.postId', '=', 'Post.id'), // TODO: is this correct without tag?
+			// .on('PostStats.tagId', '=', tagId),
+		)
+		.selectAll('Post')
+		.selectAll('FullScore')
+		.select(sql<number>`replies`.as('nReplies'))
+		.orderBy('Post.createdAt', 'desc')
+		.limit(MAX_RESULTS)
+
+	return await query.execute()
 }
 
 // export async function getRandomlyRankedPosts(
@@ -251,7 +276,10 @@ export async function getRankedReplies(
 		scoredPosts.map(async (post: ScoredPost) => {
 			return {
 				...post,
-				note: post.topNoteId == null ? null : await getScoredNoteInternal(tagId, post.topNoteId!),
+				note:
+					post.topNoteId == null
+						? null
+						: await getScoredNoteInternal(tagId, post.topNoteId!),
 				parent: thisPost, // We don't really need this but the RankedPost type requires it.
 				random: false,
 			}
@@ -272,41 +300,4 @@ export type TagPreview = {
 	tag: string
 	posts: RankedPost[]
 	positions: Position[]
-}
-
-export async function getUserFeed(userId: string): Promise<TagPreview[]> {
-	assert(userId !== '', 'missing user ID')
-	let feed = await getDefaultFeed()
-
-	for (let tagPreview of feed) {
-		const { tag, posts } = tagPreview
-		logTagPreview(userId, tag)
-		let positions = await getUserPositions(
-			userId,
-			tag,
-			posts.map(p => p.id),
-		)
-		tagPreview.positions = positions
-	}
-
-	return feed
-}
-
-export async function getDefaultFeed(): Promise<TagPreview[]> {
-	let feed: TagPreview[] = []
-
-	let tags: string[] = await getRankedTags()
-
-	for (let tag of tags) {
-		let posts: RankedPost[] = (await getRankedPosts(tag)).posts.slice(0, 2)
-
-		if (posts.length == 0) {
-			continue
-		}
-
-		// console.log("Posts", tag, posts)
-		feed.push({ tag, posts, positions: [] })
-	}
-
-	return feed
 }
