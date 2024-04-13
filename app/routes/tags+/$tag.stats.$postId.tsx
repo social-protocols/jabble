@@ -89,7 +89,7 @@ export default function PostStats() {
 - **upvotes:** ${post.oCount}
 - **downvotes:** ${post.oSize - post.oCount}
 - **votes:** ${post.oCount}
-- **q**: ${post.q.toFixed(3)}
+- **q**: ${post.q == null ? "" : post.q.toFixed(3)}
   - q = Bayesian Average(upvotes/votes), upvoteProbabilityPrior)
   - see [Docs on Rating and Evaluating Content](https://social-protocols.org/global-brain/rating-and-evaluating-content.html)
 - **top note:** ${
