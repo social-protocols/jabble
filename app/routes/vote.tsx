@@ -19,7 +19,6 @@ function parseDirection(
 	directionString: FormDataEntryValue | undefined,
 ): Direction {
 	const d: string = directionSchema.parse(directionString)
-	console.log('Parsing string', d)
 
 	// if d is a (possibly negative) integer
 	if (/^-?\d+$/.test(d)) {
@@ -33,7 +32,6 @@ function parseDirection(
 }
 
 function parseLocationType(locationTypeString: string): LocationType {
-	console.log('In parseLocationType', locationTypeString)
 	const d: string | undefined =
 		randomLocationTypeSchema.parse(locationTypeString)
 	assert(d !== undefined, `unrecognized location type {locationTypeString}`)
@@ -86,17 +84,10 @@ export const action = async (args: ActionFunctionArgs) => {
 		assert(oneBasedRank !== null, 'oneBasedRank !== null')
 
 		let locationTypeString = parsedData.randomLocationType
-		console.log('Random locaiton type strinng', locationTypeString)
 		location = {
 			locationType: parseLocationType(locationTypeString),
 			oneBasedRank: oneBasedRank,
 		}
-		console.log(
-			'Got location in vote action',
-			parsedData.randomLocationType,
-			parsedData.oneBasedRank,
-			location,
-		)
 	}
 
 	const noteId = parsedData.noteId === undefined ? null : parsedData.noteId

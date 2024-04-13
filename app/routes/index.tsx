@@ -24,7 +24,6 @@ export function FrontpageFeed({
 	feed: rankingTs.ScoredPost[]
 	tag: string
 }) {
-	console.log('user feed is', feed)
 	return (
 		<div className="container">
 			<div className="mx-auto w-full">

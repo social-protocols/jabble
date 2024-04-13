@@ -21,14 +21,10 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	const parsedData = replySchema.parse(formData)
 
-	console.log('Reply action', parsedData)
-
 	const content = parsedData.content
 	const parentId = parsedData.parentId || null
 	const tag = parsedData.tag
 	const tagId = await getOrInsertTagId(tag)
-
-	console.log('Got params', parentId, tag, tagId, content)
 
 	invariant(content, 'content !== undefined')
 	invariant(tag, "tag !== ''")
