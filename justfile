@@ -34,7 +34,7 @@ db:
 
 # run typescript typechecker
 typecheck:
-	npm run typecheck
+	npx tsc --noEmit --watch
 
 # run linters and formatter
 lint:
