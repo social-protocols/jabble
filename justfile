@@ -89,3 +89,12 @@ docker-kill:
 docker-exec:
 	docker exec -it deploy-sn /bin/bash
 
+download-production-data:
+	rm -rf $SOCIAL_PROTOCOLS_DATADIR/production/
+	mkdir -p $SOCIAL_PROTOCOLS_DATADIR/production/
+	fly ssh sftp get /data/score-events.jsonl $SOCIAL_PROTOCOLS_DATADIR/production/score-events.jsonl
+	fly ssh sftp get /data/vote-events.jsonl $SOCIAL_PROTOCOLS_DATADIR/production/vote-events.jsonl
+	fly ssh sftp get /litefs/data/sqlite.db $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db
+	fly ssh sftp get /litefs/data/global-brain.db $SOCIAL_PROTOCOLS_DATADIR/production/global-brain.db
+	cp $SOCIAL_PROTOCOLS_DATADIR/production/* $SOCIAL_PROTOCOLS_DATADIR/
+	rm -rf $SOCIAL_PROTOCOLS_DATADIR/production/
