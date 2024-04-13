@@ -125,10 +125,11 @@ async function getScoredPostInternal(
 		throw new Error(`Failed to read scored post tagId=${tagId} postId=${postId}`)
 	}
 
-	return {
-		...scoredPost,
-		effectOnParent: await getEffectOnParent(tagId, postId),
-	}
+	return scoredPost
+	// return {
+	// 	...scoredPost,
+	// 	effectOnParent: await getEffectOnParent(tagId, postId),
+	// }
 }
 
 export async function getTopNote(
