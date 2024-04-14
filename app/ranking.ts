@@ -259,14 +259,14 @@ export async function getChronologicalToplevelPosts(
 		.leftJoin('PostStats', join =>
 			join
 				.onRef('PostStats.postId', '=', 'Post.id')
-				.on('PostStats.tagId', '=', tagId),
+				.onRef('PostStats.tagId', '=', 'FullScore.tagId'),
 		)
 		.innerJoin('Tag', 'Tag.id', 'FullScore.tagId')
 		.select('tag')
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))
-		.where(sql<boolean>`ifnull(PostStats.tagId = ${tagId}, true)`)
+		.where(sql<boolean>`ifnull(FullScore.tagId = ${tagId}, true)`)
 		.orderBy('Post.createdAt', 'desc')
 		.limit(MAX_RESULTS)
 
