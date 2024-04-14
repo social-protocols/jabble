@@ -145,6 +145,7 @@ export function PostDetails({
 	randomLocation,
 	position,
 	notePosition,
+	loggedIn,
 }: {
 	post: ScoredPost
 	note: ScoredNote | null
@@ -152,6 +153,7 @@ export function PostDetails({
 	randomLocation: Location | null
 	position: Direction
 	notePosition: Direction
+	loggedIn: boolean,
 }) {
 	// The vote buttons use the fetcher and shouldRevalidate to do a post without reloading the page.
 	// So we need to get the current state of the user's vote on this post from the fetcher
@@ -187,7 +189,7 @@ export function PostDetails({
 				'mb-5 flex w-full flex-row space-x-4 rounded-lg bg-post px-5 pb-5'
 			}
 		>
-			<div className="mt-5">
+			<div className="mt-5" style={{visibility: loggedIn ? "visible" : "hidden"}}>
 				<fetcher.Form method="post" action="/vote">
 					<VoteButtons
 						postId={post.id}
@@ -226,6 +228,7 @@ export function PostDetails({
 							setShowReplyForm(!showReplyForm)
 							return false
 						}}
+						style={{visibility: loggedIn ? "visible" : "hidden"}}
 						// preventScrollReset={true}
 					>
 						reply

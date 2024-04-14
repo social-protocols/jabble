@@ -42,11 +42,13 @@ export async function loader({ params, request }: DataFunctionArgs) {
 		)
 	}
 
-	return json({ posts, userId, positions, tag })
+	const loggedIn = userId !== null
+
+	return json({ posts, userId, positions, tag, loggedIn})
 }
 
 export default function TagPage() {
-	const { tag, posts, positions } = useLoaderData<typeof loader>()
+	const { tag, posts, positions, loggedIn } = useLoaderData<typeof loader>()
 
 	// We lose the type info for positions after serializing and deserializing JSON
 	let p = new Map<number, Direction>()
@@ -60,8 +62,8 @@ export default function TagPage() {
 				<Link to={`/`}>Home</Link>
 				&nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
 			</div>
-			<PostForm tag={tag} className="mb-5" />
-			<Feed posts={posts} positions={p} />
+			{loggedIn && <PostForm tag={tag} className="mb-5" />}
+			<Feed posts={posts} positions={p} loggedIn={loggedIn}/>
 		</>
 	)
 }

@@ -67,6 +67,8 @@ export async function loader({ params, request }: DataFunctionArgs) {
 					replies.map(p => p.id).concat([post.id]),
 			  )
 
+	const loggedIn = userId !== null
+
 	let result = json({
 		post,
 		transitiveParents,
@@ -74,6 +76,7 @@ export async function loader({ params, request }: DataFunctionArgs) {
 		tag,
 		positions,
 		topNote,
+		loggedIn,
 	})
 
 	return result
@@ -107,7 +110,7 @@ export const action = async (args: ActionFunctionArgs) => {
 }
 
 export default function Post() {
-	const { post, transitiveParents, replies, tag, positions, topNote } =
+	const { post, transitiveParents, replies, tag, positions, topNote, loggedIn } =
 		useLoaderData<typeof loader>()
 
 	let p = new Map<number, Direction>()
@@ -133,8 +136,9 @@ export default function Post() {
 				randomLocation={null}
 				position={position}
 				notePosition={notePosition}
+				loggedIn={loggedIn}
 			/>
-			<PostReplies replies={replies} positions={p} />
+			<PostReplies replies={replies} positions={p} loggedIn={loggedIn}/>
 		</>
 	)
 }
@@ -169,9 +173,11 @@ function ParentThread({
 export function PostReplies({
 	replies,
 	positions,
+	loggedIn,
 }: {
 	replies: RankedPost[]
 	positions: Map<number, Direction>
+	loggedIn: boolean
 }) {
 	return (
 		<>
@@ -193,6 +199,7 @@ export function PostReplies({
 									randomLocation={null}
 									position={position}
 									notePosition={Direction.Neutral}
+									loggedIn={loggedIn}
 								/>
 							</li>
 						)
