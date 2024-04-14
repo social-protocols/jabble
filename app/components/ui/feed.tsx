@@ -2,7 +2,6 @@ import { type Location, LocationType } from '#app/attention.ts'
 import { PostDetails, ParentPost } from '#app/components/ui/post.tsx'
 import { type RankedPost } from '#app/ranking.ts'
 import { Direction } from '#app/vote.ts'
-import { getTagById } from '#app/tag.ts'
 // import { type PostId } from '#app/post.ts'
 
 export function Feed({

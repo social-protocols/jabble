@@ -248,9 +248,9 @@ export async function getRankedPosts(tag: string): Promise<RankedPosts> {
 }
 
 export async function getChronologicalToplevelPosts(
-	tag: string,
+	tag?: string,
 ): Promise<ScoredPost[]> {
-	const tagId = await getOrInsertTagId(tag)
+	const tagId = tag == null ? null : await getOrInsertTagId(tag)
 
 	let query = db
 		.selectFrom('Post')
@@ -266,7 +266,7 @@ export async function getChronologicalToplevelPosts(
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))
-		.where('FullScore.tagId', '=', tagId)
+		.where(sql<boolean>`ifnull(PostStats.tagId = ${tagId}, true)`)
 		.orderBy('Post.createdAt', 'desc')
 		.limit(MAX_RESULTS)
 

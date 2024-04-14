@@ -13,7 +13,7 @@ export default function Index() {
 }
 
 export async function loader({}: DataFunctionArgs) {
-	const feed = await rankingTs.getChronologicalToplevelPosts('global')
+	const feed = await rankingTs.getChronologicalToplevelPosts()
 	return { feed }
 }
 
