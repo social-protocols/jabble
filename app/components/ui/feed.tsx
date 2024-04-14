@@ -7,9 +7,11 @@ import { Direction } from '#app/vote.ts'
 export function Feed({
 	posts,
 	positions,
+	loggedIn,
 }: {
 	posts: RankedPost[]
 	positions: Map<number, Direction>
+	loggedIn: boolean
 }) {
 	return (
 		<>
@@ -43,6 +45,7 @@ export function Feed({
 							randomLocation={randomLocation}
 							position={position}
 							notePosition={notePosition}
+							loggedIn={loggedIn}
 						/>
 					</div>
 				)

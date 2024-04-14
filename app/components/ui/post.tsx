@@ -209,7 +209,7 @@ export function PostDetails({
 					content={post.content}
 					maxLines={teaser ? postTeaserMaxLines : undefined}
 					deactivateLinks={false}
-					linkTo={teaser ? `/tags/${post.tag}/posts/${post.id}` : undefined}
+					linkTo={`/tags/${post.tag}/posts/${post.id}`}
 				/>
 				{note && <NoteAttachment note={note} tag={post.tag} className="mt-2" />}
 
