@@ -13,7 +13,7 @@ import { getPost } from './post.ts'
 import { getOrInsertTagId } from './tag.ts'
 
 // Post with score and the effect of its top note
-export type ScoredPost = Post & Score & Effect & { nReplies: number }
+export type ScoredPost = Post & Score & Effect & { nReplies: number, tag: string }
 
 // Post with its effect on its parent
 export type ScoredNote = Post & Effect
@@ -111,6 +111,8 @@ async function getScoredPostInternal(
 				.onRef('PostStats.postId', '=', 'Post.id')
 				.on('PostStats.tagId', '=', tagId),
 		)
+		.innerJoin('Tag', 'Tag.id', 'FullScore.tagId')
+		.select('tag')
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))
@@ -214,6 +216,8 @@ export async function getRankedPosts(tag: string): Promise<RankedPosts> {
 				.onRef('PostStats.postId', '=', 'Post.id')
 				.on('PostStats.tagId', '=', tagId),
 		)
+		.innerJoin('Tag', 'Tag.id', 'FullScore.tagId')
+		.select('tag')
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))
@@ -257,6 +261,8 @@ export async function getChronologicalToplevelPosts(
 				.onRef('PostStats.postId', '=', 'Post.id')
 				.on('PostStats.tagId', '=', tagId),
 		)
+		.innerJoin('Tag', 'Tag.id', 'FullScore.tagId')
+		.select('tag')
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))
@@ -280,6 +286,8 @@ export async function getRankedReplies(
 				.onRef('PostStats.postId', '=', 'Post.id')
 				.on('PostStats.tagId', '=', tagId),
 		)
+		.innerJoin('Tag', 'Tag.id', 'FullScore.tagId')
+		.select('tag')
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))

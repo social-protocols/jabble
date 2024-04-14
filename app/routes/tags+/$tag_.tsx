@@ -1,7 +1,6 @@
 // import { Spacer } from '#app/components/spacer.tsx'
 // import { Icon } from '#app/components/ui/icon.tsx'
 import {
-	type ActionFunctionArgs,
 	json,
 	type DataFunctionArgs,
 } from '@remix-run/node'
@@ -13,29 +12,17 @@ import {
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 import { logTagPageView } from '#app/attention.ts'
-// import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 
-// import { db } from "#app/db.ts"
-// import { getPost } from "#app/post.ts"
-// import { topNote, voteRate } from '#app/probabilities.ts'
-
-import { TagFeed } from '#app/components/ui/feed.tsx'
+import { Feed } from '#app/components/ui/feed.tsx'
 import { PostForm } from '#app/components/ui/post-form.tsx'
 import { getUserPositions, type Position } from '#app/positions.ts'
-import { createPost } from '#app/post.ts'
 import { getRankedPosts } from '#app/ranking.ts'
-// import { invariantResponse } from '#app/utils/misc.tsx'
 
-// import { Feed } from "#app/components/ui/feed.tsx"
+import { getUserId } from '#app/utils/auth.server.ts'
 
-import { requireUserId, getUserId } from '#app/utils/auth.server.ts'
-
-// import {type PostId } from '#app/post.ts'
 import { type Direction } from '#app/vote.ts'
-// const GLOBAL_TAG = "global";
 
 const tagSchema = z.coerce.string()
-const contentSchema = z.coerce.string()
 
 export async function loader({ params, request }: DataFunctionArgs) {
 	const tag: string = tagSchema.parse(params.tag)
@@ -74,7 +61,7 @@ export default function TagPage() {
 				&nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
 			</div>
 			<PostForm tag={tag} className="mb-5" />
-			<TagFeed posts={posts} tag={tag} positions={p} />
+			<Feed posts={posts} positions={p} />
 		</>
 	)
 }

@@ -126,7 +126,6 @@ export function PostContent({
 }
 
 export function PostDetails({
-	tag,
 	post,
 	note,
 	teaser,
@@ -134,7 +133,6 @@ export function PostDetails({
 	position,
 	notePosition,
 }: {
-	tag: string
 	post: ScoredPost
 	note: ScoredNote | null
 	teaser: boolean
@@ -178,7 +176,7 @@ export function PostDetails({
 				<fetcher.Form method="post" action="/vote">
 					<VoteButtons
 						postId={post.id}
-						tag={tag}
+						tag={post.tag}
 						noteId={note !== null ? note.id : null}
 						randomLocation={randomLocation}
 						state={voteState}
@@ -196,15 +194,15 @@ export function PostDetails({
 					content={post.content}
 					maxLines={teaser ? postTeaserMaxLines : undefined}
 					deactivateLinks={false}
-					showMoreLink={`/tags/${tag}/posts/${post.id}`}
+					showMoreLink={`/tags/${post.tag}/posts/${post.id}`}
 				/>
-				{note && <NoteAttachment note={note} tag={tag} className="mt-2" />}
+				{note && <NoteAttachment note={note} tag={post.tag} className="mt-2" />}
 
 				<div className="mt-2 flex w-full text-sm">
-					<Link to={`/tags/${tag}/stats/${post.id}`} className="hyperlink">
+					<Link to={`/tags/${post.tag}/stats/${post.id}`} className="hyperlink">
 						{informedProbabilityString}%
 					</Link>
-					<Link to={`/tags/${tag}/posts/${post.id}`} className="hyperlink ml-2">
+					<Link to={`/tags/${post.tag}/posts/${post.id}`} className="hyperlink ml-2">
 						{nRepliesString}
 					</Link>
 					<button
@@ -233,7 +231,7 @@ export function PostDetails({
 						action="/reply"
 						onSubmit={handleReplySubmit}
 					>
-						<ReplyForm post={post} tag={tag} className="mt-2" />
+						<ReplyForm post={post} tag={post.tag} className="mt-2" />
 					</replyFetcher.Form>
 				)}
 			</div>

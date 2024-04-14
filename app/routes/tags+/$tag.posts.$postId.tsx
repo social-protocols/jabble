@@ -127,7 +127,6 @@ export default function Post() {
 			</div>
 			<ParentThread transitiveParents={transitiveParents} tag={tag} />
 			<PostDetails
-				tag={tag}
 				post={post}
 				note={topNote}
 				teaser={false}
@@ -135,7 +134,7 @@ export default function Post() {
 				position={position}
 				notePosition={notePosition}
 			/>
-			<PostReplies tag={tag} replies={replies} positions={p} />
+			<PostReplies replies={replies} positions={p} />
 		</>
 	)
 }
@@ -168,11 +167,9 @@ function ParentThread({
 }
 
 export function PostReplies({
-	tag,
 	replies,
 	positions,
 }: {
-	tag: string
 	replies: RankedPost[]
 	positions: Map<number, Direction>
 }) {
@@ -190,7 +187,6 @@ export function PostReplies({
 						return (
 							<li key={post.id}>
 								<PostDetails
-									tag={tag}
 									post={post}
 									note={post.note}
 									teaser={true}

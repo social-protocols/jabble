@@ -2,14 +2,13 @@ import { type Location, LocationType } from '#app/attention.ts'
 import { PostDetails, ParentPost } from '#app/components/ui/post.tsx'
 import { type RankedPost } from '#app/ranking.ts'
 import { Direction } from '#app/vote.ts'
+import { getTagById } from '#app/tag.ts'
 // import { type PostId } from '#app/post.ts'
 
-export function TagFeed({
-	tag,
+export function Feed({
 	posts,
 	positions,
 }: {
-	tag: string
 	posts: RankedPost[]
 	positions: Map<number, Direction>
 }) {
@@ -36,12 +35,11 @@ export function TagFeed({
 							(followsParent ? (
 								<div className="link-to-parent threadline" />
 							) : (
-								<ParentPost parentPost={post.parent!} tag={tag} />
+								<ParentPost parentPost={post.parent!} tag={post.tag} />
 							))}
 						<PostDetails
 							post={post}
 							note={!followedByTopnote ? post.note : null}
-							tag={tag}
 							teaser={true}
 							randomLocation={randomLocation}
 							position={position}
