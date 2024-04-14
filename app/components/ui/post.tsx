@@ -9,6 +9,7 @@ import { type ScoredPost, type ScoredNote } from '#app/ranking.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
 import { Direction } from '#app/vote.ts'
 import { Card } from './card.tsx'
+import { useNavigate } from "@remix-run/react";
 /* Keep this relatively high, so people don't often have to click "read more"
    to read most content. But also not too high, so people don't have to
    scroll past big walls of text of posts they are not interested in */
@@ -21,13 +22,13 @@ const postContentLineHeight = 1.2 // This should match --post-content-line-heigh
 export function PostContent({
 	content,
 	maxLines,
-	showMoreLink,
+	linkTo,
 	deactivateLinks,
 }: {
 	content: string
 	maxLines?: number
 	deactivateLinks: boolean
-	showMoreLink?: string
+	linkTo?: string
 }) {
 	const [isTruncated, setIsTruncated] = useState(false)
 	const postContentRef = useRef(null)
@@ -86,6 +87,7 @@ export function PostContent({
 		}
 	}
 
+
 	/* Show or hide the ellipsis and readMoreLink based on the
 	   content of the DOM: specifically, whether or not the post content div
 	   is being cut off or not. The code below updates the state correctly
@@ -96,26 +98,37 @@ export function PostContent({
 		return () => window.removeEventListener('resize', showOrHideEllipsis)
 	}, [showOrHideEllipsis])
 
+
+ const navigate = useNavigate();
+
+  function handleClick() {
+    linkTo && navigate(linkTo);
+  }
+
 	return (
 		<>
 			<div
 				className={
 					'markdown postcontent' + (maxLines !== undefined ? ' truncated' : '')
 				}
-				style={
-					maxLines !== undefined
-						? { maxHeight: `${maxLines * postContentLineHeight}em` }
-						: {}
-				}
+				style={{
+					cursor: "pointer",
+					...(
+						maxLines !== undefined
+							? { maxHeight: `${maxLines * postContentLineHeight}em` }
+							: {}
+					)
+				}}
 				ref={postContentRef}
+				onClick={handleClick}
 			>
 				<Markdown deactivateLinks={deactivateLinks}>{content}</Markdown>
 			</div>
 			{isTruncated && (
 				<>
 					<div className="ellipsis">...</div>
-					{showMoreLink && (
-						<Link to={showMoreLink} className="show-more">
+					{linkTo && (
+						<Link to={linkTo} className="show-more">
 							Show more
 						</Link>
 					)}
@@ -166,6 +179,8 @@ export function PostDetails({
 		replyFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
 		setShowReplyForm(false)
 	}
+
+
 	return (
 		<div
 			className={
@@ -194,7 +209,7 @@ export function PostDetails({
 					content={post.content}
 					maxLines={teaser ? postTeaserMaxLines : undefined}
 					deactivateLinks={false}
-					showMoreLink={`/tags/${post.tag}/posts/${post.id}`}
+					linkTo={teaser ? `/tags/${post.tag}/posts/${post.id}` : undefined}
 				/>
 				{note && <NoteAttachment note={note} tag={post.tag} className="mt-2" />}
 

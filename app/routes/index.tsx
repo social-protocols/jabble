@@ -58,6 +58,7 @@ export function TopLevelPost({
 					content={post.content}
 					maxLines={3}
 					deactivateLinks={false}
+					linkTo={`/tags/${post.tag}/posts/${post.id}`}
 				/>
 
 				<div className="mt-2 flex w-full text-sm">
