@@ -88,27 +88,6 @@ const replySchema = zfd.formData({
 	content: contentSchema,
 })
 
-export const action = async (args: ActionFunctionArgs) => {
-	let request = args.request
-	const formData = await request.formData()
-
-	const userId: string = await requireUserId(request)
-
-	const parsedData = replySchema.parse(formData)
-	const content = parsedData.content
-	const parentId = parsedData.parentId
-	const tag = parsedData.tag
-
-	invariant(content, 'content !== undefined')
-	invariant(tag, "tag !== ''")
-
-	let postId = await createPost(tag, parentId, content, userId, true)
-
-	console.log('New post id', postId)
-
-	return json({ newPostId: postId })
-}
-
 export default function Post() {
 	const { post, transitiveParents, replies, tag, positions, topNote, loggedIn } =
 		useLoaderData<typeof loader>()
