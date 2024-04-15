@@ -86,7 +86,7 @@ export const links: LinksFunction = () => {
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
 	return [
 		{ title: data ? SITE_NAME : 'Error | ' + SITE_NAME },
-		{ name: 'description', content: `Your own captain's log` },
+		// { name: 'description', content: `Open Public Discussions` },
 	]
 }
 

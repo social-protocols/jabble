@@ -1,1 +1,1 @@
-export const SITE_NAME = 'Constructive Discussions'
+export const SITE_NAME = 'Open Public Discussions'
