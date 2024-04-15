@@ -1,49 +1,81 @@
 import { type DataFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
+import { useState } from 'react'
+import { Button } from '#app/components/ui/button.tsx'
+import { PostForm } from '#app/components/ui/post-form.tsx'
 import { PostContent } from '#app/components/ui/post.tsx'
 import * as rankingTs from '#app/ranking.ts'
+import { getUserId } from '#app/utils/auth.server.ts'
 
 export default function Index() {
 	// due to the loader, this component will never be rendered, but we'll return
 	// the error boundary just in case.
 	let data = useLoaderData<typeof loader>()
 
-	return <FrontpageFeed feed={data.feed} />
+	return <FrontpageFeed feed={data.feed} loggedIn={data.loggedIn} />
 }
 
-export async function loader({}: DataFunctionArgs) {
+export async function loader({ request }: DataFunctionArgs) {
+	const userId: string | null = await getUserId(request)
+	const loggedIn = userId !== null
 	const feed = await rankingTs.getChronologicalToplevelPosts()
-	return { feed }
+	return { loggedIn, feed }
 }
 
 export function FrontpageFeed({
 	feed,
+	loggedIn,
 }: {
 	feed: rankingTs.ScoredPost[]
+	loggedIn: boolean
 }) {
+	const [showNewDiscussionForm, setShowNewDiscussionForm] = useState(false)
+
 	return (
 		<div className="container">
+			{showNewDiscussionForm ? (
+				<PostForm tag="global" className="mb-4" />
+			) : (
+				loggedIn && (
+					<div className="mb-4 flex justify-end">{newDiscussionButton()}</div>
+				)
+			)}
+
 			<div className="mx-auto w-full">
-				{feed.map(post => {
-					return (
-						<div key={post.id} className="flex-1 items-stretch">
-							<div className="flex-1">
-								<TopLevelPost post={post} />
-							</div>
-						</div>
-					)
-				})}
+				<PostList feed={feed} />
 			</div>
 		</div>
 	)
+
+	function newDiscussionButton() {
+		return (
+			<Button
+				variant="default"
+				onClick={() => {
+					setShowNewDiscussionForm(!showNewDiscussionForm)
+					return false
+				}}
+			>
+				New Discussion
+			</Button>
+		)
+	}
 }
 
-export function TopLevelPost({
-	post,
-}: {
-	post: rankingTs.ScoredPost
-}) {
+function PostList({ feed }: { feed: rankingTs.ScoredPost[] }) {
+	return feed.map(post => {
+		return (
+			<div key={post.id} className="flex-1 items-stretch">
+				<div className="flex-1">
+					<TopLevelPost post={post} />
+				</div>
+			</div>
+		)
+	})
+}
+
+export function TopLevelPost({ post }: { post: rankingTs.ScoredPost }) {
 	const nRepliesString =
 		post.nReplies === 1 ? '1 reply' : `${post.nReplies} replies`
 
@@ -53,7 +85,13 @@ export function TopLevelPost({
 	return (
 		<div className="mb-5 flex w-full flex-row space-x-4 rounded-lg bg-post px-5 pb-5">
 			<div className="postteaser flex w-full min-w-0 flex-col">
-				<div className="mt-1 text-right text-sm opacity-50">posted in <Link className="font-bold" to={`/tags/${post.tag}`}>#{post.tag}</Link>  {ageString}</div>
+				<div className="mt-1 text-right text-sm opacity-50">
+					posted in{' '}
+					<Link className="font-bold" to={`/tags/${post.tag}`}>
+						#{post.tag}
+					</Link>{' '}
+					{ageString}
+				</div>
 				<PostContent
 					content={post.content}
 					maxLines={3}
@@ -65,7 +103,10 @@ export function TopLevelPost({
 					<Link to={`/tags/${post.tag}/stats/${post.id}`} className="hyperlink">
 						{informedProbabilityString}%
 					</Link>
-					<Link to={`/tags/${post.tag}/posts/${post.id}`} className="hyperlink ml-2">
+					<Link
+						to={`/tags/${post.tag}/posts/${post.id}`}
+						className="hyperlink ml-2"
+					>
 						{nRepliesString}
 					</Link>
 				</div>
