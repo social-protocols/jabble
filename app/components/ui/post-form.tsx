@@ -7,7 +7,7 @@ export function PostForm({
 	className,
 }: {
 	tag: string
-	className: string
+	className?: string
 }) {
 	const replyFetcher = useFetcher<{ newPostId: number }>()
 	const handleSubmit = function (event: FormEvent<HTMLFormElement>) {
@@ -21,7 +21,7 @@ export function PostForm({
 			action="/reply"
 			onSubmit={handleSubmit}
 		>
-			<div className={'flex flex-col items-end ' + className}>
+			<div className={`flex flex-col items-end ${className || ''}`}>
 				<input type="hidden" name="tag" value={`${tag}`} />
 				<Textarea
 					className="mb-2 w-full"
