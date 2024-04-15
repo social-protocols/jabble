@@ -1,9 +1,6 @@
 // import { Spacer } from '#app/components/spacer.tsx'
 // import { Icon } from '#app/components/ui/icon.tsx'
-import {
-	json,
-	type DataFunctionArgs,
-} from '@remix-run/node'
+import { json, type DataFunctionArgs } from '@remix-run/node'
 import {
 	useLoaderData,
 	type ShouldRevalidateFunction,
@@ -44,7 +41,7 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	const loggedIn = userId !== null
 
-	return json({ posts, userId, positions, tag, loggedIn})
+	return json({ posts, userId, positions, tag, loggedIn })
 }
 
 export default function TagPage() {
@@ -63,7 +60,7 @@ export default function TagPage() {
 				&nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
 			</div>
 			{loggedIn && <PostForm tag={tag} className="mb-5" />}
-			<Feed posts={posts} positions={p} loggedIn={loggedIn}/>
+			<Feed posts={posts} positions={p} loggedIn={loggedIn} />
 		</>
 	)
 }

@@ -89,8 +89,15 @@ const replySchema = zfd.formData({
 })
 
 export default function Post() {
-	const { post, transitiveParents, replies, tag, positions, topNote, loggedIn } =
-		useLoaderData<typeof loader>()
+	const {
+		post,
+		transitiveParents,
+		replies,
+		tag,
+		positions,
+		topNote,
+		loggedIn,
+	} = useLoaderData<typeof loader>()
 
 	let p = new Map<number, Direction>()
 	for (let position of positions) {
@@ -117,7 +124,7 @@ export default function Post() {
 				notePosition={notePosition}
 				loggedIn={loggedIn}
 			/>
-			<PostReplies replies={replies} positions={p} loggedIn={loggedIn}/>
+			<PostReplies replies={replies} positions={p} loggedIn={loggedIn} />
 		</>
 	)
 }

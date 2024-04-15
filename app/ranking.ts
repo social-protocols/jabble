@@ -13,7 +13,9 @@ import { getPost } from './post.ts'
 import { getOrInsertTagId } from './tag.ts'
 
 // Post with score and the effect of its top note
-export type ScoredPost = Post & Score & Effect & { nReplies: number, tag: string }
+export type ScoredPost = Post &
+	Score &
+	Effect & { nReplies: number; tag: string }
 
 // Post with its effect on its parent
 export type ScoredNote = Post & Effect

@@ -9,7 +9,7 @@ import { type ScoredPost, type ScoredNote } from '#app/ranking.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
 import { Direction } from '#app/vote.ts'
 import { Card } from './card.tsx'
-import { useNavigate } from "@remix-run/react";
+import { useNavigate } from '@remix-run/react'
 /* Keep this relatively high, so people don't often have to click "read more"
    to read most content. But also not too high, so people don't have to
    scroll past big walls of text of posts they are not interested in */
@@ -87,7 +87,6 @@ export function PostContent({
 		}
 	}
 
-
 	/* Show or hide the ellipsis and readMoreLink based on the
 	   content of the DOM: specifically, whether or not the post content div
 	   is being cut off or not. The code below updates the state correctly
@@ -98,12 +97,11 @@ export function PostContent({
 		return () => window.removeEventListener('resize', showOrHideEllipsis)
 	}, [showOrHideEllipsis])
 
+	const navigate = useNavigate()
 
- const navigate = useNavigate();
-
-  function handleClick() {
-    linkTo && navigate(linkTo);
-  }
+	function handleClick() {
+		linkTo && navigate(linkTo)
+	}
 
 	return (
 		<>
@@ -112,12 +110,10 @@ export function PostContent({
 					'markdown postcontent' + (maxLines !== undefined ? ' truncated' : '')
 				}
 				style={{
-					cursor: "pointer",
-					...(
-						maxLines !== undefined
-							? { maxHeight: `${maxLines * postContentLineHeight}em` }
-							: {}
-					)
+					cursor: 'pointer',
+					...(maxLines !== undefined
+						? { maxHeight: `${maxLines * postContentLineHeight}em` }
+						: {}),
 				}}
 				ref={postContentRef}
 				onClick={handleClick}
@@ -153,7 +149,7 @@ export function PostDetails({
 	randomLocation: Location | null
 	position: Direction
 	notePosition: Direction
-	loggedIn: boolean,
+	loggedIn: boolean
 }) {
 	// The vote buttons use the fetcher and shouldRevalidate to do a post without reloading the page.
 	// So we need to get the current state of the user's vote on this post from the fetcher
@@ -182,14 +178,16 @@ export function PostDetails({
 		setShowReplyForm(false)
 	}
 
-
 	return (
 		<div
 			className={
 				'mb-5 flex w-full flex-row space-x-4 rounded-lg bg-post px-5 pb-5'
 			}
 		>
-			<div className="mt-5" style={{visibility: loggedIn ? "visible" : "hidden"}}>
+			<div
+				className="mt-5"
+				style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
+			>
 				<fetcher.Form method="post" action="/vote">
 					<VoteButtons
 						postId={post.id}
@@ -219,7 +217,10 @@ export function PostDetails({
 					<Link to={`/tags/${post.tag}/stats/${post.id}`} className="hyperlink">
 						{informedProbabilityString}%
 					</Link>
-					<Link to={`/tags/${post.tag}/posts/${post.id}`} className="hyperlink ml-2">
+					<Link
+						to={`/tags/${post.tag}/posts/${post.id}`}
+						className="hyperlink ml-2"
+					>
 						{nRepliesString}
 					</Link>
 					<button
@@ -228,7 +229,7 @@ export function PostDetails({
 							setShowReplyForm(!showReplyForm)
 							return false
 						}}
-						style={{visibility: loggedIn ? "visible" : "hidden"}}
+						style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
 						// preventScrollReset={true}
 					>
 						reply
