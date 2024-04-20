@@ -82,7 +82,7 @@ docker-run:
 	docker run --rm -it -p 8081:8081 -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET --name deploy-sn deploy-sn bash startup.sh 
 
 # delete the docker container
-docker-kill:
+docker-rm:
 	docker rm -f deploy-sn
 
 # exec /bin/bash in the running docker container
@@ -90,6 +90,7 @@ docker-exec:
 	docker exec -it deploy-sn /bin/bash
 
 download-production-data:
+  # todo: use sqlite .backup command and download copy
 	rm -rf $SOCIAL_PROTOCOLS_DATADIR/production/
 	mkdir -p $SOCIAL_PROTOCOLS_DATADIR/production/
 	fly ssh sftp get /data/score-events.jsonl $SOCIAL_PROTOCOLS_DATADIR/production/score-events.jsonl
