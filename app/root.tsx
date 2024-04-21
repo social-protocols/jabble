@@ -233,7 +233,7 @@ function App() {
               <div className="ml-auto hidden max-w-sm flex-1 sm:block">
                 {searchBar}
               </div>
-              <ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} />
+              {/* <ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} /> */}
               <div className="flex items-center gap-10">
                 {user ? (
                   <UserDropdown />
