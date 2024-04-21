@@ -290,20 +290,6 @@ function UserDropdown() {
       </DropdownMenuTrigger>
       <DropdownMenuPortal>
         <DropdownMenuContent sideOffset={8} align="start">
-          <DropdownMenuItem asChild>
-            <Link prefetch="intent" to={`/users/${user.username}`}>
-              <Icon className="text-body-md" name="avatar">
-                Profile
-              </Icon>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link prefetch="intent" to={`/users/${user.username}/notes`}>
-              <Icon className="text-body-md" name="pencil-2">
-                Notes
-              </Icon>
-            </Link>
-          </DropdownMenuItem>
           <DropdownMenuItem
             asChild
             // this prevents the menu from closing before the form submission is completed
