@@ -90,7 +90,7 @@ docker-exec:
 	docker exec -it deploy-sn /bin/bash
 
 download-production-data:
-  # todo: use sqlite .backup command and download copy
+	# todo: use sqlite .backup command and download copy
 	rm -rf $SOCIAL_PROTOCOLS_DATADIR/production/
 	mkdir -p $SOCIAL_PROTOCOLS_DATADIR/production/
 	fly ssh sftp get /data/score-events.jsonl $SOCIAL_PROTOCOLS_DATADIR/production/score-events.jsonl
