@@ -19,7 +19,7 @@ RUN mkdir -p /data ${LITEFS_DIR}
 # Julie 1.10 segfaults when run in docker image on my mac
 #RUN wget https://julialang-s3.julialang.org/bin/linux/x64/1.10/julia-1.10.2-linux-x86_64.tar.gz && tar zxvf julia-1.10.2-linux-x86_64.tar.gz --directory=/opt
 ARG JULIA_VERSION=1.9.4
-ARG GLOBALBRAIN_VERSION=0.1.1
+ARG GLOBALBRAIN_VERSION=v0.1.1
 RUN  wget https://julialang-s3.julialang.org/bin/linux/x64/1.9/julia-$JULIA_VERSION-linux-x86_64.tar.gz \
   && tar zxvf julia-$JULIA_VERSION-linux-x86_64.tar.gz --directory=/opt \
   && rm julia-$JULIA_VERSION-linux-x86_64.tar.gz
