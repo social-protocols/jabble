@@ -159,7 +159,6 @@
 
 		a {
 			@apply underline;
-			@apply text-blue-500;
 		}
 
 		ul {
