@@ -131,25 +131,32 @@
 			@apply text-xl font-bold;
 			@apply mb-0;
 		}
+
 		h2 {
 			@apply text-xl font-semibold;
 			@apply mb-0;
 		}
+
 		h3 {
 			@apply text-lg font-semibold;
 			@apply mb-0;
 		}
+
 		h4 {
 			@apply text-base font-semibold;
 		}
+
 		h5 {
 			@apply text-base font-medium;
 		}
+
 		h6 {
 			@apply text-sm font-semibold;
 		}
+
 		p {
 		}
+
 		a {
 			@apply underline;
 			@apply text-blue-500;
@@ -159,13 +166,16 @@
 			list-style-type: circle;
 			list-style-position: inside;
 		}
+
 		ol {
 			list-style-type: upper-roman;
 			list-style-position: inside;
 		}
+
 		li ul {
 			@apply pl-4;
 		}
+
 		li ol {
 			@apply pl-4;
 		}
