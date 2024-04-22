@@ -215,40 +215,6 @@
 		}
 	}
 
-	.truncated {
-		line-height: var(--post-content-line-height);
-		overflow: hidden;
-		text-overflow: ellipsis;
-
-		/* Normally, the ellipsis will only be shown if there is a single line
-		   with a horizontal overflow. The CSS below makes the ellipsis be
-		   shown if there are multiple lines with a vertical overflow. 
-		   However, this is broken in Internet Explorer */
-		/*		display: -webkit-box;
-		-webkit-line-clamp: 10;
-		-webkit-box-orient: vertical;
-		*/
-	}
-
-	/* ellipsis appears immediately after fade to white complete. */
-	.ellipsis {
-		position: relative;
-
-		/*		color: #888;*/
-		font-size: 24px;
-		padding-left: 0px;
-		line-height: 0.75em;
-		top: 0px;
-		padding-top: 0px;
-		margin-top: -0.4em;
-	}
-
-	.show-more {
-		padding-left: 0px;
-		margin-top: 0.24em;
-		@apply text-blue-500;
-	}
-
 	.threadline {
 		@apply border-l-4;
 		border-color: var(--postparent-threadline);
