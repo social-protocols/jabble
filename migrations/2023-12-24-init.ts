@@ -4,7 +4,7 @@ import { type Kysely, sql } from 'kysely'
 // https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html
 
 export async function up(db: Kysely<any>): Promise<void> {
-  await sql`
+	await sql`
 CREATE TABLE "User" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "email" TEXT NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE "User" (
 ) STRICT;
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE TABLE "UserImage" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "altText" TEXT,
@@ -27,7 +27,7 @@ CREATE TABLE "UserImage" (
 ) STRICT;
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE TABLE "Password" (
     "hash" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE "Password" (
 ) STRICT;
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE TABLE "Session" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "expirationDate" INT NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE "Session" (
 ) STRICT;
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE TABLE "Permission" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "action" TEXT NOT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE "Permission" (
 ) STRICT;
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE TABLE "Role" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE "Role" (
 ) STRICT;
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE TABLE "Verification" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "createdAt" INT NOT NULL DEFAULT (unixepoch('subsec')*1000),
@@ -83,7 +83,7 @@ CREATE TABLE "Verification" (
 ) STRICT;
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE TABLE "Post" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "parentId" INTEGER,
@@ -95,14 +95,14 @@ CREATE TABLE "Post" (
 ) STRICT;
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE TABLE "Tag" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "tag" TEXT NOT NULL
 ) STRICT;
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE TABLE "VoteHistory" (
     "rowid" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "userId" TEXT NOT NULL,
@@ -116,7 +116,7 @@ CREATE TABLE "VoteHistory" (
 ) STRICT;
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE TABLE "PostStats" (
     "tagId" INTEGER NOT NULL,
     "postId" INTEGER NOT NULL,
@@ -126,7 +126,7 @@ CREATE TABLE "PostStats" (
 ) STRICT;
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE TABLE "LocationStats" (
     "locationType" INTEGER NOT NULL,
     "oneBasedRank" INTEGER NOT NULL,
@@ -135,7 +135,7 @@ CREATE TABLE "LocationStats" (
 ) STRICT;
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE TABLE "TagStats" (
     "tagId" INTEGER NOT NULL,
     "views" INTEGER NOT NULL,
@@ -144,14 +144,14 @@ CREATE TABLE "TagStats" (
 ) STRICT;
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE TABLE "ExplorationStats" (
     "rowid" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "votes" INTEGER NOT NULL
 ) STRICT;
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE TABLE "_PermissionToRole" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL,
@@ -160,7 +160,7 @@ CREATE TABLE "_PermissionToRole" (
 ) STRICT;
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE TABLE "_RoleToUser" (
     "A" TEXT NOT NULL,
     "B" TEXT NOT NULL,
@@ -169,75 +169,75 @@ CREATE TABLE "_RoleToUser" (
 ) STRICT;
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE UNIQUE INDEX "UserImage_userId_key" ON "UserImage"("userId");
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE UNIQUE INDEX "Password_userId_key" ON "Password"("userId");
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE INDEX "Session_userId_idx" ON "Session"("userId");
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE UNIQUE INDEX "Permission_action_entity_access_key" ON "Permission"("action", "entity", "access");
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE UNIQUE INDEX "Role_name_key" ON "Role"("name");
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE UNIQUE INDEX "Verification_target_type_key" ON "Verification"("target", "type");
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE UNIQUE INDEX "Tag_tag_key" ON "Tag"("tag");
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE INDEX "VoteHistory_userId_tagId_postId_idx" ON "VoteHistory"("userId", "tagId", "postId");
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE UNIQUE INDEX "PostStats_postId_key" ON "PostStats"("postId");
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE UNIQUE INDEX "LocationStats_locationType_oneBasedRank_key" ON "LocationStats"("locationType", "oneBasedRank");
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE UNIQUE INDEX "TagStats_tagId_key" ON "TagStats"("tagId");
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE UNIQUE INDEX "_PermissionToRole_AB_unique" ON "_PermissionToRole"("A", "B");
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE INDEX "_PermissionToRole_B_index" ON "_PermissionToRole"("B");
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE UNIQUE INDEX "_RoleToUser_AB_unique" ON "_RoleToUser"("A", "B");
 `.execute(db)
 
-  await sql`
+	await sql`
 CREATE INDEX "_RoleToUser_B_index" ON "_RoleToUser"("B");
 `.execute(db)
 
-  await sql`
+	await sql`
 -- The current (latest) votes for all users on all posts
 -- If the user has cleared their vote, no row is returned.
 CREATE VIEW currentVote as
@@ -261,7 +261,7 @@ from latest
 where direction != 0;
 `.execute(db)
 
-  await sql`
+	await sql`
 -- currentTally counts the latest votes, regardless of whether they are informed or not.
 create view currentTally as
 select
@@ -280,7 +280,7 @@ from currentVote
 group by tagId, postId;
 `.execute(db)
 
-  await sql`
+	await sql`
 -- Same as currentVote, but only looks at informed votes (votes where a note was shown).
 create view currentInformedVote as 
     SELECT
@@ -303,7 +303,7 @@ create view currentInformedVote as
 ;
 `.execute(db)
 
-  await sql`
+	await sql`
 create view currentInformedTally as
   select 
       tagId
@@ -324,7 +324,7 @@ create view currentInformedTally as
 ;
 `.execute(db)
 
-  await sql`
+	await sql`
 create view detailedTally as
 with a as (
   select
@@ -343,7 +343,7 @@ with a as (
 select * from a where noteId is not null;
 `.execute(db)
 
-  await sql`
+	await sql`
 create view currentInformedTallyOld as
 with informedTally as (
   select 

@@ -1,6 +1,6 @@
 export type Tally = {
-  readonly count: number
-  readonly total: number
+	readonly count: number
+	readonly total: number
 }
 
 // Simple handy Beta and Gamma distribution classes, for simple Bayesian
@@ -114,68 +114,68 @@ export type Tally = {
 // And the posterior weight is beta' = beta + n = this.weight + tally.total
 
 export class BetaDistribution {
-  constructor(
-    public mean: number = 0,
-    public weight: number = 0,
-  ) {
-    this.mean = mean
-    this.weight = weight
-  }
+	constructor(
+		public mean: number = 0,
+		public weight: number = 0,
+	) {
+		this.mean = mean
+		this.weight = weight
+	}
 
-  update(tally: Tally): BetaDistribution {
-    return new BetaDistribution(
-      (this.mean * this.weight + tally.count) / (this.weight + tally.total),
-      this.weight + tally.total,
-    )
-  }
-  resetWeight(newWeight: number): BetaDistribution {
-    return new BetaDistribution(this.mean, newWeight)
-  }
+	update(tally: Tally): BetaDistribution {
+		return new BetaDistribution(
+			(this.mean * this.weight + tally.count) / (this.weight + tally.total),
+			this.weight + tally.total,
+		)
+	}
+	resetWeight(newWeight: number): BetaDistribution {
+		return new BetaDistribution(this.mean, newWeight)
+	}
 }
 
 export class GammaDistribution {
-  constructor(
-    public mean: number = 0,
-    public weight: number = 0,
-  ) {
-    this.mean = mean
-    this.weight = weight
-  }
+	constructor(
+		public mean: number = 0,
+		public weight: number = 0,
+	) {
+		this.mean = mean
+		this.weight = weight
+	}
 
-  update(tally: Tally): GammaDistribution {
-    return new GammaDistribution(
-      (this.mean * this.weight + tally.count) / (this.weight + tally.total),
-      this.weight + tally.total,
-    )
-  }
-  resetWeight(newWeight: number): BetaDistribution {
-    return new BetaDistribution(this.mean, newWeight)
-  }
+	update(tally: Tally): GammaDistribution {
+		return new GammaDistribution(
+			(this.mean * this.weight + tally.count) / (this.weight + tally.total),
+			this.weight + tally.total,
+		)
+	}
+	resetWeight(newWeight: number): BetaDistribution {
+		return new BetaDistribution(this.mean, newWeight)
+	}
 }
 
 export function betaFromAlphaBeta(
-  alpha: number,
-  beta: number,
+	alpha: number,
+	beta: number,
 ): BetaDistribution {
-  return new BetaDistribution(alpha / (alpha + beta), alpha + beta)
+	return new BetaDistribution(alpha / (alpha + beta), alpha + beta)
 }
 
 export function betaToAlphaBeta(this: BetaDistribution): [number, number] {
-  const alpha = this.mean * this.weight
-  return [alpha, this.weight - alpha]
+	const alpha = this.mean * this.weight
+	return [alpha, this.weight - alpha]
 }
 
 export function gammaFromAlphaBeta(
-  alpha: number,
-  beta: number,
+	alpha: number,
+	beta: number,
 ): GammaDistribution {
-  return new GammaDistribution(
-    alpha / beta, // only difference from beta distribution implementation
-    alpha + beta,
-  )
+	return new GammaDistribution(
+		alpha / beta, // only difference from beta distribution implementation
+		alpha + beta,
+	)
 }
 
 export function gammaToAlphaBeta(this: GammaDistribution): [number, number] {
-  const alpha = this.mean * this.weight
-  return [alpha, this.weight]
+	const alpha = this.mean * this.weight
+	return [alpha, this.weight]
 }

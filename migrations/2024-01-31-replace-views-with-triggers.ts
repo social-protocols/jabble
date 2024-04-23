@@ -5,27 +5,27 @@ import { type Kysely, sql } from 'kysely'
 // https://kysely-org.github.io/kysely-apidoc/interfaces/Sql.html
 
 export async function up(db: Kysely<any>): Promise<void> {
-  await sql`
+	await sql`
 		drop view if exists currentVote
 	`.execute(db)
 
-  await sql`
+	await sql`
 		drop view if exists currentTally
 	`.execute(db)
 
-  await sql`
+	await sql`
 		drop view if exists currentInformedVote
 	`.execute(db)
 
-  await sql`
+	await sql`
 		drop view if exists currentInformedTally
 	`.execute(db)
 
-  await sql`
+	await sql`
 		drop view if exists detailedTally
 	`.execute(db)
 
-  await sql`
+	await sql`
 		create table if not exists CurrentVote (
 			userId string,
 			tagId Integer not null,
@@ -38,7 +38,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 
 	`.execute(db)
 
-  await sql`
+	await sql`
 		create table if not exists CurrentTally (
 			tagId Integer not null,
 			postId integer not null,
@@ -49,7 +49,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 
 	`.execute(db)
 
-  await sql`
+	await sql`
 		create table if not exists CurrentInformedVote (
 			userId string,
 			tagId Integer not null,
@@ -62,7 +62,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 		);
 	`.execute(db)
 
-  await sql`
+	await sql`
 		create table if not exists CurrentInformedTally (
 			tagId Integer not null,
 			postId integer not null,
@@ -74,7 +74,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 		 );
 	`.execute(db)
 
-  await sql`
+	await sql`
 		create trigger insertCurrentVote after insert on VoteHistory
 			begin
 			insert into CurrentVote(userId, tagId, postId, direction, latest, createdAt) values (
@@ -92,7 +92,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 			end;
 	`.execute(db)
 
-  await sql`
+	await sql`
 		create trigger insertCurrentTally after insert on CurrentVote
 			begin
 			insert into CurrentTally(tagId, postId, count, total) values (
@@ -108,7 +108,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 			end;
 	`.execute(db)
 
-  await sql`
+	await sql`
 		create trigger updateCurrentTally after update on CurrentVote
 			begin
 			update CurrentTally
@@ -122,7 +122,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 			end;
 	`.execute(db)
 
-  await sql`
+	await sql`
 		create trigger insertCurrentInformedVote after insert on VoteHistory
 			-- when new.noteId is not null
 			begin
@@ -142,7 +142,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 			end;
 	`.execute(db)
 
-  await sql`
+	await sql`
 		create trigger insertCurrentInformedTally after insert on CurrentInformedVote
 			begin
 			insert into CurrentInformedTally(tagId, postId, noteId, count, total, firstVote) values (
@@ -160,7 +160,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 			end;
 	`.execute(db)
 
-  await sql`
+	await sql`
 		create trigger updateCurrentInformedTally after update on CurrentInformedVote
 			begin
 			update CurrentInformedTally
@@ -175,7 +175,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 			end;
 	`.execute(db)
 
-  await sql`
+	await sql`
 		create view detailedTally as
 		with a as (
 			select

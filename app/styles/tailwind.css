@@ -3,230 +3,230 @@
 @tailwind utilities;
 
 @media screen and (min-width: 800px) {
-  /* by setting the breakpoint to the same value as the body-max-width, the scrollbar-margin only appears when there is centered content visible. As the jumps only occour on centered content which does not fill the space. */
-  html {
-    /* adds a margin of the same size as the scrollbar */
-    /* https://aykevl.nl/2014/09/fix-jumping-scrollbar */
-    margin-left: calc(100vw - 100%);
-    margin-right: 0;
-  }
+	/* by setting the breakpoint to the same value as the body-max-width, the scrollbar-margin only appears when there is centered content visible. As the jumps only occour on centered content which does not fill the space. */
+	html {
+		/* adds a margin of the same size as the scrollbar */
+		/* https://aykevl.nl/2014/09/fix-jumping-scrollbar */
+		margin-left: calc(100vw - 100%);
+		margin-right: 0;
+	}
 }
 
 @layer base {
-  :root {
-    /* https://systemfontstack.com/ */
-    --font-sans: -apple-system, BlinkMacSystemFont, avenir next, avenir,
-      segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto,
-      arial, sans-serif;
-    /* --font-mono: here if you got it... */
+	:root {
+		/* https://systemfontstack.com/ */
+		--font-sans: -apple-system, BlinkMacSystemFont, avenir next, avenir,
+			segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto,
+			arial, sans-serif;
+		/* --font-mono: here if you got it... */
 
-    /* prefixed with foreground because it should look good on the background */
-    --foreground-destructive: 345 82.7% 40.8%;
+		/* prefixed with foreground because it should look good on the background */
+		--foreground-destructive: 345 82.7% 40.8%;
 
-    --background: rgb(241, 245, 249);
-    --foreground: rgb(2, 8, 23);
+		--background: rgb(241, 245, 249);
+		--foreground: rgb(2, 8, 23);
 
-    --muted: 210 40% 93%;
-    --muted-foreground: 215.4 16.3% 30%;
+		--muted: 210 40% 93%;
+		--muted-foreground: 215.4 16.3% 30%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+		--popover: 0 0% 100%;
+		--popover-foreground: 222.2 84% 4.9%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+		--card: 0 0% 100%;
+		--card-foreground: 222.2 84% 4.9%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: #7592b8;
-    --input-invalid: hsl(0 84.2% 60.2%);
+		--border: 214.3 31.8% 91.4%;
+		--input: #7592b8;
+		--input-invalid: hsl(0 84.2% 60.2%);
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+		--primary: 222.2 47.4% 11.2%;
+		--primary-foreground: 210 40% 98%;
 
-    --secondary: 210 20% 83%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+		--secondary: 210 20% 83%;
+		--secondary-foreground: 222.2 47.4% 11.2%;
 
-    --accent: 210 40% 90%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+		--accent: 210 40% 90%;
+		--accent-foreground: 222.2 47.4% 11.2%;
 
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 210 40% 98%;
+		--destructive: 0 70% 50%;
+		--destructive-foreground: 210 40% 98%;
 
-    --ring: 215 20.2% 65.1%;
+		--ring: 215 20.2% 65.1%;
 
-    --radius: 0.5rem;
+		--radius: 0.5rem;
 
-    --post: white;
-    --postparent-foreground: #434343;
-    --postparent-threadline: #bcbfc2;
-    --note: #f1f5f9;
-    --note-foreground: #434343;
+		--post: white;
+		--postparent-foreground: #434343;
+		--postparent-threadline: #bcbfc2;
+		--note: #f1f5f9;
+		--note-foreground: #434343;
 
-    /* this must be large enough so that scrollHeight is always equal to clientHeight as described here: 
+		/* this must be large enough so that scrollHeight is always equal to clientHeight as described here: 
 		https://stackoverflow.com/questions/52815758/why-are-an-elements-scrollheight-and-clientheight-not-the-same-for-some-fonts 
 		This is necessary for the cutoff/see-more/ellipsis logic to work in the PostContent component*/
 
-    --post-content-line-height: 1.2em;
-  }
+		--post-content-line-height: 1.2em;
+	}
 
-  .dark {
-    --background: #1e293b;
-    --foreground: white;
+	.dark {
+		--background: #1e293b;
+		--foreground: white;
 
-    /* prefixed with foreground because it should look good on the background */
-    --foreground-destructive: -4 84% 60%;
+		/* prefixed with foreground because it should look good on the background */
+		--foreground-destructive: -4 84% 60%;
 
-    --muted: 217.2 32.6% 12%;
-    --muted-foreground: 215 20.2% 65.1%;
+		--muted: 217.2 32.6% 12%;
+		--muted-foreground: 215 20.2% 65.1%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+		--popover: 222.2 84% 4.9%;
+		--popover-foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+		--card: 222.2 84% 4.9%;
+		--card-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: #334155;
-    --input-invalid: hsl(0 62.8% 30.6%);
+		--border: 217.2 32.6% 17.5%;
+		--input: #334155;
+		--input-invalid: hsl(0 62.8% 30.6%);
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+		--primary: 210 40% 98%;
+		--primary-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 217.2 20% 24%;
-    --secondary-foreground: 210 40% 98%;
+		--secondary: 217.2 20% 24%;
+		--secondary-foreground: 210 40% 98%;
 
-    --accent: 217.2 32.6% 10%;
-    --accent-foreground: 210 40% 98%;
+		--accent: 217.2 32.6% 10%;
+		--accent-foreground: 210 40% 98%;
 
-    --destructive: 0 60% 40%;
-    --destructive-foreground: 0 85.7% 97.3%;
+		--destructive: 0 60% 40%;
+		--destructive-foreground: 0 85.7% 97.3%;
 
-    --ring: 217.2 32.6% 60%;
+		--ring: 217.2 32.6% 60%;
 
-    --post: #334155;
-    --postparent-foreground: #d5e2f3;
-    --postparent-threadline: #506585;
-    --note: #506585;
-    --note-foreground: #d5e2f3;
-  }
+		--post: #334155;
+		--postparent-foreground: #d5e2f3;
+		--postparent-threadline: #506585;
+		--note: #506585;
+		--note-foreground: #d5e2f3;
+	}
 }
 
 @layer base {
-  body {
-    @apply bg-background text-foreground;
-  }
+	body {
+		@apply bg-background text-foreground;
+	}
 
-  .hyperlink {
-    @apply underline;
-  }
+	.hyperlink {
+		@apply underline;
+	}
 
-  .markdown {
-    /* Markdown element will always contain a single div because of the forceWrapper option passed in markdown.tsx  */
-    > div {
-      display: flex;
-      flex-direction: column;
-      gap: var(--post-content-line-height);
-    }
+	.markdown {
+		/* Markdown element will always contain a single div because of the forceWrapper option passed in markdown.tsx  */
+		> div {
+			display: flex;
+			flex-direction: column;
+			gap: var(--post-content-line-height);
+		}
 
-    h1 {
-      @apply text-xl font-bold;
-      @apply mb-0;
-    }
+		h1 {
+			@apply text-xl font-bold;
+			@apply mb-0;
+		}
 
-    h2 {
-      @apply text-xl font-semibold;
-      @apply mb-0;
-    }
+		h2 {
+			@apply text-xl font-semibold;
+			@apply mb-0;
+		}
 
-    h3 {
-      @apply text-lg font-semibold;
-      @apply mb-0;
-    }
+		h3 {
+			@apply text-lg font-semibold;
+			@apply mb-0;
+		}
 
-    h4 {
-      @apply text-base font-semibold;
-    }
+		h4 {
+			@apply text-base font-semibold;
+		}
 
-    h5 {
-      @apply text-base font-medium;
-    }
+		h5 {
+			@apply text-base font-medium;
+		}
 
-    h6 {
-      @apply text-sm font-semibold;
-    }
+		h6 {
+			@apply text-sm font-semibold;
+		}
 
-    p {
-    }
+		p {
+		}
 
-    a {
-      @apply underline;
-    }
+		a {
+			@apply underline;
+		}
 
-    ul {
-      list-style-type: circle;
-      list-style-position: inside;
-    }
+		ul {
+			list-style-type: circle;
+			list-style-position: inside;
+		}
 
-    ol {
-      list-style-type: upper-roman;
-      list-style-position: inside;
-    }
+		ol {
+			list-style-type: upper-roman;
+			list-style-position: inside;
+		}
 
-    li ul {
-      @apply pl-4;
-    }
+		li ul {
+			@apply pl-4;
+		}
 
-    li ol {
-      @apply pl-4;
-    }
+		li ol {
+			@apply pl-4;
+		}
 
-    pre {
-      /*			@apply p-2;*/
-      @apply overflow-x-auto;
-    }
-  }
+		pre {
+			/*			@apply p-2;*/
+			@apply overflow-x-auto;
+		}
+	}
 
-  .postparent .markdown {
-    /*	Override font size increases for headers when shown in parent thread or as note*/
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-      @apply text-sm font-semibold;
-      line-height: var(--post-content-line-height);
-      margin-bottom: 0px;
-    }
-  }
+	.postparent .markdown {
+		/*	Override font size increases for headers when shown in parent thread or as note*/
+		h1,
+		h2,
+		h3,
+		h4,
+		h5,
+		h6 {
+			@apply text-sm font-semibold;
+			line-height: var(--post-content-line-height);
+			margin-bottom: 0px;
+		}
+	}
 
-  .postteaser .markdown,
-  .note .markdown {
-    /*	Override font size increases for headers when shown in parent thread or as note*/
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-      @apply text-base font-semibold;
-      line-height: var(--post-content-line-height);
-      margin-bottom: 0px;
-    }
-  }
+	.postteaser .markdown,
+	.note .markdown {
+		/*	Override font size increases for headers when shown in parent thread or as note*/
+		h1,
+		h2,
+		h3,
+		h4,
+		h5,
+		h6 {
+			@apply text-base font-semibold;
+			line-height: var(--post-content-line-height);
+			margin-bottom: 0px;
+		}
+	}
 
-  .threadline {
-    @apply border-l-4;
-    border-color: var(--postparent-threadline);
-    margin-left: 8px;
-  }
+	.threadline {
+		@apply border-l-4;
+		border-color: var(--postparent-threadline);
+		margin-left: 8px;
+	}
 
-  .link-to-parent {
-    @apply threadline;
-    padding: 0;
-    height: 10px;
-    margin-top: -21px;
-    color: red;
-  }
+	.link-to-parent {
+		@apply threadline;
+		padding: 0;
+		height: 10px;
+		margin-top: -21px;
+		color: red;
+	}
 }
 
 /* useful for layout debugging: */

@@ -4,112 +4,112 @@ import { db } from '#app/db.ts'
 import * as scoreEvents from '#app/score-events.ts'
 import { writeVoteEvent } from '#app/vote-events.ts'
 import {
-  type Location,
-  logTagVote,
-  logVoteOnRandomlyRankedPost,
+	type Location,
+	logTagVote,
+	logVoteOnRandomlyRankedPost,
 } from './attention.ts'
 import { getOrInsertTagId } from './tag.ts'
 
 export enum Direction {
-  Up = 1,
-  Down = -1,
-  Neutral = 0,
+	Up = 1,
+	Down = -1,
+	Neutral = 0,
 }
 // TODO: if a new post is untagged, do we post in in #global?
 
 // The vote function inserts a vote record in voteHistory, and also updates attention stats
 export async function vote(
-  tag: string,
-  userId: string,
-  postId: number,
-  noteId: number | null,
-  direction: Direction,
-  randomLocation?: Location | null,
-  waitForScoreEvent: Boolean = false,
+	tag: string,
+	userId: string,
+	postId: number,
+	noteId: number | null,
+	direction: Direction,
+	randomLocation?: Location | null,
+	waitForScoreEvent: Boolean = false,
 ): Promise<VoteEvent> {
-  const tagId = await getOrInsertTagId(tag)
+	const tagId = await getOrInsertTagId(tag)
 
-  let voteEvent: VoteEvent = await insertVoteEvent(
-    tagId,
-    userId,
-    postId,
-    noteId,
-    direction,
-  )
+	let voteEvent: VoteEvent = await insertVoteEvent(
+		tagId,
+		userId,
+		postId,
+		noteId,
+		direction,
+	)
 
-  let scoreEventPromise
-  if (waitForScoreEvent) {
-    scoreEventPromise = scoreEvents.waitForScoreEvent({
-      postId: postId,
-      tagId: tagId,
-      voteEventId: voteEvent.voteEventId,
-    })
-  }
+	let scoreEventPromise
+	if (waitForScoreEvent) {
+		scoreEventPromise = scoreEvents.waitForScoreEvent({
+			postId: postId,
+			tagId: tagId,
+			voteEventId: voteEvent.voteEventId,
+		})
+	}
 
-  await writeVoteEvent(voteEvent)
+	await writeVoteEvent(voteEvent)
 
-  if (waitForScoreEvent) {
-    await scoreEventPromise
-  }
+	if (waitForScoreEvent) {
+		await scoreEventPromise
+	}
 
-  // Todo: dedupe in case user toggles vote multiple times
-  if (randomLocation != null) {
-    logTagVote(tag)
-    logVoteOnRandomlyRankedPost(randomLocation)
-  }
+	// Todo: dedupe in case user toggles vote multiple times
+	if (randomLocation != null) {
+		logTagVote(tag)
+		logVoteOnRandomlyRankedPost(randomLocation)
+	}
 
-  return voteEvent
+	return voteEvent
 }
 
 async function insertVoteEvent(
-  tagId: number,
-  userId: string,
-  postId: number,
-  noteId: number | null,
-  vote: Direction,
+	tagId: number,
+	userId: string,
+	postId: number,
+	noteId: number | null,
+	vote: Direction,
 ): Promise<VoteEvent> {
-  // TODO: transaction
-  const voteInt = vote as number
+	// TODO: transaction
+	const voteInt = vote as number
 
-  const parentId = (
-    await db
-      .selectFrom('Post')
-      .where('id', '=', postId)
-      .select('parentId')
-      .execute()
-  )[0]!.parentId
+	const parentId = (
+		await db
+			.selectFrom('Post')
+			.where('id', '=', postId)
+			.select('parentId')
+			.execute()
+	)[0]!.parentId
 
-  const vote_event: InsertableVoteEvent = {
-    userId: userId,
-    tagId: tagId,
-    parentId: parentId,
-    postId: postId,
-    noteId: noteId,
-    vote: voteInt,
-  }
+	const vote_event: InsertableVoteEvent = {
+		userId: userId,
+		tagId: tagId,
+		parentId: parentId,
+		postId: postId,
+		noteId: noteId,
+		vote: voteInt,
+	}
 
-  // Copilot now use kysely to insert
-  const query = db
-    .insertInto('VoteEvent')
-    .values(vote_event)
-    .returning(['voteEventId', 'voteEventTime'])
+	// Copilot now use kysely to insert
+	const query = db
+		.insertInto('VoteEvent')
+		.values(vote_event)
+		.returning(['voteEventId', 'voteEventTime'])
 
-  let results = await query.execute()
+	let results = await query.execute()
 
-  assert(results !== undefined)
-  assert(results.length > 0)
+	assert(results !== undefined)
+	assert(results.length > 0)
 
-  const result = results[0]!
-  const voteEventId = result.voteEventId
-  assert(voteEventId > 0)
+	const result = results[0]!
+	const voteEventId = result.voteEventId
+	assert(voteEventId > 0)
 
-  const output_vote_event: VoteEvent = {
-    ...vote_event,
-    noteId: vote_event.noteId!,
-    parentId: parentId,
-    voteEventTime: result.voteEventTime!,
-    voteEventId: voteEventId,
-  }
+	const output_vote_event: VoteEvent = {
+		...vote_event,
+		noteId: vote_event.noteId!,
+		parentId: parentId,
+		voteEventTime: result.voteEventTime!,
+		voteEventId: voteEventId,
+	}
 
-  return output_vote_event
+	return output_vote_event
 }

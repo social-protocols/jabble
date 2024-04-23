@@ -4,27 +4,27 @@ import { type Direction } from './vote.ts'
 // import { type PostId } from "./post.ts";
 
 export type Position = {
-  postId: number
-  vote: Direction
+	postId: number
+	vote: Direction
 }
 
 export async function getUserPositions(
-  userId: string,
-  tag: string,
-  postIds: number[],
+	userId: string,
+	tag: string,
+	postIds: number[],
 ): Promise<Position[]> {
-  let tagId = await getOrInsertTagId(tag)
+	let tagId = await getOrInsertTagId(tag)
 
-  return await db
-    .selectFrom('Vote')
-    .innerJoin('Post', 'postId', 'Post.id')
-    .where('userId', '=', userId)
-    .where('tagId', '=', tagId)
-    .where(eb =>
-      eb.or([eb('parentId', 'in', postIds), eb('id', 'in', postIds)]),
-    )
-    .select(['postId', 'vote'])
-    .execute()
+	return await db
+		.selectFrom('Vote')
+		.innerJoin('Post', 'postId', 'Post.id')
+		.where('userId', '=', userId)
+		.where('tagId', '=', tagId)
+		.where(eb =>
+			eb.or([eb('parentId', 'in', postIds), eb('id', 'in', postIds)]),
+		)
+		.select(['postId', 'vote'])
+		.execute()
 }
 
 // pub async fn positions(
