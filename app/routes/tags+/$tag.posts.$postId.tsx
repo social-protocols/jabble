@@ -165,15 +165,19 @@ export function PostReplies({
 	positions: Map<number, Direction>
 	loggedIn: boolean
 }) {
-	const nRepliesString = replies.length == 0 ? "No Replies" : "Replies"
-	
+	const nRepliesString = replies.length == 0 ? 'No Replies' : 'Replies'
+
 	return (
 		<>
 			<h2 className="mb-4 font-medium">{nRepliesString}</h2>
 			{replies.length > 0 && (
-
-			<Feed posts={replies} positions={positions} loggedIn={loggedIn} rootId={replies[0]!.parentId} showNotes={false}/>
-
+				<Feed
+					posts={replies}
+					positions={positions}
+					loggedIn={loggedIn}
+					rootId={replies[0]!.parentId}
+					showNotes={false}
+				/>
 			)}
 		</>
 	)
