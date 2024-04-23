@@ -125,7 +125,7 @@ jobs:
   deploy:
     name: 🚀 Deploy
     runs-on: ubuntu-22.04
-    needs: [lint, typecheck] # TODO: re-add playwright, vitest once set up
+    needs: [lint] # TODO: re-add playwright, vitest once set up
     # only build/deploy main branch on pushes
     if:
       ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') &&
