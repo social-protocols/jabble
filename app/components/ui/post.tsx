@@ -241,8 +241,8 @@ export function NoteAttachment({
 		relativeEntropy(note.p, note.q) < 0.01
 			? ''
 			: (note.p > note.q ? '↑' : '↓') +
-			  Math.abs(Math.round((note.p - note.q) * 100)) +
-			  '%'
+				Math.abs(Math.round((note.p - note.q) * 100)) +
+				'%'
 
 	return (
 		<Link to={`/tags/${tag}/posts/${note.id}`}>

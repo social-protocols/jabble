@@ -65,7 +65,7 @@ export async function loader({ params, request }: DataFunctionArgs) {
 					userId,
 					tag,
 					replies.map(p => p.id).concat([post.id]),
-			  )
+				)
 
 	const loggedIn = userId !== null
 
