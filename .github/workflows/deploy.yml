@@ -37,10 +37,7 @@ jobs:
         run: npx tsc --noEmit
 
       - name: 🔬 Lint
-        run: npx eslint .
-
-      - name: 🔬 Format
-        run: npx prettier --check .
+        run: npx eslint . # also checks formatting
 
   vitest:
     if: false
