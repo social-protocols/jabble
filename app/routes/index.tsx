@@ -19,7 +19,7 @@ export default function Index() {
 export async function loader({ request }: DataFunctionArgs) {
   const userId: string | null = await getUserId(request)
   const loggedIn = userId !== null
-  const feed = await rankingTs.getChronologicalToplevelPosts()
+  const feed = await rankingTs.getChronologicalToplevelPosts("global")
   return { loggedIn, feed }
 }
 
