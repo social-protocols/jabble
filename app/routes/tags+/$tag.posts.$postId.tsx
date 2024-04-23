@@ -165,9 +165,12 @@ export function PostReplies({
 	positions: Map<number, Direction>
 	loggedIn: boolean
 }) {
+	const nRepliesString =
+		replies.length === 1 ? '1 reply' : `${replies.length} replies`
+
 	return (
 		<>
-			<h2 className="mb-4 font-medium">{replies.length} Replies</h2>
+			<h2 className="mb-4 font-medium">{nRepliesString}</h2>
 			{replies.length > 0 && (
 				<ol>
 					{replies.map((post: RankedPost) => {
