@@ -15,6 +15,7 @@ import { Truncate } from './Truncate.tsx'
 /* Keep this relatively high, so people don't often have to click "read more"
    to read most content. But also not too high, so people don't have to
    scroll past big walls of text of posts they are not interested in */
+
 const postTeaserMaxLines = 20
 const noteMaxLines = 20
 
@@ -121,7 +122,6 @@ export function PostDetails({
           deactivateLinks={false}
           linkTo={`/tags/${post.tag}/posts/${post.id}`}
         />
-        {note && <NoteAttachment note={note} tag={post.tag} className="mt-2" />}
 
         <div className="mt-2 flex w-full text-sm">
           <Link to={`/tags/${post.tag}/stats/${post.id}`} className="hyperlink">
