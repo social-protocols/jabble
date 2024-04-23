@@ -13,17 +13,6 @@ export type Vote = {
 	latestVoteEventId: number
 	voteEventTime: number
 }
-
-export type ExplorationStats = {
-	rowid: Generated<number>
-	votes: number
-}
-export type LocationStats = {
-	locationType: number
-	oneBasedRank: number
-	voteShare: number
-	latestSitewideVotes: number
-}
 export type Password = {
 	hash: string
 	userId: string
@@ -38,8 +27,6 @@ export type Post = {
 export type PostStats = {
 	tagId: number
 	postId: number
-	attention: number
-	views: number
 	replies: number
 }
 export type Session = {
@@ -52,11 +39,6 @@ export type Session = {
 export type Tag = {
 	id: Generated<number>
 	tag: string
-}
-export type TagStats = {
-	tagId: number
-	views: number
-	votesPerView: number
 }
 export type User = {
 	id: string
@@ -163,14 +145,11 @@ export type FullScore = {
 
 export type DB = {
 	Vote: Vote
-	ExplorationStats: ExplorationStats
-	LocationStats: LocationStats
 	Password: Password
 	Post: Post
 	PostStats: PostStats
 	Session: Session
 	Tag: Tag
-	TagStats: TagStats
 	User: User
 	Verification: Verification
 	VoteEvent: VoteEvent

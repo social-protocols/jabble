@@ -1,7 +1,6 @@
 import { Link, useFetcher, useNavigate } from '@remix-run/react'
 import moment from 'moment'
 import { type FormEvent, useState, useRef, useEffect } from 'react'
-import { type Location, LocationType } from '#app/attention.ts'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { type Post } from '#app/db/types.ts'
@@ -47,7 +46,6 @@ export function PostDetails({
 	post,
 	note,
 	teaser,
-	randomLocation,
 	position,
 	notePosition,
 	loggedIn,
@@ -55,7 +53,6 @@ export function PostDetails({
 	post: ScoredPost
 	note: ScoredNote | null
 	teaser: boolean
-	randomLocation: Location | null
 	position: Direction
 	notePosition: Direction
 	loggedIn: boolean
@@ -102,7 +99,6 @@ export function PostDetails({
 						postId={post.id}
 						tag={post.tag}
 						noteId={note !== null ? note.id : null}
-						randomLocation={randomLocation}
 						state={voteState}
 					/>
 				</fetcher.Form>
@@ -243,7 +239,6 @@ export function NoteAttachment({
 			: (note.p > note.q ? '↑' : '↓') +
 				Math.abs(Math.round((note.p - note.q) * 100)) +
 				'%'
-
 	return (
 		<Link to={`/tags/${tag}/posts/${note.id}`}>
 			<Card className={'bg-note pb-3 pt-2 text-note-foreground ' + className}>
@@ -269,13 +264,11 @@ export function VoteButtons({
 	tag,
 	postId,
 	noteId,
-	randomLocation,
 	state,
 }: {
 	tag: string
 	postId: number
 	noteId: number | null
-	randomLocation: Location | null
 	state: Direction
 }) {
 	return (
@@ -283,23 +276,6 @@ export function VoteButtons({
 			<input type="hidden" name="postId" value={postId} />
 			<input type="hidden" name="tag" value={tag} />
 			<input type="hidden" name="state" value={Direction[state]} />
-
-			{randomLocation === null ? (
-				<></>
-			) : (
-				<>
-					<input
-						type="hidden"
-						name="randomLocationType"
-						value={LocationType[randomLocation.locationType]}
-					/>
-					<input
-						type="hidden"
-						name="oneBasedRank"
-						value={randomLocation === null ? '' : randomLocation.oneBasedRank}
-					/>
-				</>
-			)}
 
 			{noteId === null ? (
 				<></>

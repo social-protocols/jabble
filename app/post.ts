@@ -3,9 +3,6 @@ import { type Post } from '#app/db/types.ts' // this is the Database interface w
 import { db } from '#app/db.ts'
 import { Direction, vote } from '#app/vote.ts'
 
-import { logAuthorView } from './attention.ts'
-import { invalidateTagPage } from './ranking.ts'
-import { waitForScoreEvent } from './score-events.ts'
 import { getOrInsertTagId } from './tag.ts'
 
 // express the above fn in typescript with kysely queries
@@ -25,17 +22,13 @@ export async function createPost(
 
 	const direction: Direction = Direction.Up
 
-	await vote(tag, authorId, postId, null, direction, null, waitForScoreEvent)
+	await vote(tag, authorId, postId, null, direction, waitForScoreEvent)
 
 	const tagId = await getOrInsertTagId(tag)
 
 	if (parentId != null) {
 		await incrementReplyCount(tagId, parentId)
 	}
-
-	await logAuthorView(authorId, tagId, postId)
-
-	await invalidateTagPage(tag)
 
 	return postId
 }
@@ -46,10 +39,6 @@ export async function initPostStats(tagId: number, postId: number) {
 		.values({
 			tagId: tagId,
 			postId: postId,
-			// initial attention is 1 + deltaAttention, because each post automatically gets 1 upvote from the author
-			// and so the expectedVotes (attention) for a new post is equal to 1.
-			attention: 1,
-			views: 1,
 			replies: 0,
 		})
 		// ignore conflict
@@ -108,10 +97,4 @@ export async function getTransitiveParents(id: number): Promise<Post[]> {
 	// skip the first element, which is the post itself
 	let resultReversed = result.slice(1).reverse()
 	return resultReversed
-}
-
-function extractTags(content: string): string[] {
-	const regex = /#[a-zA-Z0-9]+/g
-	const matches = content.match(regex) || []
-	return matches.map(match => match.slice(1))
 }

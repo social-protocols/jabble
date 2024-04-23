@@ -8,7 +8,6 @@ import {
 } from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
-import { logTagPageView } from '#app/attention.ts'
 
 import { Feed } from '#app/components/ui/feed.tsx'
 import { PostForm } from '#app/components/ui/post-form.tsx'
@@ -28,14 +27,13 @@ export async function loader({ params, request }: DataFunctionArgs) {
 	const userId: string | null = await getUserId(request)
 
 	const rankedPosts = await getRankedPosts(tag)
-	const posts = rankedPosts.posts
+	const posts = rankedPosts
 	let positions: Position[] = []
 	if (userId) {
-		logTagPageView(userId, tag, rankedPosts)
 		positions = await getUserPositions(
 			userId,
 			tag,
-			rankedPosts.posts.map(p => p.id),
+			rankedPosts.map(p => p.id),
 		)
 	}
 
