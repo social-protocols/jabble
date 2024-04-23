@@ -2,8 +2,8 @@
 // their own type definitions and are not available on DefinitelyTyped.
 
 declare module 'tailwindcss-animate' {
-	declare const _default: {
-		handler: () => void
-	}
-	export = _default
+  declare const _default: {
+    handler: () => void
+  }
+  export = _default
 }

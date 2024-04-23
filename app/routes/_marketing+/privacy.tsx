@@ -1,3 +1,3 @@
 export default function PrivacyRoute() {
-	return <div>Privacy</div>
+  return <div>Privacy</div>
 }

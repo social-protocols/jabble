@@ -14,55 +14,55 @@ import { type BreadcrumbHandle } from './profile.tsx'
 import { twoFAVerificationType } from './profile.two-factor.tsx'
 
 export const handle: BreadcrumbHandle & SEOHandle = {
-	breadcrumb: <Icon name="lock-open-1">Disable</Icon>,
-	getSitemapEntries: () => null,
+  breadcrumb: <Icon name="lock-open-1">Disable</Icon>,
+  getSitemapEntries: () => null,
 }
 
 export async function loader({ request }: DataFunctionArgs) {
-	await requireRecentVerification(request)
-	return json({})
+  await requireRecentVerification(request)
+  return json({})
 }
 
 export async function action({ request }: DataFunctionArgs) {
-	await requireRecentVerification(request)
-	await validateCSRF(await request.formData(), request.headers)
-	const userId = await requireUserId(request)
-	await db
-		.deleteFrom('Verification')
-		.where('target', '=', userId)
-		.where('type', '=', twoFAVerificationType)
-		.execute()
-	return redirectWithToast('/settings/profile/two-factor', {
-		title: '2FA Disabled',
-		description: 'Two factor authentication has been disabled.',
-	})
+  await requireRecentVerification(request)
+  await validateCSRF(await request.formData(), request.headers)
+  const userId = await requireUserId(request)
+  await db
+    .deleteFrom('Verification')
+    .where('target', '=', userId)
+    .where('type', '=', twoFAVerificationType)
+    .execute()
+  return redirectWithToast('/settings/profile/two-factor', {
+    title: '2FA Disabled',
+    description: 'Two factor authentication has been disabled.',
+  })
 }
 
 export default function TwoFactorDisableRoute() {
-	const disable2FAFetcher = useFetcher<typeof action>()
-	const dc = useDoubleCheck()
+  const disable2FAFetcher = useFetcher<typeof action>()
+  const dc = useDoubleCheck()
 
-	return (
-		<div className="mx-auto max-w-sm">
-			<disable2FAFetcher.Form method="POST">
-				<AuthenticityTokenInput />
-				<p>
-					Disabling two factor authentication is not recommended. However, if
-					you would like to do so, click here:
-				</p>
-				<StatusButton
-					variant="destructive"
-					status={disable2FAFetcher.state === 'loading' ? 'pending' : 'idle'}
-					{...dc.getButtonProps({
-						className: 'mx-auto',
-						name: 'intent',
-						value: 'disable',
-						type: 'submit',
-					})}
-				>
-					{dc.doubleCheck ? 'Are you sure?' : 'Disable 2FA'}
-				</StatusButton>
-			</disable2FAFetcher.Form>
-		</div>
-	)
+  return (
+    <div className="mx-auto max-w-sm">
+      <disable2FAFetcher.Form method="POST">
+        <AuthenticityTokenInput />
+        <p>
+          Disabling two factor authentication is not recommended. However, if
+          you would like to do so, click here:
+        </p>
+        <StatusButton
+          variant="destructive"
+          status={disable2FAFetcher.state === 'loading' ? 'pending' : 'idle'}
+          {...dc.getButtonProps({
+            className: 'mx-auto',
+            name: 'intent',
+            value: 'disable',
+            type: 'submit',
+          })}
+        >
+          {dc.doubleCheck ? 'Are you sure?' : 'Disable 2FA'}
+        </StatusButton>
+      </disable2FAFetcher.Form>
+    </div>
+  )
 }

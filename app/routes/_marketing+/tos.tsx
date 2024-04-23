@@ -1,3 +1,3 @@
 export default function TermsOfServiceRoute() {
-	return <div>Terms of service</div>
+  return <div>Terms of service</div>
 }

@@ -12,9 +12,9 @@ var sqliteInstance = new SQLite(databasePath)
 // process. So any changes won't persist, but this is just fine for
 // simulations, tests, etc.
 if (process.env.IN_MEMORY_DB) {
-	console.log('Using in-memory DB instance')
-	const buffer = sqliteInstance.serialize()
-	sqliteInstance = new SQLite(buffer)
+  console.log('Using in-memory DB instance')
+  const buffer = sqliteInstance.serialize()
+  sqliteInstance = new SQLite(buffer)
 }
 
 // Database interface is passed to Kysely's constructor, and from now on, Kysely
@@ -22,5 +22,5 @@ if (process.env.IN_MEMORY_DB) {
 // Dialect is passed to Kysely's constructor, and from now on, Kysely knows how
 // to communicate with your database.
 export const db = new Kysely<DB>({
-	dialect: new SqliteDialect({ database: sqliteInstance }),
+  dialect: new SqliteDialect({ database: sqliteInstance }),
 })

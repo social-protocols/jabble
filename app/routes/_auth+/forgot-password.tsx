@@ -2,10 +2,10 @@ import { conform, useForm } from '@conform-to/react'
 import { getFieldsetConstraint, parse } from '@conform-to/zod'
 import * as E from '@react-email/components'
 import {
-	type DataFunctionArgs,
-	json,
-	type MetaFunction,
-	redirect,
+  type DataFunctionArgs,
+  json,
+  type MetaFunction,
+  redirect,
 } from '@remix-run/node'
 import { Link, useFetcher } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
@@ -23,177 +23,177 @@ import { EmailSchema, UsernameSchema } from '#app/utils/user-validation.ts'
 import { prepareVerification } from './verify.tsx'
 
 const ForgotPasswordSchema = z.object({
-	usernameOrEmail: z.union([EmailSchema, UsernameSchema]),
+  usernameOrEmail: z.union([EmailSchema, UsernameSchema]),
 })
 
 export async function action({ request }: DataFunctionArgs) {
-	const formData = await request.formData()
-	await validateCSRF(formData, request.headers)
-	checkHoneypot(formData)
-	const submission = await parse(formData, {
-		schema: ForgotPasswordSchema.superRefine(async (data, ctx) => {
-			const user = await db
-				.selectFrom('User')
-				.select('id')
-				.where(eb =>
-					eb('email', '=', data.usernameOrEmail).or(
-						'username',
-						'=',
-						data.usernameOrEmail,
-					),
-				)
-				.executeTakeFirst()
+  const formData = await request.formData()
+  await validateCSRF(formData, request.headers)
+  checkHoneypot(formData)
+  const submission = await parse(formData, {
+    schema: ForgotPasswordSchema.superRefine(async (data, ctx) => {
+      const user = await db
+        .selectFrom('User')
+        .select('id')
+        .where(eb =>
+          eb('email', '=', data.usernameOrEmail).or(
+            'username',
+            '=',
+            data.usernameOrEmail,
+          ),
+        )
+        .executeTakeFirst()
 
-			if (!user) {
-				ctx.addIssue({
-					path: ['usernameOrEmail'],
-					code: z.ZodIssueCode.custom,
-					message: 'No user exists with this username or email',
-				})
-				return
-			}
-		}),
-		async: true,
-	})
-	if (submission.intent !== 'submit') {
-		return json({ status: 'idle', submission } as const)
-	}
-	if (!submission.value) {
-		return json({ status: 'error', submission } as const, { status: 400 })
-	}
-	const { usernameOrEmail } = submission.value
+      if (!user) {
+        ctx.addIssue({
+          path: ['usernameOrEmail'],
+          code: z.ZodIssueCode.custom,
+          message: 'No user exists with this username or email',
+        })
+        return
+      }
+    }),
+    async: true,
+  })
+  if (submission.intent !== 'submit') {
+    return json({ status: 'idle', submission } as const)
+  }
+  if (!submission.value) {
+    return json({ status: 'error', submission } as const, { status: 400 })
+  }
+  const { usernameOrEmail } = submission.value
 
-	const user = await db
-		.selectFrom('User')
-		.select('email')
-		.select('username')
-		.where(eb =>
-			eb('email', '=', usernameOrEmail).or('username', '=', usernameOrEmail),
-		)
-		.executeTakeFirstOrThrow()
+  const user = await db
+    .selectFrom('User')
+    .select('email')
+    .select('username')
+    .where(eb =>
+      eb('email', '=', usernameOrEmail).or('username', '=', usernameOrEmail),
+    )
+    .executeTakeFirstOrThrow()
 
-	const { verifyUrl, redirectTo, otp } = await prepareVerification({
-		period: 10 * 60,
-		request,
-		type: 'reset-password',
-		target: usernameOrEmail,
-	})
+  const { verifyUrl, redirectTo, otp } = await prepareVerification({
+    period: 10 * 60,
+    request,
+    type: 'reset-password',
+    target: usernameOrEmail,
+  })
 
-	const response = await sendEmail({
-		to: user.email,
-		subject: `${SITE_NAME} Password Reset`,
-		react: (
-			<ForgotPasswordEmail onboardingUrl={verifyUrl.toString()} otp={otp} />
-		),
-	})
+  const response = await sendEmail({
+    to: user.email,
+    subject: `${SITE_NAME} Password Reset`,
+    react: (
+      <ForgotPasswordEmail onboardingUrl={verifyUrl.toString()} otp={otp} />
+    ),
+  })
 
-	if (response.status === 'success') {
-		return redirect(redirectTo.toString())
-	} else {
-		submission.error[''] = [response.error.message]
-		return json({ status: 'error', submission } as const, { status: 500 })
-	}
+  if (response.status === 'success') {
+    return redirect(redirectTo.toString())
+  } else {
+    submission.error[''] = [response.error.message]
+    return json({ status: 'error', submission } as const, { status: 500 })
+  }
 }
 
 function ForgotPasswordEmail({
-	onboardingUrl,
-	otp,
+  onboardingUrl,
+  otp,
 }: {
-	onboardingUrl: string
-	otp: string
+  onboardingUrl: string
+  otp: string
 }) {
-	return (
-		<E.Html lang="en" dir="ltr">
-			<E.Container>
-				<h1>
-					<E.Text>${SITE_NAME} Password Reset</E.Text>
-				</h1>
-				<p>
-					<E.Text>
-						Here's your verification code: <strong>{otp}</strong>
-					</E.Text>
-				</p>
-				<p>
-					<E.Text>Or click the link:</E.Text>
-				</p>
-				<E.Link href={onboardingUrl}>{onboardingUrl}</E.Link>
-			</E.Container>
-		</E.Html>
-	)
+  return (
+    <E.Html lang="en" dir="ltr">
+      <E.Container>
+        <h1>
+          <E.Text>${SITE_NAME} Password Reset</E.Text>
+        </h1>
+        <p>
+          <E.Text>
+            Here's your verification code: <strong>{otp}</strong>
+          </E.Text>
+        </p>
+        <p>
+          <E.Text>Or click the link:</E.Text>
+        </p>
+        <E.Link href={onboardingUrl}>{onboardingUrl}</E.Link>
+      </E.Container>
+    </E.Html>
+  )
 }
 
 export const meta: MetaFunction = () => {
-	return [{ title: 'Password Recovery for ' + SITE_NAME }]
+  return [{ title: 'Password Recovery for ' + SITE_NAME }]
 }
 
 export default function ForgotPasswordRoute() {
-	const forgotPassword = useFetcher<typeof action>()
+  const forgotPassword = useFetcher<typeof action>()
 
-	const [form, fields] = useForm({
-		id: 'forgot-password-form',
-		constraint: getFieldsetConstraint(ForgotPasswordSchema),
-		lastSubmission: forgotPassword.data?.submission,
-		onValidate({ formData }) {
-			return parse(formData, { schema: ForgotPasswordSchema })
-		},
-		shouldRevalidate: 'onBlur',
-	})
+  const [form, fields] = useForm({
+    id: 'forgot-password-form',
+    constraint: getFieldsetConstraint(ForgotPasswordSchema),
+    lastSubmission: forgotPassword.data?.submission,
+    onValidate({ formData }) {
+      return parse(formData, { schema: ForgotPasswordSchema })
+    },
+    shouldRevalidate: 'onBlur',
+  })
 
-	return (
-		<div className="container pb-32 pt-20">
-			<div className="flex flex-col justify-center">
-				<div className="text-center">
-					<h1 className="text-h1">Forgot Password</h1>
-					<p className="mt-3 text-body-md text-muted-foreground">
-						No worries, we'll send you reset instructions.
-					</p>
-				</div>
-				<div className="mx-auto mt-16 min-w-[368px] max-w-sm">
-					<forgotPassword.Form method="POST" {...form.props}>
-						<AuthenticityTokenInput />
-						<HoneypotInputs />
-						<div>
-							<Field
-								labelProps={{
-									htmlFor: fields.usernameOrEmail.id,
-									children: 'Username or Email',
-								}}
-								inputProps={{
-									autoFocus: true,
-									...conform.input(fields.usernameOrEmail),
-								}}
-								errors={fields.usernameOrEmail.errors}
-							/>
-						</div>
-						<ErrorList errors={form.errors} id={form.errorId} />
+  return (
+    <div className="container pb-32 pt-20">
+      <div className="flex flex-col justify-center">
+        <div className="text-center">
+          <h1 className="text-h1">Forgot Password</h1>
+          <p className="mt-3 text-body-md text-muted-foreground">
+            No worries, we'll send you reset instructions.
+          </p>
+        </div>
+        <div className="mx-auto mt-16 min-w-[368px] max-w-sm">
+          <forgotPassword.Form method="POST" {...form.props}>
+            <AuthenticityTokenInput />
+            <HoneypotInputs />
+            <div>
+              <Field
+                labelProps={{
+                  htmlFor: fields.usernameOrEmail.id,
+                  children: 'Username or Email',
+                }}
+                inputProps={{
+                  autoFocus: true,
+                  ...conform.input(fields.usernameOrEmail),
+                }}
+                errors={fields.usernameOrEmail.errors}
+              />
+            </div>
+            <ErrorList errors={form.errors} id={form.errorId} />
 
-						<div className="mt-6">
-							<StatusButton
-								className="w-full"
-								status={
-									forgotPassword.state === 'submitting'
-										? 'pending'
-										: forgotPassword.data?.status ?? 'idle'
-								}
-								type="submit"
-								disabled={forgotPassword.state !== 'idle'}
-							>
-								Recover password
-							</StatusButton>
-						</div>
-					</forgotPassword.Form>
-					<Link
-						to="/login"
-						className="mt-11 text-center text-body-sm font-bold"
-					>
-						Back to Login
-					</Link>
-				</div>
-			</div>
-		</div>
-	)
+            <div className="mt-6">
+              <StatusButton
+                className="w-full"
+                status={
+                  forgotPassword.state === 'submitting'
+                    ? 'pending'
+                    : forgotPassword.data?.status ?? 'idle'
+                }
+                type="submit"
+                disabled={forgotPassword.state !== 'idle'}
+              >
+                Recover password
+              </StatusButton>
+            </div>
+          </forgotPassword.Form>
+          <Link
+            to="/login"
+            className="mt-11 text-center text-body-sm font-bold"
+          >
+            Back to Login
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export function ErrorBoundary() {
-	return <GeneralErrorBoundary />
+  return <GeneralErrorBoundary />
 }

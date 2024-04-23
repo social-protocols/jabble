@@ -1,7 +1,7 @@
 import { type Kysely, sql } from 'kysely'
 
 export async function up(db: Kysely<any>): Promise<void> {
-	await sql`
+  await sql`
         UPDATE voteEvent
         SET parentId = (
             SELECT p.parentId

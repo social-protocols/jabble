@@ -8,28 +8,28 @@ import { getOrInsertTagId } from '#app/tag.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
 const replySchema = zfd.formData({
-	parentId: z.coerce.number().optional(),
-	tag: z.coerce.string(),
-	content: z.coerce.string(),
+  parentId: z.coerce.number().optional(),
+  tag: z.coerce.string(),
+  content: z.coerce.string(),
 })
 
 export const action = async (args: ActionFunctionArgs) => {
-	let request = args.request
-	const formData = await request.formData()
+  let request = args.request
+  const formData = await request.formData()
 
-	const userId: string = await requireUserId(request)
+  const userId: string = await requireUserId(request)
 
-	const parsedData = replySchema.parse(formData)
+  const parsedData = replySchema.parse(formData)
 
-	const content = parsedData.content
-	const parentId = parsedData.parentId || null
-	const tag = parsedData.tag
-	const tagId = await getOrInsertTagId(tag)
+  const content = parsedData.content
+  const parentId = parsedData.parentId || null
+  const tag = parsedData.tag
+  const tagId = await getOrInsertTagId(tag)
 
-	invariant(content, 'content !== undefined')
-	invariant(tag, "tag !== ''")
+  invariant(content, 'content !== undefined')
+  invariant(tag, "tag !== ''")
 
-	let postId = await createPost(tag, parentId, content, userId, true)
+  let postId = await createPost(tag, parentId, content, userId, true)
 
-	return redirect(`/tags/${tag}/posts/${postId}`)
+  return redirect(`/tags/${tag}/posts/${postId}`)
 }
