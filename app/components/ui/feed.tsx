@@ -13,7 +13,7 @@ export function Feed({
 }: {
 	posts: RankedPost[]
 	positions: Map<number, Direction>
-	rootId: number|null
+	rootId: number | null
 	loggedIn: boolean
 	showNotes: boolean
 }) {
@@ -28,7 +28,7 @@ export function Feed({
 					? {
 							oneBasedRank: i + 1,
 							locationType: LocationType.TagPage,
-					  }
+						}
 					: null
 
 				let followsParent = (i > 0 && posts[i - 1]!.id) == post.parentId
@@ -37,7 +37,8 @@ export function Feed({
 				const directReply = rootId !== null && post.parentId == rootId
 				return (
 					<div key={post.id}>
-						{!directReply && post.parent &&
+						{!directReply &&
+							post.parent &&
 							(followsParent ? (
 								<div className="link-to-parent threadline" />
 							) : (

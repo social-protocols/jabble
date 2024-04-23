@@ -38,12 +38,7 @@ typecheck:
 
 # run linters and formatter
 lint:
-	npm run lint
-	npm run format
-
-# run formatter (edit files in place)
-format:
-  npm run format
+	npx eslint . --fix
 
 # run all tests non-e2e tests
 test:

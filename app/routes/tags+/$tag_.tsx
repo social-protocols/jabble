@@ -60,7 +60,13 @@ export default function TagPage() {
 				&nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
 			</div>
 			{loggedIn && <PostForm tag={tag} className="mb-5" />}
-			<Feed posts={posts} positions={p} loggedIn={loggedIn} rootId={null} showNotes={true}/>
+			<Feed
+				posts={posts}
+				positions={p}
+				loggedIn={loggedIn}
+				rootId={null}
+				showNotes={true}
+			/>
 		</>
 	)
 }

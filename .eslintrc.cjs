@@ -7,9 +7,9 @@ module.exports = {
 	extends: [
 		'@remix-run/eslint-config',
 		'@remix-run/eslint-config/node',
-		'prettier',
+		'plugin:prettier/recommended',
 	],
-	plugins: ['prettier', '@typescript-eslint'],
+	plugins: ['@typescript-eslint'],
 
 	rules: {
 		// 'prettier/prettier': ['error'],

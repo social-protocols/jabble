@@ -194,8 +194,8 @@ export default function TwoFactorRoute() {
 									pendingIntent === 'verify'
 										? 'pending'
 										: lastSubmissionIntent === 'verify'
-										? actionData?.status ?? 'idle'
-										: 'idle'
+											? actionData?.status ?? 'idle'
+											: 'idle'
 								}
 								type="submit"
 								name="intent"
@@ -210,8 +210,8 @@ export default function TwoFactorRoute() {
 									pendingIntent === 'cancel'
 										? 'pending'
 										: lastSubmissionIntent === 'cancel'
-										? actionData?.status ?? 'idle'
-										: 'idle'
+											? actionData?.status ?? 'idle'
+											: 'idle'
 								}
 								type="submit"
 								name="intent"

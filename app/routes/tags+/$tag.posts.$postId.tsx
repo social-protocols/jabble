@@ -15,6 +15,7 @@ import { zfd } from 'zod-form-data'
 
 import { logPostPageView } from '#app/attention.ts'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { Feed } from '#app/components/ui/feed.tsx'
 import { PostContent, PostDetails } from '#app/components/ui/post.tsx'
 import { type Post } from '#app/db/types.ts'
 
@@ -30,7 +31,6 @@ import {
 } from '#app/ranking.ts'
 import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
-import { Feed } from '#app/components/ui/feed.tsx'
 import { Direction } from '#app/vote.ts'
 
 const postIdSchema = z.coerce.number()
@@ -65,7 +65,7 @@ export async function loader({ params, request }: DataFunctionArgs) {
 					userId,
 					tag,
 					replies.map(p => p.id).concat([post.id]),
-			  )
+				)
 
 	const loggedIn = userId !== null
 
@@ -165,15 +165,19 @@ export function PostReplies({
 	positions: Map<number, Direction>
 	loggedIn: boolean
 }) {
-	const nRepliesString = replies.length == 0 ? "No Replies" : "Replies"
-	
+	const nRepliesString = replies.length == 0 ? 'No Replies' : 'Replies'
+
 	return (
 		<>
 			<h2 className="mb-4 font-medium">{nRepliesString}</h2>
 			{replies.length > 0 && (
-
-			<Feed posts={replies} positions={positions} loggedIn={loggedIn} rootId={replies[0]!.parentId} showNotes={false}/>
-
+				<Feed
+					posts={replies}
+					positions={positions}
+					loggedIn={loggedIn}
+					rootId={replies[0]!.parentId}
+					showNotes={false}
+				/>
 			)}
 		</>
 	)

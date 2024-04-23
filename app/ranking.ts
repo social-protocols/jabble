@@ -275,7 +275,6 @@ export async function getChronologicalToplevelPosts(
 	return await query.execute()
 }
 
-
 export async function getRankedReplies(
 	tag: string,
 	postId: number,
@@ -305,7 +304,7 @@ export async function getRankedReplies(
 							'P.createdAt',
 						])
 						.selectAll('FullScore')
-						.orderBy('FullScore.score', 'desc')
+						.orderBy('FullScore.score', 'desc'),
 				),
 		)
 		.selectFrom('Descendants as ScoredPost')
