@@ -26,7 +26,7 @@ export function Markdown({
 						component: DeactivatedLink,
 					},
 				},
-			}
+		  }
 		: {}
 
 	const options = {

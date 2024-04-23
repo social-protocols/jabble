@@ -28,7 +28,7 @@ export function Feed({
 					? {
 							oneBasedRank: i + 1,
 							locationType: LocationType.TagPage,
-						}
+					  }
 					: null
 
 				let followsParent = (i > 0 && posts[i - 1]!.id) == post.parentId

@@ -264,7 +264,7 @@ export function useDoubleCheck() {
 				: e => {
 						e.preventDefault()
 						setDoubleCheck(true)
-					}
+				  }
 
 		const onKeyUp: React.ButtonHTMLAttributes<HTMLButtonElement>['onKeyUp'] =
 			e => {
