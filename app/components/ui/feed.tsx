@@ -7,11 +7,15 @@ import { Direction } from '#app/vote.ts'
 export function Feed({
 	posts,
 	positions,
+	rootId,
 	loggedIn,
+	showNotes,
 }: {
 	posts: RankedPost[]
 	positions: Map<number, Direction>
+	rootId: number|null
 	loggedIn: boolean
+	showNotes: boolean
 }) {
 	return (
 		<>
@@ -30,9 +34,10 @@ export function Feed({
 				let followsParent = (i > 0 && posts[i - 1]!.id) == post.parentId
 				let followedByTopnote =
 					(i < posts.length - 1 && posts[i + 1]!.id) == post.topNoteId
+				const directReply = rootId !== null && post.parentId == rootId
 				return (
 					<div key={post.id}>
-						{post.parent &&
+						{!directReply && post.parent &&
 							(followsParent ? (
 								<div className="link-to-parent threadline" />
 							) : (
@@ -40,7 +45,7 @@ export function Feed({
 							))}
 						<PostDetails
 							post={post}
-							note={!followedByTopnote ? post.note : null}
+							note={showNotes && !followedByTopnote ? post.note : null}
 							teaser={true}
 							randomLocation={randomLocation}
 							position={position}

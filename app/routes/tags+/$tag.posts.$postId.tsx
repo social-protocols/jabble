@@ -30,7 +30,7 @@ import {
 } from '#app/ranking.ts'
 import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
-
+import { Feed } from '#app/components/ui/feed.tsx'
 import { Direction } from '#app/vote.ts'
 
 const postIdSchema = z.coerce.number()
@@ -117,7 +117,7 @@ export default function Post() {
 			<ParentThread transitiveParents={transitiveParents} tag={tag} />
 			<PostDetails
 				post={post}
-				note={topNote}
+				note={null}
 				teaser={false}
 				randomLocation={null}
 				position={position}
@@ -165,35 +165,15 @@ export function PostReplies({
 	positions: Map<number, Direction>
 	loggedIn: boolean
 }) {
-	const nRepliesString =
-		replies.length === 1 ? '1 reply' : `${replies.length} replies`
-
+	const nRepliesString = replies.length == 0 ? "No Replies" : "Replies"
+	
 	return (
 		<>
 			<h2 className="mb-4 font-medium">{nRepliesString}</h2>
 			{replies.length > 0 && (
-				<ol>
-					{replies.map((post: RankedPost) => {
-						// let randomLocation = {locationType: LocationType.PostReplies, oneBasedRank: i + 1}
 
-						let position: Direction =
-							positions.get(post.id) || Direction.Neutral
+			<Feed posts={replies} positions={positions} loggedIn={loggedIn} rootId={replies[0]!.parentId} showNotes={false}/>
 
-						return (
-							<li key={post.id}>
-								<PostDetails
-									post={post}
-									note={post.note}
-									teaser={true}
-									randomLocation={null}
-									position={position}
-									notePosition={Direction.Neutral}
-									loggedIn={loggedIn}
-								/>
-							</li>
-						)
-					})}
-				</ol>
 			)}
 		</>
 	)

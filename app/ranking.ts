@@ -275,27 +275,50 @@ export async function getChronologicalToplevelPosts(
 	return await query.execute()
 }
 
+
 export async function getRankedReplies(
 	tag: string,
 	postId: number,
 ): Promise<RankedPosts> {
 	const tagId = await getOrInsertTagId(tag)
 	let query = db
-		.selectFrom('Post')
-		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
+		.withRecursive('Descendants', db =>
+			db
+				.selectFrom('Post')
+				.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
+				.where('parentId', '=', postId)
+				.where('FullScore.tagId', '=', tagId)
+				.select(['id', 'parentId', 'authorId', 'content', 'createdAt'])
+				.selectAll('FullScore')
+				// .orderBy('FullScore.score', 'desc')
+				.unionAll(db =>
+					db
+						.selectFrom('Post as P')
+						.innerJoin('Descendants as D', 'P.parentId', 'D.id')
+						.innerJoin('FullScore', 'FullScore.postId', 'D.id')
+						.where('FullScore.tagId', '=', tagId)
+						.select([
+							'P.id',
+							'P.parentId',
+							'P.authorId',
+							'P.content',
+							'P.createdAt',
+						])
+						.selectAll('FullScore')
+						.orderBy('FullScore.score', 'desc')
+				),
+		)
+		.selectFrom('Descendants as ScoredPost')
 		.leftJoin('PostStats', join =>
 			join
-				.onRef('PostStats.postId', '=', 'Post.id')
+				.onRef('PostStats.postId', '=', 'ScoredPost.id')
 				.on('PostStats.tagId', '=', tagId),
 		)
-		.innerJoin('Tag', 'Tag.id', 'FullScore.tagId')
+		.innerJoin('Tag', 'Tag.id', 'ScoredPost.tagId')
 		.select('tag')
-		.selectAll('Post')
-		.selectAll('FullScore')
+		.selectAll('ScoredPost')
 		.select(sql<number>`replies`.as('nReplies'))
-		.where('FullScore.tagId', '=', tagId)
-		.where('Post.parentId', '=', postId)
-		.orderBy('FullScore.score', 'desc')
+		// .where('ScoredPost.parentId', '=', postId)
 		.limit(MAX_RESULTS)
 
 	const scoredPosts: ScoredPost[] = await query.execute()
@@ -310,7 +333,7 @@ export async function getRankedReplies(
 					post.topNoteId == null
 						? null
 						: await getScoredNoteInternal(tagId, post.topNoteId!),
-				parent: thisPost, // We don't really need this but the RankedPost type requires it.
+				parent: await getPost(post.parentId!),
 				random: false,
 			}
 		}),
