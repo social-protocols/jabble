@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs, json, redirect } from '@remix-run/node'
+import { type ActionFunctionArgs, redirect } from '@remix-run/node'
 
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
@@ -24,7 +24,7 @@ export const action = async (args: ActionFunctionArgs) => {
 	const content = parsedData.content
 	const parentId = parsedData.parentId || null
 	const tag = parsedData.tag
-	const tagId = await getOrInsertTagId(tag)
+	await getOrInsertTagId(tag)
 
 	invariant(content, 'content !== undefined')
 	invariant(tag, "tag !== ''")

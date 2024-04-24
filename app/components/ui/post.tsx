@@ -1,6 +1,6 @@
 import { Link, useFetcher, useNavigate } from '@remix-run/react'
 import moment from 'moment'
-import { type FormEvent, useState, useRef, useEffect } from 'react'
+import { type FormEvent, useState } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { type Post } from '#app/db/types.ts'

@@ -23,7 +23,7 @@ import {
 	useSubmit,
 } from '@remix-run/react'
 import { withSentry } from '@sentry/remix'
-import { useRef, useEffect } from 'react'
+import { useRef } from 'react'
 import { AuthenticityTokenProvider } from 'remix-utils/csrf/react'
 import { ExternalScripts } from 'remix-utils/external-scripts'
 import { HoneypotProvider } from 'remix-utils/honeypot/react'

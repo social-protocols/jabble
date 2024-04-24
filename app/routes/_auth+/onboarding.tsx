@@ -27,7 +27,6 @@ import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { invariant, useIsPending } from '#app/utils/misc.tsx'
 import { authSessionStorage } from '#app/utils/session.server.ts'
 import {
-	NameSchema,
 	PasswordAndConfirmPasswordSchema,
 	UsernameSchema,
 } from '#app/utils/user-validation.ts'
