@@ -9,13 +9,13 @@ Read how Jabble makes conversations better below. And signup here to [get notifi
 Like many online social platforms, in Jabble users post things and other users can reply. Here's an example:
 
 
-![screenshot of a post with a reply](https://raw.githubusercontent.com/social-protocols/social-network/main/public/img/post-with-reply.png)
+![screenshot of a post with a reply](/public/img/post-with-reply.png)
 <br/>*a post with a reply*
 
 Each post or reply then gets a score, shown as a percentage, based on how many upvotes and downvotes it receives.
 
 
-![screenshot of reply with votes](https://raw.githubusercontent.com/social-protocols/social-network/main/public/img/post-with-vote.png)
+![screenshot of reply with votes](/public/img/post-with-vote.png)
 <br/>*a reply with votes*
 
 
@@ -31,7 +31,7 @@ When certain conditions are met, a reply to a post can be designated a **critica
 
 Once a critical reply is identified, all users who voted on the post will be notified. 
 
-![screenshot of a critical reply](https://raw.githubusercontent.com/social-protocols/social-network/main/public/img/critical-reply.png)
+![screenshot of a critical reply](/public/img/critical-reply.png)
 <br/>*a critical reply*
 
 The score on the post will then be based on the votes of those who have read and acknowledged the critical reply.
