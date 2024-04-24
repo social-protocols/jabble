@@ -1,12 +1,6 @@
 import { sql } from 'kysely'
-import { LRUCache } from 'lru-cache'
 import { type Score, type Effect, type Post } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { db } from '#app/db.ts'
-// import { cumulativeAttention } from './attention.ts';
-import {
-	// logTagPageView,
-	flushTagPageStats,
-} from './attention.ts'
 import { type Position } from './positions.ts'
 // import { GLOBAL_PRIOR_VOTE_RATE, findTopNoteId } from './probabilities.ts'
 import { getPost } from './post.ts'
@@ -20,78 +14,12 @@ export type ScoredPost = Post &
 // Post with its effect on its parent
 export type ScoredNote = Post & Effect
 
-// const fatigueFactor = .9
-// const attentionCutoff = 2 // Note all posts start with 1 unit of attention (from poster)
-
 export const MAX_RESULTS = 100
 
 export type RankedPost = ScoredPost & {
-	random: boolean
 	note: ScoredNote | null
 	parent: Post | null
 }
-
-export type RankedPosts = {
-	posts: RankedPost[]
-	effectiveRandomPoolSize: number
-}
-
-let rankingsCache = new LRUCache<string, RankedPosts>({
-	max: 100,
-	ttl: 1000 * 60, // one minute
-
-	// automatically purge items from cache when ttl is exceeded
-	// we want to do this so that savePageStats is called to save attention stats in the DB
-	// roughly once a minute.
-
-	ttlAutopurge: true,
-
-	// when we dispose of the page from the cache, call flushTagPageStats to update attention
-	// stats in the DB for each post on the tag page.
-	dispose: (RankedPosts, tag, _reason) => {
-		flushTagPageStats(tag, RankedPosts)
-	},
-})
-
-export async function invalidateTagPage(tag: string) {
-	const RankedPosts = rankingsCache.get(tag)!
-	if (RankedPosts !== undefined) {
-		await flushTagPageStats(tag, RankedPosts)
-	}
-
-	rankingsCache.delete(tag)
-}
-
-export async function clearRankingsCache() {
-	let keys = rankingsCache.keys()
-	for (let tag of keys) {
-		rankingsCache.delete(tag)
-	}
-}
-
-// async function getPostsWithStats(tagId: number): Promise<PostWithStats[]> {
-// 	// Select all posts, along with vote tallies and attention
-// 	let query = db
-// 		.selectFrom('Post')
-// 		.innerJoin('Tally', 'Tally.postId', 'Post.id')
-// 		.where('Tally.tagId', '=', tagId)
-// 		.where('Post.parentId', 'is', null)
-// 		.leftJoin('PostStats', join =>
-// 			join
-// 				.onRef('PostStats.postId', '=', 'Post.id')
-// 				.on('PostStats.tagId', '=', tagId),
-// 		)
-// 		.select(sql<number>`COALESCE(PostStats.attention, 0)`.as('attention'))
-// 		.select(sql<number>`COALESCE(Tally.total, 0)`.as('voteTotal'))
-// 		.select(sql<number>`COALESCE(Tally.count, 0)`.as('voteCount'))
-// 		.select(sql<number>`replies`.as('nReplies'))
-// 		.selectAll('Post')
-// 		.orderBy('attention', 'asc')
-
-// 	let allPosts: PostWithStats[] = await query.execute()
-
-// 	return allPosts
-// }
 
 export async function getScoredPost(
 	tag: string,
@@ -207,7 +135,7 @@ export async function getEffectOnParent(
 	return effect
 }
 
-export async function getRankedPosts(tag: string): Promise<RankedPosts> {
+export async function getRankedPosts(tag: string): Promise<RankedPost[]> {
 	const tagId = await getOrInsertTagId(tag)
 
 	let query = db
@@ -238,15 +166,10 @@ export async function getRankedPosts(tag: string): Promise<RankedPosts> {
 						? null
 						: await getScoredNoteInternal(tagId, post.topNoteId!),
 				parent: post.parentId == null ? null : await getPost(post.parentId!),
-				random: false,
 			}
 		}),
 	)
-
-	return {
-		posts: rankedPosts,
-		effectiveRandomPoolSize: 0,
-	}
+	return rankedPosts
 }
 
 export async function getChronologicalToplevelPosts(
@@ -278,7 +201,7 @@ export async function getChronologicalToplevelPosts(
 export async function getRankedReplies(
 	tag: string,
 	postId: number,
-): Promise<RankedPosts> {
+): Promise<RankedPost[]> {
 	const tagId = await getOrInsertTagId(tag)
 	let query = db
 		.withRecursive('Descendants', db =>
@@ -322,7 +245,7 @@ export async function getRankedReplies(
 
 	const scoredPosts: ScoredPost[] = await query.execute()
 
-	const thisPost = await getPost(postId)
+	// const thisPost = await getPost(postId)
 
 	const rankedPosts: RankedPost[] = await Promise.all(
 		scoredPosts.map(async (post: ScoredPost) => {
@@ -333,15 +256,11 @@ export async function getRankedReplies(
 						? null
 						: await getScoredNoteInternal(tagId, post.topNoteId!),
 				parent: await getPost(post.parentId!),
-				random: false,
 			}
 		}),
 	)
 
-	return {
-		posts: rankedPosts,
-		effectiveRandomPoolSize: 0,
-	}
+	return rankedPosts
 }
 
 export async function getRankedTags(): Promise<string[]> {

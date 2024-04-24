@@ -3,11 +3,6 @@ import { type VoteEvent, type InsertableVoteEvent } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
 import * as scoreEvents from '#app/score-events.ts'
 import { writeVoteEvent } from '#app/vote-events.ts'
-import {
-	type Location,
-	logTagVote,
-	logVoteOnRandomlyRankedPost,
-} from './attention.ts'
 import { getOrInsertTagId } from './tag.ts'
 
 export enum Direction {
@@ -24,7 +19,6 @@ export async function vote(
 	postId: number,
 	noteId: number | null,
 	direction: Direction,
-	randomLocation?: Location | null,
 	waitForScoreEvent: Boolean = false,
 ): Promise<VoteEvent> {
 	const tagId = await getOrInsertTagId(tag)
@@ -50,12 +44,6 @@ export async function vote(
 
 	if (waitForScoreEvent) {
 		await scoreEventPromise
-	}
-
-	// Todo: dedupe in case user toggles vote multiple times
-	if (randomLocation != null) {
-		logTagVote(tag)
-		logVoteOnRandomlyRankedPost(randomLocation)
 	}
 
 	return voteEvent

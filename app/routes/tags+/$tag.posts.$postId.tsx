@@ -1,8 +1,4 @@
-import {
-	type ActionFunctionArgs,
-	type DataFunctionArgs,
-	json,
-} from '@remix-run/node'
+import { type DataFunctionArgs, json } from '@remix-run/node'
 
 import {
 	Link,
@@ -11,16 +7,14 @@ import {
 } from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
-import { zfd } from 'zod-form-data'
 
-import { logPostPageView } from '#app/attention.ts'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Feed } from '#app/components/ui/feed.tsx'
 import { PostContent, PostDetails } from '#app/components/ui/post.tsx'
 import { type Post } from '#app/db/types.ts'
 
 import { getUserPositions } from '#app/positions.ts'
-import { createPost, getTransitiveParents } from '#app/post.ts'
+import { getTransitiveParents } from '#app/post.ts'
 import {
 	getRankedReplies,
 	getTopNote,
@@ -29,13 +23,12 @@ import {
 	type ScoredPost,
 	type ScoredNote,
 } from '#app/ranking.ts'
-import { getUserId, requireUserId } from '#app/utils/auth.server.ts'
+import { getUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
 import { Direction } from '#app/vote.ts'
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
-const contentSchema = z.coerce.string()
 
 export async function loader({ params, request }: DataFunctionArgs) {
 	invariant(params.postId, 'Missing postid param')
@@ -50,12 +43,9 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	const transitiveParents = await getTransitiveParents(post.id)
 
-	let replies: RankedPost[] = (await getRankedReplies(tag, post.id)).posts
+	let replies: RankedPost[] = await getRankedReplies(tag, post.id)
 
-	// Get the top note, which may be selected randomly
 	let topNote: ScoredNote | null = await getTopNote(tag, post)
-
-	await logPostPageView(tag, post.id, userId, topNote?.id || null)
 
 	// let positions: Map<number, Direction> = new Map<number, Direction>()
 	let positions =
@@ -81,12 +71,6 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	return result
 }
-
-const replySchema = zfd.formData({
-	parentId: postIdSchema,
-	tag: tagSchema,
-	content: contentSchema,
-})
 
 export default function Post() {
 	const {
@@ -119,7 +103,6 @@ export default function Post() {
 				post={post}
 				note={null}
 				teaser={false}
-				randomLocation={null}
 				position={position}
 				notePosition={notePosition}
 				loggedIn={loggedIn}

@@ -1,5 +1,4 @@
 import bcrypt from 'bcryptjs'
-import { logTagPageView } from '#app/attention.ts'
 import { db } from '#app/db.ts'
 import { createPost } from '#app/post.ts'
 import { getRankedPosts } from '#app/ranking.ts'
@@ -65,7 +64,6 @@ export async function seed() {
 
 	// Then, bob views the page
 	const rankedPosts = await getRankedPosts(tag)
-	logTagPageView(bob, tag, rankedPosts)
 
 	// Then bob posts a response to alice's post
 	let post2 = await createPost(
@@ -80,7 +78,6 @@ export async function seed() {
 
 	// bob views home page
 	await getRankedPosts(tag)
-	logTagPageView(alice, tag, rankedPosts)
 
 	// And responds to bob's response
 	let post3 = await createPost(
@@ -100,7 +97,6 @@ export async function seed() {
 
 	// Bob then views the page again
 	await getRankedPosts(tag)
-	logTagPageView(bob, tag, rankedPosts)
 
 	// And respond's to Alices's latest post
 	await createPost(
@@ -121,7 +117,6 @@ export async function seed() {
 	// Bob then views the page once again
 	await getRankedPosts(tag)
 	// console.log("Ranked posts", posts)
-	logTagPageView(bob, tag, rankedPosts)
 
 	// And respond's to Alice's third post
 	let post7 = await createPost(
