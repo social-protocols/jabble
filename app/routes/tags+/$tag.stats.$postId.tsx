@@ -12,6 +12,7 @@ import {
 	getScoredPost,
 	getEffectOnParent,
 } from '#app/ranking.ts'
+import { getOrInsertTagId } from '#app/tag.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
 
 const postIdSchema = z.coerce.number()
