@@ -85,7 +85,7 @@ export async function login({
 	const updatedAt = new Date().valueOf()
 	const userId = user.id
 
-	console.log("Creating session with ", id, expirationDate, updatedAt, userId)
+	console.log('Creating session with ', id, expirationDate, updatedAt, userId)
 
 	const query = db
 		.insertInto('Session')
@@ -97,9 +97,9 @@ export async function login({
 		})
 		.returning(['id', 'expirationDate', 'userId'])
 
-	console.log("Login Query sql", query.compile().sql)
+	console.log('Login Query sql', query.compile().sql)
 	const session = await query.executeTakeFirstOrThrow()
-	console.log("Session is", session)
+	console.log('Session is', session)
 
 	return session
 }
