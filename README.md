@@ -9,74 +9,79 @@ Read how Jabble makes conversations better below. And signup here to [get notifi
 Like many online social platforms, in Jabble users post things and other users can reply. Here's an example:
 
 
-![screenshot of a post with a reply](/public/img/post-with-reply.png)
+![screenshot of a post with a reply](public/img/post-with-reply.png)
 <br/>*a post with a reply*
 
 Each post or reply then gets a score, shown as a percentage, based on how many upvotes and downvotes it receives.
 
 
-![screenshot of reply with votes](/public/img/post-with-vote.png)
+![screenshot of reply with votes](public/img/post-with-vote.png)
 <br/>*a reply with votes*
 
 
 **However, not all votes count equally!** Two factors affect the strength of your votes:
 
-1) Your reputation starts at zero, and your must earn reputation for your votes to count.
+1) You must earn **reputation** before your votes have any weight.
 
-2) your votes on a post get more weight if they read and acknowledge certain replies to that post made by other users.
+2) Your votes on a post get more weight if they **read and acknowledge certain replies** to that post made by other users.
 
-### Critical Replies
+# 1. Information and Fairness
 
-When certain conditions are met, a reply to a post can be designated a **critical reply**.
+When certain conditions are met, a reply to a post will be designated a **critical reply**. The critical reply will be indicated by a green dot.
 
-Once a critical reply is identified, all users who voted on the post will be notified. 
-
-![screenshot of a critical reply](/public/img/critical-reply.png)
+![screenshot of a critical reply](public/img/critical-reply.png)
 <br/>*a critical reply*
 
-The score on the post will then be based on the votes of those who have read and acknowledged the critical reply.
+Users who have voted on the post, but have not yet seen the critical reply, will be notified. 
 
-### Why This Works
+Once a user has voted on the critical reply, their vote on the post will get more weight. If the critical reply changes their mind about the post, they can also change their vote on the post.
 
-The idea is simple. If one user shares important information that might influence other people's votes, then people should have a chance to consider that information **before** they vote.
+![screenshot of a critical reply after vote](public/img/critical-reply-after-vote.png)
+<br/>*a critical reply after vote*
 
-This simple rule is essential to producing a **fair** outcome. In a jury trail, is it not fair if information that would have changed the jurors' verdict is withheld from them. And it is not fair if a video gets more upvotes than it would have if users knew it was not authentic.
 
-Sure, a viral video on social media is not a jury trail. It doesn't really matter if it gets more votes than it deserves, does it?
 
-But actually, **what kind of content gets attention in social media matters a great deal**. When misinformed or divisive content is rewarded with attention, people post and share more misinformed and divisive content. The only way to fix conversations on the internet is to make it so that the right kind of content gets more attention.
 
-In a platform where the number of votes determines how much attention something receives, it matters a great deal if an in authentic video gets more votes than it would have if users knew it was inauthentic. People don't *want* their time and attention wasted with fake videos. And yet the fake video is rewarded with attention because people voted on it, not knowing it was fake. This isn't the way it should work.
+## The Big Idea
 
-Social media can be thought of as a protocol for collaboratively determining what content receives attention. Upvotes and downvotes are how the community expresses their intention. And so it's critical that the outcome of the vote be informed and fair.
+The idea is simple. If one user shares information that might influence other people's votes, then people should have a chance to consider that information **before** they decide how to vote.
 
-### Identifying the Critical Reply
+Clickbait, disinformation, misinformation, etc. are all fundamentally the same thing: misinformed content. Stuff people wouldn't click on, upvote or share if they knew more.
 
-Jabble identifies a reply as critical if it appears to be **convincing**: if it makes people more or less like to vote on the post.
+The antidote to misinformation is...information. The Jabble tries to promote more informed conversations based on the simple idea of looking at how people vote if they have more information.
 
-For example, suppose the fake video above initially receives 95 upvotes. But then the next five users see the comment claiming it is fake, and they all downvote.
+## Identifying the Critical Reply
 
-So 95/95 of the users who *didn't* see the reply upvoted, and 0/5 users *who* did see the reply upvoted. The reply reply seems to have changed the upvote probability dramatically, from 100% to 0%.
+Jabble identifies a reply as critical if it appears to be **convincing**: if it makes people more or less like to vote on the post. 
 
-So the reply is identified as critical, and the score on the post is provisionally 0:5, instead of 95:0.
+Suppose that, in our example with the inauthentic earthquake video, the upvote probability starts out close to 95%. But among users who voted on the reply claiming the video was not what it claimed to be, the upvote probability falls to 5%. Since it appears to be very convincing, it is designated a critical reply. 
 
-### Replies to the Reply
 
-But the conversation is not finished! Jabble informs users who upvoted the video and gives them a chance to change their vote or to respond. This is important for a couple of reasons.
+### The Critical Thread
 
-First, five people is a small sample size.
+But the conversation is not finished! Jabble informs users who upvoted the video and gives them a chance to change their vote or to respond. Maybe the video isn't fake after all! If anyone makes a convincing reply to the reply, then that reply will be designated as the critical comment, and the process will continue.
 
-Second, this may be biased, self selected sample.
+The thread of the most convincing replies, the most convincing reply to that reply, etc. is called the critical thread.
 
-Third, somebody might have a counter-argument. Maybe the video isn't fake after all! If anyone makes a convincing reply to the reply, then that reply will be designated as the critical comment, and the process will continue.
+![screenshot of a critical thread](public/img/critical-thread.png)
+<br/>*a critical thread*
 
-#### The Critical Thread
 
-It might seem like this process could go on forever, but it probably won't. As we [write about here], and hope to demonstrate with early Jabble users, we expect most discussions will converge after the strongest arguments have been made on each side of an issue and nobody can find anything to say that further changes minds. 
+It might seem like this process could go on forever, but it probably won't. As we hope to demonstrate with early Jabble users, we expect most discussions will converge after the strongest arguments have been made on each side of an issue and nobody can find anything to say that further changes minds. 
 
-#### Informed Votes
+## Informed Votes
 
-The votes of users who have seen and acknowledge the critical thread, with some statistical adjustments to correct for self-selection bias, are called the **informed votes**. The final score of a post is determined by the informed votes.
+The votes of users who have voted on the critical thread are called the **informed votes**. The score on the post is an estimate of the **informed upvote probability**. 
+
+In our example with the earthquake video, informed users are much less likely to upvote, and since informed votes have more weight, as users start to vote on the critical reply the estimated informed upvoted probability falls quickly.
+
+Once a sufficiently large sample of informed votes has been collected, the estimate of the informed upvote probability is dominated by the informed votes. The exact formula for calculating the informed upvote probability is described [here](https://social-protocols.org/global-brain/modeling-upvote-probability.html). 
+
+In this example, even though most users have upvoted the video, the informed upvote probability approaches 5%. 
+
+![a chart of the informed vs. uniformed upvote probability in a simulated scenario](public/img/informed-probability-chart.png)
+<br/>*the informed vs. uniformed upvote probability in a simulated scenario*
+
 
 # 2. Reputation and Reasonableness
 
@@ -98,8 +103,7 @@ So if there is an equilibrium at people voting honestly **given** the informatio
 
 # 3. Karma and Community
 
-In Jabble, you contribute to a conversation not so much by what you say, but *what you vote for*. Posts themselves are anonymous, and the karma earned by a post is divided among all the people who upvoted the post, with earlier upvoters receiving a larger share of karm
-a than later upvoters. The author of the post themselves, being the first upvoter, receives the largest share.
+In Jabble, you contribute to a conversation not so much by what you say, but *what you vote for*. Posts themselves are anonymous, and the karma earned by a post is divided among all the people who upvoted the post, with earlier upvoters receiving a larger share of karma than later upvoters. The author of the post themselves, being the first upvoter, receives the largest share.
 
 But don't try to harvest karma just by upvoting everything. You also have a *reputation* score within each community. Before your votes have any weight, you need to build reputation by upvoting content that ultimately earns a high score from existing members of the community (or downvoting low-scoring content). And if you upvote too many things that receive a low score (or vice versa), you will lose reputation in that community. 
 
@@ -131,4 +135,20 @@ A final piece of the Jabble process is the prediction market. At any time, you c
 TODO: describe predcition arket
 
 
+
+
+
+
+
+## Fairness
+
+This is essential to producing a **fair** outcome. In a jury trail, is it not fair if information that would have changed the jurors' verdict is withheld from them. Similarly it is not fair if a video gets more upvotes than it would have if users knew it was not authentic.
+
+Sure, a viral video on social media is not a jury trail. It doesn't really matter if it gets more votes than it deserves, does it?
+
+But actually, **what kind of content gets attention in social media matters a great deal**. When misinformed or divisive content is rewarded with attention, people post and share more misinformed and divisive content. The only way to fix conversations on the internet is to make it so that the right kind of content gets more attention.
+
+In a platform where the number of votes determines how much attention something receives, it matters a great deal if an in authentic video gets more votes than it would have if users knew it was inauthentic. People don't *want* their time and attention wasted with fake videos. And yet the fake video is rewarded with attention because people voted on it, not knowing it was fake. This isn't the way it should work.
+
+Social media can be thought of as a protocol for collaboratively determining what content receives attention. Upvotes and downvotes are how the community expresses their intention. And so it's critical that the outcome of the vote be informed and fair.
 
