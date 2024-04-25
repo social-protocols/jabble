@@ -101,3 +101,6 @@ use-production-data:
 	rm -f "$VOTE_EVENTS_PATH"
 	rm -f "$GB_DATABASE_PATH"
 	touch "$SCORE_EVENTS_PATH"
+
+production-db:
+	fly ssh console -C 'sqlite3 /litefs/data/sqlite.db'
