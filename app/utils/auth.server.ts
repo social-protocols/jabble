@@ -80,24 +80,27 @@ export async function login({
 	const user = await verifyUserPassword({ username }, password)
 	if (!user) return null
 
-	const session = await db
+	const id = createId()
+	const expirationDate = getSessionExpirationDate().valueOf()
+	const updatedAt = new Date().valueOf()
+	const userId = user.id
+
+	console.log("Creating session with ", id, expirationDate, updatedAt, userId)
+
+	const query = db
 		.insertInto('Session')
 		.values({
-			id: createId(),
-			expirationDate: getSessionExpirationDate().valueOf(),
-			updatedAt: new Date().valueOf(),
-			userId: user.id,
+			id: id,
+			expirationDate: expirationDate,
+			updatedAt: updatedAt,
+			userId: userId,
 		})
 		.returning(['id', 'expirationDate', 'userId'])
-		.executeTakeFirstOrThrow()
 
-	// const session = await prisma.session.create({
-	// 	select: { id: true, expirationDate: true, userId: true },
-	// 	data: {
-	// 		expirationDate: getSessionExpirationDate(),
-	// 		userId: user.id,
-	// 	},
-	// })
+	console.log("Login Query sql", query.compile().sql)
+	const session = await query.executeTakeFirstOrThrow()
+	console.log("Session is", session)
+
 	return session
 }
 
