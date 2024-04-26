@@ -1,4 +1,3 @@
-import { useNavigate } from '@remix-run/react'
 import {
 	useState,
 	useRef,
@@ -7,6 +6,116 @@ import {
 	type CSSProperties,
 } from 'react'
 
+function truncateSingleParagraph(element: HTMLElement, lines: number | null) {
+	const lineHeight = parseFloat(window.getComputedStyle(element).lineHeight)
+
+	const childHeight = element.clientHeight
+
+	// The below is an alternative to lineClamp that creates more consistency between Safari and Chrome
+	element.style.display = 'block'
+	element.style.overflow = 'hidden'
+	element.style.maxHeight =
+		lines == null ? '' : (lineHeight * lines).toString() + 'px'
+
+	// Use the below implementation in case we find any problems with the maxHeight approach above
+	// element.style.display = '-webkit-box'
+	// element.style.webkitBoxOrient = 'vertical'
+	// element.style.overflow = 'hidden'
+	// element.style.webkitLineClamp = lines == null ? '' : lines.toString()
+
+	return lines !== null && childHeight / lineHeight > lines
+}
+
+/*
+	This function truncates an HTML element to the specific number of lines, and adds an ellipsis
+	below the element if it is truncated.
+
+	This works like -webkit-line-clamp, but for *multi-paragraph* text. -webkit-line-clamp only works
+	for an element with a single paragraph of text/inline elements. If it contains multiple block elements
+	like paragraphs or divs with spaces between them, it doesn't work in Safari. 
+
+	Simply setting max-height won't work can't be used to cut off at a specific number of lines. First,
+	the inner divs may have varying line heights, and they may have gaps between them. To avoid cutting
+	off in the middle of a line, or after a gap between paragraphs, a more complex calculation is necessary.
+
+	Some related discussions:
+			https://codepen.io/jimratliff/pen/BaBzzbq
+
+	An alternative approach may be to set a max-height and using a fade, as described here: 
+		https://stackoverflow.com/a/66024788
+	This would still require Javascript to add an ellipsis or "read more" link when text has been truncated.
+
+	Currently, this function assumes that any inner elements are themselves "paragraphs" whose height
+	in lines can be calculated.
+
+	Considerations of functionality to preserves when refactoring or modifying
+	- Respects formatting of content when there are mulitple block elements
+	- Work when resizing the window
+	- Doesn't cut off in the middle of a line
+	- Doesn't cut off after blank line between paragraphs
+*/
+
+function truncateMultiParagraphDiv(element: HTMLElement, lines: number) {
+	const contentDiv = element.firstChild as HTMLElement
+
+	if (!contentDiv.children) {
+		return truncateSingleParagraph(contentDiv, lines)
+	}
+
+	const children: HTMLCollection = contentDiv.children!
+	let n = children.length
+
+	// This function will re-run when the window is resized. So one of the children may already have been
+	// truncated. The block below resets all the children (so they are all visible and untruncated).
+	for (let i = 0; i < n; i++) {
+		let child = children[i]! as HTMLElement
+		truncateSingleParagraph(child, null)
+	}
+
+	// Calculate the maximum height in pixils
+	const elementTop = contentDiv.offsetTop
+	const lineHeight = parseFloat(window.getComputedStyle(contentDiv).lineHeight)
+	const maxHeight = lineHeight * lines
+
+	let isTruncated = false
+	if (contentDiv.clientHeight >= maxHeight) {
+		if (n == 1) {
+			// If there is only one inner div, it's easy! Just truncate it.
+			const child = children[0]! as HTMLElement
+			return truncateSingleParagraph(child, lines)
+		} else {
+			for (let i = 0; i < n; i++) {
+				let child = children[i]! as HTMLElement
+
+				let relativeTop = child.offsetTop - elementTop
+				let relativeBottom = child.offsetTop - elementTop + child.clientHeight
+
+				// If the element doesn't fit within maxHeight
+				if (relativeBottom >= maxHeight) {
+					// And if the top of the element does fit
+					if (relativeTop < maxHeight) {
+						// Then truncate this paragraph
+						const linesRemaining = Math.floor(
+							(maxHeight - relativeTop) / lineHeight,
+						)
+						if (linesRemaining == 0) {
+							child.style.display = 'none'
+						} else {
+							truncateSingleParagraph(child, linesRemaining)
+						}
+					} else {
+						// Otherwise hide this (and all subsequent) paragraphs
+						child.style.display = 'none'
+					}
+					isTruncated = true
+				}
+			}
+		}
+	}
+
+	return isTruncated
+}
+
 export const Truncate: React.FC<{
 	children: ReactNode
 	lines?: number // Number of lines after which to truncate
@@ -14,97 +123,34 @@ export const Truncate: React.FC<{
 	const [isTruncated, setIsTruncated] = useState(false)
 	const postContentRef = useRef(null)
 
-	const showOrHideEllipsis = function () {
-		var element: HTMLElement = postContentRef.current!
-
-		/* Show all child elements, because we may have hidden some of them last time this function ran */
-		const contentDiv = element.firstChild as ChildNode & {
-			children: HTMLCollection
-		}
-
-		if (!contentDiv.children) {
-			return
-		}
-
-		const children: HTMLCollection = contentDiv.children!
-
-		let n = children.length
-		for (let i = 0; i < n; i++) {
-			let child = children[i]! as HTMLElement
-			child.style.display = 'inline-block'
-		}
-
-		/* Set the isTruncated state to true if there is any content that has been cut off */
-		const maxHeight = element.clientHeight
-		if (element.scrollHeight > maxHeight) {
-			setIsTruncated(true)
-		} else {
-			setIsTruncated(false)
-		}
-
-		/* The following eliminates the one-line gap that occurs between the
-                  first paragraph of the content and the ellipsis in some cases.
-                  Specifically, when the content happens to be cut off between
-                  paragraphs after the vertical gap between one paragraph but before
-                  the next paragraph, then the we end up with an unnecessary gap.
-
-               The content div uses a vertical flexbox layout with a gap, and the gap
-               is only shown **between** elements. So if we set display=none for
-               elements that are completely cutoff, then no gap will be placed
-               after the preceding element. */
-
-		if (lines !== undefined) {
-			const elementTop = element.offsetTop
-			let n = children.length
-
-			for (let i = 0; i < n; i++) {
-				let child = children[i]! as HTMLElement
-
-				let relativeTop = child.offsetTop - elementTop
-				if (relativeTop >= maxHeight - 2 && i > 0) {
-					child.style.display = 'none'
-				}
-			}
-		}
-	}
-
 	/* Show or hide the ellipsis and readMoreLink based on the
           content of the DOM: specifically, whether or not the post content div
           is being cut off or not. The code below updates the state correctly
           when the browser window is resized.*/
 	useEffect(() => {
-		window.addEventListener('resize', showOrHideEllipsis)
-		showOrHideEllipsis()
-		return () => window.removeEventListener('resize', showOrHideEllipsis)
-	}, [showOrHideEllipsis])
+		function truncate() {
+			if (lines === undefined) {
+				return
+			}
 
-	const navigate = useNavigate()
+			var element: HTMLElement = postContentRef.current!
 
-	const style: CSSProperties = {
-		display: '-webkit-box',
-		WebkitBoxOrient: 'vertical',
-		WebkitLineClamp: lines || undefined,
-		overflow: 'hidden',
-		wordWrap: 'break-word',
-		width: '100%', // Ensure the component's width is bounded by its parent
-	}
-
-	const ellipsisStyle: CSSProperties = {
-		position: 'relative',
-		fontSize: '24px',
-		paddingLeft: '0px',
-		lineHeight: '0.75em',
-		top: '0px',
-		paddingTop: '0px',
-		marginTop: '-0.4em',
-	}
+			const truncated = truncateMultiParagraphDiv(element, lines)
+			if (truncated) {
+				setIsTruncated(true)
+			} else {
+				setIsTruncated(false)
+			}
+		}
+		window.addEventListener('resize', truncate)
+		truncate()
+		return () => window.removeEventListener('resize', truncate)
+	}, [lines])
 
 	return (
 		<>
-			<div ref={postContentRef} style={style}>
-				{children}
-			</div>
-			{isTruncated && <div style={ellipsisStyle}>...</div>}
+			<div ref={postContentRef}>{children}</div>
+			{isTruncated && <div className="ellipsis">...</div>}
 		</>
 	)
 }

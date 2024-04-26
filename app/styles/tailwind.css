@@ -119,12 +119,19 @@
 		@apply underline;
 	}
 
+
 	.markdown {
-		/* Markdown element will always contain a single div because of the forceWrapper option passed in markdown.tsx  */
-		> div {
-			display: flex;
-			flex-direction: column;
-			gap: var(--post-content-line-height);
+
+		> * {
+			margin-top: var(--post-content-line-height); /* consistent spacing */
+		}
+
+		> *:first-child {
+			margin-top: 0; /* remove margin from the last child */
+		}
+		> .hide {
+			border: solid red;
+			display: none;
 		}
 
 		h1 {
@@ -213,7 +220,15 @@
 			margin-bottom: 0px;
 		}
 	}
-
+	.ellipsis {
+		position: relative;
+		font-size: 24px;
+		padding-left: 0px;
+		line-height: 0.75em;
+		top: 0px;
+		padding-top: 0px;
+		margin-top: -0.4em;
+	}
 	.threadline {
 		@apply border-l-4;
 		border-color: var(--postparent-threadline);
