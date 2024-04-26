@@ -27,23 +27,29 @@ function truncateSingleParagraph(element: HTMLElement, lines: number | null) {
 }
 
 /*
-	This function truncates an HTML element to the specific number of lines, and adds an ellipsis
+	This function truncates an element to the specific number of lines, and adds an ellipsis
 	below the element if it is truncated.
 
 	This works like -webkit-line-clamp, but for *multi-paragraph* text. -webkit-line-clamp only works
 	for an element with a single paragraph of text/inline elements. If it contains multiple block elements
 	like paragraphs or divs with spaces between them, it doesn't work in Safari. 
 
-	Simply setting max-height won't work can't be used to cut off at a specific number of lines. First,
+	Simply setting max-height can't be used to cut off at an exact number of lines. First,
 	the inner divs may have varying line heights, and they may have gaps between them. To avoid cutting
-	off in the middle of a line, or after a gap between paragraphs, a more complex calculation is necessary.
+	off in the middle of a line, a more complex calculation is necessary. 
 
-	Some related discussions:
+	Also, for multiple paragraph text, the space between paragraphs adds complexity. If the first paragraph
+	is two lines, and you cut of after three lines, then you will have an unnecessary blank line before the
+	ellipsis. It looks cleaner to cut off after two lines in this case.
+
+	Some related discussions about truncating multi-paragraph text:
 			https://codepen.io/jimratliff/pen/BaBzzbq
+
 
 	An alternative approach may be to set a max-height and using a fade, as described here: 
 		https://stackoverflow.com/a/66024788
-	This would still require Javascript to add an ellipsis or "read more" link when text has been truncated.
+	This would still require Javascript to add an ellipsis or "read more" link when text has been truncated, and leaves
+	the problem of blank lines after a paragraph.
 
 	Currently, this function assumes that any inner elements are themselves "paragraphs" whose height
 	in lines can be calculated.
@@ -53,6 +59,7 @@ function truncateSingleParagraph(element: HTMLElement, lines: number | null) {
 	- Work when resizing the window
 	- Doesn't cut off in the middle of a line
 	- Doesn't cut off after blank line between paragraphs
+	- Works consistently for safari and chrome
 */
 
 function truncateMultiParagraphDiv(element: HTMLElement, lines: number) {
