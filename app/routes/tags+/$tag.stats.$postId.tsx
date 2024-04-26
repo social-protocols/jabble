@@ -10,9 +10,10 @@ import { Markdown } from '#app/components/markdown.tsx'
 import {
 	type ScoredPost,
 	getScoredPost,
-	getEffectOnParent,
 } from '#app/ranking.ts'
-import { relativeEntropy } from '#app/utils/entropy.ts'
+import { PostContent } from '#app/components/ui/post.tsx'
+import { StatsPostAnnotation, StatsInformedRatioChange, EffectStrengthConnectorLine } from '#app/components/ui/post-stats.tsx'
+import { Card } from '#app/components/ui/card.tsx'
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
@@ -25,18 +26,18 @@ export async function loader({ params }: DataFunctionArgs) {
 
 	const post: ScoredPost = await getScoredPost(tag, postId)
 
-	const effectOnParent =
-		post.parentId == null ? null : await getEffectOnParent(tag, post.id)
+	const parent = post.parentId == null ? null : await getScoredPost(tag, post.parentId)
 
+	const topReply = post.topNoteId == null ? null : await getScoredPost(tag, post.topNoteId)
+
+	// TODO: Is this comment still relevant?
 	// So the first of the replies and the top note are not necessarily the same thing?!?
 	// The top note is the most convincing one. But the replies are ordered by *information rate*.
 
-	// let topNote: Post | null = replies.length > 0 ? replies[0]! : null
-	// let topNote = post.topNoteId ? await getPost(post.topNoteId) : null
-
 	let result = json({
 		post,
-		effectOnParent,
+		parent,
+		topReply,
 		tag,
 	})
 
@@ -44,113 +45,86 @@ export async function loader({ params }: DataFunctionArgs) {
 }
 
 export default function PostStats() {
-	const { post, effectOnParent, tag } = useLoaderData<typeof loader>()
+	const { post, parent, topReply, tag } = useLoaderData<typeof loader>()
 
-	// const dkl = relativeEntropy(post.p, post.q)
-	// const totalRelativeEntropy = post.qSize * dkl
+	const headerMarkdown = `
+		# Stats for post [${post.id}](/tags/${tag}/posts/${post.id}) in [#${tag}](/tags/${tag})
+	`.trim()
 
-	// const informationValueNewVotes = post.oCount * (1 + Math.log2(post.p))
-	// const informationValueTotal = informationValueNewVotes - totalRelativeEntropy
+	const parentPost =
+		parent === null ? <div></div> :
+		<Card className={'bg-post'}>
+			<StatsPostAnnotation annotation={`Post ${parent.id}`}/>
+			<PostContent
+				content={parent.content}
+				maxLines={3}
+				linkTo={`/tags/${tag}/posts/${parent.id}`}
+				deactivateLinks={true}
+			/>
+			<StatsInformedRatioChange
+				informedProb={parent.p}
+				uninformedProb={parent.q}
+			/>
+		</Card>
 
-	// - **attention:** ${post.attention.toFixed(3)}
-	// - **vote rate:** ${post.voteRate.toFixed(3)}
-	//   - voteRate = Bayesian Average(votes/attention, voteRatePrior)
-	// - **information rate (new votes):** ${post.informationRate.toFixed(3)}
-	//   - informationRate = voteRate * (1 + log(p))
+	const targetPost =
+		<Card className={'bg-post'}>
+			<StatsPostAnnotation annotation={`Post ${post.id}`}/>
+			<PostContent
+				content={post.content}
+				maxLines={3}
+				linkTo={`/tags/${tag}/posts/${post.id}`}
+				deactivateLinks={true}
+			/>
+			<StatsInformedRatioChange
+				informedProb={post.p}
+				uninformedProb={post.q}
+			/>
+		</Card>
 
-	const overallMarkdown = `
-# Stats for post [${post.id}](/tags/${tag}/posts/${
-		post.id
-	}) in [#${tag}](/tags/${tag})
-
-## Overall
-
-- **parent:** ${
-		post.parentId == null
-			? 'null'
-			: `[${post.parentId}](/tags/${tag}/stats/${post.parentId})`
-	}
-- **overall votes:** ${post.oCount} ▲ ${
-		post.oSize - post.oCount
-	} ▼ &nbsp; **o**: ${(post.o * 100).toFixed(1)}%
-- **p:** ${(post.p * 100).toFixed(1)}%
-- **score:** ${post.score}
-`
-
-	// - **p:** ${post.p.toFixed(3)}
-	// - p = ${
-	// 	post.topNoteId === null
-	// 		? 'q'
-	// 		: `Bayesian Average(upvotes/votes given shown top note ${post.topNoteId}), q)`
-	// }
-
-	const topNoteMarkdown =
-		post.topNoteId == null
-			? ''
-			: `
-## Top Note 
-
-- **top note id:** ${
-					post.topNoteId == null
-						? 'null'
-						: `[${post.topNoteId}](/tags/${tag}/stats/${post.topNoteId})`
-				}
-- **informed votes:** &nbsp;&nbsp;&nbsp;&nbsp; ${post.pCount} ▲ ${
-					post.pSize - post.pCount
-				} ▼ &nbsp; **p**: ${(post.p * 100).toFixed(1)}%
-- **uninformed votes:** ${post.qCount} ▲ ${
-					post.qSize - post.qCount
-				} ▼ &nbsp; **q**: ${(post.q * 100).toFixed(1)}%
-- **r**: ${post.r.toFixed(3)}
-`
-
-	// - q = Bayesian Average(upvotes/votes), upvoteProbabilityPrior)
-	// - see [Docs on Rating and Evaluating Content](https://social-protocols.org/global-brain/rating-and-evaluating-content.html)
-
-	const e = effectOnParent
-	const effectOnParentMarkdown =
-		e === null
-			? ''
-			: `
-## Effect on Parent
-
-- **informed votes:** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${e.pCount} ▲  ${
-					e.pSize - e.pCount
-				} ▼ &nbsp;  **p**: ${(e.p * 100).toFixed(1)}%
-- **uninformed votes:** ${e.qCount} ▲ ${e.qSize - e.qCount} ▼ &nbsp; **q:** ${(
-					e.q * 100
-				).toFixed(1)}%
-- **relative entropy:** ${relativeEntropy(e.p, e.q).toFixed(3)}
-- **cognitive dissonance:** ${(relativeEntropy(e.p, e.q) * e.qCount).toFixed(
-					3,
-				)} bits
-	`
-	// - cognitiveDissonance = votesTotal * Dkl(p,q)
-	// - see [Docs on Cognitive Dissonance](https://social-protocols.org/global-brain/cognitive-dissonance.html)
-	// - relativeEntropy = DKL(p, q)
-	// - **information value created (new votes)**: ${informationValueNewVotes.toFixed(
-	// 		3,
-	// 	)}
-	//   - informationValue = votesTotal * (1 + log(p))
-	//   - see [Docs on Information Value](https://social-protocols.org/global-brain/information-value.html)
-	// - **information value created (total)**: ${informationValueTotal.toFixed(3)}
-	//   - informationValue = informationValueNewVotes - cognitiveDissonance
-	// 	")
+	const topReplyPost =
+		topReply === null ? <div></div> :
+		<Card className={'bg-post'}>
+			<StatsPostAnnotation annotation={`Top reply of post ${post.id}`}/>
+			<PostContent
+				content={topReply.content}
+				maxLines={3}
+				linkTo={`/tags/${tag}/posts/${topReply.id}`}
+				deactivateLinks={true}
+			/>
+		</Card>
 
 	return (
-		<div className="markdown">
-			<Markdown deactivateLinks={false}>
-				{overallMarkdown + topNoteMarkdown + effectOnParentMarkdown}
-			</Markdown>
-		</div>
+		<>
+			<div className='markdown mb-5'>
+				<Markdown deactivateLinks={false}>{headerMarkdown}</Markdown>
+			</div>
+			{parentPost}
+			{
+				parent !== null &&
+				<EffectStrengthConnectorLine
+					informedProb={parent!.p}
+					uninformedProb={parent!.q}
+				/>
+			}
+			{targetPost}
+			{
+				topReply !== null &&
+				<EffectStrengthConnectorLine
+					informedProb={post.p}
+					uninformedProb={post.q}
+				/>
+			}
+			{topReplyPost}
+		</>
 	)
 }
+
 
 export function ErrorBoundary() {
 	return (
 		<GeneralErrorBoundary
 			statusHandlers={{
-				// 404: ({ params }) => <p>Post not found</p>,
 				404: () => <p>Post not found</p>,
 			}}
 		/>
