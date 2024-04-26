@@ -7,6 +7,7 @@ import { PostForm } from '#app/components/ui/post-form.tsx'
 import { PostContent } from '#app/components/ui/post.tsx'
 import * as rankingTs from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
+import { Markdown } from '#app/components/markdown.tsx'
 
 export default function Index() {
 	// due to the loader, this component will never be rendered, but we'll return
@@ -32,8 +33,20 @@ export function FrontpageFeed({
 }) {
 	const [showNewDiscussionForm, setShowNewDiscussionForm] = useState(false)
 
+	const infoText = `
+# Welcome to Jabble
+
+Jabble is a new kind of conversation platform, designed to make conversations on the Internet more intelligent and less polarized.
+
+Read [how Jabble makes conversations better](https://github.com/social-protocols/social-network#readme) and [signup here to get notified when we launch](https://social-protocols.org/social-network/).
+	`
+
 	return (
 		<div className="container">
+			<div className='markdown mb-10'>
+				<Markdown deactivateLinks={false}>{infoText}</Markdown>
+			</div>
+
 			{showNewDiscussionForm ? (
 				<PostForm tag="global" className="mb-4" />
 			) : (
