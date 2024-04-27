@@ -1,5 +1,5 @@
 import MarkdownImpl from 'markdown-to-jsx'
-import { type ReactNode } from 'react'
+import { type ReactNode, Fragment } from 'react'
 
 const DeactivatedLink: React.FC<{ children: ReactNode }> = ({
 	children,
@@ -33,11 +33,14 @@ export function Markdown({
 		...overrides,
 		forceWrapper: true,
 		forceBlock: true,
+		wrapper: Fragment,
 	}
 
 	return (
-		<MarkdownImpl options={options} {...props}>
-			{children}
-		</MarkdownImpl>
+		<div className="markdown">
+			<MarkdownImpl options={options} {...props}>
+				{children}
+			</MarkdownImpl>
+		</div>
 	)
 }
