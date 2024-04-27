@@ -340,7 +340,7 @@ export function useOptimisticThemeMode() {
 	}
 }
 
-function ThemeSwitch({ userPreference }: { userPreference?: Theme | null }) {
+function _ThemeSwitch({ userPreference }: { userPreference?: Theme | null }) {
 	const fetcher = useFetcher<typeof action>()
 
 	const [form] = useForm({

@@ -1,6 +1,5 @@
 import * as fs from 'fs'
 import { env } from 'process'
-import { json } from 'express'
 import { type VoteEvent } from './db/types.ts'
 import { db } from './db.ts'
 
@@ -10,8 +9,6 @@ const voteEventsPath = env.VOTE_EVENTS_PATH!
 if (!voteEventsPath) {
 	throw new Error('VOTE_EVENTS_PATH must be set')
 }
-
-const voteEventsFH = fs.openSync(voteEventsPath, 'a')
 
 function camelToSnakeCase(str: string): string {
 	return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)

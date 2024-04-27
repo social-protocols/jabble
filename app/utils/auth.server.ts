@@ -150,7 +150,7 @@ export async function signup({
 		.returning('id')
 		.executeTakeFirstOrThrow()
 
-	const pwRecord = await db
+	await db
 		.insertInto('Password')
 		.values({
 			hash: hashedPassword,

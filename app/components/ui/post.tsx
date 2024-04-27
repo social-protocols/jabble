@@ -47,7 +47,6 @@ export function PostDetails({
 	note,
 	teaser,
 	position,
-	notePosition,
 	loggedIn,
 }: {
 	post: ScoredPost
