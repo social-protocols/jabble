@@ -30,7 +30,7 @@ export function Feed({
 				return (
 					<div key={post.id}>
 						{!directReply &&
-							post.parent &&
+							post.parent !== null &&
 							(followsParent ? (
 								<div className="link-to-parent threadline" />
 							) : (

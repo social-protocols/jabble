@@ -102,13 +102,12 @@ export async function processScoreEvents() {
 					})
 					scoreEventEmitter.emit(idStr)
 				} else if (data['effect'] !== undefined) {
-					insertEffectEvent(data)
+					await insertEffectEvent(data)
 				} else {
 					throw new Error('Unknown event type')
 				}
 			} catch (error) {
 				console.error('Error writing score JSON or writing to DB:', error)
-				tail.kill('SIGTERM')
 			}
 		})
 	})
