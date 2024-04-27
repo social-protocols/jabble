@@ -1,10 +1,4 @@
-import {
-	useState,
-	useRef,
-	useEffect,
-	type ReactNode,
-	type CSSProperties,
-} from 'react'
+import { useState, useRef, useEffect, type ReactNode } from 'react'
 
 function truncateSingleParagraph(element: HTMLElement, lines: number | null) {
 	const lineHeight = parseFloat(window.getComputedStyle(element).lineHeight)
@@ -12,18 +6,17 @@ function truncateSingleParagraph(element: HTMLElement, lines: number | null) {
 	const childHeight = element.clientHeight
 
 	// The below is an alternative to lineClamp that creates more consistency between Safari and Chrome
-	element.style.display = 'block'
-	element.style.overflow = 'hidden'
-	element.style.maxHeight =
-		lines == null ? '' : (lineHeight * lines).toString() + 'px'
-
-	// Use the below implementation in case we find any problems with the maxHeight approach above
-	// element.style.display = '-webkit-box'
-	// element.style.webkitBoxOrient = 'vertical'
+	// element.style.display = 'block'
 	// element.style.overflow = 'hidden'
-	// element.style.webkitLineClamp = lines == null ? '' : lines.toString()
+	// element.style.maxHeight =
+	// 	lines == null ? '' : (lineHeight * lines).toString() + 'px'
 
-	return lines !== null && childHeight / lineHeight > lines
+	element.style.display = '-webkit-box'
+	element.style.webkitBoxOrient = 'vertical'
+	element.style.overflow = 'hidden'
+	element.style.webkitLineClamp = lines == null ? '' : lines.toString()
+
+	return lines !== null && Math.round(childHeight / lineHeight) > lines
 }
 
 /*
@@ -66,7 +59,8 @@ function truncateMultiParagraphDiv(element: HTMLElement, lines: number) {
 	const contentDiv = element.firstChild as HTMLElement
 
 	if (!contentDiv.children) {
-		return truncateSingleParagraph(contentDiv, lines)
+		truncateSingleParagraph(contentDiv, lines)
+		return false
 	}
 
 	const children: HTMLCollection = contentDiv.children!
@@ -84,43 +78,43 @@ function truncateMultiParagraphDiv(element: HTMLElement, lines: number) {
 	const lineHeight = parseFloat(window.getComputedStyle(contentDiv).lineHeight)
 	const maxHeight = lineHeight * lines
 
-	let isTruncated = false
 	if (contentDiv.clientHeight >= maxHeight) {
 		if (n == 1) {
 			// If there is only one inner div, it's easy! Just truncate it.
 			const child = children[0]! as HTMLElement
-			return truncateSingleParagraph(child, lines)
-		} else {
-			for (let i = 0; i < n; i++) {
-				let child = children[i]! as HTMLElement
+			truncateSingleParagraph(child, lines)
+			return false
+		}
+		let isTruncated = false
+		for (let i = 0; i < n; i++) {
+			let child = children[i]! as HTMLElement
 
-				let relativeTop = child.offsetTop - elementTop
-				let relativeBottom = child.offsetTop - elementTop + child.clientHeight
+			let relativeTop = child.offsetTop - elementTop
+			let relativeBottom = child.offsetTop - elementTop + child.clientHeight
 
-				// If the element doesn't fit within maxHeight
-				if (relativeBottom >= maxHeight) {
-					// And if the top of the element does fit
-					if (relativeTop < maxHeight) {
-						// Then truncate this paragraph
-						const linesRemaining = Math.floor(
-							(maxHeight - relativeTop) / lineHeight,
-						)
-						if (linesRemaining == 0) {
-							child.style.display = 'none'
-						} else {
-							truncateSingleParagraph(child, linesRemaining)
-						}
-					} else {
-						// Otherwise hide this (and all subsequent) paragraphs
+			// If the element doesn't fit within maxHeight
+			if (relativeBottom >= maxHeight) {
+				// And if the top of the element does fit
+				if (relativeTop < maxHeight) {
+					// Then truncate this paragraph
+					const linesRemaining = Math.floor(
+						(maxHeight - relativeTop) / lineHeight,
+					)
+					if (linesRemaining == 0) {
 						child.style.display = 'none'
+					} else {
+						isTruncated = truncateSingleParagraph(child, linesRemaining)
 					}
-					isTruncated = true
+				} else {
+					// Otherwise hide this (and all subsequent) paragraphs
+					child.style.display = 'none'
 				}
 			}
 		}
+		return !isTruncated
 	}
 
-	return isTruncated
+	return false
 }
 
 export const Truncate: React.FC<{
