@@ -2,6 +2,7 @@ import { type DataFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { useState } from 'react'
+import { Markdown } from '#app/components/markdown.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { PostForm } from '#app/components/ui/post-form.tsx'
 import { PostContent } from '#app/components/ui/post.tsx'
@@ -32,8 +33,20 @@ export function FrontpageFeed({
 }) {
 	const [showNewDiscussionForm, setShowNewDiscussionForm] = useState(false)
 
+	const infoText = `
+# Welcome to Jabble
+
+Jabble is a new kind of conversation platform, designed to make conversations on the Internet more intelligent and less polarized.
+
+Read [how Jabble makes conversations better](https://github.com/social-protocols/social-network#readme) and [signup here to get notified when we launch](https://social-protocols.org/social-network/).
+	`
+
 	return (
 		<div className="container">
+			<div className="markdown mb-10">
+				<Markdown deactivateLinks={false}>{infoText}</Markdown>
+			</div>
+
 			{showNewDiscussionForm ? (
 				<PostForm tag="global" className="mb-4" />
 			) : (
