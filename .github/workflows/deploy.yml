@@ -37,7 +37,7 @@ jobs:
         run: npx tsc --noEmit
 
       - name: 🔬 Lint
-        run: npx eslint . # also checks formatting
+        run: npx eslint --max-warnings=0 . # also checks formatting
 
   vitest:
     if: false
