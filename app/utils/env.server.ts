@@ -1,37 +1,37 @@
 import { z } from 'zod'
 
 const schema = z.object({
-  NODE_ENV: z.enum(['production', 'development', 'test'] as const),
-  APP_DATABASE_PATH: z.string(),
-  APP_DATABASE_URL: z.string(),
-  SESSION_SECRET: z.string(),
-  INTERNAL_COMMAND_TOKEN: z.string(),
-  HONEYPOT_SECRET: z.string(),
-  CACHE_DATABASE_PATH: z.string(),
-  // If you plan on using Sentry, uncomment this line
-  // SENTRY_DSN: z.string(),
-  // If you plan to use Resend, uncomment this line
-  // RESEND_API_KEY: z.string(),
-  // If you plan to use GitHub auth, remove the default:
+	NODE_ENV: z.enum(['production', 'development', 'test'] as const),
+	APP_DATABASE_PATH: z.string(),
+	APP_DATABASE_URL: z.string(),
+	SESSION_SECRET: z.string(),
+	INTERNAL_COMMAND_TOKEN: z.string(),
+	HONEYPOT_SECRET: z.string(),
+	CACHE_DATABASE_PATH: z.string(),
+	// If you plan on using Sentry, uncomment this line
+	// SENTRY_DSN: z.string(),
+	// If you plan to use Resend, uncomment this line
+	// RESEND_API_KEY: z.string(),
+	// If you plan to use GitHub auth, remove the default:
 })
 
 declare global {
-  namespace NodeJS {
-    interface ProcessEnv extends z.infer<typeof schema> { }
-  }
+	namespace NodeJS {
+		interface ProcessEnv extends z.infer<typeof schema> {}
+	}
 }
 
 export function init() {
-  const parsed = schema.safeParse(process.env)
+	const parsed = schema.safeParse(process.env)
 
-  if (parsed.success === false) {
-    console.error(
-      '❌ Invalid environment variables:',
-      parsed.error.flatten().fieldErrors,
-    )
+	if (parsed.success === false) {
+		console.error(
+			'❌ Invalid environment variables:',
+			parsed.error.flatten().fieldErrors,
+		)
 
-    throw new Error('Invalid environment variables')
-  }
+		throw new Error('Invalid environment variables')
+	}
 }
 
 /**
@@ -44,17 +44,17 @@ export function init() {
  * @returns all public ENV variables
  */
 export function getEnv() {
-  return {
-    MODE: process.env.NODE_ENV,
-    SENTRY_DSN: process.env.SENTRY_DSN,
-  }
+	return {
+		MODE: process.env.NODE_ENV,
+		SENTRY_DSN: process.env.SENTRY_DSN,
+	}
 }
 
 type ENV = ReturnType<typeof getEnv>
 
 declare global {
-  var ENV: ENV
-  interface Window {
-    ENV: ENV
-  }
+	var ENV: ENV
+	interface Window {
+		ENV: ENV
+	}
 }
