@@ -31,7 +31,6 @@ export function PostContent({
 
 	return (
 		<div
-			className="markdown"
 			style={{ cursor: 'pointer' }}
 			onClick={() => linkTo && navigate(linkTo)}
 		>
