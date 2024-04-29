@@ -68,14 +68,8 @@ export async function loader({ params, request }: DataFunctionArgs) {
 }
 
 export default function Post() {
-	const {
-		post,
-		transitiveParents,
-		replies,
-		tag,
-		positions,
-		loggedIn,
-	} = useLoaderData<typeof loader>()
+	const { post, transitiveParents, replies, tag, positions, loggedIn } =
+		useLoaderData<typeof loader>()
 
 	let p = new Map<number, Direction>()
 	for (let position of positions) {
