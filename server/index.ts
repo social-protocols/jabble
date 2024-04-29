@@ -21,9 +21,6 @@ import getPort, { portNumbers } from 'get-port'
 import helmet from 'helmet'
 import morgan from 'morgan'
 
-import { initVoteEventStream } from '#app/vote-events.ts'
-import { processScoreEvents } from '../app/score-events.ts'
-
 installGlobals()
 
 const MODE = process.env.NODE_ENV
@@ -225,12 +222,6 @@ const portToUse = await getPort({
 	port: portNumbers(desiredPort, desiredPort + 100),
 })
 
-console.log('Calling processScoreEvents')
-let scoreEventsWatcher = await processScoreEvents()
-
-console.log('Calling initVoteEventStream')
-await initVoteEventStream()
-
 const server = app.listen(portToUse, () => {
 	const addy = server.address()
 	const portUsed =
@@ -272,12 +263,6 @@ ${chalk.bold('Press Ctrl+C to stop')}
 })
 
 closeWithGrace(async () => {
-	if (scoreEventsWatcher) {
-		scoreEventsWatcher.disconnect()
-		// scoreEventsWatcher = null;
-	}
-
-	// await clearRankingsCache()
 	await new Promise((resolve, reject) => {
 		server.close(e => (e ? reject(e) : resolve('ok')))
 	})

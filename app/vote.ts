@@ -1,8 +1,7 @@
 import assert from 'assert'
 import { type VoteEvent, type InsertableVoteEvent } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
-import * as scoreEvents from '#app/score-events.ts'
-import { writeVoteEvent } from '#app/vote-events.ts'
+import { sendVoteEvent } from '#app/globalbrain.ts'
 import { getOrInsertTagId } from './tag.ts'
 
 export enum Direction {
@@ -10,7 +9,6 @@ export enum Direction {
 	Down = -1,
 	Neutral = 0,
 }
-// TODO: if a new post is untagged, do we post in in #global?
 
 // The vote function inserts a vote record in voteHistory, and also updates attention stats
 export async function vote(
@@ -31,20 +29,7 @@ export async function vote(
 		direction,
 	)
 
-	let scoreEventPromise
-	if (waitForScoreEvent) {
-		scoreEventPromise = scoreEvents.waitForScoreEvent({
-			postId: postId,
-			tagId: tagId,
-			voteEventId: voteEvent.voteEventId,
-		})
-	}
-
-	await writeVoteEvent(voteEvent)
-
-	if (waitForScoreEvent) {
-		await scoreEventPromise
-	}
+	const scoreEvents = await sendVoteEvent(voteEvent)
 
 	return voteEvent
 }

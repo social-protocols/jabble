@@ -104,3 +104,6 @@ use-production-data:
 
 production-db:
 	fly ssh console -C 'sqlite3 /litefs/data/sqlite.db'
+
+install-node-extension:
+	npm install --save-dev ../GlobalBrain.jl/globalbrain-node
