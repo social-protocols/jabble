@@ -52,7 +52,6 @@ export function PostDetails({
 	note: ScoredNote | null
 	teaser: boolean
 	position: Direction
-	notePosition: Direction
 	loggedIn: boolean
 }) {
 	// The vote buttons use the fetcher and shouldRevalidate to do a post without reloading the page.

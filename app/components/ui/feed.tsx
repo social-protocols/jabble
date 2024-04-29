@@ -20,8 +20,6 @@ export function Feed({
 		<>
 			{posts.map((post, i) => {
 				let position = positions.get(post.id) || Direction.Neutral
-				let notePosition: Direction =
-					(post.note && positions.get(post.note.id)) || Direction.Neutral
 
 				let followsParent = (i > 0 && posts[i - 1]!.id) == post.parentId
 				let followedByTopnote =
@@ -41,7 +39,6 @@ export function Feed({
 							note={showNotes && !followedByTopnote ? post.note : null}
 							teaser={true}
 							position={position}
-							notePosition={notePosition}
 							loggedIn={loggedIn}
 						/>
 					</div>

@@ -17,11 +17,9 @@ import { getUserPositions } from '#app/positions.ts'
 import { getTransitiveParents } from '#app/post.ts'
 import {
 	getRankedReplies,
-	getTopNote,
 	getScoredPost,
 	type RankedPost,
 	type ScoredPost,
-	type ScoredNote,
 } from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
@@ -45,8 +43,6 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	let replies: RankedPost[] = await getRankedReplies(tag, post.id)
 
-	let topNote: ScoredNote | null = await getTopNote(tag, post)
-
 	// let positions: Map<number, Direction> = new Map<number, Direction>()
 	let positions =
 		userId === null
@@ -65,7 +61,6 @@ export async function loader({ params, request }: DataFunctionArgs) {
 		replies,
 		tag,
 		positions,
-		topNote,
 		loggedIn,
 	})
 
@@ -79,7 +74,6 @@ export default function Post() {
 		replies,
 		tag,
 		positions,
-		topNote,
 		loggedIn,
 	} = useLoaderData<typeof loader>()
 
@@ -89,8 +83,6 @@ export default function Post() {
 	}
 
 	let position = p.get(post.id) || Direction.Neutral
-	let notePosition: Direction =
-		(topNote && p.get(topNote.id)) || Direction.Neutral
 
 	return (
 		<>
@@ -104,7 +96,6 @@ export default function Post() {
 				note={null}
 				teaser={false}
 				position={position}
-				notePosition={notePosition}
 				loggedIn={loggedIn}
 			/>
 			<PostReplies replies={replies} positions={p} loggedIn={loggedIn} />
