@@ -4,15 +4,8 @@ set -Eeuo pipefail
 
 npm run migrate
 
-# Remove vote events and score events. These will be 'replayed': the app
-# will rewrite the vote events on startup, and the GB service will read these
-# and rewrite scoreEvents, which the app will import.
-rm -f "$VOTE_EVENTS_PATH"
 touch "$VOTE_EVENTS_PATH"
-rm -f "$SCORE_EVENTS_PATH"
 touch "$SCORE_EVENTS_PATH"
-sqlite3 $APP_DATABASE_PATH "delete from scoreEvent; delete from score;"
-rm -f "$GB_DATABASE_PATH"
 
 npm start &
 
