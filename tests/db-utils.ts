@@ -4,7 +4,6 @@ import bcrypt from 'bcryptjs'
 import { UniqueEnforcer } from 'enforce-unique'
 import { type Kysely, sql } from 'kysely'
 import { type DB } from '#app/db/kysely-types.ts' // this is the Database interface we defined earlier
-import { db } from '#app/db.ts'
 
 const uniqueUsernameEnforcer = new UniqueEnforcer()
 

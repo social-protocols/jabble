@@ -1,5 +1,6 @@
 import * as setCookieParser from 'set-cookie-parser'
 import { expect } from 'vitest'
+import { db } from '#app/db.ts'
 import { sessionKey } from '#app/utils/auth.server.ts'
 import { authSessionStorage } from '#app/utils/session.server.ts'
 import {
@@ -10,7 +11,6 @@ import {
 import { convertSetCookieToCookie } from '#tests/utils.ts'
 
 import '@testing-library/jest-dom/vitest'
-import { db } from '#app/db.ts'
 
 expect.extend({
 	toHaveRedirect(response: Response, redirectTo?: string) {

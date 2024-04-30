@@ -12,7 +12,6 @@ import {
 	getScoredPost,
 	getEffectOnParent,
 } from '#app/ranking.ts'
-import { getOrInsertTagId } from '#app/tag.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
 
 const postIdSchema = z.coerce.number()
@@ -47,11 +46,11 @@ export async function loader({ params }: DataFunctionArgs) {
 export default function PostStats() {
 	const { post, effectOnParent, tag } = useLoaderData<typeof loader>()
 
-	const dkl = relativeEntropy(post.p, post.q)
-	const totalRelativeEntropy = post.qSize * dkl
+	// const dkl = relativeEntropy(post.p, post.q)
+	// const totalRelativeEntropy = post.qSize * dkl
 
-	const informationValueNewVotes = post.oCount * (1 + Math.log2(post.p))
-	const informationValueTotal = informationValueNewVotes - totalRelativeEntropy
+	// const informationValueNewVotes = post.oCount * (1 + Math.log2(post.p))
+	// const informationValueTotal = informationValueNewVotes - totalRelativeEntropy
 
 	// - **attention:** ${post.attention.toFixed(3)}
 	// - **vote rate:** ${post.voteRate.toFixed(3)}

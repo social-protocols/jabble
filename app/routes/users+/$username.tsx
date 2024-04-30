@@ -1,5 +1,5 @@
 import { type DataFunctionArgs, json } from '@remix-run/node'
-import { Form, Link, type MetaFunction, useLoaderData } from '@remix-run/react'
+import { Form, type MetaFunction, useLoaderData } from '@remix-run/react'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
 import { Button } from '#app/components/ui/button.tsx'
@@ -61,7 +61,7 @@ export default function ProfileRoute() {
 	)
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data, params }) => {
+export const meta: MetaFunction<typeof loader> = ({ params }) => {
 	const displayName = params.username
 	return [
 		{ title: `${displayName} | ${SITE_NAME}` },

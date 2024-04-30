@@ -1,4 +1,3 @@
-import assert from 'assert'
 import { type ActionFunctionArgs } from '@remix-run/node'
 
 import { z } from 'zod'

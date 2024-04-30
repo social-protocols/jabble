@@ -63,7 +63,7 @@ export async function seed() {
 	)
 
 	// Then, bob views the page
-	const rankedPosts = await getRankedPosts(tag)
+	await getRankedPosts(tag)
 
 	// Then bob posts a response to alice's post
 	let post2 = await createPost(

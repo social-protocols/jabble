@@ -41,7 +41,7 @@ async function insertScoreEvent(data: any) {
 		...snakeToCamelCaseObject(data['score']),
 	}
 
-	const result = await db
+	await db
 		.insertInto('ScoreEvent')
 		.values(data_flat)
 		.onConflict(oc => oc.columns(['voteEventId', 'postId']).doNothing())
@@ -55,7 +55,7 @@ async function insertEffectEvent(data: any) {
 		...snakeToCamelCaseObject(data['effect']),
 	}
 
-	const result = await db
+	await db
 		.insertInto('EffectEvent')
 		.values(data_flat)
 		.onConflict(oc =>
