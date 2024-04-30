@@ -13,9 +13,6 @@ const schema = z.object({
 	// If you plan to use Resend, uncomment this line
 	// RESEND_API_KEY: z.string(),
 	// If you plan to use GitHub auth, remove the default:
-	GITHUB_CLIENT_ID: z.string().default('MOCK_GITHUB_CLIENT_ID'),
-	GITHUB_CLIENT_SECRET: z.string().default('MOCK_GITHUB_CLIENT_SECRET'),
-	GITHUB_TOKEN: z.string().default('MOCK_GITHUB_TOKEN'),
 })
 
 declare global {
