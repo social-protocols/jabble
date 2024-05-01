@@ -17,27 +17,23 @@ permissions:
 jobs:
   lint:
     name: ⬣ Typecheck, Lint, Format
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-22.04 # https://github.com/actions/runner-images?tab=readme-ov-file#available-images
+    env:
+      EARTHLY_TOKEN: ${{ secrets.EARTHLY_TOKEN }}
+      EARTHLY_SATELLITE: ${{ secrets.EARTHLY_SATELLITE }}
+      EARTHLY_ORG: ${{ secrets.EARTHLY_ORG }}
+      EARTHLY_CI: true
+      FORCE_COLOR: 1
+
     steps:
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v3
+    - uses: earthly/actions-setup@v1
+      with:
+        version: v0.8.9
 
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 21
+    - uses: actions/checkout@v4
 
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
-
-      - name: 🖼 Build icons
-        run: npx tsx ./other/build-icons.ts
-
-      - name: 🔎 Type check
-        run: npx tsc --noEmit
-
-      - name: 🔬 Lint
-        run: npx eslint --max-warnings=0 . # also checks formatting
+    - name: Test
+      run: earthly --auto-skip +ci-test
 
   vitest:
     if: false

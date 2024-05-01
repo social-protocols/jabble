@@ -27,9 +27,18 @@
               sqlite-interactive
               nodejs_20
 
+              earthly
               flyctl
 
               # darwin.apple_sdk.frameworks.Security
+            ];
+          };
+        };
+        packages = {
+          ci = pkgs.buildEnv {
+            name = "ci-build-env";
+            paths = with pkgs; [
+                nodejs_20
             ];
           };
         };
