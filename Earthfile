@@ -112,7 +112,9 @@ app-deploy:
   RUN apk add curl
   RUN set -eo pipefail; curl -L https://fly.io/install.sh | sh
   WITH DOCKER --load app-deploy-image:latest=+app-deploy-image
-    RUN docker image ls && /root/.fly/bin/flyctl deploy --image app-deploy-image:latest --build-arg COMMIT_SHA=$COMMIT_SHA
+    RUN --secret FLY_API_TOKEN \
+        docker image ls \
+     && /root/.fly/bin/flyctl deploy --image app-deploy-image:latest --build-arg COMMIT_SHA=$COMMIT_SHA
   END
 
 app-typecheck:
