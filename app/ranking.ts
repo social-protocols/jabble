@@ -47,7 +47,9 @@ async function getScoredPostInternal(
 		.select('tag')
 		.selectAll('Post')
 		.selectAll('FullScore')
-		.select((eb) => eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'))
+		.select(eb =>
+			eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'),
+		)
 		.where('Post.id', '=', postId)
 		.where('FullScore.tagId', '=', tagId)
 
@@ -147,7 +149,9 @@ export async function getRankedPosts(tag: string): Promise<RankedPost[]> {
 		.select('tag')
 		.selectAll('Post')
 		.selectAll('FullScore')
-		.select((eb) => eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'))
+		.select(eb =>
+			eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'),
+		)
 		.where('FullScore.tagId', '=', tagId)
 		.orderBy('FullScore.score', 'desc')
 		.limit(MAX_RESULTS)
@@ -245,7 +249,9 @@ async function getRankedRepliesInternal(
 		.select(sql<number>`Effect.pCount`.as(`parentPCount`))
 		.selectAll('Post')
 		.selectAll('FullScore')
-		.select((eb) => eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'))
+		.select(eb =>
+			eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'),
+		)
 		// .orderBy('FullScore.score', 'desc')
 		// .where('ScoredPost.parentId', '=', parentId)
 		.limit(MAX_RESULTS)
