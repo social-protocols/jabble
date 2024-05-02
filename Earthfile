@@ -105,16 +105,21 @@ app-deploy-image:
   # test locally without litefs:
   # docker run -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET sha256:xyzxyz bash /myapp/startup.sh
   CMD ["litefs", "mount"]
+  SAVE IMAGE app-deploy-image:latest
 
 app-deploy:
   ARG --required COMMIT_SHA
+  ARG IMAGE="registry.fly.io/sn:deployment-$COMMIT_SHA"
   FROM earthly/dind:alpine-3.19-docker-25.0.5-r0
   RUN apk add curl
   RUN set -eo pipefail; curl -L https://fly.io/install.sh | sh
-  WITH DOCKER --load app-deploy-image:latest=+app-deploy-image
+  COPY fly.toml ./
+  WITH DOCKER --load $IMAGE=+app-deploy-image
     RUN --secret FLY_API_TOKEN \
         docker image ls \
-     && /root/.fly/bin/flyctl deploy --image app-deploy-image:latest --build-arg COMMIT_SHA=$COMMIT_SHA
+     && /root/.fly/bin/flyctl auth docker \
+     && docker push $IMAGE \
+     && /root/.fly/bin/flyctl deploy --image $IMAGE --build-arg COMMIT_SHA=$COMMIT_SHA
   END
 
 app-typecheck:
