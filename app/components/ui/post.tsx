@@ -67,7 +67,6 @@ export function PostDetails({
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
-	let informedProbabilityString = Math.round(post.p * 100)
 	const ageString = moment(post.createdAt).fromNow()
 
 	const replyFetcher = useFetcher<{ newPostId: number }>()
@@ -117,7 +116,7 @@ export function PostDetails({
 
 				<div className="mt-2 flex w-full text-sm">
 					<Link to={`/tags/${post.tag}/stats/${post.id}`} className="hyperlink">
-						{informedProbabilityString}%
+						stats
 					</Link>
 					<Link
 						to={`/tags/${post.tag}/posts/${post.id}`}
