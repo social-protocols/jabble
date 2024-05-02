@@ -18,6 +18,7 @@ jobs:
   lint:
     name: ⬣ Typecheck, Lint, Format
     runs-on: ubuntu-22.04 # https://github.com/actions/runner-images?tab=readme-ov-file#available-images
+    timeout-minutes: 35 # earthly satellites time out after 30min
     env:
       EARTHLY_TOKEN: ${{ secrets.EARTHLY_TOKEN }}
       EARTHLY_SATELLITE: ${{ secrets.EARTHLY_SATELLITE }}
@@ -26,6 +27,7 @@ jobs:
       FORCE_COLOR: 1
 
     steps:
+
     - uses: earthly/actions-setup@v1
       with:
         version: v0.8.9
@@ -117,38 +119,29 @@ jobs:
 
   deploy:
     name: 🚀 Deploy
-    runs-on: ubuntu-22.04
     needs: [lint] # TODO: re-add playwright, vitest once set up
     # only build/deploy main branch on pushes
-    if:
-      ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') &&
-      github.event_name == 'push' }}
+    if: ${{ (github.ref == 'refs/heads/main') && github.event_name == 'push' }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 35 # earthly satellites time out after 30min
+    env:
+      EARTHLY_TOKEN: ${{ secrets.EARTHLY_TOKEN }}
+      EARTHLY_SATELLITE: ${{ secrets.EARTHLY_SATELLITE }}
+      EARTHLY_ORG: ${{ secrets.EARTHLY_ORG }}
+      EARTHLY_CI: true
+      FORCE_COLOR: 1
 
     steps:
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v3
 
-      - name: 👀 Read app name
-        uses: SebRollen/toml-action@v1.0.2
-        id: app_name
-        with:
-          file: 'fly.toml'
-          field: 'app'
+    - uses: earthly/actions-setup@v1
+      with:
+        version: v0.8.9
 
-      - name: 🎈 Setup Fly
-        uses: superfly/flyctl-actions/setup-flyctl@v1.4
+    - name: ⬇️ Checkout repo
+      uses: actions/checkout@v3
 
-      - name: 🚀 Deploy Staging
-        if: ${{ github.ref == 'refs/heads/dev' }}
-        run:
-          flyctl deploy --remote-only --build-arg COMMIT_SHA=${{ github.sha }}
-          --app ${{ steps.app_name.outputs.value }}-staging
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
-      - name: 🚀 Deploy Production
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run:
-          flyctl deploy --remote-only --build-arg COMMIT_SHA=${{ github.sha }}
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    - name: 🚀 Deploy Production
+      run:
+        earthly --allow-privileged --secret FLY_API_TOKEN +app-deploy --COMMIT_SHA=${{ github.sha }}
+      env:
+        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

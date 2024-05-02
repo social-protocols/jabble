@@ -28,6 +28,32 @@ app-build:
   FROM +app-setup
   RUN npm run build
 
+# needed, when porting the Dockerfile to Earthfile
+# app-deploy-litefs:
+#    FROM flyio/litefs:0.5.10
+#    SAVE ARTIFACT /usr/local/bin/litefs
+#    # COPY +app-deploy-litefs/litefs /usr/local/bin/litefs
+
+app-deploy-image:
+  FROM DOCKERFILE .
+
+app-deploy:
+  # run locally:
+  # FLY_API_TOKEN=$(flyctl tokens create deploy) earthly --allow-privileged --secret FLY_API_TOKEN -i +app-deploy --COMMIT_SHA=<xxxxxx>
+  ARG --required COMMIT_SHA
+  ARG IMAGE="registry.fly.io/sn:deployment-$COMMIT_SHA"
+  FROM earthly/dind:alpine-3.19-docker-25.0.5-r0
+  RUN apk add curl
+  RUN set -eo pipefail; curl -L https://fly.io/install.sh | sh
+  COPY fly.toml ./
+  WITH DOCKER --load $IMAGE=+app-deploy-image
+    RUN --secret FLY_API_TOKEN \
+        docker image ls \
+     && /root/.fly/bin/flyctl auth docker \
+     && docker push $IMAGE \
+     && /root/.fly/bin/flyctl deploy --image $IMAGE --build-arg COMMIT_SHA=$COMMIT_SHA
+  END
+
 app-typecheck:
   FROM +app-setup
   RUN npx tsc --noEmit
@@ -41,3 +67,7 @@ ci-test:
   BUILD +app-typecheck
   BUILD +app-lint
   BUILD +app-build
+
+ci-deploy:
+  ARG --required COMMIT_SHA
+  DO +app-deploy --COMMIT_SHA=$COMMIT_SHA
