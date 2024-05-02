@@ -121,9 +121,7 @@ jobs:
     name: 🚀 Deploy
     needs: [lint] # TODO: re-add playwright, vitest once set up
     # only build/deploy main branch on pushes
-    # if:
-    #   ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') &&
-    #   github.event_name == 'push' }}
+    if: ${{ (github.ref == 'refs/heads/main') && github.event_name == 'push' }}
     runs-on: ubuntu-22.04
     timeout-minutes: 35 # earthly satellites time out after 30min
     env:
@@ -143,7 +141,6 @@ jobs:
       uses: actions/checkout@v3
 
     - name: 🚀 Deploy Production
-      # if: ${{ github.ref == 'refs/heads/main' }}
       run:
         earthly --allow-privileged --secret FLY_API_TOKEN +app-deploy --COMMIT_SHA=${{ github.sha }}
       env:
