@@ -7,13 +7,14 @@ import { z } from 'zod'
 
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
-import {
-	type ScoredPost,
-	getScoredPost,
-} from '#app/ranking.ts'
-import { PostContent } from '#app/components/ui/post.tsx'
-import { StatsPostAnnotation, StatsInformedRatioChange, EffectStrengthConnectorLine } from '#app/components/ui/post-stats.tsx'
 import { Card } from '#app/components/ui/card.tsx'
+import {
+	StatsPostAnnotation,
+	StatsInformedRatioChange,
+	EffectStrengthConnectorLine,
+} from '#app/components/ui/post-stats.tsx'
+import { PostContent } from '#app/components/ui/post.tsx'
+import { type ScoredPost, getScoredPost } from '#app/ranking.ts'
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
@@ -26,9 +27,11 @@ export async function loader({ params }: DataFunctionArgs) {
 
 	const post: ScoredPost = await getScoredPost(tag, postId)
 
-	const parent = post.parentId == null ? null : await getScoredPost(tag, post.parentId)
+	const parent =
+		post.parentId == null ? null : await getScoredPost(tag, post.parentId)
 
-	const topReply = post.topNoteId == null ? null : await getScoredPost(tag, post.topNoteId)
+	const topReply =
+		post.topNoteId == null ? null : await getScoredPost(tag, post.topNoteId)
 
 	// TODO: Is this comment still relevant?
 	// So the first of the replies and the top note are not necessarily the same thing?!?
@@ -52,74 +55,75 @@ export default function PostStats() {
 	`.trim()
 
 	const parentPost =
-		parent === null ? <div></div> :
-		<Card className={'bg-post'}>
-			<StatsPostAnnotation annotation={`Post ${parent.id}`}/>
-			<PostContent
-				content={parent.content}
-				maxLines={3}
-				linkTo={`/tags/${tag}/posts/${parent.id}`}
-				deactivateLinks={true}
-			/>
-			<StatsInformedRatioChange
-				informedProb={parent.p}
-				uninformedProb={parent.q}
-			/>
-		</Card>
+		parent === null ? (
+			<div></div>
+		) : (
+			<Card className={'bg-post'}>
+				<StatsPostAnnotation annotation={`Post ${parent.id}`} />
+				<PostContent
+					content={parent.content}
+					maxLines={3}
+					linkTo={`/tags/${tag}/posts/${parent.id}`}
+					deactivateLinks={true}
+				/>
+				<StatsInformedRatioChange
+					informedProb={parent.p}
+					uninformedProb={parent.q}
+				/>
+			</Card>
+		)
 
-	const targetPost =
+	const targetPost = (
 		<Card className={'bg-post'}>
-			<StatsPostAnnotation annotation={`Post ${post.id}`}/>
+			<StatsPostAnnotation annotation={`Post ${post.id}`} />
 			<PostContent
 				content={post.content}
 				maxLines={3}
 				linkTo={`/tags/${tag}/posts/${post.id}`}
 				deactivateLinks={true}
 			/>
-			<StatsInformedRatioChange
-				informedProb={post.p}
-				uninformedProb={post.q}
-			/>
+			<StatsInformedRatioChange informedProb={post.p} uninformedProb={post.q} />
 		</Card>
+	)
 
 	const topReplyPost =
-		topReply === null ? <div></div> :
-		<Card className={'bg-post'}>
-			<StatsPostAnnotation annotation={`Top reply of post ${post.id}`}/>
-			<PostContent
-				content={topReply.content}
-				maxLines={3}
-				linkTo={`/tags/${tag}/posts/${topReply.id}`}
-				deactivateLinks={true}
-			/>
-		</Card>
+		topReply === null ? (
+			<div></div>
+		) : (
+			<Card className={'bg-post'}>
+				<StatsPostAnnotation annotation={`Top reply of post ${post.id}`} />
+				<PostContent
+					content={topReply.content}
+					maxLines={3}
+					linkTo={`/tags/${tag}/posts/${topReply.id}`}
+					deactivateLinks={true}
+				/>
+			</Card>
+		)
 
 	return (
 		<>
-			<div className='markdown mb-5'>
+			<div className="markdown mb-5">
 				<Markdown deactivateLinks={false}>{headerMarkdown}</Markdown>
 			</div>
 			{parentPost}
-			{
-				parent !== null &&
+			{parent !== null && (
 				<EffectStrengthConnectorLine
 					informedProb={parent!.p}
 					uninformedProb={parent!.q}
 				/>
-			}
+			)}
 			{targetPost}
-			{
-				topReply !== null &&
+			{topReply !== null && (
 				<EffectStrengthConnectorLine
 					informedProb={post.p}
 					uninformedProb={post.q}
 				/>
-			}
+			)}
 			{topReplyPost}
 		</>
 	)
 }
-
 
 export function ErrorBoundary() {
 	return (
