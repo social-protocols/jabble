@@ -38,6 +38,8 @@ app-deploy-image:
   FROM DOCKERFILE .
 
 app-deploy:
+  # run locally:
+  # FLY_API_TOKEN=$(flyctl tokens create deploy) earthly --allow-privileged --secret FLY_API_TOKEN -i +app-deploy --COMMIT_SHA=<xxxxxx>
   ARG --required COMMIT_SHA
   ARG IMAGE="registry.fly.io/sn:deployment-$COMMIT_SHA"
   FROM earthly/dind:alpine-3.19-docker-25.0.5-r0
