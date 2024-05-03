@@ -130,7 +130,9 @@ ci-test:
   BUILD +app-typecheck
   BUILD +app-lint
   BUILD +app-build
+  BUILD +app-deploy-image
 
 ci-deploy:
+  BUILD +ci-test
   ARG --required COMMIT_SHA
   DO +app-deploy --COMMIT_SHA=$COMMIT_SHA
