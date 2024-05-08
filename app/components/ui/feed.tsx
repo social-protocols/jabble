@@ -25,11 +25,14 @@ export function Feed({
 					(i < posts.length - 1 && posts[i + 1]!.id) == post.topNoteId
 				const directReply = rootId !== null && post.parentId == rootId
 
+				const borderStyle = post.isCritical
+					? vote.vote !== 0
+						? { borderLeft: 'solid grey 3px' }
+						: { borderLeft: 'solid blue 3px' }
+					: {}
+
 				return (
-					<div
-						key={post.id}
-						style={post.isCritical ? { borderLeft: 'solid blue 3px' } : {}}
-					>
+					<div key={post.id} style={borderStyle}>
 						{!directReply &&
 							post.parent !== null &&
 							(followsParent ? (
