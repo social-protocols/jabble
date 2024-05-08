@@ -1,6 +1,6 @@
 import { PostDetails, ParentPost } from '#app/components/ui/post.tsx'
 import { type RankedPost } from '#app/ranking.ts'
-import { Direction } from '#app/vote.ts'
+import { type VoteState } from '#app/vote.ts'
 
 export function Feed({
 	posts,
@@ -10,7 +10,7 @@ export function Feed({
 	showNotes,
 }: {
 	posts: RankedPost[]
-	votes: Map<number, Direction>
+	votes: Map<number, VoteState>
 	rootId: number | null
 	loggedIn: boolean
 	showNotes: boolean
@@ -18,20 +18,18 @@ export function Feed({
 	return (
 		<>
 			{posts.map((post, i) => {
-				let vote = votes.get(post.id) || Direction.Neutral
+				let vote = votes.get(post.id)!
 
 				let followsParent = (i > 0 && posts[i - 1]!.id) == post.parentId
 				let followedByTopnote =
 					(i < posts.length - 1 && posts[i + 1]!.id) == post.topNoteId
 				const directReply = rootId !== null && post.parentId == rootId
 
-
-				let criticalThreadId = post.criticalThreadId;
-				let isInformed = post.criticalThreadId == null ? true : ( votes.get(criticalThreadId!) || Direction.Neutral ) !== Direction.Neutral
-
 				return (
-					<div key={post.id} style={post.isCritical ? {borderLeft: "solid blue 3px"} : {}}>
-
+					<div
+						key={post.id}
+						style={post.isCritical ? { borderLeft: 'solid blue 3px' } : {}}
+					>
 						{!directReply &&
 							post.parent !== null &&
 							(followsParent ? (
@@ -44,7 +42,6 @@ export function Feed({
 							note={showNotes && !followedByTopnote ? post.note : null}
 							teaser={true}
 							vote={vote}
-							isInformed={isInformed}
 							loggedIn={loggedIn}
 						/>
 					</div>

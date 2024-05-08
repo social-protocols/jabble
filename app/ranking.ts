@@ -1,5 +1,5 @@
 import { sql } from 'kysely'
-import { type Score, type Effect, type Post, type FullScore } from '#app/db/types.ts' // this is the Database interface we defined earlier
+import { type Effect, type Post, type FullScore } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { db } from '#app/db.ts'
 // import { GLOBAL_PRIOR_VOTE_RATE, findTopNoteId } from './probabilities.ts'
 import { getPost } from './post.ts'
@@ -7,8 +7,7 @@ import { getOrInsertTagId } from './tag.ts'
 import { relativeEntropy } from './utils/entropy.ts'
 
 // Post with score and the effect of its top note
-export type ScoredPost = Post &
-	FullScore & { nReplies: number; tag: string }
+export type ScoredPost = Post & FullScore & { nReplies: number; tag: string }
 
 // Post with its effect on its parent
 export type ScoredNote = Post & Effect
@@ -120,11 +119,11 @@ async function getEffectsInternal(
 ): Promise<Effect[]> {
 	let query = db
 		.selectFrom('Post')
-		.innerJoin('Effect', join =>
-			join
-				.on('Effect.tagId', '=', tagId)
-				.on('Effect.noteId', '=', postId)
-				// .onRef('Effect.postId', '=', 'Post.parentId'),
+		.innerJoin(
+			'Effect',
+			join =>
+				join.on('Effect.tagId', '=', tagId).on('Effect.noteId', '=', postId),
+			// .onRef('Effect.postId', '=', 'Post.parentId'),
 		)
 		.innerJoin('Post as TargetPost', 'TargetPost.id', 'Effect.postId')
 		.selectAll('Effect')
@@ -265,24 +264,25 @@ async function getRankedRepliesInternal(
 		(a, b) =>
 			// This is the same as the thread_score in score.jl
 			relativeEntropy(a.targetP, a.targetQ) * a.targetPSize -
-				relativeEntropy(b.targetP, b.targetQ) * b.targetPSize || a.score - b.score,
+				relativeEntropy(b.targetP, b.targetQ) * b.targetPSize ||
+			a.score - b.score,
 	)
 
 	const results: RankedPost[][] = await Promise.all(
 		immediateChildren.map(async (post: ScoredPost, i: number) => {
 			const effects = await getEffectsInternal(tagId, post.id)
-			const effectOnRoot = effects.find(e => e.postId == targetId)!
+			const targetEffect = effects.find(e => e.postId == targetId)!
 
 			// The first reply, as long as it has an effect, is a critical reply
-			const isCritical = i === 0 && effectOnRoot.q != effectOnRoot.p
+			const isCritical = i === 0 && targetEffect.q != targetEffect.p
 			return [
 				{
 					...post,
-                    note:
-                            post.topNoteId == null
-                                    ? null
-                                    : await getScoredNoteInternal(tagId, post.topNoteId!),
-                    parent: post.parentId == null ? null : await getPost(post.parentId!),
+					note:
+						post.topNoteId == null
+							? null
+							: await getScoredNoteInternal(tagId, post.topNoteId!),
+					parent: post.parentId == null ? null : await getPost(post.parentId!),
 					effects: effects,
 					isCritical: isCritical,
 				},

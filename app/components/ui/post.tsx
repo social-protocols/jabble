@@ -6,7 +6,7 @@ import { Textarea } from '#app/components/ui/textarea.tsx'
 import { type Post } from '#app/db/types.ts'
 import { type ScoredPost, type ScoredNote } from '#app/ranking.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
-import { Direction } from '#app/vote.ts'
+import { Direction, type VoteState } from '#app/vote.ts'
 import { Card } from './card.tsx'
 import { Truncate } from './Truncate.tsx'
 
@@ -46,23 +46,16 @@ export function PostDetails({
 	note,
 	teaser,
 	vote,
-	isInformed,
 	loggedIn,
 }: {
 	post: ScoredPost
 	note: ScoredNote | null
 	teaser: boolean
-	vote: Direction
-	isInformed: boolean
+	vote: VoteState
 	loggedIn: boolean
 }) {
-	// The vote buttons use the fetcher and shouldRevalidate to do a post without reloading the page.
 	// So we need to get the current state of the user's vote on this post from the fetcher
 	const fetcher = useFetcher<{ state: Direction; postId: number }>()
-	let voteState =
-		fetcher.data && fetcher.data.postId === post.id
-			? fetcher.data.state
-			:vote 
 
 	const nRepliesString =
 		post.nReplies === 1 ? '1 reply' : `${post.nReplies} replies`
@@ -93,13 +86,12 @@ export function PostDetails({
 				className="mt-5"
 				style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
 			>
-				<span>Is Informed? {isInformed ? 'Yes' : 'No'}</span>
 				<fetcher.Form method="post" action="/vote">
 					<VoteButtons
 						postId={post.id}
 						tag={post.tag}
 						noteId={note !== null ? note.id : null}
-						state={voteState}
+						vote={vote}
 					/>
 				</fetcher.Form>
 			</div>
@@ -264,18 +256,31 @@ export function VoteButtons({
 	tag,
 	postId,
 	noteId,
-	state,
+	vote,
 }: {
 	tag: string
 	postId: number
 	noteId: number | null
-	state: Direction
+	vote: VoteState
 }) {
+	const upClass =
+		vote.vote === Direction.Up
+			? vote.isInformed
+				? ''
+				: 'opacity-50'
+			: 'opacity-20'
+	const downClass =
+		vote.vote === Direction.Down
+			? vote.isInformed
+				? ''
+				: 'opacity-50'
+			: 'opacity-20'
+
 	return (
 		<>
 			<input type="hidden" name="postId" value={postId} />
 			<input type="hidden" name="tag" value={tag} />
-			<input type="hidden" name="state" value={Direction[state]} />
+			<input type="hidden" name="state" value={Direction[vote.vote]} />
 
 			{noteId === null ? (
 				<></>
@@ -284,18 +289,10 @@ export function VoteButtons({
 			)}
 
 			<div className="flex flex-col text-xl">
-				<button
-					name="direction"
-					value="Up"
-					className={state === Direction.Up ? '' : 'opacity-30'}
-				>
+				<button name="direction" value="Up" className={upClass}>
 					▲
 				</button>
-				<button
-					name="direction"
-					value="Down"
-					className={state === Direction.Down ? '' : 'opacity-30'}
-				>
+				<button name="direction" value="Down" className={downClass}>
 					▼
 				</button>
 			</div>

@@ -7,11 +7,7 @@ import { z } from 'zod'
 
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
-import {
-	type ScoredPost,
-	getScoredPost,
-	getEffects,
-} from '#app/ranking.ts'
+import { type ScoredPost, getScoredPost, getEffects } from '#app/ranking.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
 
 const postIdSchema = z.coerce.number()
@@ -25,8 +21,7 @@ export async function loader({ params }: DataFunctionArgs) {
 
 	const post: ScoredPost = await getScoredPost(tag, postId)
 
-	const effects =
-		post.parentId == null ? [] : await getEffects(tag, post.id)
+	const effects = post.parentId == null ? [] : await getEffects(tag, post.id)
 
 	// So the first of the replies and the top note are not necessarily the same thing?!?
 	// The top note is the most convincing one. But the replies are ordered by *information rate*.
@@ -115,23 +110,23 @@ export default function PostStats() {
 
 ${effects
 	.map(
-		(e) => `
+		e => `
 
 ### on [post ${e.postId}](/tags/${tag}/stats/${e.postId})
 
 - **informed votes:** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${e.pCount} ▲  ${
-					e.pSize - e.pCount
-				} ▼ &nbsp;  **p**: ${(e.p * 100).toFixed(1)}%
+			e.pSize - e.pCount
+		} ▼ &nbsp;  **p**: ${(e.p * 100).toFixed(1)}%
 - **uninformed votes:** ${e.qCount} ▲ ${e.qSize - e.qCount} ▼ &nbsp; **q:** ${(
-					e.q * 100
-				).toFixed(1)}%
+			e.q * 100
+		).toFixed(1)}%
 - **relative entropy:** ${relativeEntropy(e.p, e.q).toFixed(3)}
 - **cognitive dissonance:** ${(relativeEntropy(e.p, e.q) * e.qCount).toFixed(
-					3,
-				)} bits
-	`
-	).join('')
-}
+			3,
+		)} bits
+	`,
+	)
+	.join('')}
 `
 
 	// - cognitiveDissonance = votesTotal * Dkl(p,q)

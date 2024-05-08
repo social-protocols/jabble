@@ -11,13 +11,10 @@ import { z } from 'zod'
 
 import { Feed } from '#app/components/ui/feed.tsx'
 import { PostForm } from '#app/components/ui/post-form.tsx'
-import { getUserVotes } from '#app/vote.ts'
 import { getRankedPosts } from '#app/ranking.ts'
 
 import { getUserId } from '#app/utils/auth.server.ts'
-
-import { type Direction } from '#app/vote.ts'
-import { type Vote } from '#app/db/types.ts'
+import { type VoteState, getUserVotes } from '#app/vote.ts'
 
 const tagSchema = z.coerce.string()
 
@@ -29,7 +26,7 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	const rankedPosts = await getRankedPosts(tag)
 	const posts = rankedPosts
-	let votes: Vote[] = []
+	let votes: VoteState[] = []
 	if (userId) {
 		votes = await getUserVotes(
 			userId,
@@ -47,9 +44,9 @@ export default function TagPage() {
 	const { tag, posts, votes, loggedIn } = useLoaderData<typeof loader>()
 
 	// We lose the type info for votes after serializing and deserializing JSON
-	let p = new Map<number, Direction>()
+	let p = new Map<number, VoteState>()
 	for (let position of votes) {
-		p.set(position.postId, position.vote)
+		p.set(position.postId, position)
 	}
 
 	return (

@@ -1,10 +1,6 @@
 import { type DataFunctionArgs, json } from '@remix-run/node'
 
-import {
-	Link,
-	type ShouldRevalidateFunction,
-	useLoaderData,
-} from '@remix-run/react'
+import { Link, useLoaderData } from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 
@@ -13,7 +9,6 @@ import { Feed } from '#app/components/ui/feed.tsx'
 import { PostContent, PostDetails } from '#app/components/ui/post.tsx'
 import { type Post } from '#app/db/types.ts'
 
-import { getUserVotes } from '#app/vote.ts'
 import { getTransitiveParents } from '#app/post.ts'
 import {
 	getRankedReplies,
@@ -23,7 +18,7 @@ import {
 } from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
-import { Direction } from '#app/vote.ts'
+import { getUserVotes, type VoteState } from '#app/vote.ts'
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
@@ -43,7 +38,7 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	let replies: RankedPost[] = await getRankedReplies(tag, post.id)
 
-	// let positions: Map<number, Direction> = new Map<number, Direction>()
+	// let positions: Map<number, VoteState> = new Map<number, VoteState>()
 	let votes =
 		userId === null
 			? []
@@ -71,20 +66,20 @@ export default function Post() {
 	const { post, transitiveParents, replies, tag, votes, loggedIn } =
 		useLoaderData<typeof loader>()
 
-	let v = new Map<number, Direction>()
+	let v = new Map<number, VoteState>()
 	for (let vote of votes) {
-		v.set(vote.postId, vote.vote)
+		v.set(vote.postId, vote)
 	}
 
-	let vote = v.get(post.id) || Direction.Neutral
+	let vote = v.get(post.id)!
 
-
-	let criticalThreadId = post.criticalThreadId;
-	let isInformed = post.criticalThreadId == null ? true : ( v.get(criticalThreadId!) || Direction.Neutral ) !== Direction.Neutral
-	console.log("Critical Comment id", criticalThreadId)
-	console.log("Vote on critical  comment", v.get(criticalThreadId!))
-	console.log("Votes", votes)
-	console.log("v", v)
+	// let criticalThreadId = post.criticalThreadId;
+	// let isInformed = post.criticalThreadId == null ? true : ( v.get(criticalThreadId!) || Direction.Neutral ) !== Direction.Neutral
+	// console.log("Critical Comment id", criticalThreadId)
+	// console.log("Vote on critical  comment", v.get(criticalThreadId!))
+	console.log('Votes', votes)
+	console.log('v', v)
+	console.log('Vote', vote)
 
 	return (
 		<>
@@ -98,7 +93,6 @@ export default function Post() {
 				note={null}
 				teaser={false}
 				vote={vote}
-				isInformed={isInformed}
 				loggedIn={loggedIn}
 			/>
 			<PostReplies replies={replies} votes={v} loggedIn={loggedIn} />
@@ -139,7 +133,7 @@ export function PostReplies({
 	loggedIn,
 }: {
 	replies: RankedPost[]
-	votes: Map<number, Direction>
+	votes: Map<number, VoteState>
 	loggedIn: boolean
 }) {
 	const nRepliesString = replies.length == 0 ? 'No Replies' : 'Replies'
@@ -169,14 +163,4 @@ export function ErrorBoundary() {
 			}}
 		/>
 	)
-}
-
-export const shouldRevalidate: ShouldRevalidateFunction = (args: {
-	formAction?: string | undefined
-}) => {
-	// Optimization that makes it so /votes don't reload the page
-	if (args.formAction == '/vote') {
-		return false
-	}
-	return true
 }
