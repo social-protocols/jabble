@@ -1,7 +1,6 @@
 import { sql } from 'kysely'
 import { type Score, type Effect, type Post, type FullScore } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { db } from '#app/db.ts'
-import { type Position } from './positions.ts'
 // import { GLOBAL_PRIOR_VOTE_RATE, findTopNoteId } from './probabilities.ts'
 import { getPost } from './post.ts'
 import { getOrInsertTagId } from './tag.ts'
@@ -250,6 +249,7 @@ async function getRankedRepliesInternal(
 		)
 		.select(sql<number>`Effect.p`.as(`targetP`))
 		.select(sql<number>`Effect.q`.as(`targetQ`))
+		.select(sql<number>`Effect.r`.as(`targetR`))
 		.select(sql<number>`Effect.pCount`.as(`targetPCount`))
 		.select(sql<number>`Effect.pCount`.as(`targetPSize`))
 		.selectAll('Post')
@@ -299,8 +299,8 @@ export async function getRankedTags(): Promise<string[]> {
 	return []
 }
 
-export type TagPreview = {
-	tag: string
-	posts: RankedPost[]
-	positions: Position[]
-}
+// export type TagPreview = {
+// 	tag: string
+// 	posts: RankedPost[]
+// 	positions: Position[]
+// }

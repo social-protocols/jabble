@@ -45,13 +45,15 @@ export function PostDetails({
 	post,
 	note,
 	teaser,
-	position,
+	vote,
+	isInformed,
 	loggedIn,
 }: {
 	post: ScoredPost
 	note: ScoredNote | null
 	teaser: boolean
-	position: Direction
+	vote: Direction
+	isInformed: boolean
 	loggedIn: boolean
 }) {
 	// The vote buttons use the fetcher and shouldRevalidate to do a post without reloading the page.
@@ -60,7 +62,7 @@ export function PostDetails({
 	let voteState =
 		fetcher.data && fetcher.data.postId === post.id
 			? fetcher.data.state
-			: position
+			:vote 
 
 	const nRepliesString =
 		post.nReplies === 1 ? '1 reply' : `${post.nReplies} replies`
@@ -91,6 +93,7 @@ export function PostDetails({
 				className="mt-5"
 				style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
 			>
+				<span>Is Informed? {isInformed ? 'Yes' : 'No'}</span>
 				<fetcher.Form method="post" action="/vote">
 					<VoteButtons
 						postId={post.id}

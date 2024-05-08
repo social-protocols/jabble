@@ -1,16 +1,16 @@
 import assert from 'assert'
 import { type VoteEvent, type InsertableVoteEvent } from '#app/db/types.ts'
-import { db } from '#app/db.ts'
 import * as scoreEvents from '#app/score-events.ts'
 import { writeVoteEvent } from '#app/vote-events.ts'
+import { db } from './db.ts'
 import { getOrInsertTagId } from './tag.ts'
+import { Vote } from './db/types.ts'
 
 export enum Direction {
 	Up = 1,
 	Down = -1,
 	Neutral = 0,
 }
-// TODO: if a new post is untagged, do we post in in #global?
 
 // The vote function inserts a vote record in voteHistory, and also updates attention stats
 export async function vote(
@@ -101,3 +101,23 @@ async function insertVoteEvent(
 
 	return output_vote_event
 }
+
+export async function getUserVotes(
+	userId: string,
+	tag: string,
+	postIds: number[],
+): Promise<Vote[]> {
+	let tagId = await getOrInsertTagId(tag)
+
+	return await db
+		.selectFrom('Vote')
+		.innerJoin('Post', 'postId', 'Post.id')
+		.where('userId', '=', userId)
+		.where('tagId', '=', tagId)
+		.where(eb =>
+			eb.or([eb('parentId', 'in', postIds), eb('id', 'in', postIds)]),
+		)
+		.selectAll('Vote')
+		.execute()
+}
+

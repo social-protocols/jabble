@@ -18,4 +18,5 @@ export type FullScore = Selectable<schema.FullScore>
 export type Effect = Selectable<schema.Effect>
 export type InsertableScore = Insertable<schema.Score>
 export type VoteEvent = Selectable<schema.VoteEvent>
+export type Vote = Selectable<schema.Vote>
 export type InsertableVoteEvent = Insertable<schema.VoteEvent>

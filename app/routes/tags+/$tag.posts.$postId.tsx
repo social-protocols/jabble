@@ -13,7 +13,7 @@ import { Feed } from '#app/components/ui/feed.tsx'
 import { PostContent, PostDetails } from '#app/components/ui/post.tsx'
 import { type Post } from '#app/db/types.ts'
 
-import { getUserPositions } from '#app/positions.ts'
+import { getUserVotes } from '#app/vote.ts'
 import { getTransitiveParents } from '#app/post.ts'
 import {
 	getRankedReplies,
@@ -44,10 +44,10 @@ export async function loader({ params, request }: DataFunctionArgs) {
 	let replies: RankedPost[] = await getRankedReplies(tag, post.id)
 
 	// let positions: Map<number, Direction> = new Map<number, Direction>()
-	let positions =
+	let votes =
 		userId === null
 			? []
-			: await getUserPositions(
+			: await getUserVotes(
 					userId,
 					tag,
 					replies.map(p => p.id).concat([post.id]),
@@ -60,7 +60,7 @@ export async function loader({ params, request }: DataFunctionArgs) {
 		transitiveParents,
 		replies,
 		tag,
-		positions,
+		votes,
 		loggedIn,
 	})
 
@@ -68,15 +68,23 @@ export async function loader({ params, request }: DataFunctionArgs) {
 }
 
 export default function Post() {
-	const { post, transitiveParents, replies, tag, positions, loggedIn } =
+	const { post, transitiveParents, replies, tag, votes, loggedIn } =
 		useLoaderData<typeof loader>()
 
-	let p = new Map<number, Direction>()
-	for (let position of positions) {
-		p.set(position.postId, position.vote)
+	let v = new Map<number, Direction>()
+	for (let vote of votes) {
+		v.set(vote.postId, vote.vote)
 	}
 
-	let position = p.get(post.id) || Direction.Neutral
+	let vote = v.get(post.id) || Direction.Neutral
+
+
+	let criticalThreadId = post.criticalThreadId;
+	let isInformed = post.criticalThreadId == null ? true : ( v.get(criticalThreadId!) || Direction.Neutral ) !== Direction.Neutral
+	console.log("Critical Comment id", criticalThreadId)
+	console.log("Vote on critical  comment", v.get(criticalThreadId!))
+	console.log("Votes", votes)
+	console.log("v", v)
 
 	return (
 		<>
@@ -89,10 +97,11 @@ export default function Post() {
 				post={post}
 				note={null}
 				teaser={false}
-				position={position}
+				vote={vote}
+				isInformed={isInformed}
 				loggedIn={loggedIn}
 			/>
-			<PostReplies replies={replies} positions={p} loggedIn={loggedIn} />
+			<PostReplies replies={replies} votes={v} loggedIn={loggedIn} />
 		</>
 	)
 }
@@ -126,11 +135,11 @@ function ParentThread({
 
 export function PostReplies({
 	replies,
-	positions,
+	votes,
 	loggedIn,
 }: {
 	replies: RankedPost[]
-	positions: Map<number, Direction>
+	votes: Map<number, Direction>
 	loggedIn: boolean
 }) {
 	const nRepliesString = replies.length == 0 ? 'No Replies' : 'Replies'
@@ -141,7 +150,7 @@ export function PostReplies({
 			{replies.length > 0 && (
 				<Feed
 					posts={replies}
-					positions={positions}
+					votes={votes}
 					loggedIn={loggedIn}
 					rootId={replies[0]!.parentId}
 					showNotes={false}
