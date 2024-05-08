@@ -1,5 +1,5 @@
 import { sql } from 'kysely'
-import { type Score, type Effect, type Post } from '#app/db/types.ts' // this is the Database interface we defined earlier
+import { type Score, type Effect, type Post, type FullScore } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { db } from '#app/db.ts'
 import { type Position } from './positions.ts'
 // import { GLOBAL_PRIOR_VOTE_RATE, findTopNoteId } from './probabilities.ts'
@@ -9,8 +9,7 @@ import { relativeEntropy } from './utils/entropy.ts'
 
 // Post with score and the effect of its top note
 export type ScoredPost = Post &
-	Score &
-	Effect & { nReplies: number; tag: string }
+	FullScore & { nReplies: number; tag: string }
 
 // Post with its effect on its parent
 export type ScoredNote = Post & Effect
