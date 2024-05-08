@@ -26,7 +26,8 @@ export function Feed({
 					(i < posts.length - 1 && posts[i + 1]!.id) == post.topNoteId
 				const directReply = rootId !== null && post.parentId == rootId
 				return (
-					<div key={post.id}>
+					<div key={post.id} style={post.isCritical ? {borderLeft: "solid blue 3px"} : {}}>
+
 						{!directReply &&
 							post.parent !== null &&
 							(followsParent ? (

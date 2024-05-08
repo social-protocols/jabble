@@ -19,8 +19,10 @@ export const MAX_RESULTS = 100
 export type RankedPost = ScoredPost & {
 	note: ScoredNote | null
 	parent: Post | null
-	effectOnParent: Effect | null
+	effects: Effect[]
+	isCritical: boolean
 }
+
 
 export async function getScoredPost(
 	tag: string,
@@ -107,30 +109,32 @@ async function getScoredNoteInternal(
 	return scoredNote
 }
 
-export async function getEffectOnParent(
+export async function getEffects(
 	tag: string,
 	postId: number,
-): Promise<Effect | null> {
-	return await getEffectOnParentInternal(await getOrInsertTagId(tag), postId)
+): Promise<Effect[]> {
+	return await getEffectsInternal(await getOrInsertTagId(tag), postId)
 }
 
-async function getEffectOnParentInternal(
+async function getEffectsInternal(
 	tagId: number,
 	postId: number,
-): Promise<Effect | null> {
+): Promise<Effect[]> {
 	let query = db
 		.selectFrom('Post')
 		.innerJoin('Effect', join =>
 			join
 				.on('Effect.tagId', '=', tagId)
 				.on('Effect.noteId', '=', postId)
-				.onRef('Effect.postId', '=', 'Post.parentId'),
+				// .onRef('Effect.postId', '=', 'Post.parentId'),
 		)
+		.innerJoin('Post as TargetPost', 'TargetPost.id', 'Effect.postId')
 		.selectAll('Effect')
 		.where('Post.id', '=', postId)
+		.orderBy('TargetPost.createdAt')
 
-	const effect = (await query.execute())[0]
-	return effect || null
+	const effects = await query.execute()
+	return effects
 }
 
 export async function getRankedPosts(tag: string): Promise<RankedPost[]> {
@@ -166,7 +170,8 @@ export async function getRankedPosts(tag: string): Promise<RankedPost[]> {
 						? null
 						: await getScoredNoteInternal(tagId, post.topNoteId!),
 				parent: post.parentId == null ? null : await getPost(post.parentId!),
-				effectOnParent: await getEffectOnParentInternal(tagId, post.id),
+				effects: await getEffectsInternal(tagId, post.id),
+				isCritical: false,
 			}
 		}),
 	)
@@ -203,7 +208,7 @@ export async function getChronologicalToplevelPosts(
 			return {
 				...post,
 				parent: post.parentId == null ? null : await getPost(post.parentId!),
-				effectOnParent: await getEffectOnParentInternal(post.tagId, post.id),
+				effects: await getEffectsInternal(post.tagId, post.id),
 			}
 		}),
 	)
@@ -243,9 +248,10 @@ async function getRankedRepliesInternal(
 				.on('Effect.postId', '=', targetId)
 				.onRef('Effect.noteId', '=', 'Post.id'),
 		)
-		.select(sql<number>`Effect.p`.as(`parentP`))
-		.select(sql<number>`Effect.q`.as(`parentQ`))
-		.select(sql<number>`Effect.pCount`.as(`parentPCount`))
+		.select(sql<number>`Effect.p`.as(`targetP`))
+		.select(sql<number>`Effect.q`.as(`targetQ`))
+		.select(sql<number>`Effect.pCount`.as(`targetPCount`))
+		.select(sql<number>`Effect.pCount`.as(`targetPSize`))
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(eb =>
@@ -259,21 +265,27 @@ async function getRankedRepliesInternal(
 	const immediateChildren = (await query.execute()).sort(
 		(a, b) =>
 			// This is the same as the thread_score in score.jl
-			relativeEntropy(a.p, a.q) * a.pSize -
-				relativeEntropy(b.p, b.q) * b.pSize || a.score - b.score,
+			relativeEntropy(a.targetP, a.targetQ) * a.targetPSize -
+				relativeEntropy(b.targetP, b.targetQ) * b.targetPSize || a.score - b.score,
 	)
 
 	const results: RankedPost[][] = await Promise.all(
-		immediateChildren.map(async (post: ScoredPost) => {
+		immediateChildren.map(async (post: ScoredPost, i: number) => {
+			const effects = await getEffectsInternal(tagId, post.id)
+			const effectOnRoot = effects.find(e => e.postId == targetId)!
+
+			// The first reply, as long as it has an effect, is a critical reply
+			const isCritical = i === 0 && effectOnRoot.q != effectOnRoot.p
 			return [
 				{
 					...post,
-					note:
-						post.topNoteId == null
-							? null
-							: await getScoredNoteInternal(tagId, post.topNoteId!),
-					parent: post.parentId == null ? null : await getPost(post.parentId!),
-					effectOnParent: await getEffectOnParentInternal(tagId, post.id),
+                    note:
+                            post.topNoteId == null
+                                    ? null
+                                    : await getScoredNoteInternal(tagId, post.topNoteId!),
+                    parent: post.parentId == null ? null : await getPost(post.parentId!),
+					effects: effects,
+					isCritical: isCritical,
 				},
 				...(await getRankedRepliesInternal(tagId, targetId, post.id)),
 			]

@@ -10,7 +10,7 @@ import { Markdown } from '#app/components/markdown.tsx'
 import {
 	type ScoredPost,
 	getScoredPost,
-	getEffectOnParent,
+	getEffects,
 } from '#app/ranking.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
 
@@ -25,8 +25,8 @@ export async function loader({ params }: DataFunctionArgs) {
 
 	const post: ScoredPost = await getScoredPost(tag, postId)
 
-	const effectOnParent =
-		post.parentId == null ? null : await getEffectOnParent(tag, post.id)
+	const effects =
+		post.parentId == null ? [] : await getEffects(tag, post.id)
 
 	// So the first of the replies and the top note are not necessarily the same thing?!?
 	// The top note is the most convincing one. But the replies are ordered by *information rate*.
@@ -36,7 +36,7 @@ export async function loader({ params }: DataFunctionArgs) {
 
 	let result = json({
 		post,
-		effectOnParent,
+		effects,
 		tag,
 	})
 
@@ -44,7 +44,7 @@ export async function loader({ params }: DataFunctionArgs) {
 }
 
 export default function PostStats() {
-	const { post, effectOnParent, tag } = useLoaderData<typeof loader>()
+	const { post, effects, tag } = useLoaderData<typeof loader>()
 
 	// const dkl = relativeEntropy(post.p, post.q)
 	// const totalRelativeEntropy = post.qSize * dkl
@@ -107,12 +107,17 @@ export default function PostStats() {
 	// - q = Bayesian Average(upvotes/votes), upvoteProbabilityPrior)
 	// - see [Docs on Rating and Evaluating Content](https://social-protocols.org/global-brain/rating-and-evaluating-content.html)
 
-	const e = effectOnParent
-	const effectOnParentMarkdown =
-		e === null
+	const effectsMarkdown =
+		effects.length === 0
 			? ''
 			: `
-## Effect on Parent
+## Effects
+
+${effects
+	.map(
+		(e) => `
+
+### on [post ${e.postId}](/tags/${tag}/stats/${e.postId})
 
 - **informed votes:** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${e.pCount} ▲  ${
 					e.pSize - e.pCount
@@ -125,6 +130,10 @@ export default function PostStats() {
 					3,
 				)} bits
 	`
+	).join('')
+}
+`
+
 	// - cognitiveDissonance = votesTotal * Dkl(p,q)
 	// - see [Docs on Cognitive Dissonance](https://social-protocols.org/global-brain/cognitive-dissonance.html)
 	// - relativeEntropy = DKL(p, q)
@@ -140,7 +149,7 @@ export default function PostStats() {
 	return (
 		<div className="markdown">
 			<Markdown deactivateLinks={false}>
-				{overallMarkdown + topNoteMarkdown + effectOnParentMarkdown}
+				{overallMarkdown + topNoteMarkdown + effectsMarkdown}
 			</Markdown>
 		</div>
 	)
