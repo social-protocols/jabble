@@ -22,7 +22,6 @@ export type RankedPost = ScoredPost & {
 	isCritical: boolean
 }
 
-
 export async function getScoredPost(
 	tag: string,
 	postId: number,

@@ -1,9 +1,6 @@
 import { type Kysely, sql } from 'kysely'
 
 export async function up(db: Kysely<any>): Promise<void> {
-
-
-
 	await sql`drop table ScoreEvent`.execute(db)
 	await sql`
         create table ScoreEvent (
@@ -42,7 +39,6 @@ export async function up(db: Kysely<any>): Promise<void> {
 
     `.execute(db)
 
-
 	await sql`
 
         create trigger afterInsertOnScoreEvent after insert on ScoreEvent
@@ -62,7 +58,6 @@ export async function up(db: Kysely<any>): Promise<void> {
             );
         end;
     `.execute(db)
-
 
 	await sql`drop table EffectEvent`.execute(db)
 	await sql`
@@ -150,5 +145,4 @@ export async function up(db: Kysely<any>): Promise<void> {
         left join effect using (tagId, postId)
         where ifnull(noteId = topNoteId, true);
     `.execute(db)
-
 }
