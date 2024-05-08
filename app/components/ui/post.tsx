@@ -41,6 +41,22 @@ export function PostContent({
 	)
 }
 
+export type VoteStateWithStats =
+	VoteState & { pCurrent: number, pAfterUpvote: number, pAfterDownvote: number }
+
+
+function getVoteStateWithStats(voteState: VoteState, post: ScoredPost): VoteStateWithStats {
+	const pCurrent: number = post.p
+
+	// TODO: get p after upvote/downvote to display on hover on either vote button
+	return { 
+		...voteState,
+		pCurrent: pCurrent,
+		pAfterUpvote: pCurrent,
+		pAfterDownvote: pCurrent,
+	}
+}
+
 export function PostDetails({
 	post,
 	note,
@@ -62,7 +78,6 @@ export function PostDetails({
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
-	let informedProbabilityString = Math.round(post.p * 100)
 	const ageString = moment(post.createdAt).fromNow()
 
 	const replyFetcher = useFetcher<{ newPostId: number }>()
@@ -75,6 +90,8 @@ export function PostDetails({
 		replyFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
 		setShowReplyForm(false)
 	}
+
+	const voteWithStats: VoteStateWithStats = getVoteStateWithStats(vote, post)
 
 	return (
 		<div
@@ -91,7 +108,7 @@ export function PostDetails({
 						postId={post.id}
 						tag={post.tag}
 						noteId={note !== null ? note.id : null}
-						vote={vote}
+						vote={voteWithStats}
 					/>
 				</fetcher.Form>
 			</div>
@@ -111,9 +128,6 @@ export function PostDetails({
 				{note && <NoteAttachment note={note} tag={post.tag} className="mt-2" />}
 
 				<div className="mt-2 flex w-full text-sm">
-					<Link to={`/tags/${post.tag}/stats/${post.id}`} className="hyperlink">
-						{informedProbabilityString}%
-					</Link>
 					<Link
 						to={`/tags/${post.tag}/posts/${post.id}`}
 						className="hyperlink ml-2"
@@ -261,7 +275,7 @@ export function VoteButtons({
 	tag: string
 	postId: number
 	noteId: number | null
-	vote: VoteState
+	vote: VoteStateWithStats
 }) {
 	const upClass =
 		vote.vote === Direction.Up
@@ -276,6 +290,10 @@ export function VoteButtons({
 				: 'opacity-50'
 			: 'opacity-20'
 
+	const pCurrentString: String = (vote.pCurrent * 100).toFixed(1) + "%"
+	const pAfterUpvoteString: String = (vote.pAfterUpvote * 100).toFixed(1) + "%"
+	const pAfterDownvoteString: String = (vote.pAfterDownvote * 100).toFixed(1) + "%"
+
 	return (
 		<>
 			<input type="hidden" name="postId" value={postId} />
@@ -289,9 +307,14 @@ export function VoteButtons({
 			)}
 
 			<div className="flex flex-col text-xl">
-				<button name="direction" value="Up" className={upClass}>
+				<button name="direction" value="Up" className={upClass + " hover:next-sibling"}>
 					▲
 				</button>
+				<Link to={`/tags/${tag}/stats/${postId}`} className="hyperlink">
+					<div className="text-xs hidden">{pAfterUpvoteString}</div>
+					<div className="text-xs">{pCurrentString}</div>
+					<div className="text-xs hidden">{pAfterDownvoteString}</div>
+				</Link>
 				<button name="direction" value="Down" className={downClass}>
 					▼
 				</button>
