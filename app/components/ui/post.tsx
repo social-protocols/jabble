@@ -41,15 +41,20 @@ export function PostContent({
 	)
 }
 
-export type VoteStateWithStats =
-	VoteState & { pCurrent: number, pAfterUpvote: number, pAfterDownvote: number }
+export type VoteStateWithStats = VoteState & {
+	pCurrent: number
+	pAfterUpvote: number
+	pAfterDownvote: number
+}
 
-
-function getVoteStateWithStats(voteState: VoteState, post: ScoredPost): VoteStateWithStats {
+function getVoteStateWithStats(
+	voteState: VoteState,
+	post: ScoredPost,
+): VoteStateWithStats {
 	const pCurrent: number = post.p
 
 	// TODO: get p after upvote/downvote to display on hover on either vote button
-	return { 
+	return {
 		...voteState,
 		pCurrent: pCurrent,
 		pAfterUpvote: pCurrent,
@@ -290,9 +295,10 @@ export function VoteButtons({
 				: 'opacity-50'
 			: 'opacity-20'
 
-	const pCurrentString: String = (vote.pCurrent * 100).toFixed(1) + "%"
-	const pAfterUpvoteString: String = (vote.pAfterUpvote * 100).toFixed(1) + "%"
-	const pAfterDownvoteString: String = (vote.pAfterDownvote * 100).toFixed(1) + "%"
+	const pCurrentString: String = (vote.pCurrent * 100).toFixed(1) + '%'
+	const pAfterUpvoteString: String = (vote.pAfterUpvote * 100).toFixed(1) + '%'
+	const pAfterDownvoteString: String =
+		(vote.pAfterDownvote * 100).toFixed(1) + '%'
 
 	return (
 		<>
@@ -307,13 +313,17 @@ export function VoteButtons({
 			)}
 
 			<div className="flex flex-col text-xl">
-				<button name="direction" value="Up" className={upClass + " hover:next-sibling"}>
+				<button
+					name="direction"
+					value="Up"
+					className={upClass + ' hover:next-sibling'}
+				>
 					▲
 				</button>
 				<Link to={`/tags/${tag}/stats/${postId}`} className="hyperlink">
-					<div className="text-xs hidden">{pAfterUpvoteString}</div>
+					<div className="hidden text-xs">{pAfterUpvoteString}</div>
 					<div className="text-xs">{pCurrentString}</div>
-					<div className="text-xs hidden">{pAfterDownvoteString}</div>
+					<div className="hidden text-xs">{pAfterDownvoteString}</div>
 				</Link>
 				<button name="direction" value="Down" className={downClass}>
 					▼
