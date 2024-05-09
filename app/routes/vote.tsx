@@ -3,7 +3,7 @@ import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { zfd } from 'zod-form-data'
 import { requireUserId } from '#app/utils/auth.server.ts'
-import { Direction, vote } from '#app/vote.ts'
+import { Direction, getUserVotes, vote, type VoteState } from '#app/vote.ts'
 
 const postIdSchema = z.coerce.number()
 const noteIdSchema = z.coerce.number().optional()
@@ -53,13 +53,12 @@ export const action = async (args: ActionFunctionArgs) => {
 	const userId: string = await requireUserId(request)
 
 	const noteId = parsedData.noteId === undefined ? null : parsedData.noteId
+	const postId = parsedData.postId
+	const tag = parsedData.tag
 
-	await vote(parsedData.tag, userId, parsedData.postId, noteId, newState, true)
+	const v = await vote(tag, userId, postId, noteId, newState, true)
 
-	// Wait for the score event for this post to be written to the DB.
-	// Otherwise, there is a race condition here that will result in the
-	// newly submitted post appearing or not appearing on the refreshed
-	// page, because getRankedPosts only includes posts with a score record.
+	const voteState: VoteState[] = await getUserVotes(v.userId, tag, [v.postId])
 
-	return { state: newState, postId: parsedData.postId }
+	return { voteState: voteState[0], postId: postId }
 }

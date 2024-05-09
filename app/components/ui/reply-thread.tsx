@@ -1,4 +1,4 @@
-import { PostDetails, ParentPost } from '#app/components/ui/post.tsx'
+import { PostDetails } from '#app/components/ui/post.tsx'
 import { type RankedPost } from '#app/ranking.ts'
 import { Direction, type VoteState } from '#app/vote.ts'
 
@@ -8,12 +8,14 @@ export function ReplyThread({
 	targetId,
 	criticalThreadId,
 	loggedIn,
+	onVote,
 }: {
 	posts: RankedPost[]
 	votes: Map<number, VoteState>
 	targetId: number | null
 	criticalThreadId: number | null
 	loggedIn: boolean
+	onVote?: Function
 }) {
 	const targetVote = votes.get(targetId!)!
 	const targetHasVote = targetVote.vote !== Direction.Neutral
@@ -27,25 +29,25 @@ export function ReplyThread({
 
 				const needsVote = targetHasVote && !thisHasVote
 
-				const borderStyle = criticalThreadId === post.id
-					? needsVote
-						? { borderLeft: 'solid blue 3px' }
-						: { borderLeft: 'solid black 3px' }
-					: {}
+				const borderStyle =
+					criticalThreadId === post.id
+						? needsVote
+							? { borderLeft: 'solid blue 3px' }
+							: { borderLeft: 'solid black 3px' }
+						: {}
 
 				return (
 					<div key={post.id}>
-						{
-							i !== 0 && <div className="link-to-parent threadline" />
-						}
+						{i !== 0 && <div className="link-to-parent threadline" />}
 						<div style={borderStyle}>
-						<PostDetails
-							post={post}
-							note={null}
-							teaser={true}
-							vote={vote}
-							loggedIn={loggedIn}
-						/>
+							<PostDetails
+								post={post}
+								note={null}
+								teaser={true}
+								voteState={vote}
+								loggedIn={loggedIn}
+								onVote={onVote}
+							/>
 						</div>
 					</div>
 				)

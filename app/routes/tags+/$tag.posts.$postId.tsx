@@ -1,12 +1,13 @@
 import { type DataFunctionArgs, json } from '@remix-run/node'
 
-import { Link, useLoaderData } from '@remix-run/react'
+import { Link, useActionData, useFetchers, useLoaderData } from '@remix-run/react'
+import { useReducer, useState } from 'react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { Feed } from '#app/components/ui/feed.tsx'
 import { PostContent, PostDetails } from '#app/components/ui/post.tsx'
+import { ReplyThread } from '#app/components/ui/reply-thread.tsx'
 import { type Post } from '#app/db/types.ts'
 
 import { getTransitiveParents } from '#app/post.ts'
@@ -18,8 +19,7 @@ import {
 } from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
-import { getUserVotes, type VoteState } from '#app/vote.ts'
-import { ReplyThread } from '#app/components/ui/reply-thread.tsx'
+import { Direction, getUserVotes, type VoteState } from '#app/vote.ts'
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
@@ -74,13 +74,9 @@ export default function Post() {
 
 	let vote = v.get(post.id)!
 
-	// let criticalThreadId = post.criticalThreadId;
-	// let isInformed = post.criticalThreadId == null ? true : ( v.get(criticalThreadId!) || Direction.Neutral ) !== Direction.Neutral
-	// console.log("Critical Comment id", criticalThreadId)
-	// console.log("Vote on critical  comment", v.get(criticalThreadId!))
-	console.log('Votes', votes)
-	console.log('v', v)
-	console.log('Vote', vote)
+	// https://stackoverflow.com/questions/46240647/how-to-force-a-functional-react-component-to-render/53837442#53837442
+	// force this component to re-render when there is any vote on a child.
+	const [, forceUpdate] = useReducer(x => x + 1, 0);
 
 	return (
 		<>
@@ -93,10 +89,16 @@ export default function Post() {
 				post={post}
 				note={null}
 				teaser={false}
-				vote={vote}
+				voteState={vote}
 				loggedIn={loggedIn}
 			/>
-			<PostReplies replies={replies} votes={v} loggedIn={loggedIn} criticalThreadId={post.criticalThreadId}/>
+			<PostReplies
+				replies={replies}
+				votes={v}
+				loggedIn={loggedIn}
+				criticalThreadId={post.criticalThreadId}
+				onVote={forceUpdate}
+			/>
 		</>
 	)
 }
@@ -133,11 +135,13 @@ export function PostReplies({
 	votes,
 	loggedIn,
 	criticalThreadId,
+	onVote,
 }: {
 	replies: RankedPost[]
 	votes: Map<number, VoteState>
 	loggedIn: boolean
 	criticalThreadId: number | null
+	onVote: Function
 }) {
 	const nRepliesString = replies.length == 0 ? 'No Replies' : 'Replies'
 
@@ -151,6 +155,7 @@ export function PostReplies({
 					loggedIn={loggedIn}
 					targetId={replies[0]!.parentId}
 					criticalThreadId={criticalThreadId}
+					onVote={onVote}
 				/>
 			)}
 		</>

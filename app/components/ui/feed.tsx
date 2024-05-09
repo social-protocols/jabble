@@ -44,7 +44,7 @@ export function Feed({
 							post={post}
 							note={showNotes && !followedByTopnote ? post.note : null}
 							teaser={true}
-							vote={vote}
+							voteState={vote}
 							loggedIn={loggedIn}
 						/>
 					</div>

@@ -269,7 +269,7 @@ async function getRankedRepliesInternal(
 	)
 
 	const results: RankedPost[][] = await Promise.all(
-		immediateChildren.map(async (post: ScoredPost, i: number) => {
+		immediateChildren.map(async (post: ScoredPost) => {
 			const effects = await getEffectsInternal(tagId, post.id)
 			const targetEffect = effects.find(e => e.postId == targetId)!
 

@@ -124,9 +124,7 @@ export async function getUserVotes(
 				.on('Vote.userId', '=', userId)
 				.on('Vote.tagId', '=', tagId),
 		)
-		.where(eb =>
-			eb.or([eb('parentId', 'in', postIds), eb('id', 'in', postIds)]),
-		)
+		.where(eb => eb('id', 'in', postIds))
 		.leftJoin('Vote as VoteOnCriticalReply', join =>
 			join
 				.onRef('VoteOnCriticalReply.postId', '=', 'criticalThreadId')

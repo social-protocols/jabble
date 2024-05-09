@@ -1,7 +1,6 @@
 import { Link, useFetcher, useNavigate } from '@remix-run/react'
-import type react from 'react'
 import moment from 'moment'
-import { type FormEvent, useState } from 'react'
+import { useState, type CSSProperties, type FormEvent } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { type Post } from '#app/db/types.ts'
@@ -67,30 +66,36 @@ export function PostDetails({
 	post,
 	note,
 	teaser,
-	vote,
+	voteState,
 	loggedIn,
+	onVote,
 }: {
 	post: ScoredPost
 	note: ScoredNote | null
 	teaser: boolean
-	vote: VoteState
+	voteState: VoteState
 	loggedIn: boolean
+	onVote?: Function
 }) {
 	// So we need to get the current state of the user's vote on this post from the fetcher
-	const fetcher = useFetcher<{ state: Direction; postId: number }>()
+	const fetcher = useFetcher<{ voteState: VoteState; postId: number }>()
 
-	const notificationIconCss: react.CSSProperties = {
+	if (fetcher.data && fetcher.data.postId === post.id) {
+		voteState = fetcher.data.voteState
+	}
+
+	const notificationIconCss: CSSProperties = {
 		position: 'relative',
 		display: 'inline-block',
 		fontSize: '24px',
 	}
 
-	const speechBalloonCss: react.CSSProperties = {
+	const speechBalloonCss: CSSProperties = {
 		display: 'flex',
 		alignItems: 'center',
 	}
 
-	const blueDotCss: react.CSSProperties = {
+	const blueDotCss: CSSProperties = {
 		position: 'absolute',
 		top: '4px',
 		right: '4px',
@@ -117,9 +122,13 @@ export function PostDetails({
 		setShowReplyForm(false)
 	}
 
-	const voteWithStats: VoteStateWithStats = getVoteStateWithStats(vote, post)
+	const voteWithStats: VoteStateWithStats = getVoteStateWithStats(
+		voteState,
+		post,
+	)
 
-	const needsVote: boolean = !vote.isInformed && vote.vote !== Direction.Neutral
+	const needsVote: boolean =
+		!voteState.isInformed && voteState.vote !== Direction.Neutral
 
 	return (
 		<div
@@ -131,7 +140,7 @@ export function PostDetails({
 				className="mt-5"
 				style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
 			>
-				<fetcher.Form method="post" action="/vote">
+				<fetcher.Form method="post" action="/vote" onSubmit={() => onVote && onVote()}>
 					<VoteButtons
 						postId={post.id}
 						tag={post.tag}
@@ -156,10 +165,7 @@ export function PostDetails({
 				{note && <NoteAttachment note={note} tag={post.tag} className="mt-2" />}
 
 				<div className="mt-2 flex w-full text-sm">
-					<Link
-						to={`/tags/${post.tag}/posts/${post.id}`}
-						className="ml-2"
-					>
+					<Link to={`/tags/${post.tag}/posts/${post.id}`} className="ml-2">
 						<div style={notificationIconCss}>
 							{needsVote && <div style={blueDotCss}></div>}
 							<div style={speechBalloonCss}>💬</div>
@@ -327,11 +333,7 @@ export function VoteButtons({
 			)}
 
 			<div className="flex flex-col text-xl">
-				<button
-					name="direction"
-					value="Up"
-					className={upClass}
-				>
+				<button name="direction" value="Up" className={upClass}>
 					▲
 				</button>
 				<Link to={`/tags/${tag}/stats/${postId}`} className="hyperlink">
