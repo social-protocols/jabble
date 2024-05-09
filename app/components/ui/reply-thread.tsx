@@ -33,13 +33,13 @@ export function ReplyThread({
 					criticalThreadId === post.id
 						? needsVote
 							? { borderLeft: 'solid blue 3px' }
-							: { borderLeft: 'solid black 3px' }
+							: { borderLeft: 'solid lightgrey 3px' }
 						: {}
 
 				return (
 					<div key={post.id}>
 						{i !== 0 && <div className="link-to-parent threadline" />}
-						<div style={borderStyle}>
+						<div style={borderStyle} className='rounded-lg'>
 							<PostDetails
 								post={post}
 								note={null}
