@@ -84,29 +84,6 @@ export function PostDetails({
 		voteState = fetcher.data.voteState
 	}
 
-	const notificationIconCss: CSSProperties = {
-		position: 'relative',
-		display: 'inline-block',
-		fontSize: '24px',
-	}
-
-	const speechBalloonCss: CSSProperties = {
-		display: 'flex',
-		alignItems: 'center',
-	}
-
-	const blueDotCss: CSSProperties = {
-		position: 'absolute',
-		top: '4px',
-		right: '4px',
-		width: '16px',
-		height: '16px',
-		backgroundColor: 'blue',
-		borderRadius: '50%',
-		border: '2px solid white',
-		transform: 'translate(50%, -50%)',
-	}
-
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
 	const ageString = moment(post.createdAt).fromNow()
@@ -170,11 +147,10 @@ export function PostDetails({
 
 				<div className="mt-2 flex w-full text-sm">
 					<Link to={`/tags/${post.tag}/posts/${post.id}`} className="ml-2">
-						<div style={notificationIconCss}>
-							{needsVote && <div style={blueDotCss}></div>}
-							<div style={speechBalloonCss}>💬</div>
-						</div>
-						&nbsp;{post.nReplies}
+						<CommentIcon 
+							needsVote={needsVote}
+							nReplies={post.nReplies}
+						/>
 					</Link>
 					<button
 						className="hyperlink ml-2"
@@ -349,4 +325,45 @@ export function VoteButtons({
 			</div>
 		</>
 	)
+}
+
+export function CommentIcon({
+	needsVote,
+	nReplies,
+}: {
+	needsVote: boolean,
+	nReplies: number,
+}) {
+	const notificationIconCss: CSSProperties = {
+		position: 'relative',
+		display: 'inline-block',
+		fontSize: '24px',
+	}
+
+	const speechBalloonCss: CSSProperties = {
+		display: 'flex',
+		alignItems: 'center',
+	}
+
+	const blueDotCss: CSSProperties = {
+		position: 'absolute',
+		top: '4px',
+		right: '4px',
+		width: '12px',
+		height: '12px',
+		backgroundColor: 'blue',
+		borderRadius: '50%',
+		border: '2px solid white',
+		transform: 'translate(50%, -50%)',
+	}
+
+	return (
+		<>
+			<div style={notificationIconCss}>
+				{needsVote && <div style={blueDotCss}></div>}
+				<div style={speechBalloonCss} className='text-sm'>💬</div>
+			</div>
+			&nbsp;{nReplies}
+		</>
+	) 
 }
