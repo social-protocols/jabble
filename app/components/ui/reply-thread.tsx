@@ -6,11 +6,13 @@ export function ReplyThread({
 	posts,
 	votes,
 	targetId,
+	criticalThreadId,
 	loggedIn,
 }: {
 	posts: RankedPost[]
 	votes: Map<number, VoteState>
 	targetId: number | null
+	criticalThreadId: number | null
 	loggedIn: boolean
 }) {
 	const targetVote = votes.get(targetId!)!
@@ -21,28 +23,22 @@ export function ReplyThread({
 			{posts.map((post, i) => {
 				let vote = votes.get(post.id)!
 
-				let followsParent = (i > 0 && posts[i - 1]!.id) == post.parentId
-				const directReply = targetId !== null && post.parentId == targetId
-
 				const thisHasVote = vote.vote !== Direction.Neutral
 
 				const needsVote = targetHasVote && !thisHasVote
 
-				const borderStyle = post.isCritical
+				const borderStyle = criticalThreadId === post.id
 					? needsVote
 						? { borderLeft: 'solid blue 3px' }
 						: { borderLeft: 'solid black 3px' }
 					: {}
 
 				return (
-					<div key={post.id} style={borderStyle}>
-						{!directReply &&
-							post.parent !== null &&
-							(followsParent ? (
-								<div className="link-to-parent threadline" />
-							) : (
-								<ParentPost parentPost={post.parent!} tag={post.tag} />
-							))}
+					<div key={post.id}>
+						{
+							i !== 0 && <div className="link-to-parent threadline" />
+						}
+						<div style={borderStyle}>
 						<PostDetails
 							post={post}
 							note={null}
@@ -50,6 +46,7 @@ export function ReplyThread({
 							vote={vote}
 							loggedIn={loggedIn}
 						/>
+						</div>
 					</div>
 				)
 			})}

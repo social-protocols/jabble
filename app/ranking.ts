@@ -273,8 +273,7 @@ async function getRankedRepliesInternal(
 			const effects = await getEffectsInternal(tagId, post.id)
 			const targetEffect = effects.find(e => e.postId == targetId)!
 
-			// The first reply, as long as it has an effect, is a critical reply
-			const isCritical = i === 0 && targetEffect.q != targetEffect.p
+			const isCritical = targetEffect.topSubthreadId === targetEffect.noteId
 			return [
 				{
 					...post,

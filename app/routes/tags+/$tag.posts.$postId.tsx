@@ -96,7 +96,7 @@ export default function Post() {
 				vote={vote}
 				loggedIn={loggedIn}
 			/>
-			<PostReplies replies={replies} votes={v} loggedIn={loggedIn} />
+			<PostReplies replies={replies} votes={v} loggedIn={loggedIn} criticalThreadId={post.criticalThreadId}/>
 		</>
 	)
 }
@@ -132,10 +132,12 @@ export function PostReplies({
 	replies,
 	votes,
 	loggedIn,
+	criticalThreadId,
 }: {
 	replies: RankedPost[]
 	votes: Map<number, VoteState>
 	loggedIn: boolean
+	criticalThreadId: number | null
 }) {
 	const nRepliesString = replies.length == 0 ? 'No Replies' : 'Replies'
 
@@ -148,6 +150,7 @@ export function PostReplies({
 					votes={votes}
 					loggedIn={loggedIn}
 					targetId={replies[0]!.parentId}
+					criticalThreadId={criticalThreadId}
 				/>
 			)}
 		</>
