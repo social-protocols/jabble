@@ -1,4 +1,5 @@
 import { Link, useFetcher, useNavigate } from '@remix-run/react'
+import type react from 'react'
 import moment from 'moment'
 import { type FormEvent, useState } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
@@ -78,8 +79,28 @@ export function PostDetails({
 	// So we need to get the current state of the user's vote on this post from the fetcher
 	const fetcher = useFetcher<{ state: Direction; postId: number }>()
 
-	const nRepliesString =
-		post.nReplies === 1 ? '1 reply' : `${post.nReplies} replies`
+	const notificationIconCss: react.CSSProperties = {
+		position: 'relative',
+		display: 'inline-block',
+		fontSize: '24px',
+	}
+
+	const speechBalloonCss: react.CSSProperties = {
+		display: 'flex',
+		alignItems: 'center',
+	}
+
+	const blueDotCss: react.CSSProperties = {
+		position: 'absolute',
+		top: '4px',
+		right: '4px',
+		width: '16px',
+		height: '16px',
+		backgroundColor: 'blue',
+		borderRadius: '50%',
+		border: '2px solid white',
+		transform: 'translate(50%, -50%)',
+	}
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
@@ -135,9 +156,13 @@ export function PostDetails({
 				<div className="mt-2 flex w-full text-sm">
 					<Link
 						to={`/tags/${post.tag}/posts/${post.id}`}
-						className="hyperlink ml-2"
+						className="ml-2"
 					>
-						{nRepliesString}
+						<div style={notificationIconCss}>
+							{!vote.isInformed && <div style={blueDotCss}></div>}
+							<div style={speechBalloonCss}>💬</div>
+						</div>
+						&nbsp;{post.nReplies}
 					</Link>
 					<button
 						className="hyperlink ml-2"

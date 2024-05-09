@@ -19,6 +19,7 @@ import {
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
 import { getUserVotes, type VoteState } from '#app/vote.ts'
+import { ReplyThread } from '#app/components/ui/reply-thread.tsx'
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
@@ -142,12 +143,11 @@ export function PostReplies({
 		<>
 			<h2 className="mb-4 font-medium">{nRepliesString}</h2>
 			{replies.length > 0 && (
-				<Feed
+				<ReplyThread
 					posts={replies}
 					votes={votes}
 					loggedIn={loggedIn}
-					rootId={replies[0]!.parentId}
-					showNotes={false}
+					targetId={replies[0]!.parentId}
 				/>
 			)}
 		</>
