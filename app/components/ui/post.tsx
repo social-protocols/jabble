@@ -119,6 +119,8 @@ export function PostDetails({
 
 	const voteWithStats: VoteStateWithStats = getVoteStateWithStats(vote, post)
 
+	const needsVote: boolean = !vote.isInformed && vote.vote !== Direction.Neutral
+
 	return (
 		<div
 			className={
@@ -159,7 +161,7 @@ export function PostDetails({
 						className="ml-2"
 					>
 						<div style={notificationIconCss}>
-							{!vote.isInformed && <div style={blueDotCss}></div>}
+							{needsVote && <div style={blueDotCss}></div>}
 							<div style={speechBalloonCss}>💬</div>
 						</div>
 						&nbsp;{post.nReplies}
@@ -307,23 +309,10 @@ export function VoteButtons({
 	noteId: number | null
 	vote: VoteStateWithStats
 }) {
-	const upClass =
-		vote.vote === Direction.Up
-			? vote.isInformed
-				? ''
-				: 'opacity-50'
-			: 'opacity-20'
-	const downClass =
-		vote.vote === Direction.Down
-			? vote.isInformed
-				? ''
-				: 'opacity-50'
-			: 'opacity-20'
+	const upClass = vote.vote == Direction.Up ? '' : 'opacity-30'
+	const downClass = vote.vote == Direction.Down ? '' : 'opacity-30'
 
 	const pCurrentString: String = (vote.pCurrent * 100).toFixed(1) + '%'
-	const pAfterUpvoteString: String = (vote.pAfterUpvote * 100).toFixed(1) + '%'
-	const pAfterDownvoteString: String =
-		(vote.pAfterDownvote * 100).toFixed(1) + '%'
 
 	return (
 		<>
@@ -341,14 +330,12 @@ export function VoteButtons({
 				<button
 					name="direction"
 					value="Up"
-					className={upClass + ' hover:next-sibling'}
+					className={upClass}
 				>
 					▲
 				</button>
 				<Link to={`/tags/${tag}/stats/${postId}`} className="hyperlink">
-					<div className="hidden text-xs">{pAfterUpvoteString}</div>
 					<div className="text-xs">{pCurrentString}</div>
-					<div className="hidden text-xs">{pAfterDownvoteString}</div>
 				</Link>
 				<button name="direction" value="Down" className={downClass}>
 					▼
