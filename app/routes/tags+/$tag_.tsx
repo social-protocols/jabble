@@ -63,7 +63,7 @@ export default function TagPage() {
 				positions={p}
 				loggedIn={loggedIn}
 				rootId={null}
-				showNotes={true}
+				showNotes={false}
 			/>
 		</>
 	)
