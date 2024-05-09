@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { PostContent, PostDetails } from '#app/components/ui/post.tsx'
 import { ReplyThread } from '#app/components/ui/reply-thread.tsx'
+import { getCriticalThread, type ThreadPost } from '#app/conversations.ts'
 import { type Post } from '#app/db/types.ts'
 
 import { getTransitiveParents } from '#app/post.ts'
@@ -20,7 +21,6 @@ import {
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
 import { getUserVotes, type VoteState } from '#app/vote.ts'
-import { getCriticalThread, type ThreadPost } from '#app/conversations.ts'
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
@@ -68,8 +68,17 @@ export async function loader({ params, request }: DataFunctionArgs) {
 }
 
 export default function Post() {
-	const { post, transitiveParents, replies, tag, votes, loggedIn, criticalThread } =
-		useLoaderData<typeof loader>()
+	const {
+		post,
+		transitiveParents,
+		replies,
+		tag,
+		votes,
+		loggedIn,
+		criticalThread,
+	} = useLoaderData<typeof loader>()
+
+	console.log(criticalThread)
 
 	let v = new Map<number, VoteState>()
 	for (let vote of votes) {

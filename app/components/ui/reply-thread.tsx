@@ -39,7 +39,7 @@ export function ReplyThread({
 				return (
 					<div key={post.id}>
 						{i !== 0 && <div className="link-to-parent threadline" />}
-						<div style={borderStyle} className='rounded-lg'>
+						<div style={borderStyle} className="rounded-lg">
 							<PostDetails
 								post={post}
 								note={null}

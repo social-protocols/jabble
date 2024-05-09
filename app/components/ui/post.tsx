@@ -147,10 +147,7 @@ export function PostDetails({
 
 				<div className="mt-2 flex w-full text-sm">
 					<Link to={`/tags/${post.tag}/posts/${post.id}`} className="ml-2">
-						<CommentIcon 
-							needsVote={needsVote}
-							nReplies={post.nReplies}
-						/>
+						<CommentIcon needsVote={needsVote} nReplies={post.nReplies} />
 					</Link>
 					<button
 						className="hyperlink ml-2"
@@ -331,8 +328,8 @@ export function CommentIcon({
 	needsVote,
 	nReplies,
 }: {
-	needsVote: boolean,
-	nReplies: number,
+	needsVote: boolean
+	nReplies: number
 }) {
 	const notificationIconCss: CSSProperties = {
 		position: 'relative',
@@ -361,9 +358,11 @@ export function CommentIcon({
 		<>
 			<div style={notificationIconCss}>
 				{needsVote && <div style={blueDotCss}></div>}
-				<div style={speechBalloonCss} className='text-sm'>💬</div>
+				<div style={speechBalloonCss} className="text-sm">
+					💬
+				</div>
 			</div>
 			&nbsp;{nReplies}
 		</>
-	) 
+	)
 }

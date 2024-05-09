@@ -1,11 +1,14 @@
-import { sql } from "kysely"
+import { sql } from 'kysely'
 import { type Post } from '#app/db/types.ts'
-import { db } from "#app/db.ts"
-import { getOrInsertTagId } from "./tag.ts"
+import { db } from '#app/db.ts'
+import { getOrInsertTagId } from './tag.ts'
 
 export type ThreadPost = Post & { isCritical: boolean }
 
-export async function getCriticalThread(postId: number, tag: string): Promise<ThreadPost[]> {
+export async function getCriticalThread(
+	postId: number,
+	tag: string,
+): Promise<ThreadPost[]> {
 	const tagId = await getOrInsertTagId(tag)
 
 	const postWithCriticalThreadId = await db
@@ -20,13 +23,15 @@ export async function getCriticalThread(postId: number, tag: string): Promise<Th
 						.selectFrom('Score as S')
 						.where('tagId', '=', tagId)
 						.innerJoin('CriticalThread as CT', 'S.postId', 'CT.topNoteId')
-						.select(['S.postId', 'S.topNoteId', 'S.criticalThreadId'])
-				)
+						.select(['S.postId', 'S.topNoteId', 'S.criticalThreadId']),
+				),
 		)
 		.selectFrom('CriticalThread')
 		.select('postId')
 		.select(eb =>
-			eb.fn.coalesce(sql<number>`criticalThreadId`, sql<number>`postId`).as('criticalThreadId'),
+			eb.fn
+				.coalesce(sql<number>`criticalThreadId`, sql<number>`postId`)
+				.as('criticalThreadId'),
 		)
 		.where('postId', '>', postId)
 		.execute()
@@ -50,8 +55,6 @@ export async function getCriticalThread(postId: number, tag: string): Promise<Th
 			isCritical: isCriticalMap.get(post.id)!,
 		}
 	})
-	
+
 	return threadPosts
 }
-
-
