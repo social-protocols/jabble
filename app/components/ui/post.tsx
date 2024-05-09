@@ -140,7 +140,11 @@ export function PostDetails({
 				className="mt-5"
 				style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
 			>
-				<fetcher.Form method="post" action="/vote" onSubmit={() => onVote && onVote()}>
+				<fetcher.Form
+					method="post"
+					action="/vote"
+					onSubmit={() => onVote && onVote()}
+				>
 					<VoteButtons
 						postId={post.id}
 						tag={post.tag}

@@ -1,7 +1,7 @@
 import { type DataFunctionArgs, json } from '@remix-run/node'
 
-import { Link, useActionData, useFetchers, useLoaderData } from '@remix-run/react'
-import { useReducer, useState } from 'react'
+import { Link, useLoaderData } from '@remix-run/react'
+import { useReducer } from 'react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 
@@ -19,7 +19,7 @@ import {
 } from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
-import { Direction, getUserVotes, type VoteState } from '#app/vote.ts'
+import { getUserVotes, type VoteState } from '#app/vote.ts'
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
@@ -76,7 +76,7 @@ export default function Post() {
 
 	// https://stackoverflow.com/questions/46240647/how-to-force-a-functional-react-component-to-render/53837442#53837442
 	// force this component to re-render when there is any vote on a child.
-	const [, forceUpdate] = useReducer(x => x + 1, 0);
+	const [, forceUpdate] = useReducer(x => x + 1, 0)
 
 	return (
 		<>
