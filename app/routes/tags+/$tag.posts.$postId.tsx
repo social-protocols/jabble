@@ -20,6 +20,7 @@ import {
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
 import { getUserVotes, type VoteState } from '#app/vote.ts'
+import { getCriticalThread, type ThreadPost } from '#app/conversations.ts'
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
@@ -38,6 +39,8 @@ export async function loader({ params, request }: DataFunctionArgs) {
 	const transitiveParents = await getTransitiveParents(post.id)
 
 	let replies: RankedPost[] = await getRankedReplies(tag, post.id)
+
+	let criticalThread: ThreadPost[] = await getCriticalThread(post.id, tag)
 
 	// let positions: Map<number, VoteState> = new Map<number, VoteState>()
 	let votes =
@@ -58,13 +61,14 @@ export async function loader({ params, request }: DataFunctionArgs) {
 		tag,
 		votes,
 		loggedIn,
+		criticalThread,
 	})
 
 	return result
 }
 
 export default function Post() {
-	const { post, transitiveParents, replies, tag, votes, loggedIn } =
+	const { post, transitiveParents, replies, tag, votes, loggedIn, criticalThread } =
 		useLoaderData<typeof loader>()
 
 	let v = new Map<number, VoteState>()
