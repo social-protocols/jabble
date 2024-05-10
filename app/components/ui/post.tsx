@@ -38,27 +38,6 @@ export function PostContent({
 	)
 }
 
-export type VoteStateWithStats = VoteState & {
-	pCurrent: number
-	pAfterUpvote: number
-	pAfterDownvote: number
-}
-
-function getVoteStateWithStats(
-	voteState: VoteState,
-	post: ScoredPost,
-): VoteStateWithStats {
-	const pCurrent: number = post.p
-
-	// TODO: get p after upvote/downvote to display on hover on either vote button
-	return {
-		...voteState,
-		pCurrent: pCurrent,
-		pAfterUpvote: pCurrent,
-		pAfterDownvote: pCurrent,
-	}
-}
-
 export function PostDetails({
 	post,
 	note,
@@ -96,11 +75,6 @@ export function PostDetails({
 		setShowReplyForm(false)
 	}
 
-	const voteWithStats: VoteStateWithStats = getVoteStateWithStats(
-		voteState,
-		post,
-	)
-
 	const needsVote: boolean =
 		!voteState.isInformed && voteState.vote !== Direction.Neutral
 
@@ -123,7 +97,8 @@ export function PostDetails({
 						postId={post.id}
 						tag={post.tag}
 						noteId={note !== null ? note.id : null}
-						vote={voteWithStats}
+						vote={voteState}
+						pCurrent={post.p}
 					/>
 				</fetcher.Form>
 			</div>
@@ -243,16 +218,18 @@ export function VoteButtons({
 	postId,
 	noteId,
 	vote,
+	pCurrent,
 }: {
 	tag: string
 	postId: number
 	noteId: number | null
-	vote: VoteStateWithStats
+	vote: VoteState
+	pCurrent: number
 }) {
 	const upClass = vote.vote == Direction.Up ? '' : 'opacity-30'
 	const downClass = vote.vote == Direction.Down ? '' : 'opacity-30'
 
-	const pCurrentString: String = (vote.pCurrent * 100).toFixed(1) + '%'
+	const pCurrentString: String = (pCurrent * 100).toFixed(1) + '%'
 
 	return (
 		<>
