@@ -310,13 +310,16 @@ export async function getRankedDirectReplies(tag: string, targetId: number) {
 
 	const result = await query.execute()
 
-	const resultSorted = result.sort(
-		(a, b) =>
-			// This is the same as the thread_score in score.jl
-			relativeEntropy(a.targetP, a.targetQ) * a.targetPSize -
-				relativeEntropy(b.targetP, b.targetQ) * b.targetPSize ||
-			a.score! - b.score!,
-	)
+	const resultSorted = result
+		.sort(
+			(a, b) =>
+				// This is the same as the thread_score in score.jl
+				relativeEntropy(a.targetP, a.targetQ === null ? a.targetP : a.targetQ) * a.targetPSize -
+					relativeEntropy(b.targetP, b.targetQ ? a.targetP : a.targetQ) * b.targetPSize ||
+				a.score! - b.score!,
+		)
+		// reversed because we sort ascending
+		.reverse()
 
 	const scoredPosts = await Promise.all(
 		resultSorted.map(item => getScoredPost(tag, item.postId!)),
