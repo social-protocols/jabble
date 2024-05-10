@@ -293,6 +293,39 @@ async function getRankedRepliesInternal(
 	return results.flat()
 }
 
+export async function getRankedDirectReplies(tag: string, targetId: number) {
+	const tagId = await getOrInsertTagId(tag)
+
+	const query = db
+		.selectFrom('Post')
+		.innerJoin('Effect', 'Effect.noteId', 'Post.id')
+		.leftJoin('Score', 'Score.postId', 'Effect.noteId')
+		.where('Post.parentId', '=', targetId)
+		.where('Effect.postId', '=', targetId)
+		.where(sql`Effect.noteId is not null`)
+		.select('Effect.noteId as postId')
+		.select('Effect.p as targetP')
+		.select('Effect.pSize as targetPSize')
+		.select('Effect.q as targetQ')
+		.select('Effect.qSize as targetQSize')
+		.select('Score.score')
+
+	const result = await query.execute()
+
+	const resultSorted = result.sort(
+		(a, b) =>
+			// This is the same as the thread_score in score.jl
+			relativeEntropy(a.targetP, a.targetQ) * a.targetPSize -
+				relativeEntropy(b.targetP, b.targetQ) * b.targetPSize ||
+			a.score! - b.score!,
+	)
+
+	const scoredPosts =
+		await Promise.all(resultSorted.map(item => getScoredPost(tag, item.postId!)))
+
+	return scoredPosts
+}
+
 export async function getRankedTags(): Promise<string[]> {
 	return []
 }

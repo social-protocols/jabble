@@ -13,15 +13,13 @@ import { type Post } from '#app/db/types.ts'
 
 import { getTransitiveParents } from '#app/post.ts'
 import {
-	getRankedReplies,
+	getRankedDirectReplies,
 	getScoredPost,
-	type RankedPost,
 	type ScoredPost,
 } from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
 import { getUserVotes, type VoteState } from '#app/vote.ts'
-import { Feed } from '#app/components/ui/feed.tsx'
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
@@ -39,9 +37,9 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	const transitiveParents = await getTransitiveParents(post.id)
 
-	let replies: RankedPost[] = await getRankedReplies(tag, post.id)
-
 	let criticalThread: ThreadPost[] = await getCriticalThread(post.id, tag)
+
+	const otherReplies: ScoredPost[] = await getRankedDirectReplies(tag, post.id)
 
 	let votes: VoteState[] =
 		userId === null
@@ -49,7 +47,7 @@ export async function loader({ params, request }: DataFunctionArgs) {
 			: await getUserVotes(
 					userId,
 					tag,
-					replies.map(p => p.id)
+					otherReplies.map(p => p.id)
 						.concat(criticalThread.map(p => p.id))
 						.concat([post.id])
 						// dedupe array: https://stackoverflow.com/a/23282067/13607059
@@ -61,11 +59,11 @@ export async function loader({ params, request }: DataFunctionArgs) {
 	let result = json({
 		post,
 		transitiveParents,
-		replies,
 		tag,
 		votes,
 		loggedIn,
 		criticalThread,
+		otherReplies,
 	})
 
 	return result
@@ -75,11 +73,11 @@ export default function Post() {
 	const {
 		post,
 		transitiveParents,
-		replies,
 		tag,
 		votes,
 		loggedIn,
 		criticalThread,
+		otherReplies,
 	} = useLoaderData<typeof loader>()
 
 	let allVoteStates = new Map<number, VoteState>()
@@ -93,7 +91,11 @@ export default function Post() {
 	// force this component to re-render when there is any vote on a child.
 	const [, forceUpdate] = useReducer(x => x + 1, 0)
 
-	const otherRepliesExist = replies.length > 0
+	const otherRepliesToDisplay = otherReplies.filter(p => p.id !== post.topNoteId)
+	
+	const otherRepliesToDisplayExist = otherRepliesToDisplay.length > 0
+
+	const noReplies = criticalThread.length === 0 && !otherRepliesToDisplayExist
 
 	return (
 		<>
@@ -109,25 +111,31 @@ export default function Post() {
 				voteState={vote}
 				loggedIn={loggedIn}
 			/>
-			<PostReplies
-				replies={criticalThread}
-				votes={allVoteStates}
-				loggedIn={loggedIn}
-				criticalThreadId={post.criticalThreadId}
-				onVote={forceUpdate}
-			/>
-			{otherRepliesExist &&
+			{noReplies && <h2 className="mb-4 font-medium">No Replies</h2>}
+			{criticalThread.length > 0 && (
 				<>
-					<h2 className="mb-4 font-medium">Other Replies</h2>
-					<Feed
-						posts={replies}
+					<h2 className="mb-4 font-medium">Top Conversation</h2>
+					<ReplyThread
+						posts={criticalThread}
 						votes={allVoteStates}
-						rootId={post.id}
 						loggedIn={loggedIn}
-						showNotes={false}
+						targetId={post.id}
+						criticalThreadId={post.criticalThreadId}
+						onVote={forceUpdate}
 					/>
 				</>
-			}
+			)}
+			{otherRepliesToDisplayExist && (
+				<>
+					<h2 className="mb-4 font-medium">Replies</h2>
+					<DirectReplies
+						posts={otherRepliesToDisplay}
+						voteStates={votes}
+						loggedIn={loggedIn}
+						onVote={forceUpdate}
+					/>
+				</>
+			)}
 		</>
 	)
 }
@@ -159,34 +167,41 @@ function ParentThread({
 	)
 }
 
-export function PostReplies({
-	replies,
-	votes,
+function DirectReplies({
+	posts,
+	voteStates,
 	loggedIn,
-	criticalThreadId,
 	onVote,
 }: {
-	replies: ThreadPost[]
-	votes: Map<number, VoteState>
+	posts: ScoredPost[]
+	voteStates: VoteState[]
 	loggedIn: boolean
-	criticalThreadId: number | null
 	onVote: Function
 }) {
-	const nRepliesString = replies.length == 0 ? 'No Replies' : 'Top Conversation'
+	const voteStatesMap = new Map<number, VoteState>()
+	voteStates.forEach(voteState => {
+		voteStatesMap.set(voteState.postId, voteState)
+	})
 
 	return (
 		<>
-			<h2 className="mb-4 font-medium">{nRepliesString}</h2>
-			{replies.length > 0 && (
-				<ReplyThread
-					posts={replies}
-					votes={votes}
-					loggedIn={loggedIn}
-					targetId={replies[0]!.parentId}
-					criticalThreadId={criticalThreadId}
-					onVote={onVote}
-				/>
-			)}
+			{posts.map((post) => {
+				const vs = voteStatesMap.get(post.id)!
+				return (
+					<div key={post.id}>
+						<div className="rounded-lg">
+							<PostDetails
+								post={post}
+								note={null}
+								teaser={true}
+								voteState={vs}
+								loggedIn={loggedIn}
+								onVote={onVote}
+							/>
+						</div>
+					</div>
+				)
+			})}
 		</>
 	)
 }
