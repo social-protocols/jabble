@@ -1,6 +1,6 @@
+import { PostDetails } from '#app/components/ui/post.tsx'
 import { type ThreadPost } from '#app/conversations.ts'
 import { Direction, type VoteState } from '#app/vote.ts'
-import { PostDetails } from '#app/components/ui/post.tsx'
 
 export function ReplyThread({
 	posts,

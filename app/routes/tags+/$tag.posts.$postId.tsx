@@ -47,11 +47,14 @@ export async function loader({ params, request }: DataFunctionArgs) {
 			: await getUserVotes(
 					userId,
 					tag,
-					otherReplies.map(p => p.id)
+					otherReplies
+						.map(p => p.id)
 						.concat(criticalThread.map(p => p.id))
 						.concat([post.id])
 						// dedupe array: https://stackoverflow.com/a/23282067/13607059
-						.filter(function(item, i, ar){ return ar.indexOf(item) === i; }),
+						.filter(function (item, i, ar) {
+							return ar.indexOf(item) === i
+						}),
 				)
 
 	const loggedIn = userId !== null
@@ -91,8 +94,10 @@ export default function Post() {
 	// force this component to re-render when there is any vote on a child.
 	const [, forceUpdate] = useReducer(x => x + 1, 0)
 
-	const otherRepliesToDisplay = otherReplies.filter(p => p.id !== post.topNoteId)
-	
+	const otherRepliesToDisplay = otherReplies.filter(
+		p => p.id !== post.topNoteId,
+	)
+
 	const otherRepliesToDisplayExist = otherRepliesToDisplay.length > 0
 
 	const noReplies = criticalThread.length === 0 && !otherRepliesToDisplayExist
@@ -185,7 +190,7 @@ function DirectReplies({
 
 	return (
 		<>
-			{posts.map((post) => {
+			{posts.map(post => {
 				const vs = voteStatesMap.get(post.id)!
 				return (
 					<div key={post.id}>

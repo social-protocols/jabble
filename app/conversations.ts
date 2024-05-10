@@ -1,8 +1,7 @@
 import { sql } from 'kysely'
 import { db } from '#app/db.ts'
-import { getOrInsertTagId } from './tag.ts'
 import { getScoredPost, type ScoredPost } from './ranking.ts'
-
+import { getOrInsertTagId } from './tag.ts'
 
 export type ThreadPost = ScoredPost & { isCritical: boolean }
 
@@ -43,7 +42,7 @@ export async function getCriticalThread(
 	})
 
 	const scoredPosts = await Promise.all(
-		postWithCriticalThreadId.map(post => getScoredPost(tag, post.postId))
+		postWithCriticalThreadId.map(post => getScoredPost(tag, post.postId)),
 	)
 
 	const threadPosts: ThreadPost[] = scoredPosts.map(post => {

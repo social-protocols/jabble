@@ -294,8 +294,6 @@ async function getRankedRepliesInternal(
 }
 
 export async function getRankedDirectReplies(tag: string, targetId: number) {
-	const tagId = await getOrInsertTagId(tag)
-
 	const query = db
 		.selectFrom('Post')
 		.innerJoin('Effect', 'Effect.noteId', 'Post.id')
@@ -320,8 +318,9 @@ export async function getRankedDirectReplies(tag: string, targetId: number) {
 			a.score! - b.score!,
 	)
 
-	const scoredPosts =
-		await Promise.all(resultSorted.map(item => getScoredPost(tag, item.postId!)))
+	const scoredPosts = await Promise.all(
+		resultSorted.map(item => getScoredPost(tag, item.postId!)),
+	)
 
 	return scoredPosts
 }
