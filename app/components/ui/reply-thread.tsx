@@ -1,6 +1,6 @@
-import { PostDetails } from '#app/components/ui/post.tsx'
-import { type RankedPost } from '#app/ranking.ts'
+import { type ThreadPost } from '#app/conversations.ts'
 import { Direction, type VoteState } from '#app/vote.ts'
+import { PostDetails } from '#app/components/ui/post.tsx'
 
 export function ReplyThread({
 	posts,
@@ -10,7 +10,7 @@ export function ReplyThread({
 	loggedIn,
 	onVote,
 }: {
-	posts: RankedPost[]
+	posts: ThreadPost[]
 	votes: Map<number, VoteState>
 	targetId: number | null
 	criticalThreadId: number | null

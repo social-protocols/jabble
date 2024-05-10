@@ -1,9 +1,10 @@
 import { sql } from 'kysely'
-import { type Post } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
 import { getOrInsertTagId } from './tag.ts'
+import { getScoredPost, type ScoredPost } from './ranking.ts'
 
-export type ThreadPost = Post & { isCritical: boolean }
+
+export type ThreadPost = ScoredPost & { isCritical: boolean }
 
 export async function getCriticalThread(
 	postId: number,
@@ -41,15 +42,11 @@ export async function getCriticalThread(
 		isCriticalMap.set(post.postId, post.criticalThreadId !== post.postId)
 	})
 
-	const postIdsInThread = postWithCriticalThreadId.map(p => p.postId)
-	const posts: Post[] = await db
-		.selectFrom('Post')
-		.where('id', 'in', postIdsInThread)
-		.selectAll()
-		.orderBy('createdAt')
-		.execute()
+	const scoredPosts = await Promise.all(
+		postWithCriticalThreadId.map(post => getScoredPost(tag, post.postId))
+	)
 
-	const threadPosts: ThreadPost[] = posts.map(post => {
+	const threadPosts: ThreadPost[] = scoredPosts.map(post => {
 		return {
 			...post,
 			isCritical: isCriticalMap.get(post.id)!,

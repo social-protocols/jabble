@@ -21,6 +21,7 @@ import {
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
 import { getUserVotes, type VoteState } from '#app/vote.ts'
+import { Feed } from '#app/components/ui/feed.tsx'
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
@@ -42,14 +43,17 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	let criticalThread: ThreadPost[] = await getCriticalThread(post.id, tag)
 
-	// let positions: Map<number, VoteState> = new Map<number, VoteState>()
-	let votes =
+	let votes: VoteState[] =
 		userId === null
 			? []
 			: await getUserVotes(
 					userId,
 					tag,
-					replies.map(p => p.id).concat([post.id]),
+					replies.map(p => p.id)
+						.concat(criticalThread.map(p => p.id))
+						.concat([post.id])
+						// dedupe array: https://stackoverflow.com/a/23282067/13607059
+						.filter(function(item, i, ar){ return ar.indexOf(item) === i; }),
 				)
 
 	const loggedIn = userId !== null
@@ -78,18 +82,18 @@ export default function Post() {
 		criticalThread,
 	} = useLoaderData<typeof loader>()
 
-	console.log(criticalThread)
-
-	let v = new Map<number, VoteState>()
+	let allVoteStates = new Map<number, VoteState>()
 	for (let vote of votes) {
-		v.set(vote.postId, vote)
+		allVoteStates.set(vote.postId, vote)
 	}
 
-	let vote = v.get(post.id)!
+	let vote = allVoteStates.get(post.id)!
 
 	// https://stackoverflow.com/questions/46240647/how-to-force-a-functional-react-component-to-render/53837442#53837442
 	// force this component to re-render when there is any vote on a child.
 	const [, forceUpdate] = useReducer(x => x + 1, 0)
+
+	const otherRepliesExist = replies.length > 0
 
 	return (
 		<>
@@ -106,12 +110,24 @@ export default function Post() {
 				loggedIn={loggedIn}
 			/>
 			<PostReplies
-				replies={replies}
-				votes={v}
+				replies={criticalThread}
+				votes={allVoteStates}
 				loggedIn={loggedIn}
 				criticalThreadId={post.criticalThreadId}
 				onVote={forceUpdate}
 			/>
+			{otherRepliesExist &&
+				<>
+					<h2 className="mb-4 font-medium">Other Replies</h2>
+					<Feed
+						posts={replies}
+						votes={allVoteStates}
+						rootId={post.id}
+						loggedIn={loggedIn}
+						showNotes={false}
+					/>
+				</>
+			}
 		</>
 	)
 }
@@ -150,13 +166,13 @@ export function PostReplies({
 	criticalThreadId,
 	onVote,
 }: {
-	replies: RankedPost[]
+	replies: ThreadPost[]
 	votes: Map<number, VoteState>
 	loggedIn: boolean
 	criticalThreadId: number | null
 	onVote: Function
 }) {
-	const nRepliesString = replies.length == 0 ? 'No Replies' : 'Replies'
+	const nRepliesString = replies.length == 0 ? 'No Replies' : 'Top Conversation'
 
 	return (
 		<>
