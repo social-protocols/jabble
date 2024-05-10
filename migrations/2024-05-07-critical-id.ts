@@ -67,7 +67,7 @@ export async function up(db: Kysely<any>): Promise<void> {
             , tagId             integer not null
             , postId           integer not null 
             , noteId            integer not null
-            , topSubthreadId            integer not null
+            , topSubthreadId            integer
             , p                 real not null
             , pCount       integer not null
             , pSize       integer not null
@@ -87,7 +87,7 @@ export async function up(db: Kysely<any>): Promise<void> {
             , tagId             integer not null
             , postId           integer not null 
             , noteId            integer not null
-            , topSubthreadId            integer not null
+            , topSubthreadId            integer
             , p                 real not null
             , pCount       integer not null
             , pSize       integer not null
