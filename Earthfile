@@ -52,11 +52,11 @@ app-deploy-image:
 
 
   # GlobalBrain service
-  ARG GLOBALBRAIN_VERSION=main
+  ARG GLOBALBRAIN_VERSION=19cc51a70cae64cc60e0735c99c8a4f997888f6f
 
   # npm install GlobalBrain.jl
   # RUN cd GlobalBrain.jl/globalbrain-node && /opt/julia-$JULIA_VERSION/bin/julia --project -e 'using Pkg; Pkg.instantiate()' && PATH=$PATH:/opt/julia-1.9.4/bin npm install
-  COPY github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_VERSION+node-ext/socialprotocols-globalbrain-node-0.0.1.tgz ./GlobalBrain.jl/
+  COPY github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_VERSION+node-ext-tgz/socialprotocols-globalbrain-node-0.0.1.tgz ./GlobalBrain.jl/
   RUN cd GlobalBrain.jl/ && tar -xzvf socialprotocols-globalbrain-node-0.0.1.tgz
 
   # npm install
