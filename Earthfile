@@ -52,7 +52,7 @@ app-deploy-image:
 
 
   # GlobalBrain service
-  ARG GLOBALBRAIN_VERSION=19cc51a70cae64cc60e0735c99c8a4f997888f6f
+  ARG GLOBALBRAIN_VERSION=v0.1.6
 
   # npm install GlobalBrain.jl
   # RUN cd GlobalBrain.jl/globalbrain-node && /opt/julia-$JULIA_VERSION/bin/julia --project -e 'using Pkg; Pkg.instantiate()' && PATH=$PATH:/opt/julia-1.9.4/bin npm install
