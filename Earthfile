@@ -61,7 +61,7 @@ app-deploy-image:
 
   # npm install
   COPY package.json package-lock.json .npmrc ./
-  RUN npm install --save GlobalBrain.jl/globalbrain-node
+  RUN npm install --save './GlobalBrain.jl/globalbrain-node'
   RUN npm install --include=dev && rm -rf /root/.npm /root/.node-gyp
 
 
