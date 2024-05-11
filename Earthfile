@@ -59,6 +59,11 @@ app-deploy-image:
   COPY github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_VERSION+node-ext-tgz/socialprotocols-globalbrain-node-0.0.1.tgz ./GlobalBrain.jl/
   RUN cd GlobalBrain.jl/ && tar -xzvf socialprotocols-globalbrain-node-0.0.1.tgz
 
+  # Debug
+  RUN ls -l
+  RUN ls -l GlobalBrain.jl/
+  RUN ls -l GlobalBrain.jl/globalbrain-node
+
   # npm install
   COPY package.json package-lock.json .npmrc ./
   RUN npm install --save './GlobalBrain.jl/globalbrain-node'
