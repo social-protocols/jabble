@@ -51,14 +51,19 @@ app-deploy-image:
   RUN mkdir -p /data ${LITEFS_DIR}
 
 
-  COPY package.json package-lock.json .npmrc ./
-  RUN npm install --include=dev && rm -rf /root/.npm /root/.node-gyp
-
   # GlobalBrain service
   ARG GLOBALBRAIN_VERSION=v0.1.6
+
+  # npm install GlobalBrain.jl
+  # RUN cd GlobalBrain.jl/globalbrain-node && /opt/julia-$JULIA_VERSION/bin/julia --project -e 'using Pkg; Pkg.instantiate()' && PATH=$PATH:/opt/julia-1.9.4/bin npm install
   COPY github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_VERSION+node-ext-tgz/socialprotocols-globalbrain-node-0.0.1.tgz ./GlobalBrain.jl/
   RUN cd GlobalBrain.jl/ && tar -xzvf socialprotocols-globalbrain-node-0.0.1.tgz
+
+  # npm install
+  COPY package.json package-lock.json .npmrc ./
   RUN npm install --ignore-scripts --save './GlobalBrain.jl/globalbrain-node'
+  RUN npm install --include=dev && rm -rf /root/.npm /root/.node-gyp
+
 
   # npm run build
   COPY other other/
