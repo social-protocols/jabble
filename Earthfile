@@ -52,20 +52,16 @@ app-deploy-image:
 
 
   # GlobalBrain service
-  ARG GLOBALBRAIN_VERSION=70eac375e28f1c356c374435ab5a3372c40456f2
-  # RUN  wget https://github.com/social-protocols/GlobalBrain.jl/archive/refs/tags/v$GLOBALBRAIN_VERSION.tar.gz \
-  #   && tar zxvf v$GLOBALBRAIN_VERSION.tar.gz --directory=/myapp \
-  #   && rm v$GLOBALBRAIN_VERSION.tar.gz \
-  #   && mv GlobalBrain.jl-$GLOBALBRAIN_VERSION GlobalBrain.jl
-
+  ARG GLOBALBRAIN_VERSION=main
 
   # npm install GlobalBrain.jl
   # RUN cd GlobalBrain.jl/globalbrain-node && /opt/julia-$JULIA_VERSION/bin/julia --project -e 'using Pkg; Pkg.instantiate()' && PATH=$PATH:/opt/julia-1.9.4/bin npm install
-  COPY github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_VERSION+node-ext/dist ./GlobalBrain.jl/globalbrain-node/dist
+  COPY github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_VERSION+node-ext/socialprotocols-globalbrain-node-0.0.1.tgz ./GlobalBrain.jl/
+  RUN cd GlobalBrain.jl/ && tar -xzvf socialprotocols-globalbrain-node-0.0.1.tgz
 
   # npm install
   COPY package.json package-lock.json .npmrc ./
-  RUN npm install --save-dev GlobalBrain.jl/globalbrain-node
+  RUN npm install --save GlobalBrain.jl/globalbrain-node
   RUN npm install --include=dev && rm -rf /root/.npm /root/.node-gyp
 
 
