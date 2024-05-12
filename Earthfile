@@ -42,7 +42,7 @@ app-deploy-image:
   ENV FLY="true"
 
 
-  RUN apt-get update && apt-get install -y fuse3 sqlite3 ca-certificates wget
+  RUN apt-get update && apt-get install -y git fuse3 sqlite3 ca-certificates wget
 
   # litefs
   ENV LITEFS_DIR="/litefs/data"
