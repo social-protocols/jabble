@@ -34,6 +34,14 @@
             ];
           };
         };
+        packages = {
+          ci = pkgs.buildEnv {
+            name = "ci-build-env";
+            paths = with pkgs; [
+                nodejs_21
+            ];
+          };
+        };
       }
     );
 }
