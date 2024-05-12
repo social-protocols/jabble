@@ -2,7 +2,7 @@
 
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/ba733f8000925e837e30765f273fec153426403d";
 
     # for `flake-utils.lib.eachSystem`
     flake-utils.url = "github:numtide/flake-utils";
@@ -25,7 +25,7 @@
               just
 
               sqlite-interactive
-              nodejs_20
+              nodejs_21
 
               earthly
               flyctl
@@ -38,7 +38,7 @@
           ci = pkgs.buildEnv {
             name = "ci-build-env";
             paths = with pkgs; [
-                nodejs_20
+                nodejs_21
             ];
           };
         };
