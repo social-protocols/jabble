@@ -164,7 +164,7 @@
     "vitest": "^0.34.5"
   },
   "engines": {
-    "node": "20"
+    "node": "21"
   },
   "epic-stack": true,
   "lint-staged": {
