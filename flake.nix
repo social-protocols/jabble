@@ -39,7 +39,6 @@
             name = "ci-build-env";
             paths = with pkgs; [
                 nodejs_21
-                git
             ];
           };
         };
