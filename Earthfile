@@ -2,6 +2,7 @@
 
 VERSION 0.8
 
+IMPORT ../GlobalBrain.jl AS gb-jl-local
 
 flake:
   FROM nixos/nix:2.20.4
@@ -36,6 +37,11 @@ app-deploy-litefs:
 app-deploy-image:
   FROM node:21-bookworm-slim
 
+  # GlobalBrain service
+  ARG GLOBALBRAIN_VERSION=v0.1.6
+  ARG GB_NODE_EXT_REF=github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_VERSION
+#  ARG GB_NODE_EXT_REF=gb-jl-local
+
   WORKDIR /myapp
 
   ENV NODE_ENV production
@@ -51,12 +57,10 @@ app-deploy-image:
   RUN mkdir -p /data ${LITEFS_DIR}
 
 
-  # GlobalBrain service
-  ARG GLOBALBRAIN_VERSION=v0.1.6
 
   # npm install GlobalBrain.jl
   # RUN cd GlobalBrain.jl/globalbrain-node && /opt/julia-$JULIA_VERSION/bin/julia --project -e 'using Pkg; Pkg.instantiate()' && PATH=$PATH:/opt/julia-1.9.4/bin npm install
-  COPY github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_VERSION+node-ext-tgz/socialprotocols-globalbrain-node-0.0.1.tgz ./GlobalBrain.jl/
+  COPY $GB_NODE_EXT_REF+node-ext-tgz/socialprotocols-globalbrain-node-0.0.1.tgz ./GlobalBrain.jl/
   RUN cd GlobalBrain.jl/ && tar -xzvf socialprotocols-globalbrain-node-0.0.1.tgz
 
   # npm install

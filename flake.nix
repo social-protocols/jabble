@@ -28,7 +28,12 @@
               nodejs_21
 
               earthly
+              docker
               flyctl
+
+              less
+
+              fzf 
 
               # darwin.apple_sdk.frameworks.Security
             ];
@@ -39,6 +44,11 @@
             name = "ci-build-env";
             paths = with pkgs; [
                 nodejs_21
+                python3
+                gnumake
+                gcc
+                gnused
+
             ];
           };
         };

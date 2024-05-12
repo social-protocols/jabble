@@ -60,7 +60,7 @@
     "address": "^2.0.1",
     "autoprefixer": "^10.4.16",
     "bcryptjs": "^2.4.3",
-    "better-sqlite3": "^8.6.0",
+    "better-sqlite3": "^10.0.0",
     "bloom-filters": "^3.0.1",
     "cachified": "^3.5.4",
     "chalk": "^5.3.0",
