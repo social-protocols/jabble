@@ -28,16 +28,38 @@
               nodejs_21
 
               earthly
+              docker
               flyctl
+
+              less
+              fzf
 
               # darwin.apple_sdk.frameworks.Security
             ];
           };
         };
         packages = {
-          ci = pkgs.buildEnv {
-            name = "ci-build-env";
+          juliabuild = pkgs.buildEnv {
+            name = "julia-build-image";
             paths = with pkgs; [
+                diffutils
+                julia_19-bin
+                python3 # for node-gyp
+                gcc
+                gnumake
+                gnused
+                llvmPackages.libcxxStdenv
+                llvmPackages.libcxx
+                libcxxStdenv
+                libcxx
+                sqlite
+            ];
+
+          };
+          base = pkgs.buildEnv {
+            name = "base-image";
+            paths = with pkgs; [
+                jq
                 nodejs_21
             ];
           };

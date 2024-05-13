@@ -2,6 +2,7 @@
 
 VERSION 0.8
 
+IMPORT ../GlobalBrain.jl AS gb-jl
 
 flake:
   FROM nixos/nix:2.20.4
@@ -10,60 +11,109 @@ flake:
   RUN echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
   COPY flake.nix flake.lock ./
   # install packages from the packages section in flake.nix
-  RUN nix profile install --impure -L '.#ci'
+  RUN nix profile install --impure -L '.#base'
+
+
+julia-build:
+  FROM +flake
+  WORKDIR /app
+  # install packages from the packages section in flake.nix
+  RUN nix profile install --impure -L '.#juliabuild'
+
+node-ext:
+  FROM +julia-build
+  WORKDIR /app
+  ARG GLOBALBRAIN_VERSION=0.1.6
+
+  RUN  wget https://github.com/social-protocols/GlobalBrain.jl/archive/refs/tags/v$GLOBALBRAIN_VERSION.tar.gz \
+    && tar zxvf v$GLOBALBRAIN_VERSION.tar.gz \
+    && rm v$GLOBALBRAIN_VERSION.tar.gz \
+    && mv GlobalBrain.jl-$GLOBALBRAIN_VERSION GlobalBrain.jl
+
+  ENV PATH=$PATH:/opt/julia-$JULIA_VERSION/bin 
+
+  WORKDIR /app/GlobalBrain.jl
+  RUN julia -t auto --code-coverage=none --check-bounds=yes --project -e 'using Pkg; Pkg.instantiate()'
+
+  WORKDIR /app/GlobalBrain.jl/globalbrain-node
+  RUN julia -t auto --code-coverage=none --check-bounds=yes --project -e 'using Pkg; Pkg.instantiate()'
+  RUN npm install
+
+
+  # Create artifact
+  # Okay, GlobalBrain.jl is hardcoded to expect to find /app/GlobalBrain.jl/src and /app/GlobalBrain.jl/sql
+  # The former can be empty.
+  # We need to fix this in the other repo, but for now a workaround.
+  WORKDIR /app/GlobalBrain.jl
+  RUN mkdir -p /artifact/src
+  RUN mkdir -p /artifact/globalbrain-node/dist
+  RUN cp -r sql /artifact/
+  RUN cp -r globalbrain-node/dist /artifact/globalbrain-node/
+  RUN cp globalbrain-node/package.json /artifact/globalbrain-node/
+  RUN cp globalbrain-node/package-lock.json /artifact/globalbrain-node/
+  RUN cp globalbrain-node/index.js /artifact/globalbrain-node/
+
+  SAVE ARTIFACT /artifact AS LOCAL artifact
+
+#test-node-ext:
+#  FROM +julia-build
+#
+#  WORKDIR /app
+#  COPY --dir +node-ext/artifact ./GlobalBrain.jl
+#
+#  WORKDIR /app/GlobalBrain.jl/globalbrain-node
+#  RUN npm install
+#
+#  WORKDIR /app/GlobalBrain.jl/globalbrain-node/globalbrain-node-test
+#  RUN npm install --ignore-scripts --save ..
+#  RUN npm test
 
 app-setup:
-  FROM +flake
+  FROM +julia-build
+  RUN nix profile install nixpkgs#sqlite
+
   WORKDIR /app
   COPY package.json package-lock.json .npmrc ./
   RUN npm install --include=dev && rm -rf /root/.npm /root/.node-gyp
-  COPY --dir other ./
+  COPY --dir other sql ./
   RUN npx tsx ./other/build-icons.ts
   COPY --dir app server public types ./
   COPY index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
 
+  COPY --dir +node-ext/artifact ./GlobalBrain.jl
+  WORKDIR /app
+  RUN npm install --ignore-scripts --save './GlobalBrain.jl/globalbrain-node'
+
+  COPY tests/globalbrain-node.js tests/
+  RUN node tests/globalbrain-node.js test.db
+
 app-build:
-  BUILD +app-typecheck
-  BUILD +app-lint
   FROM +app-setup
   RUN npm run build
+  SAVE ARTIFACT server-build AS LOCAL server-build
+  SAVE ARTIFACT build AS LOCAL build
+  SAVE ARTIFACT node_modules AS LOCAL node_modules
+  SAVE ARTIFACT package-lock.json AS LOCAL package-lock.json
+  SAVE ARTIFACT package.json AS LOCAL package.json
 
 # needed, when porting the Dockerfile to Earthfile
 app-deploy-litefs:
    FROM flyio/litefs:0.5.10
    SAVE ARTIFACT /usr/local/bin/litefs
 
-app-deploy-image:
-  FROM node:21-bookworm-slim
+docker-image:
+  FROM +julia-build
 
-  WORKDIR /myapp
+  WORKDIR /app
 
   ENV NODE_ENV production
   ENV FLY="true"
-
-
-  RUN apt-get update && apt-get install -y fuse3 sqlite3 ca-certificates wget
 
   # litefs
   ENV LITEFS_DIR="/litefs/data"
   COPY +app-deploy-litefs/litefs /usr/local/bin/litefs
   COPY other/litefs.yml /etc/litefs.yml
   RUN mkdir -p /data ${LITEFS_DIR}
-
-
-  # GlobalBrain service
-  ARG GLOBALBRAIN_VERSION=v0.1.6
-
-  # npm install GlobalBrain.jl
-  # RUN cd GlobalBrain.jl/globalbrain-node && /opt/julia-$JULIA_VERSION/bin/julia --project -e 'using Pkg; Pkg.instantiate()' && PATH=$PATH:/opt/julia-1.9.4/bin npm install
-  COPY github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_VERSION+node-ext-tgz/socialprotocols-globalbrain-node-0.0.1.tgz ./GlobalBrain.jl/
-  RUN cd GlobalBrain.jl/ && tar -xzvf socialprotocols-globalbrain-node-0.0.1.tgz
-
-  # npm install
-  COPY package.json package-lock.json .npmrc ./
-  RUN npm install --ignore-scripts --save './GlobalBrain.jl/globalbrain-node'
-  RUN npm install --include=dev && rm -rf /root/.npm /root/.node-gyp
-
 
   # npm run build
   COPY other other/
@@ -72,8 +122,18 @@ app-deploy-image:
   COPY public public/
   COPY types types/
   COPY index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
-  RUN npm run build
+  COPY --dir +app-build/server-build ./ 
+  COPY --dir +app-build/build ./ 
+  COPY --dir +app-build/node_modules ./ 
+  COPY --dir +app-build/package-lock.json ./ 
+  COPY --dir +app-build/package.json ./ 
+  COPY --dir +node-ext/artifact ./GlobalBrain.jl
 
+  # should not install anything
+  RUN cd ./GlobalBrain.jl/globalbrain-node && npm install
+
+  COPY tests/globalbrain-node.js tests/
+  RUN node tests/globalbrain-node.js test.db
 
   # startup & migrations
   COPY migrate.ts startup.sh index.js ./
@@ -90,11 +150,15 @@ app-deploy-image:
   ENV VOTE_EVENTS_PATH=/data/vote-events.jsonl
   ENV SCORE_EVENTS_PATH=/data/score-events.jsonl
 
+  ENV SESSION_SECRET=super-duper-s3cret
+  ENV HONEYPOT_SECRET=super-duper-s3cret
+  ENV INTERNAL_COMMAND_TOKEN=some-made-up-token
 
   # starting the application is defined in litefs.yml
   # test locally without litefs:
-  # docker run -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET sha256:xyzxyz bash /myapp/startup.sh
+  # docker run -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET sha256:xyzxyz bash /app/startup.sh
   CMD ["litefs", "mount"]
+
 
 app-deploy:
   # run locally:
@@ -105,7 +169,7 @@ app-deploy:
   RUN apk add curl
   RUN set -eo pipefail; curl -L https://fly.io/install.sh | sh
   COPY fly.toml ./
-  WITH DOCKER --load $IMAGE=+app-deploy-image
+  WITH DOCKER --load $IMAGE=+docker-image
     RUN --secret FLY_API_TOKEN \
         docker image ls \
      && /root/.fly/bin/flyctl auth docker \
@@ -125,8 +189,7 @@ app-lint:
 ci-test:
   BUILD +app-typecheck
   BUILD +app-lint
-  BUILD +app-build
-  BUILD +app-deploy-image
+  BUILD +docker-image
 
 ci-deploy:
   BUILD +ci-test
