@@ -102,8 +102,16 @@ use-production-data:
 	rm -f "$GB_DATABASE_PATH"
 	touch "$SCORE_EVENTS_PATH"
 
+
 production-db:
 	fly ssh console -C 'sqlite3 /litefs/data/sqlite.db'
 
 install-node-extension:
 	npm install --save-dev ../GlobalBrain.jl/globalbrain-node
+
+install-node-extension-from-earthly:
+  earthly +node-ext
+  earthly --artifact +node-ext/artifact/ GlobalBrain.jl
+  npm install --ignore-scripts --save './GlobalBrain.jl/globalbrain-node'
+  cd ./GlobalBrain.jl/globalbrain-node && npm install
+
