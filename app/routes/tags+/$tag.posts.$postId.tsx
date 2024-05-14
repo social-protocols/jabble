@@ -1,7 +1,7 @@
 import { type DataFunctionArgs, json } from '@remix-run/node'
 
 import { Link, useLoaderData } from '@remix-run/react'
-import { useReducer } from 'react'
+import { useState } from 'react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 
@@ -92,7 +92,17 @@ export default function Post() {
 
 	// https://stackoverflow.com/questions/46240647/how-to-force-a-functional-react-component-to-render/53837442#53837442
 	// force this component to re-render when there is any vote on a child.
-	const [, forceUpdate] = useReducer(x => x + 1, 0)
+	function useForceUpdate() {
+		const [_, setValue] = useState(0) // integer state
+		return () => {
+			console.log('forceUpdate')
+			setValue(value => value + 1)
+		} // update state to force render
+		// A function that increment 👆🏻 the previous state like here
+		// is better than directly setting `setValue(value + 1)`
+	}
+
+	const forceUpdate = useForceUpdate()
 
 	const otherRepliesToDisplay = otherReplies.filter(
 		p => p.id !== post.topNoteId,

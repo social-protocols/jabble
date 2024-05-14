@@ -7,6 +7,7 @@ import { type Post } from '#app/db/types.ts'
 import { type ScoredPost, type ScoredNote } from '#app/ranking.ts'
 import { Direction, type VoteState } from '#app/vote.ts'
 import { Truncate } from './Truncate.tsx'
+import {invariant} from '#app/utils/misc.tsx'
 
 /* Keep this relatively high, so people don't often have to click "read more"
    to read most content. But also not too high, so people don't have to
@@ -61,10 +62,15 @@ export function PostDetails({
 	}
 
 	// So we need to get the current state of the user's vote on this post from the fetcher
-	const fetcher = useFetcher<{ voteState: VoteState; postId: number }>()
+	const voteFetcher = useFetcher<{ voteState: VoteState; postId: number }>()
 
-	if (fetcher.data && fetcher.data.postId === post.id) {
-		voteState = fetcher.data.voteState
+	if (voteFetcher.data) {
+		invariant(
+			voteFetcher.data.postId === post.id,
+			`got fetcher data with wrong post id ${voteFetcher.data.postId} !== ${post.id}`,
+		)
+		voteState = voteFetcher.data.voteState
+		console.log(`Got vote state from fetcher for ${post.id}`, voteState)
 	}
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
@@ -74,7 +80,7 @@ export function PostDetails({
 	const replyFetcher = useFetcher<{ newPostId: number }>()
 
 	if (replyFetcher.data) {
-		console.log('Fetcher data', replyFetcher.data)
+		console.log('replyFetcher data', replyFetcher.data)
 	}
 
 	const handleReplySubmit = function (event: FormEvent<HTMLFormElement>) {
@@ -84,6 +90,13 @@ export function PostDetails({
 
 	const needsVote: boolean =
 		!voteState.isInformed && voteState.vote !== Direction.Neutral
+
+	const handleVoteSubmit = function (event: FormEvent<HTMLFormElement>) {
+		console.log('handleVoteSubmit', event.currentTarget)
+		onVote && onVote()
+		voteFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
+		console.log('Handled vote submit')
+	}
 
 	return (
 		<div
@@ -95,10 +108,10 @@ export function PostDetails({
 				className="mt-5"
 				style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
 			>
-				<fetcher.Form
-					method="post"
+				<voteFetcher.Form
+					method="POST"
 					action="/vote"
-					onSubmit={() => onVote && onVote()}
+					onSubmit={handleVoteSubmit}
 				>
 					<VoteButtons
 						postId={post.id}
@@ -107,7 +120,7 @@ export function PostDetails({
 						vote={voteState}
 						pCurrent={post.p}
 					/>
-				</fetcher.Form>
+				</voteFetcher.Form>
 			</div>
 			<div
 				className={
