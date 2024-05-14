@@ -1,7 +1,6 @@
 import { PostDetails } from '#app/components/ui/post.tsx'
 import { type ThreadPost } from '#app/conversations.ts'
 import { Direction, type VoteState } from '#app/vote.ts'
-import {invariant} from '#app/utils/misc.tsx'
 
 export function ReplyThread({
 	posts,
@@ -20,14 +19,16 @@ export function ReplyThread({
 }) {
 	const targetVote = votes.get(targetId)
 
-	const targetHasVote = targetVote !== undefined && targetVote.vote !== Direction.Neutral
+	const targetHasVote =
+		targetVote !== undefined && targetVote.vote !== Direction.Neutral
 
 	return (
 		<>
 			{posts.map((post, i) => {
 				let vote = votes.get(post.id)
 
-				const thisHasVote = vote !== undefined && vote.vote !== Direction.Neutral
+				const thisHasVote =
+					vote !== undefined && vote.vote !== Direction.Neutral
 
 				const needsVote = targetHasVote && !thisHasVote
 

@@ -1,4 +1,4 @@
-import { Link, useFetcher, useNavigate } from '@remix-run/react'
+import { Link, useFetcher, useNavigate, Form } from '@remix-run/react'
 import moment from 'moment'
 import { useState, type CSSProperties, type FormEvent } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
@@ -7,8 +7,6 @@ import { type Post } from '#app/db/types.ts'
 import { type ScoredPost, type ScoredNote } from '#app/ranking.ts'
 import { Direction, type VoteState } from '#app/vote.ts'
 import { Truncate } from './Truncate.tsx'
-import {invariant} from '#app/utils/misc.tsx'
-import { Form } from '@remix-run/react'
 
 /* Keep this relatively high, so people don't often have to click "read more"
    to read most content. But also not too high, so people don't have to
@@ -55,7 +53,6 @@ export function PostDetails({
 	loggedIn: boolean
 	onVote?: Function
 }) {
-
 	// So we need to get the current state of the user's vote on this post from the fetcher
 	const voteFetcher = useFetcher<{ voteState: VoteState; postId: number }>()
 
@@ -73,13 +70,13 @@ export function PostDetails({
 		isInformed: false,
 	}
 
-	const visibleVoteState = voteFetcher.data ? voteFetcher.data.voteState : (
-		voteState || {
-			vote: Direction.Neutral,
-			postId: post.id,
-			isInformed: false,
-		}
-	)
+	const visibleVoteState = voteFetcher.data
+		? voteFetcher.data.voteState
+		: voteState || {
+				vote: Direction.Neutral,
+				postId: post.id,
+				isInformed: false,
+			}
 
 	const needsVote: boolean =
 		!voteState.isInformed && voteState.vote !== Direction.Neutral
