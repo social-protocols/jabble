@@ -88,7 +88,7 @@ export default function Post() {
 		allVoteStates.set(vote.postId, vote)
 	}
 
-	let vote = allVoteStates.get(post.id)!
+	let vote = allVoteStates.get(post.id)
 
 	// https://stackoverflow.com/questions/46240647/how-to-force-a-functional-react-component-to-render/53837442#53837442
 	// force this component to re-render when there is any vote on a child.
@@ -191,7 +191,8 @@ function DirectReplies({
 	return (
 		<>
 			{posts.map(post => {
-				const vs = voteStatesMap.get(post.id)!
+				const vs = voteStatesMap.get(post.id)
+
 				return (
 					<div key={post.id}>
 						<div className="rounded-lg">

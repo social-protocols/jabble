@@ -49,10 +49,17 @@ export function PostDetails({
 	post: ScoredPost
 	note: ScoredNote | null
 	teaser: boolean
-	voteState: VoteState
+	voteState?: VoteState
 	loggedIn: boolean
 	onVote?: Function
 }) {
+
+	voteState = voteState || {
+		vote: Direction.Neutral,
+		postId: post.id,
+		isInformed: false,
+	}
+
 	// So we need to get the current state of the user's vote on this post from the fetcher
 	const fetcher = useFetcher<{ voteState: VoteState; postId: number }>()
 
