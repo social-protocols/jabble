@@ -1,8 +1,9 @@
 import assert from 'assert'
+import { sql } from 'kysely'
 import { type VoteEvent, type InsertableVoteEvent } from '#app/db/types.ts'
-import { db } from '#app/db.ts'
 import * as scoreEvents from '#app/score-events.ts'
 import { writeVoteEvent } from '#app/vote-events.ts'
+import { db } from './db.ts'
 import { getOrInsertTagId } from './tag.ts'
 
 export enum Direction {
@@ -10,7 +11,20 @@ export enum Direction {
 	Down = -1,
 	Neutral = 0,
 }
-// TODO: if a new post is untagged, do we post in in #global?
+
+export type VoteState = {
+	postId: number
+	vote: Direction
+	isInformed: Boolean
+}
+
+export function defaultVoteState(postId: number): VoteState {
+	return {
+		vote: Direction.Neutral,
+		postId: postId,
+		isInformed: false,
+	}
+}
 
 // The vote function inserts a vote record in voteHistory, and also updates attention stats
 export async function vote(
@@ -100,4 +114,40 @@ async function insertVoteEvent(
 	}
 
 	return output_vote_event
+}
+
+export async function getUserVotes(
+	userId: string,
+	tag: string,
+	postIds: number[],
+): Promise<VoteState[]> {
+	let tagId = await getOrInsertTagId(tag)
+
+	return await db
+		.selectFrom('Post')
+		.innerJoin('Score', 'Score.postId', 'Post.id')
+		.leftJoin('Vote', join =>
+			join
+				.onRef('Vote.postId', '=', 'Post.id')
+				.on('Vote.userId', '=', userId)
+				.on('Vote.tagId', '=', tagId),
+		)
+		.where(eb => eb('id', 'in', postIds))
+		.leftJoin('Vote as VoteOnCriticalReply', join =>
+			join
+				.onRef('VoteOnCriticalReply.postId', '=', 'criticalThreadId')
+				.onRef('VoteOnCriticalReply.userId', '=', 'Vote.userId')
+				.onRef('VoteOnCriticalReply.tagId', '=', 'Vote.tagId'),
+		)
+		.select('Post.id as postId')
+		.select(sql<number>`ifnull(Vote.vote,0)`.as('vote'))
+		// We have decided that isInformed is only true if
+		// 1) there is a vote on the target
+		// 2) and there is a vote on the critical comment OR there is no critical comment
+		.select(
+			sql<boolean>`(criticalThreadId is null or coalesce(VoteOnCriticalReply.vote, 0) != 0 )  and coalesce(vote.vote, 0) != 0`.as(
+				'isInformed',
+			),
+		)
+		.execute()
 }

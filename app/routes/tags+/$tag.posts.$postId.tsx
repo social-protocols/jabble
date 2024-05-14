@@ -1,29 +1,25 @@
 import { type DataFunctionArgs, json } from '@remix-run/node'
 
-import {
-	Link,
-	type ShouldRevalidateFunction,
-	useLoaderData,
-} from '@remix-run/react'
+import { Link, useLoaderData } from '@remix-run/react'
+import { useState } from 'react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { Feed } from '#app/components/ui/feed.tsx'
 import { PostContent, PostDetails } from '#app/components/ui/post.tsx'
+import { ReplyThread } from '#app/components/ui/reply-thread.tsx'
+import { getCriticalThread, type ThreadPost } from '#app/conversations.ts'
 import { type Post } from '#app/db/types.ts'
 
-import { getUserPositions } from '#app/positions.ts'
 import { getTransitiveParents } from '#app/post.ts'
 import {
-	getRankedReplies,
+	getRankedDirectReplies,
 	getScoredPost,
-	type RankedPost,
 	type ScoredPost,
 } from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
-import { Direction } from '#app/vote.ts'
+import { getUserVotes, type VoteState } from '#app/vote.ts'
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
@@ -41,16 +37,24 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	const transitiveParents = await getTransitiveParents(post.id)
 
-	let replies: RankedPost[] = await getRankedReplies(tag, post.id)
+	let criticalThread: ThreadPost[] = await getCriticalThread(post.id, tag)
 
-	// let positions: Map<number, Direction> = new Map<number, Direction>()
-	let positions =
+	const otherReplies: ScoredPost[] = await getRankedDirectReplies(tag, post.id)
+
+	let votes: VoteState[] =
 		userId === null
 			? []
-			: await getUserPositions(
+			: await getUserVotes(
 					userId,
 					tag,
-					replies.map(p => p.id).concat([post.id]),
+					otherReplies
+						.map(p => p.id)
+						.concat(criticalThread.map(p => p.id))
+						.concat([post.id])
+						// dedupe array: https://stackoverflow.com/a/23282067/13607059
+						.filter(function (item, i, ar) {
+							return ar.indexOf(item) === i
+						}),
 				)
 
 	const loggedIn = userId !== null
@@ -58,25 +62,55 @@ export async function loader({ params, request }: DataFunctionArgs) {
 	let result = json({
 		post,
 		transitiveParents,
-		replies,
 		tag,
-		positions,
+		votes,
 		loggedIn,
+		criticalThread,
+		otherReplies,
 	})
 
 	return result
 }
 
 export default function Post() {
-	const { post, transitiveParents, replies, tag, positions, loggedIn } =
-		useLoaderData<typeof loader>()
+	const {
+		post,
+		transitiveParents,
+		tag,
+		votes,
+		loggedIn,
+		criticalThread,
+		otherReplies,
+	} = useLoaderData<typeof loader>()
 
-	let p = new Map<number, Direction>()
-	for (let position of positions) {
-		p.set(position.postId, position.vote)
+	let allVoteStates = new Map<number, VoteState>()
+	for (let vote of votes) {
+		allVoteStates.set(vote.postId, vote)
 	}
 
-	let position = p.get(post.id) || Direction.Neutral
+	let vote = allVoteStates.get(post.id)
+
+	// https://stackoverflow.com/questions/46240647/how-to-force-a-functional-react-component-to-render/53837442#53837442
+	// force this component to re-render when there is any vote on a child.
+	function useForceUpdate() {
+		const [_, setValue] = useState(0) // integer state
+		return () => {
+			console.log('forceUpdate')
+			setValue(value => value + 1)
+		} // update state to force render
+		// A function that increment 👆🏻 the previous state like here
+		// is better than directly setting `setValue(value + 1)`
+	}
+
+	const forceUpdate = useForceUpdate()
+
+	const otherRepliesToDisplay = otherReplies.filter(
+		p => p.id !== post.topNoteId,
+	)
+
+	const otherRepliesToDisplayExist = otherRepliesToDisplay.length > 0
+
+	const noReplies = criticalThread.length === 0 && !otherRepliesToDisplayExist
 
 	return (
 		<>
@@ -86,13 +120,38 @@ export default function Post() {
 			</div>
 			<ParentThread transitiveParents={transitiveParents} tag={tag} />
 			<PostDetails
+				key={post.id}
 				post={post}
 				note={null}
 				teaser={false}
-				position={position}
+				voteState={vote}
 				loggedIn={loggedIn}
 			/>
-			<PostReplies replies={replies} positions={p} loggedIn={loggedIn} />
+			{noReplies && <h2 className="mb-4 font-medium">No Replies</h2>}
+			{criticalThread.length > 0 && (
+				<>
+					<h2 className="mb-4 font-medium">Top Conversation</h2>
+					<ReplyThread
+						posts={criticalThread}
+						votes={allVoteStates}
+						loggedIn={loggedIn}
+						targetId={post.id}
+						criticalThreadId={post.criticalThreadId}
+						onVote={forceUpdate}
+					/>
+				</>
+			)}
+			{otherRepliesToDisplayExist && (
+				<>
+					<h2 className="mb-4 font-medium">Replies</h2>
+					<DirectReplies
+						posts={otherRepliesToDisplay}
+						voteStates={votes}
+						loggedIn={loggedIn}
+						onVote={forceUpdate}
+					/>
+				</>
+			)}
 		</>
 	)
 }
@@ -124,29 +183,42 @@ function ParentThread({
 	)
 }
 
-export function PostReplies({
-	replies,
-	positions,
+function DirectReplies({
+	posts,
+	voteStates,
 	loggedIn,
+	onVote,
 }: {
-	replies: RankedPost[]
-	positions: Map<number, Direction>
+	posts: ScoredPost[]
+	voteStates: VoteState[]
 	loggedIn: boolean
+	onVote: Function
 }) {
-	const nRepliesString = replies.length == 0 ? 'No Replies' : 'Replies'
+	const voteStatesMap = new Map<number, VoteState>()
+	voteStates.forEach(voteState => {
+		voteStatesMap.set(voteState.postId, voteState)
+	})
 
 	return (
 		<>
-			<h2 className="mb-4 font-medium">{nRepliesString}</h2>
-			{replies.length > 0 && (
-				<Feed
-					posts={replies}
-					positions={positions}
-					loggedIn={loggedIn}
-					rootId={replies[0]!.parentId}
-					showNotes={false}
-				/>
-			)}
+			{posts.map(post => {
+				const vs = voteStatesMap.get(post.id)
+
+				return (
+					<div key={post.id}>
+						<div className="rounded-lg">
+							<PostDetails
+								post={post}
+								note={null}
+								teaser={true}
+								voteState={vs}
+								loggedIn={loggedIn}
+								onVote={onVote}
+							/>
+						</div>
+					</div>
+				)
+			})}
 		</>
 	)
 }
@@ -160,14 +232,4 @@ export function ErrorBoundary() {
 			}}
 		/>
 	)
-}
-
-export const shouldRevalidate: ShouldRevalidateFunction = (args: {
-	formAction?: string | undefined
-}) => {
-	// Optimization that makes it so /votes don't reload the page
-	if (args.formAction == '/vote') {
-		return false
-	}
-	return true
 }
