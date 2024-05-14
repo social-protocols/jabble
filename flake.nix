@@ -25,7 +25,7 @@
               just
 
               sqlite-interactive
-              nodejs_21
+              nodejs_20
 
               earthly
               docker
@@ -60,7 +60,7 @@
             name = "base-image";
             paths = with pkgs; [
                 jq
-                nodejs_21
+                nodejs_20
             ];
           };
         };

@@ -53,7 +53,7 @@ node-ext:
   RUN cp globalbrain-node/package-lock.json /artifact/globalbrain-node/
   RUN cp globalbrain-node/index.js /artifact/globalbrain-node/
 
-  SAVE ARTIFACT /artifact AS LOCAL artifact
+  SAVE ARTIFACT /artifact
 
 #test-node-ext:
 #  FROM +julia-build
