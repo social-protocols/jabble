@@ -1,7 +1,6 @@
 import { sql } from 'kysely'
 import { type Effect, type Post, type FullScore } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { db } from '#app/db.ts'
-// import { GLOBAL_PRIOR_VOTE_RATE, findTopNoteId } from './probabilities.ts'
 import { getPost } from './post.ts'
 import { getOrInsertTagId } from './tag.ts'
 import { relativeEntropy } from './utils/entropy.ts'
@@ -123,7 +122,6 @@ async function getEffectsInternal(
 			'Effect',
 			join =>
 				join.on('Effect.tagId', '=', tagId).on('Effect.noteId', '=', postId),
-			// .onRef('Effect.postId', '=', 'Post.parentId'),
 		)
 		.innerJoin('Post as TargetPost', 'TargetPost.id', 'Effect.postId')
 		.selectAll('Effect')
@@ -333,8 +331,3 @@ export async function getRankedTags(): Promise<string[]> {
 	return []
 }
 
-// export type TagPreview = {
-// 	tag: string
-// 	posts: RankedPost[]
-// 	positions: Position[]
-// }

@@ -66,16 +66,14 @@ export function PostDetails({
 
 	const visibleVoteState = voteFetcher.data
 		? voteFetcher.data.voteState
-		: voteState || defaultVoteState(post.id)
+		: (voteState || defaultVoteState(post.id))
 
 	const needsVote: boolean =
 		!visibleVoteState.isInformed && visibleVoteState.vote !== Direction.Neutral
 
 	const handleVoteSubmit = function (event: FormEvent<HTMLFormElement>) {
-		console.log('handleVoteSubmit', event.currentTarget)
 		onVote && onVote()
 		voteFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
-		console.log('Handled vote submit')
 	}
 
 	return (
@@ -229,7 +227,7 @@ export function VoteButtons({
 	const upClass = vote.vote == Direction.Up ? '' : 'opacity-30'
 	const downClass = vote.vote == Direction.Down ? '' : 'opacity-30'
 
-	const pCurrentString: String = (pCurrent * 100).toFixed(1) + '%'
+	const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
 
 	return (
 		<>

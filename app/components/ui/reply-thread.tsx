@@ -19,6 +19,7 @@ export function ReplyThread({
 }) {
 	const targetVote = votes.get(targetId)
 
+	// "target" denotes the focused post which has an (un)informed vote that determines the colored marker on this post
 	const targetHasVote =
 		targetVote !== undefined && targetVote.vote !== Direction.Neutral
 
