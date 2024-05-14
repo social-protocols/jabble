@@ -45,7 +45,6 @@ node-ext:
   # The former can be empty.
   # We need to fix this in the other repo, but for now a workaround.
   WORKDIR /app/GlobalBrain.jl
-  RUN mkdir -p /artifact/src
   RUN mkdir -p /artifact/globalbrain-node/dist
   RUN cp -r sql /artifact/
   RUN cp -r globalbrain-node/dist /artifact/globalbrain-node/

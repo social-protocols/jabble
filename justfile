@@ -17,6 +17,8 @@ reset-all:
   rm -rf ~/social-protocols-data/*
   mkdir -p ~/social-protocols-data
   touch $SCORE_EVENTS_PATH
+  rm -f "$GB_DATABASE_PATH"
+  ./gb_migrate.sh
   just reset-db
 
 # run the migration script
