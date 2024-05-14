@@ -61,7 +61,7 @@ export default function TagPage() {
 				votes={p}
 				loggedIn={loggedIn}
 				rootId={null}
-				showNotes={true}
+				showNotes={false}
 			/>
 		</>
 	)
