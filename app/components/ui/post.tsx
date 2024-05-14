@@ -5,7 +5,7 @@ import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { type Post } from '#app/db/types.ts'
 import { type ScoredPost, type ScoredNote } from '#app/ranking.ts'
-import { Direction, type VoteState } from '#app/vote.ts'
+import { Direction, type VoteState, defaultVoteState } from '#app/vote.ts'
 import { Truncate } from './Truncate.tsx'
 
 /* Keep this relatively high, so people don't often have to click "read more"
@@ -64,22 +64,12 @@ export function PostDetails({
 		setShowReplyForm(false)
 	}
 
-	voteState = voteState || {
-		vote: Direction.Neutral,
-		postId: post.id,
-		isInformed: false,
-	}
-
 	const visibleVoteState = voteFetcher.data
 		? voteFetcher.data.voteState
-		: voteState || {
-				vote: Direction.Neutral,
-				postId: post.id,
-				isInformed: false,
-			}
+		: voteState || defaultVoteState(post.id)
 
 	const needsVote: boolean =
-		!voteState.isInformed && voteState.vote !== Direction.Neutral
+		!visibleVoteState.isInformed && visibleVoteState.vote !== Direction.Neutral
 
 	const handleVoteSubmit = function (event: FormEvent<HTMLFormElement>) {
 		console.log('handleVoteSubmit', event.currentTarget)

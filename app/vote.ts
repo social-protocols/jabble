@@ -18,6 +18,14 @@ export type VoteState = {
 	isInformed: Boolean
 }
 
+export function defaultVoteState(postId: number): VoteState {
+	return {
+		vote: Direction.Neutral,
+		postId: postId,
+		isInformed: false,
+	}
+}
+
 // The vote function inserts a vote record in voteHistory, and also updates attention stats
 export async function vote(
 	tag: string,

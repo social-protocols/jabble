@@ -1,6 +1,6 @@
 import { PostDetails, ParentPost } from '#app/components/ui/post.tsx'
 import { type RankedPost } from '#app/ranking.ts'
-import { type VoteState, Direction } from '#app/vote.ts'
+import { type VoteState, Direction, defaultVoteState } from '#app/vote.ts'
 
 export function Feed({
 	posts,
@@ -18,8 +18,7 @@ export function Feed({
 	return (
 		<>
 			{posts.map((post, i) => {
-				let vote: VoteState | undefined = votes.get(post.id)
-				const voteDirection = vote === undefined ? Direction.Neutral : vote.vote
+				let vote: VoteState = votes.get(post.id) || defaultVoteState(post.id)
 
 				let followsParent = (i > 0 && posts[i - 1]!.id) == post.parentId
 				let followedByTopnote =
@@ -27,7 +26,7 @@ export function Feed({
 				const directReply = rootId !== null && post.parentId == rootId
 
 				const borderStyle = post.isCritical
-					? voteDirection !== Direction.Neutral
+					? vote.vote !== Direction.Neutral
 						? { borderLeft: 'solid grey 3px' }
 						: { borderLeft: 'solid blue 3px' }
 					: {}
