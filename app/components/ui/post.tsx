@@ -66,7 +66,7 @@ export function PostDetails({
 
 	const visibleVoteState = voteFetcher.data
 		? voteFetcher.data.voteState
-		: (voteState || defaultVoteState(post.id))
+		: voteState || defaultVoteState(post.id)
 
 	const needsVote: boolean =
 		!visibleVoteState.isInformed && visibleVoteState.vote !== Direction.Neutral

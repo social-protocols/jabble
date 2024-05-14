@@ -118,10 +118,8 @@ async function getEffectsInternal(
 ): Promise<Effect[]> {
 	let query = db
 		.selectFrom('Post')
-		.innerJoin(
-			'Effect',
-			join =>
-				join.on('Effect.tagId', '=', tagId).on('Effect.noteId', '=', postId),
+		.innerJoin('Effect', join =>
+			join.on('Effect.tagId', '=', tagId).on('Effect.noteId', '=', postId),
 		)
 		.innerJoin('Post as TargetPost', 'TargetPost.id', 'Effect.postId')
 		.selectAll('Effect')
@@ -330,4 +328,3 @@ export async function getRankedDirectReplies(tag: string, targetId: number) {
 export async function getRankedTags(): Promise<string[]> {
 	return []
 }
-
