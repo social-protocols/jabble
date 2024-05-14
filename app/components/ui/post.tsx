@@ -56,23 +56,8 @@ export function PostDetails({
 	onVote?: Function
 }) {
 
-	voteState = voteState || {
-		vote: Direction.Neutral,
-		postId: post.id,
-		isInformed: false,
-	}
-
 	// So we need to get the current state of the user's vote on this post from the fetcher
 	const voteFetcher = useFetcher<{ voteState: VoteState; postId: number }>()
-
-	if (voteFetcher.data) {
-		invariant(
-			voteFetcher.data.postId === post.id,
-			`got fetcher data with wrong post id ${voteFetcher.data.postId} !== ${post.id}`,
-		)
-		voteState = voteFetcher.data.voteState
-		console.log(`Got vote state from fetcher for ${post.id}`, voteState)
-	}
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
@@ -81,6 +66,20 @@ export function PostDetails({
 	const handleReplySubmit = function () {
 		setShowReplyForm(false)
 	}
+
+	voteState = voteState || {
+		vote: Direction.Neutral,
+		postId: post.id,
+		isInformed: false,
+	}
+
+	const visibleVoteState = voteFetcher.data ? voteFetcher.data.voteState : (
+		voteState || {
+			vote: Direction.Neutral,
+			postId: post.id,
+			isInformed: false,
+		}
+	)
 
 	const needsVote: boolean =
 		!voteState.isInformed && voteState.vote !== Direction.Neutral
@@ -111,7 +110,7 @@ export function PostDetails({
 						postId={post.id}
 						tag={post.tag}
 						noteId={note !== null ? note.id : null}
-						vote={voteState}
+						vote={visibleVoteState}
 						pCurrent={post.p}
 					/>
 				</voteFetcher.Form>

@@ -120,6 +120,7 @@ export default function Post() {
 			</div>
 			<ParentThread transitiveParents={transitiveParents} tag={tag} />
 			<PostDetails
+				key={post.id}
 				post={post}
 				note={null}
 				teaser={false}
