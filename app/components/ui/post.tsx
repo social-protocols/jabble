@@ -5,9 +5,9 @@ import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { type Post } from '#app/db/types.ts'
 import { type ScoredPost, type ScoredNote } from '#app/ranking.ts'
+import { invariant } from '#app/utils/misc.tsx'
 import { Direction, type VoteState } from '#app/vote.ts'
 import { Truncate } from './Truncate.tsx'
-import {invariant} from '#app/utils/misc.tsx'
 
 /* Keep this relatively high, so people don't often have to click "read more"
    to read most content. But also not too high, so people don't have to
@@ -43,41 +43,49 @@ export function PostDetails({
 	post,
 	note,
 	teaser,
-	voteState,
+	_voteState,
 	loggedIn,
 	onVote,
 }: {
 	post: ScoredPost
 	note: ScoredNote | null
 	teaser: boolean
-	voteState?: VoteState
+	_voteState?: VoteState
 	loggedIn: boolean
 	onVote?: Function
 }) {
-
-	voteState = voteState || {
+	let voteState = _voteState || {
 		vote: Direction.Neutral,
 		postId: post.id,
 		isInformed: false,
 	}
 
 	// So we need to get the current state of the user's vote on this post from the fetcher
-	const voteFetcher = useFetcher<{ voteState: VoteState; postId: number }>()
+	const voteFetcher = useFetcher<{ voteState: VoteState; postId: number }>({
+		key: `vote-${post.id}`,
+	})
+
+	console.log('PostDetails: ', post, 'fetcher state', voteFetcher.state)
 
 	if (voteFetcher.data) {
+		console.log(
+			`fetcher contains data for post ${voteFetcher.data.postId}`,
+			voteFetcher.data.voteState,
+		)
 		invariant(
 			voteFetcher.data.postId === post.id,
 			`got fetcher data with wrong post id ${voteFetcher.data.postId} !== ${post.id}`,
 		)
 		voteState = voteFetcher.data.voteState
-		console.log(`Got vote state from fetcher for ${post.id}`, voteState)
 	}
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
 	const ageString = moment(post.createdAt).fromNow()
 
-	const replyFetcher = useFetcher<{ newPostId: number }>()
+	const replyFetcher = useFetcher<{ newPostId: number }>({
+		key: `reply-${post.id}`,
+	})
 
 	if (replyFetcher.data) {
 		console.log('replyFetcher data', replyFetcher.data)
@@ -93,7 +101,7 @@ export function PostDetails({
 
 	const handleVoteSubmit = function (event: FormEvent<HTMLFormElement>) {
 		console.log('handleVoteSubmit', event.currentTarget)
-		onVote && onVote()
+		// onVote && onVote()
 		voteFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
 		console.log('Handled vote submit')
 	}

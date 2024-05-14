@@ -118,7 +118,10 @@ export default function Post() {
 				<Link to={`/`}>Home</Link>
 				&nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
 			</div>
+			{/*
 			<ParentThread transitiveParents={transitiveParents} tag={tag} />
+      */}
+			{console.log('Focus Post')}
 			<PostDetails
 				post={post}
 				note={null}
@@ -127,9 +130,11 @@ export default function Post() {
 				loggedIn={loggedIn}
 			/>
 			{noReplies && <h2 className="mb-4 font-medium">No Replies</h2>}
-			{criticalThread.length > 0 && (
+			{/*criticalThread.length > 0 && (
 				<>
 					<h2 className="mb-4 font-medium">Top Conversation</h2>
+					{console.log('FocusPost.Critical Thread')}
+					{
 					<ReplyThread
 						posts={criticalThread}
 						votes={allVoteStates}
@@ -138,11 +143,13 @@ export default function Post() {
 						criticalThreadId={post.criticalThreadId}
 						onVote={forceUpdate}
 					/>
+          }
 				</>
-			)}
-			{otherRepliesToDisplayExist && (
+			)*/}
+			{/*otherRepliesToDisplayExist && (
 				<>
 					<h2 className="mb-4 font-medium">Replies</h2>
+					{console.log('FocusPost.DirectReplies')}
 					<DirectReplies
 						posts={otherRepliesToDisplay}
 						voteStates={votes}
@@ -150,7 +157,7 @@ export default function Post() {
 						onVote={forceUpdate}
 					/>
 				</>
-			)}
+			)*/}
 		</>
 	)
 }
@@ -197,12 +204,12 @@ function DirectReplies({
 	voteStates.forEach(voteState => {
 		voteStatesMap.set(voteState.postId, voteState)
 	})
+	console.log('DirectReplies')
 
 	return (
 		<>
 			{posts.map(post => {
-				const vs = voteStatesMap.get(post.id)
-
+				console.log('DirectReply', post.id)
 				return (
 					<div key={post.id}>
 						<div className="rounded-lg">
@@ -210,7 +217,7 @@ function DirectReplies({
 								post={post}
 								note={null}
 								teaser={true}
-								voteState={vs}
+								voteState={voteStatesMap.get(post.id)}
 								loggedIn={loggedIn}
 								onVote={onVote}
 							/>

@@ -44,6 +44,7 @@ export const action = async (args: ActionFunctionArgs) => {
 	const formData = await request.formData()
 
 	const parsedData = voteSchema.parse(formData)
+	console.log('vote: ', parsedData)
 	const direction: Direction = parseDirection(parsedData.direction)
 	const state: Direction = parseDirection(parsedData.state)
 
