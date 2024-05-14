@@ -8,6 +8,7 @@ import { type ScoredPost, type ScoredNote } from '#app/ranking.ts'
 import { Direction, type VoteState } from '#app/vote.ts'
 import { Truncate } from './Truncate.tsx'
 import {invariant} from '#app/utils/misc.tsx'
+import { Form } from '@remix-run/react'
 
 /* Keep this relatively high, so people don't often have to click "read more"
    to read most content. But also not too high, so people don't have to
@@ -77,14 +78,7 @@ export function PostDetails({
 
 	const ageString = moment(post.createdAt).fromNow()
 
-	const replyFetcher = useFetcher<{ newPostId: number }>()
-
-	if (replyFetcher.data) {
-		console.log('replyFetcher data', replyFetcher.data)
-	}
-
-	const handleReplySubmit = function (event: FormEvent<HTMLFormElement>) {
-		replyFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
+	const handleReplySubmit = function () {
 		setShowReplyForm(false)
 	}
 
@@ -161,14 +155,14 @@ export function PostDetails({
 					)}
 				</div>
 				{showReplyForm && (
-					<replyFetcher.Form
+					<Form
 						id="reply-form"
 						method="POST"
 						action="/reply"
 						onSubmit={handleReplySubmit}
 					>
 						<ReplyForm post={post} tag={post.tag} className="mt-2" />
-					</replyFetcher.Form>
+					</Form>
 				)}
 			</div>
 		</div>
