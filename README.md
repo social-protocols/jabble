@@ -81,15 +81,13 @@ In our example with the earthquake video, informed users are much less likely to
 
 # 2. Reputation and Reasonableness
 
-This process works great if everyone is acting in good faith. But that usually doesn't happen on the Internet. So how do we force people to be **reasonable**?
+This process works great if everyone is acting in good faith. But on the Internet, sometimes that they're not. So how do we force people to be **reasonable**?
 
 Well, it turns out you kind of can force people to be reasonable using game theory. 
 
 Every user gets a reputation, starting with 0. Until a user gains reputation, their vote has no weight.
 
-Users gain reputation according to an ingenious scoring mechanism from MIT called the Bayesian Truth Serum. The formula is designed so that a user's expected score is maximized if they vote **honestly** -- *as long as everyone else votes honestly*. This is brilliant be
-cause, if people *expect* each other to vote honestly, then an equilibrium is established where users will *continue* to vote and expect others to vote honestly. This continues until users can get together and coordinate on voting dishonestly, which is unlikely to be a p
-roblem as we [write about here]. This kind of equilibrium at honesty is similar to the magic that powers blockchains, as we [write about here].
+Users gain reputation according to an ingenious scoring mechanism from MIT called the Bayesian Truth Serum. The formula is designed so that a user's expected score is maximized if they vote **honestly** -- *as long as everyone else votes honestly*. This is brilliant because, if people *expect* each other to vote honestly, then an equilibrium is established where users will *continue* to vote and expect others to vote honestly. This continues until users can get together and coordinate on voting dishonestly, which is unlikely to be a problem as we [write about here]. This kind of equilibrium at honesty is similar to the magic that powers blockchains, as we [write about here].
 
 Now, Jabble only considers **informed votes** when calculating the BTS scores. This means that people earn reputation by voting honesty **given the comments in the critical thread**. Users most honestly consider the information in the critical thread, and decide whether they think that other people in this forum would honestly upvote it or downvote it given this information.
 
@@ -118,7 +116,7 @@ You can maintain a high reputation without accumulating much Karma by upvoting h
 
 # 3. Bias and Bridging
 
-A final piece of Jabble's scoring formula is **briding**.
+A final piece of Jabble's scoring formula is **bridging**.
 
 TODO: describe bridging and summarize.
 
@@ -128,7 +126,7 @@ TODO: describe bridging and summarize.
 A final piece of the Jabble process is the prediction market. At any time, you can make a prediction about what the final score of a post will be. Accurate predictions further boost your reputation. Predictions are a part of the Bayesian Truth Serum scoring mechanism.
 
 
-TODO: describe predcition arket
+TODO: describe prediction market
 
 
 
