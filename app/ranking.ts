@@ -1,16 +1,12 @@
 import { sql } from 'kysely'
-import { type Score, type Effect, type Post } from '#app/db/types.ts' // this is the Database interface we defined earlier
+import { type Effect, type Post, type FullScore } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { db } from '#app/db.ts'
-import { type Position } from './positions.ts'
-// import { GLOBAL_PRIOR_VOTE_RATE, findTopNoteId } from './probabilities.ts'
 import { getPost } from './post.ts'
 import { getOrInsertTagId } from './tag.ts'
 import { relativeEntropy } from './utils/entropy.ts'
 
 // Post with score and the effect of its top note
-export type ScoredPost = Post &
-	Score &
-	Effect & { nReplies: number; tag: string }
+export type ScoredPost = Post & FullScore & { nReplies: number; tag: string }
 
 // Post with its effect on its parent
 export type ScoredNote = Post & Effect
@@ -20,7 +16,8 @@ export const MAX_RESULTS = 100
 export type RankedPost = ScoredPost & {
 	note: ScoredNote | null
 	parent: Post | null
-	effectOnParent: Effect | null
+	effects: Effect[]
+	isCritical: boolean
 }
 
 export async function getScoredPost(
@@ -108,30 +105,29 @@ async function getScoredNoteInternal(
 	return scoredNote
 }
 
-export async function getEffectOnParent(
+export async function getEffects(
 	tag: string,
 	postId: number,
-): Promise<Effect | null> {
-	return await getEffectOnParentInternal(await getOrInsertTagId(tag), postId)
+): Promise<Effect[]> {
+	return await getEffectsInternal(await getOrInsertTagId(tag), postId)
 }
 
-async function getEffectOnParentInternal(
+async function getEffectsInternal(
 	tagId: number,
 	postId: number,
-): Promise<Effect | null> {
+): Promise<Effect[]> {
 	let query = db
 		.selectFrom('Post')
 		.innerJoin('Effect', join =>
-			join
-				.on('Effect.tagId', '=', tagId)
-				.on('Effect.noteId', '=', postId)
-				.onRef('Effect.postId', '=', 'Post.parentId'),
+			join.on('Effect.tagId', '=', tagId).on('Effect.noteId', '=', postId),
 		)
+		.innerJoin('Post as TargetPost', 'TargetPost.id', 'Effect.postId')
 		.selectAll('Effect')
 		.where('Post.id', '=', postId)
+		.orderBy('TargetPost.createdAt')
 
-	const effect = (await query.execute())[0]
-	return effect || null
+	const effects = await query.execute()
+	return effects
 }
 
 export async function getRankedPosts(tag: string): Promise<RankedPost[]> {
@@ -167,7 +163,8 @@ export async function getRankedPosts(tag: string): Promise<RankedPost[]> {
 						? null
 						: await getScoredNoteInternal(tagId, post.topNoteId!),
 				parent: post.parentId == null ? null : await getPost(post.parentId!),
-				effectOnParent: await getEffectOnParentInternal(tagId, post.id),
+				effects: await getEffectsInternal(tagId, post.id),
+				isCritical: false,
 			}
 		}),
 	)
@@ -204,7 +201,7 @@ export async function getChronologicalToplevelPosts(
 			return {
 				...post,
 				parent: post.parentId == null ? null : await getPost(post.parentId!),
-				effectOnParent: await getEffectOnParentInternal(post.tagId, post.id),
+				effects: await getEffectsInternal(post.tagId, post.id),
 			}
 		}),
 	)
@@ -244,9 +241,11 @@ async function getRankedRepliesInternal(
 				.on('Effect.postId', '=', targetId)
 				.onRef('Effect.noteId', '=', 'Post.id'),
 		)
-		.select(sql<number>`Effect.p`.as(`parentP`))
-		.select(sql<number>`Effect.q`.as(`parentQ`))
-		.select(sql<number>`Effect.pCount`.as(`parentPCount`))
+		.select(sql<number>`Effect.p`.as(`targetP`))
+		.select(sql<number>`Effect.q`.as(`targetQ`))
+		.select(sql<number>`Effect.r`.as(`targetR`))
+		.select(sql<number>`Effect.pCount`.as(`targetPCount`))
+		.select(sql<number>`Effect.pCount`.as(`targetPSize`))
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(eb =>
@@ -260,12 +259,17 @@ async function getRankedRepliesInternal(
 	const immediateChildren = (await query.execute()).sort(
 		(a, b) =>
 			// This is the same as the thread_score in score.jl
-			relativeEntropy(a.p, a.q) * a.pSize -
-				relativeEntropy(b.p, b.q) * b.pSize || a.score - b.score,
+			relativeEntropy(a.targetP, a.targetQ) * a.targetPSize -
+				relativeEntropy(b.targetP, b.targetQ) * b.targetPSize ||
+			a.score - b.score,
 	)
 
 	const results: RankedPost[][] = await Promise.all(
 		immediateChildren.map(async (post: ScoredPost) => {
+			const effects = await getEffectsInternal(tagId, post.id)
+			const targetEffect = effects.find(e => e.postId == targetId)!
+
+			const isCritical = targetEffect.topSubthreadId === targetEffect.noteId
 			return [
 				{
 					...post,
@@ -274,7 +278,8 @@ async function getRankedRepliesInternal(
 							? null
 							: await getScoredNoteInternal(tagId, post.topNoteId!),
 					parent: post.parentId == null ? null : await getPost(post.parentId!),
-					effectOnParent: await getEffectOnParentInternal(tagId, post.id),
+					effects: effects,
+					isCritical: isCritical,
 				},
 				...(await getRankedRepliesInternal(tagId, targetId, post.id)),
 			]
@@ -284,12 +289,42 @@ async function getRankedRepliesInternal(
 	return results.flat()
 }
 
-export async function getRankedTags(): Promise<string[]> {
-	return []
+export async function getRankedDirectReplies(tag: string, targetId: number) {
+	const query = db
+		.selectFrom('Post')
+		.innerJoin('Effect', 'Effect.noteId', 'Post.id')
+		.leftJoin('Score', 'Score.postId', 'Effect.noteId')
+		.where('Post.parentId', '=', targetId)
+		.where('Effect.postId', '=', targetId)
+		.where(sql`Effect.noteId is not null`)
+		.select('Effect.noteId as postId')
+		.select('Effect.p as targetP')
+		.select('Effect.pSize as targetPSize')
+		.select('Effect.q as targetQ')
+		.select('Effect.qSize as targetQSize')
+		.select('Score.score')
+
+	const result = await query.execute()
+
+	const resultSorted = result
+		.sort(
+			(a, b) =>
+				// This is the same as the thread_score in score.jl
+				relativeEntropy(a.targetP, a.targetQ === null ? a.targetP : a.targetQ) *
+					a.targetPSize -
+					relativeEntropy(b.targetP, b.targetQ ? a.targetP : a.targetQ) *
+						b.targetPSize || a.score! - b.score!,
+		)
+		// reversed because we sort ascending
+		.reverse()
+
+	const scoredPosts = await Promise.all(
+		resultSorted.map(item => getScoredPost(tag, item.postId!)),
+	)
+
+	return scoredPosts
 }
 
-export type TagPreview = {
-	tag: string
-	posts: RankedPost[]
-	positions: Position[]
+export async function getRankedTags(): Promise<string[]> {
+	return []
 }

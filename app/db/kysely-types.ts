@@ -101,6 +101,7 @@ export type Score = {
 	parentId: number | null
 	postId: number
 	topNoteId: number | null
+	criticalThreadId: number | null
 	o: number
 	oCount: number
 	oSize: number
@@ -114,6 +115,7 @@ export type Effect = {
 	tagId: number
 	postId: number
 	noteId: number | null
+	topSubthreadId: number | null
 	p: number
 	pCount: number
 	pSize: number
@@ -129,6 +131,7 @@ export type FullScore = {
 	tagId: number
 	postId: number
 	noteId: number | null
+	topSubthreadId: number | null
 	p: number
 	pCount: number
 	pSize: number
@@ -137,6 +140,7 @@ export type FullScore = {
 	qSize: number
 	r: number
 	topNoteId: number | null
+	criticalThreadId: number | null
 	o: number
 	oCount: number
 	oSize: number
