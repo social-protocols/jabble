@@ -1,11 +1,16 @@
 import { spawn } from 'child_process'
 import EventEmitter from 'events'
 import { env } from 'process'
-// import { type InsertableScore , type Score } from './db/types.ts';
-// import { type VoteEvent } from './db/types.ts'
 import { db } from './db.ts'
+import { invariant } from './utils/misc.tsx'
 
-const scoreEventsPath = env.SCORE_EVENTS_PATH!
+function scoreEventsPathFromEnv() {
+	const scoreEventsPath = env.SCORE_EVENTS_PATH
+	invariant(scoreEventsPath, 'SCORE_EVENTS_PATH environment variable not set')
+	return scoreEventsPath
+}
+
+const scoreEventsPath = scoreEventsPathFromEnv()
 
 function snakeToCamelCase(str: string): string {
 	return str.replace(/([-_][a-z])/g, group =>

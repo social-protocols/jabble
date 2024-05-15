@@ -2,9 +2,15 @@ import * as fs from 'fs'
 import { env } from 'process'
 import { type VoteEvent } from './db/types.ts'
 import { db } from './db.ts'
+import { invariant } from './utils/misc.tsx'
 
-// Grab vote events path environment
-const voteEventsPath = env.VOTE_EVENTS_PATH!
+function voteEventsPathFromEnv() {
+	const voteEventsPath = env.VOTE_EVENTS_PATH
+	invariant(voteEventsPath, 'VOTE_EVENTS_PATH environment variable not set')
+	return voteEventsPath
+}
+
+const voteEventsPath = voteEventsPathFromEnv()
 
 if (!voteEventsPath) {
 	throw new Error('VOTE_EVENTS_PATH must be set')
