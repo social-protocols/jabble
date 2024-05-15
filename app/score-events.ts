@@ -6,7 +6,10 @@ import { invariant } from './utils/misc.tsx'
 
 function scoreEventsPathFromEnv() {
 	const scoreEventsPath = env.SCORE_EVENTS_PATH
-	invariant(scoreEventsPath, 'SCORE_EVENTS_PATH environment variable not set')
+	invariant(
+		scoreEventsPath,
+		'SCORE_EVENTS_PATH environment variable must be set',
+	)
 	return scoreEventsPath
 }
 

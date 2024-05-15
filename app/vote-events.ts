@@ -6,15 +6,11 @@ import { invariant } from './utils/misc.tsx'
 
 function voteEventsPathFromEnv() {
 	const voteEventsPath = env.VOTE_EVENTS_PATH
-	invariant(voteEventsPath, 'VOTE_EVENTS_PATH environment variable not set')
+	invariant(voteEventsPath, 'VOTE_EVENTS_PATH environment variable must be set')
 	return voteEventsPath
 }
 
 const voteEventsPath = voteEventsPathFromEnv()
-
-if (!voteEventsPath) {
-	throw new Error('VOTE_EVENTS_PATH must be set')
-}
 
 function camelToSnakeCase(str: string): string {
 	return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)
