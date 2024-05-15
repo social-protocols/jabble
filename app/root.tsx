@@ -1,5 +1,6 @@
 import { useForm } from '@conform-to/react'
 import { parse } from '@conform-to/zod'
+import { cssBundleHref } from '@remix-run/css-bundle'
 import {
 	type DataFunctionArgs,
 	type HeadersFunction,
@@ -55,10 +56,6 @@ import { getTheme, setTheme, type Theme } from './utils/theme.server.ts'
 import { makeTimings, time } from './utils/timing.server.ts'
 import { getToast } from './utils/toast.server.ts'
 import { useOptionalUser, useUser } from './utils/user.ts'
-// import { cssBundleHref } from '@remix-run/css-bundle'
-
-// TODO: why is this needed?
-const cssBundleHref = null
 
 export const links: LinksFunction = () => {
 	return [
