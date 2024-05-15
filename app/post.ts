@@ -21,7 +21,7 @@ export async function createPost(
 		.execute()
 
 	invariant(results[0], `Reply to ${parentId} not submitted successfully`)
-	const postId = results[0].id
+	const postId: number = results[0].id
 
 	const direction: Direction = Direction.Up
 
