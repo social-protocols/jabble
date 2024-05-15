@@ -16,7 +16,7 @@ flake:
 node-ext:
   FROM +flake --PACKAGES='juliabuild'
   WORKDIR /app
-  ARG GLOBALBRAIN_VERSION=0.1.6
+  ARG GLOBALBRAIN_VERSION=0.1.7
 
   RUN  wget https://github.com/social-protocols/GlobalBrain.jl/archive/refs/tags/v$GLOBALBRAIN_VERSION.tar.gz \
     && tar zxvf v$GLOBALBRAIN_VERSION.tar.gz \
