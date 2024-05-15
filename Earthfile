@@ -38,13 +38,12 @@ node-ext:
   # The former can be empty.
   # We need to fix this in the other repo, but for now a workaround.
   WORKDIR /app/GlobalBrain.jl
-  RUN mkdir -p /artifact/src
-  RUN mkdir -p /artifact/globalbrain-node/dist
-  RUN cp -r sql /artifact/
-  RUN cp -r globalbrain-node/dist /artifact/globalbrain-node/
-  RUN cp globalbrain-node/package.json /artifact/globalbrain-node/
-  RUN cp globalbrain-node/package-lock.json /artifact/globalbrain-node/
-  RUN cp globalbrain-node/index.js /artifact/globalbrain-node/
+  RUN mkdir -p /artifact/src \
+   && mkdir -p /artifact/globalbrain-node/dist \
+   && cp -r globalbrain-node/dist /artifact/globalbrain-node/ \
+   && cp globalbrain-node/package.json /artifact/globalbrain-node/ \
+   && cp globalbrain-node/package-lock.json /artifact/globalbrain-node/ \
+   && cp globalbrain-node/index.js /artifact/globalbrain-node/
 
   SAVE ARTIFACT /artifact
 
@@ -93,8 +92,7 @@ docker-image:
   RUN mkdir -p /data ${LITEFS_DIR}
 
   # npm run build
-  COPY --dir other app server public types ./
-  COPY index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
+  COPY --dir other app server public types index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
   COPY --dir +app-build/server-build +app-build/build +app-build/node_modules +app-build/package-lock.json +app-build/package.json ./
   COPY --dir +node-ext/artifact ./GlobalBrain.jl
 
@@ -105,8 +103,7 @@ docker-image:
   RUN node tests/globalbrain-node.js test.db
 
   # startup & migrations
-  COPY migrate.ts startup.sh index.js ./
-  COPY migrations migrations/
+  COPY --dir migrate.ts migrations startup.sh index.js ./
 
   ENV APP_DATABASE_FILENAME="sqlite.db"
   ENV APP_DATABASE_PATH="$LITEFS_DIR/$APP_DATABASE_FILENAME"
