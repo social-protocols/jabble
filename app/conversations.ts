@@ -46,9 +46,16 @@ export async function getCriticalThread(
 	)
 
 	const threadPosts: ThreadPost[] = scoredPosts.map(post => {
+		let isCritical = isCriticalMap.get(post.id)
+		if (isCritical == null || isCritical == undefined) {
+			isCritical = false
+			console.warn(
+				`Can't determine isCritical for post ${post.id}. Defaulting to false.`,
+			)
+		}
 		return {
 			...post,
-			isCritical: isCriticalMap.get(post.id)!,
+			isCritical: isCritical,
 		}
 	})
 
