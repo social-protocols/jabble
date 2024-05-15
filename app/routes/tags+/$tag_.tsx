@@ -11,12 +11,10 @@ import { z } from 'zod'
 
 import { Feed } from '#app/components/ui/feed.tsx'
 import { PostForm } from '#app/components/ui/post-form.tsx'
-import { getUserPositions, type Position } from '#app/positions.ts'
 import { getRankedPosts } from '#app/ranking.ts'
 
 import { getUserId } from '#app/utils/auth.server.ts'
-
-import { type Direction } from '#app/vote.ts'
+import { type VoteState, getUserVotes } from '#app/vote.ts'
 
 const tagSchema = z.coerce.string()
 
@@ -28,9 +26,9 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	const rankedPosts = await getRankedPosts(tag)
 	const posts = rankedPosts
-	let positions: Position[] = []
+	let votes: VoteState[] = []
 	if (userId) {
-		positions = await getUserPositions(
+		votes = await getUserVotes(
 			userId,
 			tag,
 			rankedPosts.map(p => p.id),
@@ -39,16 +37,16 @@ export async function loader({ params, request }: DataFunctionArgs) {
 
 	const loggedIn = userId !== null
 
-	return json({ posts, userId, positions, tag, loggedIn })
+	return json({ posts, userId, votes, tag, loggedIn })
 }
 
 export default function TagPage() {
-	const { tag, posts, positions, loggedIn } = useLoaderData<typeof loader>()
+	const { tag, posts, votes, loggedIn } = useLoaderData<typeof loader>()
 
-	// We lose the type info for positions after serializing and deserializing JSON
-	let p = new Map<number, Direction>()
-	for (let position of positions) {
-		p.set(position.postId, position.vote)
+	// We lose the type info for votes after serializing and deserializing JSON
+	let p = new Map<number, VoteState>()
+	for (let position of votes) {
+		p.set(position.postId, position)
 	}
 
 	return (
@@ -60,10 +58,10 @@ export default function TagPage() {
 			{loggedIn && <PostForm tag={tag} className="mb-5" />}
 			<Feed
 				posts={posts}
-				positions={p}
+				votes={p}
 				loggedIn={loggedIn}
 				rootId={null}
-				showNotes={true}
+				showNotes={false}
 			/>
 		</>
 	)
@@ -72,7 +70,6 @@ export default function TagPage() {
 export const shouldRevalidate: ShouldRevalidateFunction = (args: {
 	formAction?: string | undefined
 }) => {
-	console.log('shouldRevalidate', args)
 	// Optimization that makes it so /votes don't reload the page
 	if (args.formAction == '/vote') {
 		return false

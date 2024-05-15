@@ -23,7 +23,7 @@ Each post or reply then gets a score, shown as a percentage, based on how many u
 
 1) You must earn **reputation** before your votes have any weight.
 
-2) Your votes on a post get more weight if they **read and acknowledge certain replies** to that post made by other users.
+2) Your votes on a post get more weight if you **read and acknowledge certain replies** to that post made by other users.
 
 # 1. Information and Fairness
 
@@ -32,29 +32,29 @@ When certain conditions are met, a reply to a post will be designated a **critic
 ![screenshot of a critical reply](public/img/critical-reply.png)
 <br/>*a critical reply*
 
-Users who have voted on the post, but have not yet seen the critical reply, will be notified. 
+If you have have voted on a post, but have not yet seen the critical reply, you will be notified. 
 
-Once a user has voted on the critical reply, their vote on the post will get more weight. If the critical reply changes their mind about the post, they can also change their vote on the post.
+Once you have voted on the critical reply, your vote on the post will get more weight.
 
 ![screenshot of a critical reply after vote](public/img/critical-reply-after-vote.png)
 <br/>*a critical reply after vote*
 
-
+And of course, if the critical reply changes your mind about the post, you can change your vote on the post. 
 
 
 ## The Big Idea
 
 The idea is simple. If one user shares information that might influence other people's votes, then people should have a chance to consider that information **before** they decide how to vote.
 
-Clickbait, disinformation, misinformation, etc. are all fundamentally the same thing: misinformed content. Stuff people wouldn't click on, upvote or share if they knew more.
+Clickbait, disinformation, misinformation, etc. are all fundamentally the same thing: **misinformed content**. Misinformed content is stuff people wouldn't click on, upvote or share if they knew more.
 
-The antidote to misinformation is...information. The Jabble tries to promote more informed conversations based on the simple idea of looking at how people vote if they have more information.
+The antidote to misinformed content is information. Jabble tries to promote more informed content based on the simple idea of looking at how people vote if they have more information.
 
 ## Identifying the Critical Reply
 
 Jabble identifies a reply as critical if it appears to be **convincing**: if it makes people more or less like to vote on the post. 
 
-Suppose that, in our example with the inauthentic earthquake video, the upvote probability starts out close to 95%. But among users who voted on the reply claiming the video was not what it claimed to be, the upvote probability falls to 5%. Since it appears to be very convincing, it is designated a critical reply. 
+Suppose that, in our example with the inauthentic earthquake video, initially 95 out of 100 users upvote the video. But suppose there were 20 users voted on the reply claiming the video was not what it claimed to be, and only 1 of of those upvoted the video. Since the reply appears to be very convincing, it is designated a critical reply. 
 
 
 ### The Critical Thread
@@ -71,13 +71,9 @@ It might seem like this process could go on forever, but it probably won't. As w
 
 ## Informed Votes
 
-The votes of users who have voted on the critical thread are called the **informed votes**. The score on the post is an estimate of the **informed upvote probability**. 
+The votes of users who have voted on the critical thread are called the **informed votes**. The score on the post is just the probability that an informed vote is an upvote. We call this probability the **informed upvote probability**. 
 
-In our example with the earthquake video, informed users are much less likely to upvote, and since informed votes have more weight, as users start to vote on the critical reply the estimated informed upvoted probability falls quickly.
-
-Once a sufficiently large sample of informed votes has been collected, the estimate of the informed upvote probability is dominated by the informed votes. The exact formula for calculating the informed upvote probability is described [here](https://social-protocols.org/global-brain/modeling-upvote-probability.html). 
-
-In this example, even though most users have upvoted the video, the informed upvote probability approaches 5%. 
+In our example with the earthquake video, informed users are much less likely to upvote the video, and since informed votes have more weight, as users start to vote on the critical reply the estimated informed upvoted probability falls quickly towards 5%. 
 
 ![a chart of the informed vs. uniformed upvote probability in a simulated scenario](public/img/informed-probability-chart.png)
 <br/>*the informed vs. uniformed upvote probability in a simulated scenario*
@@ -136,7 +132,7 @@ TODO: describe predcition arket
 
 
 
-
+<!--
 
 
 
@@ -152,3 +148,4 @@ In a platform where the number of votes determines how much attention something 
 
 Social media can be thought of as a protocol for collaboratively determining what content receives attention. Upvotes and downvotes are how the community expresses their intention. And so it's critical that the outcome of the vote be informed and fair.
 
+-->
