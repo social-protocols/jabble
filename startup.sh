@@ -4,6 +4,4 @@ set -Eeuo pipefail
 
 npm run migrate
 
-./gb_migrate.sh
-
 npm start
