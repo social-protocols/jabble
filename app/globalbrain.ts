@@ -1,8 +1,4 @@
-import { spawn } from 'child_process'
-import * as fs from 'fs'
-import { env } from 'process'
 import global_brain from '@socialprotocols/globalbrain-node'
-import { data } from 'tailwindcss/defaultTheme.js'
 import { type VoteEvent } from './db/types.ts'
 import { db } from './db.ts'
 
@@ -103,7 +99,7 @@ async function insertEffectEvent(data: any) {
 		...snakeToCamelCaseObject(data['effect']),
 	}
 
-	const result = await db
+	await db
 		.insertInto('EffectEvent')
 		.values(data_flat)
 		.onConflict(oc =>

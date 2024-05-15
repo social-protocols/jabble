@@ -1,10 +1,8 @@
 import assert from 'assert'
 import { sql } from 'kysely'
 import { type VoteEvent, type InsertableVoteEvent } from '#app/db/types.ts'
-import * as scoreEvents from '#app/score-events.ts'
-import { writeVoteEvent } from '#app/vote-events.ts'
-import { db } from './db.ts'
 import { sendVoteEvent } from '#app/globalbrain.ts'
+import { db } from './db.ts'
 import { getOrInsertTagId } from './tag.ts'
 
 export enum Direction {
@@ -34,7 +32,6 @@ export async function vote(
 	postId: number,
 	noteId: number | null,
 	direction: Direction,
-	waitForScoreEvent: Boolean = false,
 ): Promise<VoteEvent> {
 	const tagId = await getOrInsertTagId(tag)
 
@@ -46,7 +43,7 @@ export async function vote(
 		direction,
 	)
 
-	const scoreEvents = await sendVoteEvent(voteEvent)
+	await sendVoteEvent(voteEvent)
 
 	return voteEvent
 }

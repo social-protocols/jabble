@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from 'fs'
 
 import global_brain from '@socialprotocols/globalbrain-node'
 
