@@ -6,19 +6,20 @@ IMPORT ../GlobalBrain.jl AS gb-jl
 
 flake:
   FROM nixos/nix:2.20.4
+  ARG --required PACKAGES
   WORKDIR /app
   # Enable flakes
   RUN echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
   COPY flake.nix flake.lock ./
   # install packages from the packages section in flake.nix
-  RUN nix profile install --impure -L '.#base'
+  RUN nix profile install --impure -L ".#$PACKAGES"
+  SAVE IMAGE flake --cache-hint
 
 
 julia-build:
-  FROM +flake
+  FROM +flake --PACKAGES='juliabuild'
   WORKDIR /app
-  # install packages from the packages section in flake.nix
-  RUN nix profile install --impure -L '.#juliabuild'
+  SAVE IMAGE julia-build --cache-hint
 
 node-ext:
   FROM +julia-build
@@ -70,7 +71,6 @@ node-ext:
 
 app-setup:
   FROM +julia-build
-  RUN nix profile install nixpkgs#sqlite
 
   WORKDIR /app
   COPY package.json package-lock.json .npmrc ./
@@ -102,7 +102,7 @@ app-deploy-litefs:
    SAVE ARTIFACT /usr/local/bin/litefs
 
 docker-image:
-  FROM +julia-build
+  FROM +flake --PACKAGES='base'
 
   WORKDIR /app
 
@@ -116,17 +116,9 @@ docker-image:
   RUN mkdir -p /data ${LITEFS_DIR}
 
   # npm run build
-  COPY other other/
-  COPY app app/
-  COPY server server/
-  COPY public public/
-  COPY types types/
+  COPY --dir other app server public types ./
   COPY index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
-  COPY --dir +app-build/server-build ./ 
-  COPY --dir +app-build/build ./ 
-  COPY --dir +app-build/node_modules ./ 
-  COPY --dir +app-build/package-lock.json ./ 
-  COPY --dir +app-build/package.json ./ 
+  COPY --dir +app-build/server-build +app-build/build +app-build/node_modules +app-build/package-lock.json +app-build/package.json ./
   COPY --dir +node-ext/artifact ./GlobalBrain.jl
 
   # should not install anything
@@ -158,6 +150,7 @@ docker-image:
   # test locally without litefs:
   # docker run -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET sha256:xyzxyz bash /app/startup.sh
   CMD ["litefs", "mount"]
+  SAVE IMAGE jabble:latest
 
 
 app-deploy:

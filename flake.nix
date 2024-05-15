@@ -59,8 +59,9 @@
           base = pkgs.buildEnv {
             name = "base-image";
             paths = with pkgs; [
-                jq
+                julia_19-bin
                 nodejs_20
+                sqlite
             ];
           };
         };

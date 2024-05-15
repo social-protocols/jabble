@@ -68,7 +68,7 @@ download-prod-db:
 
 # build the docker container
 docker-build:
-	docker build . -t deploy-sn
+  earthly +docker-image
 
 # docker-build with --platform linux/amd64
 docker-build-mac:
