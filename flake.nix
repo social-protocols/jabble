@@ -37,11 +37,8 @@
               # darwin.apple_sdk.frameworks.Security
             ];
           };
-        };
-        packages = {
-          juliabuild = pkgs.buildEnv {
-            name = "julia-build-image";
-            paths = with pkgs; [
+          juliabuild = with pkgs; pkgs.mkShellNoCC {
+            buildInputs = [
                 diffutils
                 julia_19-bin
                 python3 # for node-gyp
@@ -55,8 +52,9 @@
                 sqlite
                 nodejs_20
             ];
-
           };
+        };
+        packages = {
           base = pkgs.buildEnv {
             name = "base-image";
             paths = with pkgs; [
