@@ -2,7 +2,6 @@
 
 VERSION 0.8
 
-
 flake:
   FROM nixos/nix:2.20.4
   ARG --required PACKAGES
@@ -12,16 +11,10 @@ flake:
   COPY flake.nix flake.lock ./
   # install packages from the packages section in flake.nix
   RUN nix profile install --impure -L ".#$PACKAGES"
-  SAVE IMAGE flake --cache-hint
 
-
-julia-build:
-  FROM +flake --PACKAGES='juliabuild'
-  WORKDIR /app
-  SAVE IMAGE julia-build --cache-hint
 
 node-ext:
-  FROM +julia-build
+  FROM +flake --PACKAGES='juliabuild'
   WORKDIR /app
   ARG GLOBALBRAIN_VERSION=0.1.6
 
@@ -55,22 +48,8 @@ node-ext:
 
   SAVE ARTIFACT /artifact
 
-#test-node-ext:
-#  FROM +julia-build
-#
-#  WORKDIR /app
-#  COPY --dir +node-ext/artifact ./GlobalBrain.jl
-#
-#  WORKDIR /app/GlobalBrain.jl/globalbrain-node
-#  RUN npm install
-#
-#  WORKDIR /app/GlobalBrain.jl/globalbrain-node/globalbrain-node-test
-#  RUN npm install --ignore-scripts --save ..
-#  RUN npm test
-
 app-setup:
-  FROM +julia-build
-
+  FROM +flake --PACKAGES='juliabuild'
   WORKDIR /app
   COPY package.json package-lock.json .npmrc ./
   RUN npm install --include=dev && rm -rf /root/.npm /root/.node-gyp
@@ -95,7 +74,6 @@ app-build:
   SAVE ARTIFACT package-lock.json AS LOCAL package-lock.json
   SAVE ARTIFACT package.json AS LOCAL package.json
 
-# needed, when porting the Dockerfile to Earthfile
 app-deploy-litefs:
    FROM flyio/litefs:0.5.10
    SAVE ARTIFACT /usr/local/bin/litefs

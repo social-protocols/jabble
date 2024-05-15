@@ -53,6 +53,7 @@
                 libcxxStdenv
                 libcxx
                 sqlite
+                nodejs_20
             ];
 
           };
