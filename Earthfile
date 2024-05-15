@@ -55,7 +55,6 @@ app-setup:
   COPY --dir other sql ./
   RUN npx tsx ./other/build-icons.ts
   COPY --dir app server public types ./
-  COPY index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
 
   COPY --dir +node-ext/artifact ./GlobalBrain.jl
   WORKDIR /app
@@ -63,6 +62,7 @@ app-setup:
 
   COPY tests/globalbrain-node.js tests/
   RUN node tests/globalbrain-node.js test.db
+  COPY index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
 
 app-build:
   FROM +app-setup
