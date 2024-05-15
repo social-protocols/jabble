@@ -16,6 +16,20 @@
           overlays = [ ];
           config.allowUnfree = false;
         };
+        juliabuild_packages = with pkgs; [
+          diffutils
+          julia_19-bin
+          python3 # for node-gyp
+          gcc
+          gnumake
+          gnused
+          llvmPackages.libcxxStdenv
+          llvmPackages.libcxx
+          libcxxStdenv
+          libcxx
+          sqlite
+          nodejs_20
+        ];
       in
       {
         devShells = {
@@ -38,20 +52,7 @@
             ];
           };
           juliabuild = with pkgs; pkgs.mkShellNoCC {
-            buildInputs = [
-                diffutils
-                julia_19-bin
-                python3 # for node-gyp
-                gcc
-                gnumake
-                gnused
-                llvmPackages.libcxxStdenv
-                llvmPackages.libcxx
-                libcxxStdenv
-                libcxx
-                sqlite
-                nodejs_20
-            ];
+            buildInputs = juliabuild_packages;
           };
         };
         packages = {
@@ -62,6 +63,10 @@
                 nodejs_20
                 sqlite
             ];
+          };
+          juliabuild = pkgs.buildEnv {
+            name = "juliabuild";
+            paths = juliabuild_packages;
           };
         };
       }
