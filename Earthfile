@@ -2,7 +2,6 @@
 
 VERSION 0.8
 
-IMPORT ../GlobalBrain.jl AS gb-jl
 
 flake:
   FROM nixos/nix:2.20.4

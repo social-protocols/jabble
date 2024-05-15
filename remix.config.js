@@ -4,7 +4,7 @@ import { flatRoutes } from 'remix-flat-routes'
 // https://github.com/remix-run/remix/issues/1823
 withEsbuildOverride(option => {
 	if (!option.external && option.bundle) {
-		option.external = ['nock', 'mock-aws-s3', 'node-pre-gyp', 'node-gyp']
+		option.external = ['node-pre-gyp', 'node-gyp']
 	}
 	return option
 })

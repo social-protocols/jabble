@@ -57,6 +57,7 @@ import { getToast } from './utils/toast.server.ts'
 import { useOptionalUser, useUser } from './utils/user.ts'
 // import { cssBundleHref } from '@remix-run/css-bundle'
 
+// TODO: why is this needed?
 const cssBundleHref = null
 
 export const links: LinksFunction = () => {
