@@ -46,11 +46,11 @@ node-ext:
   # FROM +flake --PACKAGES='juliabuild'
   FROM +nix-dev-shell --DEVSHELL='juliabuild'
   WORKDIR /app
-  ARG GLOBALBRAIN_VERSION=0.1.7
+  ARG GLOBALBRAIN_VERSION=c83156273cff2738661be4afc89e7e28f2b7fe08
 
-  RUN  wget https://github.com/social-protocols/GlobalBrain.jl/archive/refs/tags/v$GLOBALBRAIN_VERSION.tar.gz \
-    && tar zxvf v$GLOBALBRAIN_VERSION.tar.gz \
-    && rm v$GLOBALBRAIN_VERSION.tar.gz \
+  RUN  wget https://github.com/social-protocols/GlobalBrain.jl/archive/$GLOBALBRAIN_VERSION.tar.gz \
+    && tar zxvf $GLOBALBRAIN_VERSION.tar.gz \
+    && rm $GLOBALBRAIN_VERSION.tar.gz \
     && mv GlobalBrain.jl-$GLOBALBRAIN_VERSION GlobalBrain.jl
 
   ENV PATH=$PATH:/opt/julia-$JULIA_VERSION/bin 
