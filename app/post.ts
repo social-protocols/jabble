@@ -1,11 +1,10 @@
 import assert from 'assert'
-import { type Post } from '#app/db/types.ts' // this is the Database interface we defined earlier
+import { type Post } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
 import { Direction, vote } from '#app/vote.ts'
 
 import { getOrInsertTagId } from './tag.ts'
 
-// express the above fn in typescript with kysely queries
 export async function createPost(
 	tag: string,
 	parentId: number | null, // TODO: use parentId?: number

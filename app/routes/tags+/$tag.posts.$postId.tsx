@@ -1,4 +1,4 @@
-import { type DataFunctionArgs, json } from '@remix-run/node'
+import { json, type LoaderFunctionArgs } from '@remix-run/node'
 
 import { Link, useLoaderData } from '@remix-run/react'
 import { useState } from 'react'
@@ -24,7 +24,7 @@ import { getUserVotes, type VoteState } from '#app/vote.ts'
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
 
-export async function loader({ params, request }: DataFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
 	invariant(params.postId, 'Missing postid param')
 	invariant(params.tag, 'Missing tag param')
 	const postId: number = postIdSchema.parse(params.postId)

@@ -1,9 +1,9 @@
 import assert from 'assert'
-import { type DataFunctionArgs } from '@remix-run/server-runtime'
+import { LoaderFunctionArgs } from '@remix-run/server-runtime'
 import { login } from '#app/utils/auth.server.ts'
 import { handleNewSession } from './login.tsx'
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const session = await login({
 		username: 'developer',
 		password: 'password',
