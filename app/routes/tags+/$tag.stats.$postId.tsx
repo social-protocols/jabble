@@ -1,4 +1,4 @@
-import { type DataFunctionArgs, json } from '@remix-run/node'
+import { json, type LoaderFunctionArgs } from '@remix-run/node'
 
 import { useLoaderData } from '@remix-run/react'
 
@@ -13,7 +13,7 @@ import { relativeEntropy } from '#app/utils/entropy.ts'
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
 
-export async function loader({ params }: DataFunctionArgs) {
+export async function loader({ params }: LoaderFunctionArgs) {
 	invariant(params.postId, 'Missing postid param')
 	invariant(params.tag, 'Missing tag param')
 	const postId: number = postIdSchema.parse(params.postId)

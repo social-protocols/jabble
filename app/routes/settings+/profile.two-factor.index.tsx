@@ -1,6 +1,6 @@
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
 import cuid2 from '@paralleldrive/cuid2'
-import { type DataFunctionArgs, json, redirect } from '@remix-run/node'
+import { json, redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node'
 import { Link, useFetcher, useLoaderData } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
 import { Icon } from '#app/components/ui/icon.tsx'
@@ -16,7 +16,7 @@ export const handle: SEOHandle = {
 	getSitemapEntries: () => null,
 }
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
 	const verification = db
 		.selectFrom('Verification')
@@ -27,7 +27,7 @@ export async function loader({ request }: DataFunctionArgs) {
 	return json({ is2FAEnabled: Boolean(verification) })
 }
 
-export async function action({ request }: DataFunctionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
 	const userId = await requireUserId(request)
 	await validateCSRF(await request.formData(), request.headers)
 	const { otp: _otp, ...config } = generateTOTP()

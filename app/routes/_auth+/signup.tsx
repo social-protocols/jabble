@@ -2,10 +2,10 @@ import { conform, useForm } from '@conform-to/react'
 import { getFieldsetConstraint, parse } from '@conform-to/zod'
 import * as E from '@react-email/components'
 import {
-	type DataFunctionArgs,
 	json,
 	type MetaFunction,
 	redirect,
+	type ActionFunctionArgs,
 } from '@remix-run/node'
 import { Form, useActionData } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
@@ -27,7 +27,7 @@ const SignupSchema = z.object({
 	email: EmailSchema,
 })
 
-export async function action({ request }: DataFunctionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
 	const formData = await request.formData()
 
 	await validateCSRF(formData, request.headers)
