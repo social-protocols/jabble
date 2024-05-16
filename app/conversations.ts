@@ -66,8 +66,6 @@ export async function getCriticalThread(
 		effectMap.set(effectSize.postId, effectSize.effectSize)
 	})
 
-	console.log(effectMap)
-
 	const threadPosts: ThreadPost[] = scoredPosts.map(post => {
 		let isCritical = isCriticalMap.get(post.id)
 		if (isCritical == null || isCritical == undefined) {
