@@ -17,6 +17,7 @@ export const Truncate: React.FC<{
 				return
 			}
 
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			var element: HTMLElement = postContentRef.current!
 
 			const truncated = truncateMultiParagraphDiv(element, lines)
@@ -83,13 +84,13 @@ function truncateMultiParagraphDiv(element: HTMLElement, lines: number) {
 		return false
 	}
 
-	const children: HTMLCollection = contentDiv.children!
+	const children: HTMLCollection = contentDiv.children as HTMLCollection
 	let n = children.length
 
 	// This function will re-run when the window is resized. So one of the children may already have been
 	// truncated. The block below resets all the children (so they are all visible and untruncated).
 	for (let i = 0; i < n; i++) {
-		let child = children[i]! as HTMLElement
+		let child = children[i] as HTMLElement
 		truncateSingleParagraph(child, null)
 	}
 
@@ -101,13 +102,13 @@ function truncateMultiParagraphDiv(element: HTMLElement, lines: number) {
 	if (contentDiv.clientHeight >= maxHeight) {
 		if (n == 1) {
 			// If there is only one inner div, it's easy! Just truncate it.
-			const child = children[0]! as HTMLElement
+			const child = children[0] as HTMLElement
 			truncateSingleParagraph(child, lines)
 			return false
 		}
 		let isTruncated = false
 		for (let i = 0; i < n; i++) {
-			let child = children[i]! as HTMLElement
+			let child = children[i] as HTMLElement
 
 			let relativeTop = child.offsetTop - elementTop
 			let relativeBottom = child.offsetTop - elementTop + child.clientHeight
