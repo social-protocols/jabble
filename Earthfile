@@ -17,7 +17,7 @@ nix-dev-shell:
   ARG --required DEVSHELL
   FROM nixos/nix:2.20.4
   # enable flakes
-  RUN mkdir -p /etc/nix && echo "extra-experimental-features = nix-command flakes" >> /etc/nix/nix.conf
+  RUN echo "extra-experimental-features = nix-command flakes" >> /etc/nix/nix.conf
   # replace /bin/sh with a script that sources `/root/sh_env` for every RUN command.
   # we use this to execute all `RUN`-commands in our nix dev shell.
   # we need to explicitly delete `/bin/sh` first, because it's a symlink to `/bin/busybox`,
@@ -39,38 +39,42 @@ nix-dev-shell:
 node-ext:
   FROM +nix-dev-shell --DEVSHELL='juliabuild'
   WORKDIR /app
-  ARG GLOBALBRAIN_RELEASE_TAG=remove-node-pre-gyp-release
 
-  RUN  wget https://github.com/social-protocols/GlobalBrain.jl/archive/refs/tags/$GLOBALBRAIN_RELEASE_TAG.tar.gz \
-    && tar zxvf $GLOBALBRAIN_RELEASE_TAG.tar.gz \
-    && rm $GLOBALBRAIN_RELEASE_TAG.tar.gz \
-    && mv GlobalBrain.jl-$GLOBALBRAIN_RELEASE_TAG GlobalBrain.jl
+  ARG GLOBALBRAIN_REF=49afe5257e0f3f1c0885088afaced2c70ca38c31
+  RUN wget https://github.com/social-protocols/GlobalBrain.jl/archive/$GLOBALBRAIN_REF.tar.gz \
+   && mkdir GlobalBrain.jl \
+   && tar zxvf $GLOBALBRAIN_REF.tar.gz --directory GlobalBrain.jl --strip-components=1 \
+   && rm $GLOBALBRAIN_REF.tar.gz
+
   WORKDIR /app/GlobalBrain.jl
   RUN julia -t auto --code-coverage=none --check-bounds=yes --project -e 'using Pkg; Pkg.instantiate(); Pkg.precompile()'
 
   WORKDIR /app/GlobalBrain.jl/globalbrain-node/julia
-
-  RUN julia -t auto --code-coverage=none --check-bounds=yes --startup-file=no --project -e 'using Pkg; Pkg.instantiate(); Pkg.precompile()'
-  RUN julia -t auto --code-coverage=none --check-bounds=yes --startup-file=no --project build.jl
+  RUN julia -t auto --startup-file=no --project -e 'using Pkg; Pkg.instantiate(); include("build.jl")'
 
   WORKDIR /app/GlobalBrain.jl/globalbrain-node
-  RUN npm install && npm test
+  ENV GLOBALBRAIN_INCLUDES=julia/build/include/julia_init.h julia/build/include/globalbrain.h
+  ENV GLOBALBRAIN_PATH=julia/build/lib/libglobalbrain.so
+  RUN LD_LIBRARY_PATH=julia/build/lib:julia/build/lib/julia:$LD_LIBRARY_PATH g++ test.cc -o test-cpp.out -Ijulia/build/include -Ljulia/build/lib -Ljulia/build/lib/julia -ljulia -lglobalbrain
+  RUN LD_LIBRARY_PATH=julia/build/lib:julia/build/lib/julia:$LD_LIBRARY_PATH ldd ./test-cpp.out
+  RUN LD_LIBRARY_PATH=julia/build/lib:julia/build/lib/julia:$LD_LIBRARY_PATH ./test-cpp.out || echo "Failed test yo"
+  RUN npm install
+  RUN npm test
 
   # Create artifact
   # Okay, GlobalBrain.jl is hardcoded to expect to find /app/GlobalBrain.jl/src and /app/GlobalBrain.jl/sql
   # The former can be empty.
   # We need to fix this in the other repo, but for now a workaround.
-  WORKDIR /app/GlobalBrain.jl/globalbrain-node
-  RUN mkdir -p /artifact/julia/build \
-   && cp -r julia/build /artifact/julia/build \
-   && cp package.json /artifact/ \
-   && cp package-lock.json /artifact/ \
-   && cp binding.gyp /artifact/ \
-   && cp -r node /artifact/ \
-   && cp index.js /artifact/ \
-   && cp test.js /artifact/
+  # WORKDIR /app/GlobalBrain.jl/globalbrain-node
+  # RUN mkdir -p /artifact/julia/build \
+  #  && cp -r julia/build /artifact/julia/build \
+  #  && cp package.json /artifact/ \
+  #  && cp package-lock.json /artifact/ \
+  #  && cp binding.gyp /artifact/ \
+  #  && cp index.js /artifact/ \
+  #  && cp test.js /artifact/
 
-  SAVE ARTIFACT /artifact
+  SAVE ARTIFACT . /artifact
 
 app-setup:
   FROM +nix-dev-shell --DEVSHELL='juliabuild'
@@ -88,6 +92,7 @@ app-setup:
   WORKDIR /app/globalbrain-node
   RUN npm test
 
+  WORKDIR /app
   COPY index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
 
 app-build:
@@ -105,6 +110,11 @@ app-deploy-litefs:
 
 docker-image:
   FROM +flake --PACKAGES='base'
+  RUN nix profile install nixpkgs/ba733f8000925e837e30765f273fec153426403d#python3
+  RUN nix profile install nixpkgs/ba733f8000925e837e30765f273fec153426403d#gnumake
+  RUN nix profile install nixpkgs/ba733f8000925e837e30765f273fec153426403d#gcc
+  RUN nix profile install nixpkgs/ba733f8000925e837e30765f273fec153426403d#gnused
+  # FROM +nix-dev-shell --DEVSHELL='juliabuild'
 
   WORKDIR /app
 
@@ -138,10 +148,6 @@ docker-image:
   ENV PORT="8081"
   ENV VOTE_EVENTS_PATH=/data/vote-events.jsonl
   ENV SCORE_EVENTS_PATH=/data/score-events.jsonl
-
-  ENV SESSION_SECRET=super-duper-s3cret
-  ENV HONEYPOT_SECRET=super-duper-s3cret
-  ENV INTERNAL_COMMAND_TOKEN=some-made-up-token
 
   # starting the application is defined in litefs.yml
   # test locally without litefs:
