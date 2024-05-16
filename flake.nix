@@ -48,6 +48,10 @@
               less
               fzf
 
+              python3
+              xcbuild
+              julia_19-bin
+
               # darwin.apple_sdk.frameworks.Security
             ];
           };
