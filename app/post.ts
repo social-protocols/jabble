@@ -1,11 +1,11 @@
 import assert from 'assert'
-import { type Post } from '#app/db/types.ts' // this is the Database interface we defined earlier
+import { type Post } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
+import { invariant } from '#app/utils/misc.tsx'
 import { Direction, vote } from '#app/vote.ts'
 
 import { getOrInsertTagId } from './tag.ts'
 
-// express the above fn in typescript with kysely queries
 export async function createPost(
 	tag: string,
 	parentId: number | null, // TODO: use parentId?: number
@@ -18,7 +18,9 @@ export async function createPost(
 		.values({ content, parentId, authorId })
 		.returning('id')
 		.execute()
-	const postId = results[0]!.id
+
+	invariant(results[0], `Reply to ${parentId} not submitted successfully`)
+	const postId: number = results[0].id
 
 	const direction: Direction = Direction.Up
 

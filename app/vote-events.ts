@@ -2,13 +2,15 @@ import * as fs from 'fs'
 import { env } from 'process'
 import { type VoteEvent } from './db/types.ts'
 import { db } from './db.ts'
+import { invariant } from './utils/misc.tsx'
 
-// Grab vote events path environment
-const voteEventsPath = env.VOTE_EVENTS_PATH!
-
-if (!voteEventsPath) {
-	throw new Error('VOTE_EVENTS_PATH must be set')
+function voteEventsPathFromEnv() {
+	const voteEventsPath = env.VOTE_EVENTS_PATH
+	invariant(voteEventsPath, 'VOTE_EVENTS_PATH environment variable must be set')
+	return voteEventsPath
 }
+
+const voteEventsPath = voteEventsPathFromEnv()
 
 function camelToSnakeCase(str: string): string {
 	return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)

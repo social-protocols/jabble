@@ -1,8 +1,8 @@
-import { type DataFunctionArgs, redirect } from '@remix-run/node'
+import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
 import { db } from '#app/db.ts'
 import { logout, requireUserId } from '#app/utils/auth.server.ts'
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
 	const user = await db
 		.selectFrom('User')

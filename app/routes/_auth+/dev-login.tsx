@@ -1,16 +1,19 @@
-import assert from 'assert'
-import { type DataFunctionArgs } from '@remix-run/server-runtime'
+import { type LoaderFunctionArgs } from '@remix-run/server-runtime'
 import { login } from '#app/utils/auth.server.ts'
+import { invariant } from '#app/utils/misc.tsx'
 import { handleNewSession } from './login.tsx'
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const session = await login({
 		username: 'developer',
 		password: 'password',
 	})
 
-	assert(session !== null, 'Session is null')
-	assert(session.userId !== undefined, 'session.userId is defined')
+	invariant(
+		session,
+		`Session is null or undefined for this request: ${request}`,
+	)
+	invariant(session.userId, `No userId in session for this request: ${request}`)
 
 	const validSession = {
 		...session,
@@ -21,7 +24,7 @@ export async function loader({ request }: DataFunctionArgs) {
 		request: request,
 		session: {
 			...validSession,
-			expirationDate: new Date(session!.expirationDate),
+			expirationDate: new Date(session.expirationDate),
 		},
 		remember: true,
 		redirectTo: '/',
