@@ -81,7 +81,7 @@ In our example with the earthquake video, informed users are much less likely to
 
 # 2. Reputation and Reasonableness
 
-This process works great if everyone is acting in good faith. But on the Internet, sometimes that they're not. So how do we force people to be **reasonable**?
+This process works great if everyone is acting in good faith. But on the Internet, sometimes they're not. So how do we force people to be **reasonable**?
 
 Well, it turns out you kind of can force people to be reasonable using game theory. 
 
