@@ -1,22 +1,42 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react'
 
-function truncateSingleParagraph(element: HTMLElement, lines: number | null) {
-	const lineHeight = parseFloat(window.getComputedStyle(element).lineHeight)
+export const Truncate: React.FC<{
+	children: ReactNode
+	lines?: number // Number of lines after which to truncate
+}> = ({ children, lines }) => {
+	const [isTruncated, setIsTruncated] = useState(false)
+	const postContentRef = useRef(null)
 
-	const childHeight = element.clientHeight
+	/* Show or hide the ellipsis and readMoreLink based on the
+          content of the DOM: specifically, whether or not the post content div
+          is being cut off or not. The code below updates the state correctly
+          when the browser window is resized.*/
+	useEffect(() => {
+		function truncate() {
+			if (lines === undefined) {
+				return
+			}
 
-	// The below is an alternative to lineClamp that creates more consistency between Safari and Chrome
-	// element.style.display = 'block'
-	// element.style.overflow = 'hidden'
-	// element.style.maxHeight =
-	// 	lines == null ? '' : (lineHeight * lines).toString() + 'px'
+			var element: HTMLElement = postContentRef.current!
 
-	element.style.display = '-webkit-box'
-	element.style.webkitBoxOrient = 'vertical'
-	element.style.overflow = 'hidden'
-	element.style.webkitLineClamp = lines == null ? '' : lines.toString()
+			const truncated = truncateMultiParagraphDiv(element, lines)
+			if (truncated) {
+				setIsTruncated(true)
+			} else {
+				setIsTruncated(false)
+			}
+		}
+		window.addEventListener('resize', truncate)
+		truncate()
+		return () => window.removeEventListener('resize', truncate)
+	}, [lines])
 
-	return lines !== null && Math.round(childHeight / lineHeight) > lines
+	return (
+		<>
+			<div ref={postContentRef}>{children}</div>
+			{isTruncated && <div className="ellipsis">...</div>}
+		</>
+	)
 }
 
 /*
@@ -117,41 +137,21 @@ function truncateMultiParagraphDiv(element: HTMLElement, lines: number) {
 	return false
 }
 
-export const Truncate: React.FC<{
-	children: ReactNode
-	lines?: number // Number of lines after which to truncate
-}> = ({ children, lines }) => {
-	const [isTruncated, setIsTruncated] = useState(false)
-	const postContentRef = useRef(null)
+function truncateSingleParagraph(element: HTMLElement, lines: number | null) {
+	const lineHeight = parseFloat(window.getComputedStyle(element).lineHeight)
 
-	/* Show or hide the ellipsis and readMoreLink based on the
-          content of the DOM: specifically, whether or not the post content div
-          is being cut off or not. The code below updates the state correctly
-          when the browser window is resized.*/
-	useEffect(() => {
-		function truncate() {
-			if (lines === undefined) {
-				return
-			}
+	const childHeight = element.clientHeight
 
-			var element: HTMLElement = postContentRef.current!
+	// The below is an alternative to lineClamp that creates more consistency between Safari and Chrome
+	// element.style.display = 'block'
+	// element.style.overflow = 'hidden'
+	// element.style.maxHeight =
+	// 	lines == null ? '' : (lineHeight * lines).toString() + 'px'
 
-			const truncated = truncateMultiParagraphDiv(element, lines)
-			if (truncated) {
-				setIsTruncated(true)
-			} else {
-				setIsTruncated(false)
-			}
-		}
-		window.addEventListener('resize', truncate)
-		truncate()
-		return () => window.removeEventListener('resize', truncate)
-	}, [lines])
+	element.style.display = '-webkit-box'
+	element.style.webkitBoxOrient = 'vertical'
+	element.style.overflow = 'hidden'
+	element.style.webkitLineClamp = lines == null ? '' : lines.toString()
 
-	return (
-		<>
-			<div ref={postContentRef}>{children}</div>
-			{isTruncated && <div className="ellipsis">...</div>}
-		</>
-	)
+	return lines !== null && Math.round(childHeight / lineHeight) > lines
 }
