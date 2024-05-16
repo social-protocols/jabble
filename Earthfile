@@ -39,32 +39,36 @@ nix-dev-shell:
 node-ext:
   FROM +nix-dev-shell --DEVSHELL='juliabuild'
   WORKDIR /app
-  ARG GLOBALBRAIN_VERSION=0.1.7
+  ARG GLOBALBRAIN_RELEASE_TAG=remove-node-pre-gyp-release
 
-  RUN  wget https://github.com/social-protocols/GlobalBrain.jl/archive/refs/tags/v$GLOBALBRAIN_VERSION.tar.gz \
-    && tar zxvf v$GLOBALBRAIN_VERSION.tar.gz \
-    && rm v$GLOBALBRAIN_VERSION.tar.gz \
-    && mv GlobalBrain.jl-$GLOBALBRAIN_VERSION GlobalBrain.jl
-
+  RUN  wget https://github.com/social-protocols/GlobalBrain.jl/archive/refs/tags/$GLOBALBRAIN_RELEASE_TAG.tar.gz \
+    && tar zxvf $GLOBALBRAIN_RELEASE_TAG.tar.gz \
+    && rm $GLOBALBRAIN_RELEASE_TAG.tar.gz \
+    && mv GlobalBrain.jl-$GLOBALBRAIN_RELEASE_TAG GlobalBrain.jl
   WORKDIR /app/GlobalBrain.jl
-  RUN julia -t auto --code-coverage=none --check-bounds=yes --project -e 'using Pkg; Pkg.instantiate()'
+  RUN julia -t auto --code-coverage=none --check-bounds=yes --project -e 'using Pkg; Pkg.instantiate(); Pkg.precompile()'
+
+  WORKDIR /app/GlobalBrain.jl/globalbrain-node/julia
+
+  RUN julia -t auto --code-coverage=none --check-bounds=yes --startup-file=no --project -e 'using Pkg; Pkg.instantiate(); Pkg.precompile()'
+  RUN julia -t auto --code-coverage=none --check-bounds=yes --startup-file=no --project build.jl
 
   WORKDIR /app/GlobalBrain.jl/globalbrain-node
-  RUN julia -t auto --code-coverage=none --check-bounds=yes --project -e 'using Pkg; Pkg.instantiate()'
-  RUN npm install
-
+  RUN npm install && npm test
 
   # Create artifact
   # Okay, GlobalBrain.jl is hardcoded to expect to find /app/GlobalBrain.jl/src and /app/GlobalBrain.jl/sql
   # The former can be empty.
   # We need to fix this in the other repo, but for now a workaround.
-  WORKDIR /app/GlobalBrain.jl
-  RUN mkdir -p /artifact/src \
-   && mkdir -p /artifact/globalbrain-node/dist \
-   && cp -r globalbrain-node/dist /artifact/globalbrain-node/ \
-   && cp globalbrain-node/package.json /artifact/globalbrain-node/ \
-   && cp globalbrain-node/package-lock.json /artifact/globalbrain-node/ \
-   && cp globalbrain-node/index.js /artifact/globalbrain-node/
+  WORKDIR /app/GlobalBrain.jl/globalbrain-node
+  RUN mkdir -p /artifact/julia/build \
+   && cp -r julia/build /artifact/julia/build \
+   && cp package.json /artifact/ \
+   && cp package-lock.json /artifact/ \
+   && cp binding.gyp /artifact/ \
+   && cp -r node /artifact/ \
+   && cp index.js /artifact/ \
+   && cp test.js /artifact/
 
   SAVE ARTIFACT /artifact
 
@@ -77,12 +81,13 @@ app-setup:
   RUN npx tsx ./other/build-icons.ts
   COPY --dir app server public types ./
 
-  COPY --dir +node-ext/artifact ./GlobalBrain.jl
+  COPY --dir +node-ext/artifact ./globalbrain-node
   WORKDIR /app
-  RUN npm install --ignore-scripts --save './GlobalBrain.jl/globalbrain-node'
+  RUN npm install --save './globalbrain-node'
 
-  COPY tests/globalbrain-node.js tests/
-  RUN node tests/globalbrain-node.js test.db
+  WORKDIR /app/globalbrain-node
+  RUN npm test
+
   COPY index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
 
 app-build:
@@ -115,13 +120,10 @@ docker-image:
   # npm run build
   COPY --dir other app server public types index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
   COPY --dir +app-build/server-build +app-build/build +app-build/node_modules +app-build/package-lock.json +app-build/package.json ./
-  COPY --dir +node-ext/artifact ./GlobalBrain.jl
+  COPY --dir +node-ext/artifact ./globalbrain-node
 
   # should not install anything
-  RUN cd ./GlobalBrain.jl/globalbrain-node && npm install
-
-  COPY tests/globalbrain-node.js tests/
-  RUN node tests/globalbrain-node.js test.db
+  RUN cd ./globalbrain-node && npm install && npm test
 
   # startup & migrations
   COPY --dir migrate.ts migrations startup.sh index.js ./
