@@ -105,7 +105,9 @@ export function PostDetails({
 					'flex w-full min-w-0 flex-col' + (teaser ? ' postteaser' : '')
 				}
 			>
-				<div className="mt-1 text-right text-sm opacity-50">{ageString}</div>
+				<div className="mt-1 text-right text-sm opacity-50">
+					<span className='italic mr-2 text-red-500'>Convincing</span> <span>{ageString}</span>
+				</div>
 
 				<PostContent
 					content={post.content}
