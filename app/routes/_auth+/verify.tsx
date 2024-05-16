@@ -1,7 +1,7 @@
 import { conform, type Submission, useForm } from '@conform-to/react'
 import { getFieldsetConstraint, parse } from '@conform-to/zod'
 import cuid2 from '@paralleldrive/cuid2'
-import { type DataFunctionArgs, json } from '@remix-run/node'
+import { json, type ActionFunctionArgs } from '@remix-run/node'
 import { Form, useActionData, useSearchParams } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
 import { HoneypotInputs } from 'remix-utils/honeypot/react'
@@ -43,7 +43,7 @@ const VerifySchema = z.object({
 	[redirectToQueryParam]: z.string().optional(),
 })
 
-export async function action({ request }: DataFunctionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
 	const formData = await request.formData()
 	checkHoneypot(formData)
 	await validateCSRF(formData, request.headers)

@@ -1,4 +1,4 @@
-import { json, type DataFunctionArgs } from '@remix-run/node'
+import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import {
 	useLoaderData,
 	type ShouldRevalidateFunction,
@@ -16,7 +16,7 @@ import { type VoteState, getUserVotes } from '#app/vote.ts'
 
 const tagSchema = z.coerce.string()
 
-export async function loader({ params, request }: DataFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
 	const tag: string = tagSchema.parse(params.tag)
 	invariant(tag, 'Missing tag param')
 

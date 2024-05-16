@@ -1,4 +1,4 @@
-import { type DataFunctionArgs } from '@remix-run/node'
+import { type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { useState } from 'react'
@@ -17,7 +17,7 @@ export default function Index() {
 	return <FrontpageFeed feed={data.feed} loggedIn={data.loggedIn} />
 }
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	const userId: string | null = await getUserId(request)
 	const loggedIn = userId !== null
 	const feed = await rankingTs.getChronologicalToplevelPosts('global')
