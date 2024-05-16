@@ -1,6 +1,11 @@
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
 import cuid2 from '@paralleldrive/cuid2'
-import { json, redirect, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node'
+import {
+	json,
+	redirect,
+	type LoaderFunctionArgs,
+	type ActionFunctionArgs,
+} from '@remix-run/node'
 import { Link, useFetcher, useLoaderData } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
 import { Icon } from '#app/components/ui/icon.tsx'

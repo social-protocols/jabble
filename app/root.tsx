@@ -7,7 +7,7 @@ import {
 	type LinksFunction,
 	type MetaFunction,
 	type ActionFunctionArgs,
-    LoaderFunctionArgs,
+	type LoaderFunctionArgs,
 } from '@remix-run/node'
 import {
 	Form,

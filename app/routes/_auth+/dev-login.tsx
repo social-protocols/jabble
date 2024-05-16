@@ -1,4 +1,4 @@
-import { LoaderFunctionArgs } from '@remix-run/server-runtime'
+import { type LoaderFunctionArgs } from '@remix-run/server-runtime'
 import { login } from '#app/utils/auth.server.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { handleNewSession } from './login.tsx'
