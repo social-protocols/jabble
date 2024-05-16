@@ -1,5 +1,3 @@
-// import { Spacer } from '#app/components/spacer.tsx'
-// import { Icon } from '#app/components/ui/icon.tsx'
 import { json, type DataFunctionArgs } from '@remix-run/node'
 import {
 	useLoaderData,

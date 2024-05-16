@@ -1,8 +1,6 @@
 import { spawn } from 'child_process'
 import EventEmitter from 'events'
 import { env } from 'process'
-// import { type InsertableScore , type Score } from './db/types.ts';
-// import { type VoteEvent } from './db/types.ts'
 import { db } from './db.ts'
 
 const scoreEventsPath = env.SCORE_EVENTS_PATH!
