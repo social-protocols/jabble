@@ -45,6 +45,7 @@ export function PostDetails({
 	voteState,
 	loggedIn,
 	onVote,
+	isConvincing,
 }: {
 	post: ScoredPost
 	note: ScoredNote | null
@@ -52,6 +53,7 @@ export function PostDetails({
 	voteState?: VoteState
 	loggedIn: boolean
 	onVote?: Function
+	isConvincing?: boolean
 }) {
 	// So we need to get the current state of the user's vote on this post from the fetcher
 	const voteFetcher = useFetcher<{ voteState: VoteState; postId: number }>()
@@ -106,7 +108,8 @@ export function PostDetails({
 				}
 			>
 				<div className="mt-1 text-right text-sm opacity-50">
-					<span className='italic mr-2 text-red-500'>Convincing</span> <span>{ageString}</span>
+					{isConvincing && <span className='italic mr-2 text-red-500'>Convincing</span>}
+					<span>{ageString}</span>
 				</div>
 
 				<PostContent
