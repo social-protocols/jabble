@@ -158,11 +158,10 @@ export async function getRankedPosts(tag: string): Promise<RankedPost[]> {
 		scoredPosts.map(async post => {
 			return {
 				...post,
-				note:
-					post.topNoteId == null
-						? null
-						: await getScoredNoteInternal(tagId, post.topNoteId!),
-				parent: post.parentId == null ? null : await getPost(post.parentId!),
+				note: post.topNoteId
+					? await getScoredNoteInternal(tagId, post.topNoteId)
+					: null,
+				parent: post.parentId ? await getPost(post.parentId) : null,
 				effects: await getEffectsInternal(tagId, post.id),
 				isCritical: false,
 			}
@@ -200,7 +199,7 @@ export async function getChronologicalToplevelPosts(
 		scoredPosts.map(async post => {
 			return {
 				...post,
-				parent: post.parentId == null ? null : await getPost(post.parentId!),
+				parent: post.parentId ? await getPost(post.parentId) : null,
 				effects: await getEffectsInternal(post.tagId, post.id),
 			}
 		}),
@@ -267,17 +266,20 @@ async function getRankedRepliesInternal(
 	const results: RankedPost[][] = await Promise.all(
 		immediateChildren.map(async (post: ScoredPost) => {
 			const effects = await getEffectsInternal(tagId, post.id)
-			const targetEffect = effects.find(e => e.postId == targetId)!
+			const targetEffect: Effect | undefined = effects.find(
+				e => e.postId == targetId,
+			)
 
-			const isCritical = targetEffect.topSubthreadId === targetEffect.noteId
+			const isCritical = targetEffect
+				? targetEffect.topSubthreadId === targetEffect.noteId
+				: false
 			return [
 				{
 					...post,
-					note:
-						post.topNoteId == null
-							? null
-							: await getScoredNoteInternal(tagId, post.topNoteId!),
-					parent: post.parentId == null ? null : await getPost(post.parentId!),
+					note: post.topNoteId
+						? await getScoredNoteInternal(tagId, post.topNoteId)
+						: null,
+					parent: post.parentId ? await getPost(post.parentId) : null,
 					effects: effects,
 					isCritical: isCritical,
 				},
@@ -293,10 +295,10 @@ export async function getRankedDirectReplies(tag: string, targetId: number) {
 	const query = db
 		.selectFrom('Post')
 		.innerJoin('Effect', 'Effect.noteId', 'Post.id')
-		.leftJoin('Score', 'Score.postId', 'Effect.noteId')
+		.innerJoin('Score', 'Score.postId', 'Effect.noteId')
 		.where('Post.parentId', '=', targetId)
 		.where('Effect.postId', '=', targetId)
-		.where(sql`Effect.noteId is not null`)
+		.where('Effect.noteId', 'is not', null)
 		.select('Effect.noteId as postId')
 		.select('Effect.p as targetP')
 		.select('Effect.pSize as targetPSize')
@@ -313,13 +315,13 @@ export async function getRankedDirectReplies(tag: string, targetId: number) {
 				relativeEntropy(a.targetP, a.targetQ === null ? a.targetP : a.targetQ) *
 					a.targetPSize -
 					relativeEntropy(b.targetP, b.targetQ ? a.targetP : a.targetQ) *
-						b.targetPSize || a.score! - b.score!,
+						b.targetPSize || a.score - b.score,
 		)
 		// reversed because we sort ascending
 		.reverse()
 
 	const scoredPosts = await Promise.all(
-		resultSorted.map(item => getScoredPost(tag, item.postId!)),
+		resultSorted.map(item => getScoredPost(tag, item.postId as number)),
 	)
 
 	return scoredPosts

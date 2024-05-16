@@ -5,7 +5,7 @@ import {
 	json,
 	type MetaFunction,
 	redirect,
-  type ActionFunctionArgs,
+	type ActionFunctionArgs,
 } from '@remix-run/node'
 import { Link, useFetcher } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'

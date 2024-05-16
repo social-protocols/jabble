@@ -2,8 +2,18 @@ import { spawn } from 'child_process'
 import EventEmitter from 'events'
 import { env } from 'process'
 import { db } from './db.ts'
+import { invariant } from './utils/misc.tsx'
 
-const scoreEventsPath = env.SCORE_EVENTS_PATH!
+function scoreEventsPathFromEnv() {
+	const scoreEventsPath = env.SCORE_EVENTS_PATH
+	invariant(
+		scoreEventsPath,
+		'SCORE_EVENTS_PATH environment variable must be set',
+	)
+	return scoreEventsPath
+}
+
+const scoreEventsPath = scoreEventsPathFromEnv()
 
 function snakeToCamelCase(str: string): string {
 	return str.replace(/([-_][a-z])/g, group =>
