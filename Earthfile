@@ -53,11 +53,6 @@ node-ext:
   RUN julia -t auto --startup-file=no --project -e 'using Pkg; Pkg.instantiate(); include("build.jl")'
 
   WORKDIR /app/GlobalBrain.jl/globalbrain-node
-  ENV GLOBALBRAIN_INCLUDES=julia/build/include/julia_init.h julia/build/include/globalbrain.h
-  ENV GLOBALBRAIN_PATH=julia/build/lib/libglobalbrain.so
-  RUN LD_LIBRARY_PATH=julia/build/lib:julia/build/lib/julia:$LD_LIBRARY_PATH g++ test.cc -o test-cpp.out -Ijulia/build/include -Ljulia/build/lib -Ljulia/build/lib/julia -ljulia -lglobalbrain
-  RUN LD_LIBRARY_PATH=julia/build/lib:julia/build/lib/julia:$LD_LIBRARY_PATH ldd ./test-cpp.out
-  RUN LD_LIBRARY_PATH=julia/build/lib:julia/build/lib/julia:$LD_LIBRARY_PATH ./test-cpp.out || echo "Failed test yo"
   RUN npm install
   RUN npm test
 
