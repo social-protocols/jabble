@@ -33,7 +33,7 @@ jobs:
 
     - uses: earthly/actions-setup@v1
       with:
-        version: ${EARTHLY_VERSION}
+        version: ${{ env.EARTHLY_VERSION }}
 
     - uses: actions/checkout@v4
 
@@ -132,7 +132,7 @@ jobs:
 
     - uses: earthly/actions-setup@v1
       with:
-        version: ${EARTHLY_VERSION}
+        version: ${{ env.EARTHLY_VERSION }}
 
     - name: ⬇️ Checkout repo
       uses: actions/checkout@v3
