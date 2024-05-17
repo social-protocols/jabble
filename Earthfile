@@ -125,7 +125,7 @@ docker-image:
   COPY --dir +node-ext/artifact ./globalbrain-node
 
   # should not install anything
-  RUN cd ./globalbrain-node && npm install && npm test
+  RUN cd ./globalbrain-node && npm test
 
   # startup & migrations
   COPY --dir migrate.ts migrations startup.sh index.js ./
