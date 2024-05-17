@@ -2,10 +2,10 @@ app = "sn"
 primary_region = "cdg"
 kill_signal = "SIGINT"
 kill_timeout = 5
-processes = [ ]
+processes = []
 
 [experimental]
-allowed_public_ports = [ ]
+allowed_public_ports = []
 auto_rollback = true
 
 [mounts]
@@ -13,47 +13,47 @@ source = "data"
 destination = "/data"
 
 [deploy]
-release_command = "node ./other/sentry-create-release"
+release_command = "/bin/sh -c 'node ./other/sentry-create-release'"
 
 [[services]]
 internal_port = 8_080
-processes = [ "app" ]
+processes = ["app"]
 protocol = "tcp"
-script_checks = [ ]
+script_checks = []
 
-  [services.concurrency]
-  hard_limit = 100
-  soft_limit = 80
-  type = "requests"
+[services.concurrency]
+hard_limit = 100
+soft_limit = 80
+type = "requests"
 
-  [[services.ports]]
-  handlers = [ "http" ]
-  port = 80
-  force_https = true
+[[services.ports]]
+handlers = ["http"]
+port = 80
+force_https = true
 
-  [[services.ports]]
-  handlers = [ "tls", "http" ]
-  port = 443
+[[services.ports]]
+handlers = ["tls", "http"]
+port = 443
 
-  [[services.tcp_checks]]
-  grace_period = "1s"
-  interval = "15s"
-  restart_limit = 0
-  timeout = "2s"
+[[services.tcp_checks]]
+grace_period = "1s"
+interval = "15s"
+restart_limit = 0
+timeout = "2s"
 
-  [[services.http_checks]]
-  interval = "10s"
-  grace_period = "5s"
-  method = "get"
-  path = "/resources/healthcheck"
-  protocol = "http"
-  timeout = "2s"
-  tls_skip_verify = false
-  headers = { }
+[[services.http_checks]]
+interval = "10s"
+grace_period = "5s"
+method = "get"
+path = "/resources/healthcheck"
+protocol = "http"
+timeout = "2s"
+tls_skip_verify = false
+headers = {}
 
-  [[services.http_checks]]
-  grace_period = "10s"
-  interval = "30s"
-  method = "GET"
-  timeout = "5s"
-  path = "/litefs/health"
+[[services.http_checks]]
+grace_period = "10s"
+interval = "30s"
+method = "GET"
+timeout = "5s"
+path = "/litefs/health"
