@@ -70,13 +70,24 @@ export async function getPost(id: number): Promise<Post> {
 	return result
 }
 
+export async function deletePost(id: number) {
+	await db
+		.updateTable('Post')
+		.set({
+			content: 'This post was deleted.',
+			deletedAt: Date.now(),
+		})
+		.where('id', '=', id)
+		.execute()
+}
+
 export async function getTransitiveParents(id: number): Promise<Post[]> {
 	let result: Post[] = await db
 		.withRecursive('transitive_parents', db =>
 			db
 				.selectFrom('Post')
 				.where('id', '=', id)
-				.select(['id', 'parentId', 'authorId', 'content', 'createdAt'])
+				.select(['id', 'parentId', 'authorId', 'content', 'createdAt', 'deletedAt'])
 				.unionAll(db =>
 					db
 						.selectFrom('Post as P')
@@ -87,6 +98,7 @@ export async function getTransitiveParents(id: number): Promise<Post[]> {
 							'P.authorId',
 							'P.content',
 							'P.createdAt',
+							'P.deletedAt',
 						]),
 				),
 		)

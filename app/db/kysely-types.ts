@@ -23,6 +23,7 @@ export type Post = {
 	content: string
 	authorId: string
 	createdAt: Generated<number>
+	deletedAt: number | null
 }
 export type PostStats = {
 	tagId: number
