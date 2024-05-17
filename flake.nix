@@ -67,6 +67,7 @@
                 nodejs_20
                 sqlite
                 fuse3 # for litefs
+                busybox # for swap in production
             ];
           };
           juliabuild = pkgs.buildEnv {
