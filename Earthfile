@@ -40,7 +40,7 @@ node-ext:
   FROM +nix-dev-shell --DEVSHELL='juliabuild'
   WORKDIR /app
 
-  ARG GLOBALBRAIN_REF=49afe5257e0f3f1c0885088afaced2c70ca38c31
+  ARG GLOBALBRAIN_REF=11e8640f8f35aa7bd97ca4ceaaafed9680fa3ece
   RUN wget https://github.com/social-protocols/GlobalBrain.jl/archive/$GLOBALBRAIN_REF.tar.gz \
    && mkdir GlobalBrain.jl \
    && tar zxvf $GLOBALBRAIN_REF.tar.gz --directory GlobalBrain.jl --strip-components=1 \
@@ -62,15 +62,12 @@ node-ext:
   RUN npm test
 
   # Create artifact
-  # Okay, GlobalBrain.jl is hardcoded to expect to find /app/GlobalBrain.jl/src and /app/GlobalBrain.jl/sql
-  # The former can be empty.
-  # We need to fix this in the other repo, but for now a workaround.
-  # WORKDIR /app/GlobalBrain.jl/globalbrain-node
   # RUN mkdir -p /artifact/julia/build \
-  #  && cp -r julia/build /artifact/julia/build \
+  #  && cp -r julia/build /artifact/julia/ \
   #  && cp package.json /artifact/ \
   #  && cp package-lock.json /artifact/ \
   #  && cp binding.gyp /artifact/ \
+  #  && cp binding.cc /artifact/ \
   #  && cp index.js /artifact/ \
   #  && cp test.js /artifact/
 

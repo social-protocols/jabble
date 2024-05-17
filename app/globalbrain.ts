@@ -23,7 +23,7 @@ export async function sendVoteEvent(voteEvent: VoteEvent) {
 		json,
 	)
 
-	return processScoreEvents(result.score_events, voteEvent)
+	return processScoreEvents(result, voteEvent)
 }
 
 export async function processScoreEvents(
