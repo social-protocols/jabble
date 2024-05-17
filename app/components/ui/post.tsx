@@ -127,6 +127,13 @@ export function PostDetails({
 					<Link to={`/tags/${post.tag}/posts/${post.id}`} className="ml-2">
 						<CommentIcon needsVote={needsVote} nReplies={post.nReplies} />
 					</Link>
+					<Form
+						id='delete-post-form'
+						method='POST'
+						action='/deletePost'
+					>
+						delete
+					</Form>
 					<button
 						className="hyperlink ml-2"
 						onClick={() => {
