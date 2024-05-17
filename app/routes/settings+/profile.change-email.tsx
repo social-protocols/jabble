@@ -2,7 +2,12 @@ import { conform, useForm } from '@conform-to/react'
 import { getFieldsetConstraint, parse } from '@conform-to/zod'
 import { type SEOHandle } from '@nasa-gcn/remix-seo'
 import * as E from '@react-email/components'
-import { type DataFunctionArgs, json, redirect } from '@remix-run/node'
+import {
+	json,
+	redirect,
+	type LoaderFunctionArgs,
+	type ActionFunctionArgs,
+} from '@remix-run/node'
 import { Form, useActionData, useLoaderData } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
 import { z } from 'zod'
@@ -93,7 +98,7 @@ const ChangeEmailSchema = z.object({
 	email: EmailSchema,
 })
 
-export async function loader({ request }: DataFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
 	await requireRecentVerification(request)
 	const userId = await requireUserId(request)
 	const user = await db
@@ -108,7 +113,7 @@ export async function loader({ request }: DataFunctionArgs) {
 	return json({ user })
 }
 
-export async function action({ request }: DataFunctionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
 	const userId = await requireUserId(request)
 	const formData = await request.formData()
 	await validateCSRF(formData, request.headers)

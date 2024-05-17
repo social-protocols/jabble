@@ -20,9 +20,8 @@ export function Feed({
 			{posts.map((post, i) => {
 				let vote: VoteState = votes.get(post.id) || defaultVoteState(post.id)
 
-				let followsParent = (i > 0 && posts[i - 1]!.id) == post.parentId
-				let followedByTopnote =
-					(i < posts.length - 1 && posts[i + 1]!.id) == post.topNoteId
+				let followsParent = posts[i - 1]?.id == post.parentId
+				let followedByTopnote = posts[i + 1]?.id == post.topNoteId
 				const directReply = rootId !== null && post.parentId == rootId
 
 				const borderStyle = post.isCritical
@@ -38,7 +37,7 @@ export function Feed({
 							(followsParent ? (
 								<div className="link-to-parent threadline" />
 							) : (
-								<ParentPost parentPost={post.parent!} tag={post.tag} />
+								<ParentPost parentPost={post.parent} tag={post.tag} />
 							))}
 						<PostDetails
 							post={post}

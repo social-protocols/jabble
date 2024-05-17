@@ -24,13 +24,14 @@ jobs:
       EARTHLY_SATELLITE: ${{ secrets.EARTHLY_SATELLITE }}
       EARTHLY_ORG: ${{ secrets.EARTHLY_ORG }}
       EARTHLY_CI: true
+      GITHUB_ACTIONS: true # Better earthly outputs in github actions
       FORCE_COLOR: 1
 
     steps:
 
     - uses: earthly/actions-setup@v1
       with:
-        version: v0.8.9
+        version: v0.8.10
 
     - uses: actions/checkout@v4
 

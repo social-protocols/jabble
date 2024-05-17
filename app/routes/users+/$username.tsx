@@ -1,4 +1,4 @@
-import { type DataFunctionArgs, json } from '@remix-run/node'
+import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { Form, type MetaFunction, useLoaderData } from '@remix-run/react'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Spacer } from '#app/components/spacer.tsx'
@@ -9,7 +9,7 @@ import { SITE_NAME } from '#app/site.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
 
-export async function loader({ params }: DataFunctionArgs) {
+export async function loader({ params }: LoaderFunctionArgs) {
 	invariantResponse(params.username, 'Username is required', { status: 400 })
 	const user = await db
 		.selectFrom('User')

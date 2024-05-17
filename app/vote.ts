@@ -1,9 +1,9 @@
-import assert from 'assert'
 import { sql } from 'kysely'
 import { type VoteEvent, type InsertableVoteEvent } from '#app/db/types.ts'
 import { sendVoteEvent } from '#app/globalbrain.ts'
 import { db } from './db.ts'
 import { getOrInsertTagId } from './tag.ts'
+import { invariant } from './utils/misc.tsx'
 
 export enum Direction {
 	Up = 1,
@@ -58,15 +58,20 @@ async function insertVoteEvent(
 	// TODO: transaction
 	const voteInt = vote as number
 
-	const parentId = (
-		await db
-			.selectFrom('Post')
-			.where('id', '=', postId)
-			.select('parentId')
-			.execute()
-	)[0]!.parentId
+	const post = await db
+		.selectFrom('Post')
+		.where('id', '=', postId)
+		.select('parentId')
+		.execute()
 
-	const vote_event: InsertableVoteEvent = {
+	invariant(
+		post[0],
+		`Post ${postId} not found when inserting vote ${vote} for user ${userId}`,
+	)
+
+	const parentId = post[0].parentId
+
+	const voteEvent: InsertableVoteEvent = {
 		userId: userId,
 		tagId: tagId,
 		parentId: parentId,
@@ -75,30 +80,33 @@ async function insertVoteEvent(
 		vote: voteInt,
 	}
 
-	// Copilot now use kysely to insert
-	const query = db
+	const results: VoteEvent[] = await db
 		.insertInto('VoteEvent')
-		.values(vote_event)
-		.returning(['voteEventId', 'voteEventTime'])
+		.values(voteEvent)
+		.returning([
+			'voteEventId',
+			'voteEventTime',
+			'userId',
+			'tagId',
+			'parentId',
+			'postId',
+			'noteId',
+			'vote',
+		])
+		.execute()
 
-	let results = await query.execute()
+	invariant(
+		results[0],
+		`VoteEvent insert for user ${userId} on post ${postId} failed`,
+	)
 
-	assert(results !== undefined)
-	assert(results.length > 0)
+	const outputVoteEvent = results[0]
+	invariant(
+		outputVoteEvent.voteEventId > 0,
+		`Generated voteEventId for user ${userId} on post ${postId} must be greater than 0`,
+	)
 
-	const result = results[0]!
-	const voteEventId = result.voteEventId
-	assert(voteEventId > 0)
-
-	const output_vote_event: VoteEvent = {
-		...vote_event,
-		noteId: vote_event.noteId!,
-		parentId: parentId,
-		voteEventTime: result.voteEventTime!,
-		voteEventId: voteEventId,
-	}
-
-	return output_vote_event
+	return outputVoteEvent
 }
 
 export async function getUserVotes(
