@@ -2,6 +2,8 @@ import { PostDetails } from '#app/components/ui/post.tsx'
 import { type ThreadPost } from '#app/conversations.ts'
 import { Direction, type VoteState } from '#app/vote.ts'
 
+const CONVINCINGNESS_THRESHOLD = 0.1
+
 export function ReplyThread({
 	posts,
 	votes,
@@ -33,6 +35,10 @@ export function ReplyThread({
 
 				const needsVote = targetHasVote && !thisHasVote
 
+				const isConvincing = post.effectOnParentSize
+					? post.effectOnParentSize > CONVINCINGNESS_THRESHOLD
+					: false
+
 				const borderStyle =
 					criticalThreadId === post.id
 						? needsVote
@@ -51,6 +57,7 @@ export function ReplyThread({
 								voteState={vote}
 								loggedIn={loggedIn}
 								onVote={onVote}
+								isConvincing={isConvincing}
 							/>
 						</div>
 					</div>
