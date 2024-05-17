@@ -107,9 +107,9 @@ export function PostDetails({
 					'flex w-full min-w-0 flex-col' + (teaser ? ' postteaser' : '')
 				}
 			>
-				<div className="mt-1 text-right text-sm opacity-50">
-					{isConvincing && <span className='italic mr-2 text-red-500'>Convincing</span>}
-					<span>{ageString}</span>
+				<div className="mt-2 mb-1 text-sm flex">
+					{isConvincing && <span className='italic text-blue-600 bg-blue-100 px-1 rounded'>Convincing</span>}
+					<span className='ml-auto opacity-50'>{ageString}</span>
 				</div>
 
 				<PostContent
