@@ -40,7 +40,7 @@ node-ext:
   FROM +nix-dev-shell --DEVSHELL='juliabuild'
   WORKDIR /app
 
-  ARG GLOBALBRAIN_REF=7532c036b60764b5ec11a4fa54975e82bec61aef
+  ARG GLOBALBRAIN_REF=7d8123c872e338ef7c1c14ad18e0b56672b199e4
   RUN wget https://github.com/social-protocols/GlobalBrain.jl/archive/$GLOBALBRAIN_REF.tar.gz \
    && mkdir GlobalBrain.jl \
    && tar zxvf $GLOBALBRAIN_REF.tar.gz --directory GlobalBrain.jl --strip-components=1 \
