@@ -14,24 +14,26 @@ permissions:
   actions: write
   contents: read
 
+env:
+  EARTHLY_VERSION: v0.8.10
+  EARTHLY_TOKEN: ${{ secrets.EARTHLY_TOKEN }}
+  EARTHLY_ORG: ${{ secrets.EARTHLY_ORG }}
+  EARTHLY_SATELLITE: ${{ secrets.EARTHLY_SATELLITE }}
+  EARTHLY_CI: true
+  GITHUB_ACTIONS: true # Better earthly outputs in github actions
+  FORCE_COLOR: 1
+
 jobs:
   lint:
     name: ⬣ Typecheck, Lint, Format
     runs-on: ubuntu-22.04 # https://github.com/actions/runner-images?tab=readme-ov-file#available-images
     timeout-minutes: 60
-    env:
-      EARTHLY_TOKEN: ${{ secrets.EARTHLY_TOKEN }}
-      EARTHLY_SATELLITE: ${{ secrets.EARTHLY_SATELLITE }}
-      EARTHLY_ORG: ${{ secrets.EARTHLY_ORG }}
-      EARTHLY_CI: true
-      GITHUB_ACTIONS: true # Better earthly outputs in github actions
-      FORCE_COLOR: 1
 
     steps:
 
     - uses: earthly/actions-setup@v1
       with:
-        version: v0.8.10
+        version: ${{ env.EARTHLY_VERSION }}
 
     - uses: actions/checkout@v4
 
@@ -125,18 +127,12 @@ jobs:
     if: ${{ (github.ref == 'refs/heads/main') && github.event_name == 'push' }}
     runs-on: ubuntu-22.04
     timeout-minutes: 35 # earthly satellites time out after 30min
-    env:
-      EARTHLY_TOKEN: ${{ secrets.EARTHLY_TOKEN }}
-      EARTHLY_SATELLITE: ${{ secrets.EARTHLY_SATELLITE }}
-      EARTHLY_ORG: ${{ secrets.EARTHLY_ORG }}
-      EARTHLY_CI: true
-      FORCE_COLOR: 1
 
     steps:
 
     - uses: earthly/actions-setup@v1
       with:
-        version: v0.8.9
+        version: ${{ env.EARTHLY_VERSION }}
 
     - name: ⬇️ Checkout repo
       uses: actions/checkout@v3
