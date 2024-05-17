@@ -58,21 +58,14 @@
           juliabuild = with pkgs; pkgs.mkShellNoCC {
             buildInputs = juliabuild_packages;
           };
-        };
-        packages = {
-          base = pkgs.buildEnv {
-            name = "base-image";
-            paths = with pkgs; [
-                julia_19-bin
-                nodejs_20
-                sqlite
-                fuse3 # for litefs
-                busybox # for swap in production
+          base = with pkgs; pkgs.mkShellNoCC {
+            buildInputs = [
+              julia_19-bin
+              nodejs_20
+              sqlite
+              fuse3 # for litefs
+              busybox
             ];
-          };
-          juliabuild = pkgs.buildEnv {
-            name = "juliabuild";
-            paths = juliabuild_packages;
           };
         };
       }

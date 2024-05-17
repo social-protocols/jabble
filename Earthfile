@@ -2,17 +2,6 @@
 
 VERSION 0.8
 
-flake:
-  FROM nixos/nix:2.20.4
-  ARG --required PACKAGES
-  WORKDIR /app
-  # Enable flakes
-  RUN echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
-  COPY flake.nix flake.lock ./
-  # install packages from the packages section in flake.nix
-  RUN nix profile install --impure -L ".#$PACKAGES"
-
-
 nix-dev-shell:
   ARG --required DEVSHELL
   FROM nixos/nix:2.20.4
@@ -103,7 +92,7 @@ app-deploy-litefs:
    SAVE ARTIFACT /usr/local/bin/litefs
 
 docker-image:
-  FROM +flake --PACKAGES='base'
+  FROM +nix-dev-shell --DEVSHELL='base'
 
   WORKDIR /app
 
