@@ -169,6 +169,7 @@ app-typecheck:
 app-lint:
   FROM +app-setup
   COPY .eslintrc.cjs .prettierrc.js .prettierignore ./
+  RUN rm -r globalbrain-node # TODO: globalbrain-node should not be here
   RUN npx eslint --max-warnings=0 . # also checks formatting
 
 ci-test:
