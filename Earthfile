@@ -92,6 +92,7 @@ app-build:
   RUN npm run build
   SAVE ARTIFACT server-build AS LOCAL server-build
   SAVE ARTIFACT build AS LOCAL build
+  SAVE ARTIFACT public AS LOCAL public
   SAVE ARTIFACT node_modules AS LOCAL node_modules
   SAVE ARTIFACT package-lock.json AS LOCAL package-lock.json
   SAVE ARTIFACT package.json AS LOCAL package.json
@@ -121,7 +122,7 @@ docker-image:
 
   # npm run build
   COPY --dir other app server public types index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
-  COPY --dir +app-build/server-build +app-build/build +app-build/node_modules +app-build/package-lock.json +app-build/package.json ./
+  COPY --dir +app-build/server-build +app-build/build +app-build/public +app-build/node_modules +app-build/package-lock.json +app-build/package.json ./
   COPY --dir +node-ext/artifact ./globalbrain-node
 
   # should not install anything
