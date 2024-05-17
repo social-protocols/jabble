@@ -141,6 +141,7 @@ docker-image:
   # starting the application is defined in litefs.yml
   # test locally without litefs:
   # docker run -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET sha256:xyzxyz bash /app/startup.sh
+  RUN nix profile install nixpkgs/ba733f8000925e837e30765f273fec153426403d#fuse3
   CMD ["/usr/local/bin/litefs", "mount"]
   SAVE IMAGE jabble:latest
 
