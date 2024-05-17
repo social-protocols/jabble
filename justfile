@@ -76,7 +76,7 @@ docker-build-mac:
 
 # run the app in the docker container (you must run docker-build first)
 docker-run:
-	docker run --rm -it -p 8081:8081 -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET --name jabble jabble:latest bash startup.sh 
+	docker run --rm -it -p 8081:8081 -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET --name jabble jabble:latest /bin/sh startup.sh 
 
 # delete the docker container
 docker-rm:
