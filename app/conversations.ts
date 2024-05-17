@@ -5,7 +5,10 @@ import { getOrInsertTagId } from './tag.ts'
 import { relativeEntropy } from './utils/entropy.ts'
 import { invariant } from './utils/misc.tsx'
 
-export type ThreadPost = ScoredPost & { isCritical: boolean, effectOnParentSize?: number }
+export type ThreadPost = ScoredPost & {
+	isCritical: boolean
+	effectOnParentSize?: number
+}
 
 export async function getCriticalThread(
 	postId: number,
@@ -49,15 +52,22 @@ export async function getCriticalThread(
 
 	const effects = await db
 		.selectFrom('Effect')
-		.where('noteId', 'in', scoredPosts.map(post => post.id))
+		.where(
+			'noteId',
+			'in',
+			scoredPosts.map(post => post.id),
+		)
 		.selectAll('Effect')
 		.execute()
 
 	const effectSizes = effects.map(effect => {
-		invariant(effect.noteId, `Got effect for post ${effect.postId} with noteId = null`)
+		invariant(
+			effect.noteId,
+			`Got effect for post ${effect.postId} with noteId = null`,
+		)
 		return {
 			postId: effect.noteId,
-			effectSize: relativeEntropy(effect.p, effect.q) 
+			effectSize: relativeEntropy(effect.p, effect.q),
 		}
 	})
 
@@ -77,7 +87,7 @@ export async function getCriticalThread(
 		return {
 			...post,
 			isCritical: isCritical,
-			effectOnParentSize: effectMap.get(post.id)
+			effectOnParentSize: effectMap.get(post.id),
 		}
 	})
 
