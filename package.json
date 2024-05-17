@@ -26,8 +26,7 @@
     "test:e2e:run": "cross-env CI=true playwright test",
     "test:e2e:install": "npx playwright install --with-deps chromium",
     "typecheck": "tsc",
-    "validate": "run-p \"test -- --run\" lint typecheck test:e2e:run",
-    "postinstall": "remix-esbuild-override"
+    "validate": "run-p \"test -- --run\" lint typecheck test:e2e:run"
   },
   "eslintIgnore": [
     "/node_modules",
@@ -161,7 +160,6 @@
     "prettier": "3.2.5",
     "prettier-plugin-sql": "^0.15.1",
     "prettier-plugin-tailwindcss": "^0.5.4",
-    "remix-esbuild-override": "^3.1.0",
     "remix-flat-routes": "^0.5.11",
     "source-map-support": "^0.5.21",
     "tsx": "^3.14.0",
