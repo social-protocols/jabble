@@ -1,4 +1,3 @@
-import { withEsbuildOverride } from 'remix-esbuild-override'
 import { flatRoutes } from 'remix-flat-routes'
 
 export default {
