@@ -66,6 +66,7 @@
                 julia_19-bin
                 nodejs_20
                 sqlite
+                fuse3 # for litefs
             ];
           };
           juliabuild = pkgs.buildEnv {
