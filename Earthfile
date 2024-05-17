@@ -57,16 +57,17 @@ node-ext:
   RUN npm test
 
   # Create artifact
-  # RUN mkdir -p /artifact/julia/build \
-  #  && cp -r julia/build /artifact/julia/ \
-  #  && cp package.json /artifact/ \
-  #  && cp package-lock.json /artifact/ \
-  #  && cp binding.gyp /artifact/ \
-  #  && cp binding.cc /artifact/ \
-  #  && cp index.js /artifact/ \
-  #  && cp test.js /artifact/
+  RUN mkdir -p /artifact/julia/build \
+   && cp -r julia/build /artifact/julia/ \
+   && cp -r build /artifact/ \
+   && cp package.json /artifact/ \
+   && cp package-lock.json /artifact/ \
+   && cp binding.gyp /artifact/ \
+   && cp binding.cc /artifact/ \
+   && cp index.js /artifact/ \
+   && cp test.js /artifact/
 
-  SAVE ARTIFACT . /artifact
+  SAVE ARTIFACT /artifact
 
 app-setup:
   FROM +nix-dev-shell --DEVSHELL='juliabuild'
@@ -103,11 +104,6 @@ app-deploy-litefs:
 
 docker-image:
   FROM +flake --PACKAGES='base'
-  RUN nix profile install nixpkgs/ba733f8000925e837e30765f273fec153426403d#python3
-  RUN nix profile install nixpkgs/ba733f8000925e837e30765f273fec153426403d#gnumake
-  RUN nix profile install nixpkgs/ba733f8000925e837e30765f273fec153426403d#gcc
-  RUN nix profile install nixpkgs/ba733f8000925e837e30765f273fec153426403d#gnused
-  # FROM +nix-dev-shell --DEVSHELL='juliabuild'
 
   WORKDIR /app
 
