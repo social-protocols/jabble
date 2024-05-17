@@ -1,8 +1,5 @@
 import { flatRoutes } from 'remix-flat-routes'
 
-/**
- * @type {import('@remix-run/dev').AppConfig}
- */
 export default {
 	cacheDirectory: './node_modules/.cache/remix',
 	ignoredRouteFiles: ['**/*', '**/.DS_Store'],

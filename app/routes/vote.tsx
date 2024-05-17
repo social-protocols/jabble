@@ -56,7 +56,7 @@ export const action = async (args: ActionFunctionArgs) => {
 	const postId = parsedData.postId
 	const tag = parsedData.tag
 
-	const v = await vote(tag, userId, postId, noteId, newState, true)
+	const v = await vote(tag, userId, postId, noteId, newState)
 
 	const voteState: VoteState[] = await getUserVotes(v.userId, tag, [v.postId])
 

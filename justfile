@@ -17,6 +17,7 @@ reset-all:
   rm -rf ~/social-protocols-data/*
   mkdir -p ~/social-protocols-data
   touch $SCORE_EVENTS_PATH
+  rm -f "$GB_DATABASE_PATH"
   just reset-db
 
 # run the migration script
@@ -66,7 +67,8 @@ download-prod-db:
 
 # build the docker container
 docker-build:
-	docker build . -t deploy-sn
+  earthly +docker-image
+  docker image ls
 
 # docker-build with --platform linux/amd64
 docker-build-mac:
@@ -74,11 +76,11 @@ docker-build-mac:
 
 # run the app in the docker container (you must run docker-build first)
 docker-run:
-	docker run --rm -it -p 8081:8081 -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET --name deploy-sn deploy-sn bash startup.sh 
+	docker run --rm -it -p 8081:8081 -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET --name jabble jabble:latest bash startup.sh 
 
 # delete the docker container
 docker-rm:
-	docker rm -f deploy-sn
+	docker rm -f jabble
 
 # exec /bin/bash in the running docker container
 docker-exec:
@@ -102,5 +104,13 @@ use-production-data:
 	rm -f "$GB_DATABASE_PATH"
 	touch "$SCORE_EVENTS_PATH"
 
+
 production-db:
 	fly ssh console -C 'sqlite3 /litefs/data/sqlite.db'
+
+
+install-node-extension-from-earthly:
+  earthly --artifact +node-ext/artifact/ ./GlobalBrain.jl/globalbrain-node
+  (cd ./GlobalBrain.jl/globalbrain-node && npm install)
+  npm install --ignore-scripts --save './GlobalBrain.jl/globalbrain-node'
+

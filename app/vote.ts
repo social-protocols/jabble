@@ -1,7 +1,6 @@
 import { sql } from 'kysely'
 import { type VoteEvent, type InsertableVoteEvent } from '#app/db/types.ts'
-import * as scoreEvents from '#app/score-events.ts'
-import { writeVoteEvent } from '#app/vote-events.ts'
+import { sendVoteEvent } from '#app/globalbrain.ts'
 import { db } from './db.ts'
 import { getOrInsertTagId } from './tag.ts'
 import { invariant } from './utils/misc.tsx'
@@ -33,7 +32,6 @@ export async function vote(
 	postId: number,
 	noteId: number | null,
 	direction: Direction,
-	waitForScoreEvent: Boolean = false,
 ): Promise<VoteEvent> {
 	const tagId = await getOrInsertTagId(tag)
 
@@ -45,20 +43,7 @@ export async function vote(
 		direction,
 	)
 
-	let scoreEventPromise
-	if (waitForScoreEvent) {
-		scoreEventPromise = scoreEvents.waitForScoreEvent({
-			postId: postId,
-			tagId: tagId,
-			voteEventId: voteEvent.voteEventId,
-		})
-	}
-
-	await writeVoteEvent(voteEvent)
-
-	if (waitForScoreEvent) {
-		await scoreEventPromise
-	}
+	await sendVoteEvent(voteEvent)
 
 	return voteEvent
 }
