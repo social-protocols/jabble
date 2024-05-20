@@ -6,7 +6,7 @@ import invariant from 'tiny-invariant'
 import { z } from 'zod'
 
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { PostContent, PostDetails } from '#app/components/ui/post.tsx'
+import { ParentPost, PostContent, PostDetails } from '#app/components/ui/post.tsx'
 import { ReplyThread } from '#app/components/ui/reply-thread.tsx'
 import { getCriticalThread, type ThreadPost } from '#app/conversations.ts'
 import { type Post } from '#app/db/types.ts'
@@ -175,11 +175,19 @@ function ParentThread({
 						key={parentPost.id}
 						className="postparent mb-1 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"
 					>
-						<PostContent
-							content={parentPost.content}
-							maxLines={3}
-							deactivateLinks={true}
-						/>
+						{parentPost.deletedAt == null ? (
+							<PostContent
+								content={parentPost.content}
+								maxLines={3}
+								deactivateLinks={true}
+							/>) : (
+							<div
+								style={{ cursor: 'pointer' }}
+								className={'italic text-gray-400'}
+							>
+								This post was deleted.
+							</div>
+						)}
 					</div>
 				</Link>
 			))}
