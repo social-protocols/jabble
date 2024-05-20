@@ -162,6 +162,17 @@ export async function seed() {
 			id: id,
 			username: 'developer',
 			email: 'test@test.com',
+			isAdmin: 0,
+		})
+		.execute()
+
+	const adminId = 'testAdmin'
+	await db
+		.insertInto('User')
+		.values({
+			id: adminId,
+			username: 'testAdmin',
+			email: 'admin@test.com',
 			isAdmin: 1,
 		})
 		.execute()
