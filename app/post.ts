@@ -136,7 +136,6 @@ export async function restoreDeletedPost(id: number, byUserId: string) {
 		.execute()
 }
 
-
 export async function getTransitiveParents(id: number): Promise<Post[]> {
 	let result: Post[] = await db
 		.withRecursive('transitive_parents', db =>

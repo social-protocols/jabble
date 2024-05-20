@@ -26,11 +26,10 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	invariant(
 		userId,
-		`Tried restoring deleted post ${postId} from tag ${tag} without a userId`
+		`Tried restoring deleted post ${postId} from tag ${tag} without a userId`,
 	)
 
 	await restoreDeletedPost(postId, userId)
 
 	return redirect(`/tags/${tag}/posts/${postId}`)
 }
-

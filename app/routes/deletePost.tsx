@@ -26,7 +26,7 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	invariant(
 		userId,
-		`Tried deleting post ${postId} from tag ${tag} without a userId`
+		`Tried deleting post ${postId} from tag ${tag} without a userId`,
 	)
 
 	await deletePost(postId, userId)

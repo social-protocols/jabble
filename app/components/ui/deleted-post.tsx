@@ -1,8 +1,8 @@
 import { Form, Link, useNavigate } from '@remix-run/react'
 import moment from 'moment'
 import { type ScoredPost } from '#app/ranking.ts'
-import { CommentIcon } from './post.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
+import { CommentIcon } from './post.tsx'
 
 export function DeletedPost({ post }: { post: ScoredPost }) {
 	const ageString = moment(post.createdAt).fromNow()
@@ -43,7 +43,7 @@ export function DeletedPost({ post }: { post: ScoredPost }) {
 							<input type="hidden" name="postId" value={post.id} />
 							<input type="hidden" name="tag" value={post.tag} />
 							<input type="hidden" name="userId" value={user?.id} />
-							<button className="ml-2 bg-green-600 text-white px-1 rounded">
+							<button className="ml-2 rounded bg-green-600 px-1 text-white">
 								restore
 							</button>
 						</Form>
