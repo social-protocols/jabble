@@ -46,6 +46,7 @@ export type User = {
 	email: string
 	username: string
 	createdAt: Generated<number>
+	isAdmin: boolean
 }
 export type Verification = {
 	id: string

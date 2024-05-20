@@ -105,7 +105,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 					db
 						.selectFrom('User')
 						.where('User.id', '=', userId)
-						.select(['User.id', 'username'])
+						.select(['User.id', 'username', 'isAdmin'])
 						.executeTakeFirstOrThrow(),
 				{ timings, type: 'find user', desc: 'find user in root' },
 			)

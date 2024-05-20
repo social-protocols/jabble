@@ -159,6 +159,7 @@ export async function seed() {
 			id: id,
 			username: 'developer',
 			email: 'test@test.com',
+			isAdmin: 1,
 		})
 		.execute()
 

@@ -121,14 +121,14 @@ export default function Post() {
 			</div>
 			<ParentThread transitiveParents={transitiveParents} tag={tag} />
 			{post.deletedAt == null ? (
-			<PostDetails
-				key={post.id}
-				post={post}
-				note={null}
-				teaser={false}
-				voteState={vote}
-				loggedIn={loggedIn}
-			/>) : (
+				<PostDetails
+					key={post.id}
+					post={post}
+					note={null}
+					teaser={false}
+					voteState={vote}
+					loggedIn={loggedIn}
+				/>) : (
 				<DeletedPost post={post} />
 			)}
 			{noReplies && <h2 className="mb-4 font-medium">No Replies</h2>}

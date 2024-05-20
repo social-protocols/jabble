@@ -7,6 +7,7 @@ import { type Post } from '#app/db/types.ts'
 import { type ScoredPost, type ScoredNote } from '#app/ranking.ts'
 import { Direction, type VoteState, defaultVoteState } from '#app/vote.ts'
 import { Truncate } from './Truncate.tsx'
+import { useOptionalUser } from '#app/utils/user.ts'
 
 /* Keep this relatively high, so people don't often have to click "read more"
    to read most content. But also not too high, so people don't have to
@@ -57,6 +58,9 @@ export function PostDetails({
 }) {
 	// So we need to get the current state of the user's vote on this post from the fetcher
 	const voteFetcher = useFetcher<{ voteState: VoteState; postId: number }>()
+
+	const user = useOptionalUser()
+	const isAdminUser = user ? user.isAdmin : false
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
@@ -152,7 +156,7 @@ export function PostDetails({
 							reply
 						</button>
 					)}
-					{post.deletedAt == null && (
+					{post.deletedAt == null && isAdminUser && (
 						<Form
 							id='delete-post-form'
 							method='POST'
@@ -160,6 +164,7 @@ export function PostDetails({
 						>
 							<input type='hidden' name='postId' value={post.id} />
 							<input type='hidden' name='tag' value={post.tag} />
+							<input type='hidden' name='userId' value={user?.id} />
 							<button className='ml-2'>delete</button>
 						</Form>
 					)}
