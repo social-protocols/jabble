@@ -5,9 +5,9 @@ import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { type Post } from '#app/db/types.ts'
 import { type ScoredPost, type ScoredNote } from '#app/ranking.ts'
+import { useOptionalUser } from '#app/utils/user.ts'
 import { Direction, type VoteState, defaultVoteState } from '#app/vote.ts'
 import { Truncate } from './Truncate.tsx'
-import { useOptionalUser } from '#app/utils/user.ts'
 
 /* Keep this relatively high, so people don't often have to click "read more"
    to read most content. But also not too high, so people don't have to
@@ -81,7 +81,7 @@ export function PostDetails({
 		onVote && onVote()
 		voteFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
 	}
-	
+
 	const navigate = useNavigate()
 
 	return (
@@ -128,16 +128,19 @@ export function PostDetails({
 						maxLines={teaser ? postTeaserMaxLines : undefined}
 						deactivateLinks={false}
 						linkTo={`/tags/${post.tag}/posts/${post.id}`}
-					/>) : (
-						<div
-							style={{ cursor: 'pointer' }}
-							className={'italic text-gray-400'}
-							onClick={() => `/tags/${post.tag}/posts/${post.id}` && navigate(`/tags/${post.tag}/posts/${post.id}`)}
-						>
-							This post was deleted.
-						</div>
-					)
-				}
+					/>
+				) : (
+					<div
+						style={{ cursor: 'pointer' }}
+						className={'italic text-gray-400'}
+						onClick={() =>
+							`/tags/${post.tag}/posts/${post.id}` &&
+							navigate(`/tags/${post.tag}/posts/${post.id}`)
+						}
+					>
+						This post was deleted.
+					</div>
+				)}
 
 				<div className="mt-2 flex w-full text-sm">
 					<Link to={`/tags/${post.tag}/posts/${post.id}`} className="ml-2">
@@ -157,15 +160,11 @@ export function PostDetails({
 						</button>
 					)}
 					{post.deletedAt == null && isAdminUser && (
-						<Form
-							id='delete-post-form'
-							method='POST'
-							action='/deletePost'
-						>
-							<input type='hidden' name='postId' value={post.id} />
-							<input type='hidden' name='tag' value={post.tag} />
-							<input type='hidden' name='userId' value={user?.id} />
-							<button className='ml-2'>delete</button>
+						<Form id="delete-post-form" method="POST" action="/deletePost">
+							<input type="hidden" name="postId" value={post.id} />
+							<input type="hidden" name="tag" value={post.tag} />
+							<input type="hidden" name="userId" value={user?.id} />
+							<button className="ml-2">delete</button>
 						</Form>
 					)}
 					{showReplyForm && (
@@ -211,8 +210,9 @@ export function ParentPost({
 							content={parentPost.content}
 							maxLines={3}
 							deactivateLinks={true}
-						/>) : (
-							<div className={'italic text-gray-400'}>This post was deleted.</div>
+						/>
+					) : (
+						<div className={'italic text-gray-400'}>This post was deleted.</div>
 					)}
 				</div>
 			</Link>

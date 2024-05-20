@@ -50,7 +50,7 @@ export function ReplyThread({
 				return (
 					<div key={post.id}>
 						{i !== 0 && <div className="link-to-parent threadline" />}
-						{post.deletedAt == null ?
+						{post.deletedAt == null ? (
 							<div style={borderStyle} className="rounded-lg">
 								<PostDetails
 									post={post}
@@ -61,8 +61,10 @@ export function ReplyThread({
 									onVote={onVote}
 									isConvincing={isConvincing}
 								/>
-							</div> : <DeletedPost post={post} />
-						}
+							</div>
+						) : (
+							<DeletedPost post={post} />
+						)}
 					</div>
 				)
 			})}

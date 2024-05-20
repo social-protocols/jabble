@@ -6,7 +6,8 @@ import invariant from 'tiny-invariant'
 import { z } from 'zod'
 
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { ParentPost, PostContent, PostDetails } from '#app/components/ui/post.tsx'
+import { DeletedPost } from '#app/components/ui/deleted-post.tsx'
+import { PostContent, PostDetails } from '#app/components/ui/post.tsx'
 import { ReplyThread } from '#app/components/ui/reply-thread.tsx'
 import { getCriticalThread, type ThreadPost } from '#app/conversations.ts'
 import { type Post } from '#app/db/types.ts'
@@ -20,7 +21,6 @@ import {
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
 import { getUserVotes, type VoteState } from '#app/vote.ts'
-import { DeletedPost } from '#app/components/ui/deleted-post.tsx'
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
@@ -128,7 +128,8 @@ export default function Post() {
 					teaser={false}
 					voteState={vote}
 					loggedIn={loggedIn}
-				/>) : (
+				/>
+			) : (
 				<DeletedPost post={post} />
 			)}
 			{noReplies && <h2 className="mb-4 font-medium">No Replies</h2>}
@@ -180,7 +181,8 @@ function ParentThread({
 								content={parentPost.content}
 								maxLines={3}
 								deactivateLinks={true}
-							/>) : (
+							/>
+						) : (
 							<div
 								style={{ cursor: 'pointer' }}
 								className={'italic text-gray-400'}

@@ -1,8 +1,8 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
-import { deletePost } from "#app/post.ts"
-import { redirect } from "@remix-run/server-runtime"
+import { redirect } from '@remix-run/server-runtime'
 import { z } from 'zod'
 import { zfd } from 'zod-form-data'
+import { deletePost } from '#app/post.ts'
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()

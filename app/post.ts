@@ -78,7 +78,10 @@ export async function deletePost(id: number, byUserId: string) {
 		.executeTakeFirst()
 
 	invariant(user, `Cannot delete post: Deleting user ${byUserId} not found`)
-	invariant(user.isAdmin, `Cannot delete post: User ${byUserId} doesn't have permission`)
+	invariant(
+		user.isAdmin,
+		`Cannot delete post: User ${byUserId} doesn't have permission`,
+	)
 
 	const existingPostQueryResult = await db
 		.selectFrom('Post')
@@ -109,7 +112,14 @@ export async function getTransitiveParents(id: number): Promise<Post[]> {
 			db
 				.selectFrom('Post')
 				.where('id', '=', id)
-				.select(['id', 'parentId', 'authorId', 'content', 'createdAt', 'deletedAt'])
+				.select([
+					'id',
+					'parentId',
+					'authorId',
+					'content',
+					'createdAt',
+					'deletedAt',
+				])
 				.unionAll(db =>
 					db
 						.selectFrom('Post as P')

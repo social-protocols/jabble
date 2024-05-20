@@ -9,4 +9,3 @@ export async function up(db: Kysely<any>): Promise<void> {
 		alter table user add column isAdmin integer not null default false
 	`.execute(db)
 }
-
