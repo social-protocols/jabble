@@ -142,6 +142,7 @@ export async function getRankedPosts(tag: string): Promise<RankedPost[]> {
 				.on('PostStats.tagId', '=', tagId),
 		)
 		.innerJoin('Tag', 'Tag.id', 'FullScore.tagId')
+		.where('Post.deletedAt', 'is', null)
 		.select('tag')
 		.selectAll('Post')
 		.selectAll('FullScore')
