@@ -51,6 +51,7 @@ async function importHNPostsFromFile(tag: string, filename: string) {
 						id: ourUserId,
 						username: by,
 						email: 'hn-user' + by + '@test.com',
+						isAdmin: 0,
 						// password: "passw0rd"
 						// password: "createPassword("user" + i)"
 					})

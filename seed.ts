@@ -20,6 +20,7 @@ export async function seed() {
 			id: alice,
 			username: 'alice',
 			email: 'alice@test.com',
+			isAdmin: 0,
 		})
 		.execute()
 
@@ -37,6 +38,7 @@ export async function seed() {
 			id: bob,
 			username: 'bob',
 			email: 'bob@test.com',
+			isAdmin: 0,
 			// password: { create: createPassword('bob') },
 		})
 		.execute()
@@ -47,6 +49,7 @@ export async function seed() {
 			id: charlie,
 			username: 'charlie',
 			email: 'charlie@test.com',
+			isAdmin: 0,
 			// password: { create: createPassword('charlie') },
 		})
 		.execute()

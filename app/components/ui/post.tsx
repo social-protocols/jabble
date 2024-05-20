@@ -60,7 +60,7 @@ export function PostDetails({
 	const voteFetcher = useFetcher<{ voteState: VoteState; postId: number }>()
 
 	const user = useOptionalUser()
-	const isAdminUser = user ? user.isAdmin : false
+	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
