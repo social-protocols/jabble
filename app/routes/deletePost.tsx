@@ -22,5 +22,5 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	await deletePost(postId)
 
-	return redirect(`/tags/${tag}`)
+	return redirect(`/tags/${tag}/posts/${postId}`)
 }

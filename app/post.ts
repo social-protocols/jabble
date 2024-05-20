@@ -71,10 +71,23 @@ export async function getPost(id: number): Promise<Post> {
 }
 
 export async function deletePost(id: number) {
+	const existingPostQueryResult = await db
+		.selectFrom('Post')
+		.where('id', '=', id)
+		.selectAll()
+		.execute()
+	
+	const existingPost = existingPostQueryResult[0]
+	invariant(existingPost, `Cannot delete post: Post ${id} not found`)
+	
+	if (existingPost.deletedAt != null) {
+		console.warn(`Cannot delete post: Post ${id} already deleted`)
+		return
+	}
+
 	await db
 		.updateTable('Post')
 		.set({
-			content: 'This post was deleted.',
 			deletedAt: Date.now(),
 		})
 		.where('id', '=', id)
