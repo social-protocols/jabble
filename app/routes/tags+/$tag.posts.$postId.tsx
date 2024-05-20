@@ -20,6 +20,7 @@ import {
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariantResponse } from '#app/utils/misc.tsx'
 import { getUserVotes, type VoteState } from '#app/vote.ts'
+import { DeletedPost } from '#app/components/ui/deleted-post.tsx'
 
 const postIdSchema = z.coerce.number()
 const tagSchema = z.coerce.string()
@@ -119,6 +120,7 @@ export default function Post() {
 				&nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
 			</div>
 			<ParentThread transitiveParents={transitiveParents} tag={tag} />
+			{post.deletedAt == null ? (
 			<PostDetails
 				key={post.id}
 				post={post}
@@ -126,7 +128,9 @@ export default function Post() {
 				teaser={false}
 				voteState={vote}
 				loggedIn={loggedIn}
-			/>
+			/>) : (
+				<DeletedPost post={post} />
+			)}
 			{noReplies && <h2 className="mb-4 font-medium">No Replies</h2>}
 			{criticalThread.length > 0 && (
 				<>

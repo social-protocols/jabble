@@ -77,6 +77,8 @@ export function PostDetails({
 		onVote && onVote()
 		voteFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
 	}
+	
+	const navigate = useNavigate()
 
 	return (
 		<div
@@ -116,35 +118,51 @@ export function PostDetails({
 					<span className="ml-auto opacity-50">{ageString}</span>
 				</div>
 
-				<PostContent
-					content={post.content}
-					maxLines={teaser ? postTeaserMaxLines : undefined}
-					deactivateLinks={false}
-					linkTo={`/tags/${post.tag}/posts/${post.id}`}
-				/>
+				{post.deletedAt == null ? (
+					<PostContent
+						content={post.content}
+						maxLines={teaser ? postTeaserMaxLines : undefined}
+						deactivateLinks={false}
+						linkTo={`/tags/${post.tag}/posts/${post.id}`}
+					/>) : (
+						<div
+							style={{ cursor: 'pointer' }}
+							className={'italic text-gray-400'}
+							onClick={() => `/tags/${post.tag}/posts/${post.id}` && navigate(`/tags/${post.tag}/posts/${post.id}`)}
+						>
+							This post was deleted.
+						</div>
+					)
+				}
 
 				<div className="mt-2 flex w-full text-sm">
 					<Link to={`/tags/${post.tag}/posts/${post.id}`} className="ml-2">
 						<CommentIcon needsVote={needsVote} nReplies={post.nReplies} />
 					</Link>
-					<Form
-						id='delete-post-form'
-						method='POST'
-						action='/deletePost'
-					>
-						delete
-					</Form>
-					<button
-						className="hyperlink ml-2"
-						onClick={() => {
-							setShowReplyForm(!showReplyForm)
-							return false
-						}}
-						style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
-						// preventScrollReset={true}
-					>
-						reply
-					</button>
+					{post.deletedAt == null && (
+						<button
+							className="hyperlink ml-2"
+							onClick={() => {
+								setShowReplyForm(!showReplyForm)
+								return false
+							}}
+							style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
+							// preventScrollReset={true}
+						>
+							reply
+						</button>
+					)}
+					{post.deletedAt == null && (
+						<Form
+							id='delete-post-form'
+							method='POST'
+							action='/deletePost'
+						>
+							<input type='hidden' name='postId' value={post.id} />
+							<input type='hidden' name='tag' value={post.tag} />
+							<button className='ml-2'>delete</button>
+						</Form>
+					)}
 					{showReplyForm && (
 						<button
 							className="ml-auto pr-2"

@@ -1,6 +1,7 @@
 import { PostDetails } from '#app/components/ui/post.tsx'
 import { type ThreadPost } from '#app/conversations.ts'
 import { Direction, type VoteState } from '#app/vote.ts'
+import { DeletedPost } from './deleted-post.tsx'
 
 const CONVINCINGNESS_THRESHOLD = 0.1
 
@@ -49,17 +50,19 @@ export function ReplyThread({
 				return (
 					<div key={post.id}>
 						{i !== 0 && <div className="link-to-parent threadline" />}
-						<div style={borderStyle} className="rounded-lg">
-							<PostDetails
-								post={post}
-								note={null}
-								teaser={true}
-								voteState={vote}
-								loggedIn={loggedIn}
-								onVote={onVote}
-								isConvincing={isConvincing}
-							/>
-						</div>
+						{post.deletedAt == null ?
+							<div style={borderStyle} className="rounded-lg">
+								<PostDetails
+									post={post}
+									note={null}
+									teaser={true}
+									voteState={vote}
+									loggedIn={loggedIn}
+									onVote={onVote}
+									isConvincing={isConvincing}
+								/>
+							</div> : <DeletedPost post={post} />
+						}
 					</div>
 				)
 			})}
