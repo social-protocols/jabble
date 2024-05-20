@@ -166,17 +166,6 @@ export async function seed() {
 		})
 		.execute()
 
-	const adminId = 'testAdmin'
-	await db
-		.insertInto('User')
-		.values({
-			id: adminId,
-			username: 'testAdmin',
-			email: 'admin@test.com',
-			isAdmin: 1,
-		})
-		.execute()
-
 	const hashedPassword = await bcrypt.hash('password', 10)
 
 	await db
@@ -184,6 +173,29 @@ export async function seed() {
 		.values({
 			hash: hashedPassword,
 			userId: id,
+		})
+		.returningAll()
+		.executeTakeFirstOrThrow()
+
+	// Create test admin user with password 'password'. For testing admin features.
+	const adminId = 'testadmin'
+	await db
+		.insertInto('User')
+		.values({
+			id: adminId,
+			username: 'testadmin',
+			email: 'admin@test.com',
+			isAdmin: 1,
+		})
+		.execute()
+
+	const hashedAdminPassword = await bcrypt.hash('password', 10)
+
+	await db
+		.insertInto('Password')
+		.values({
+			hash: hashedAdminPassword,
+			userId: adminId,
 		})
 		.returningAll()
 		.executeTakeFirstOrThrow()
