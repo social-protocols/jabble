@@ -217,10 +217,9 @@ function DirectReplies({
 		<>
 			{posts.map(post => {
 				const vs = voteStatesMap.get(post.id)
-
 				return (
 					<div key={post.id}>
-						<div className="rounded-lg">
+						{post.deletedAt == null ? (
 							<PostDetails
 								post={post}
 								note={null}
@@ -229,7 +228,9 @@ function DirectReplies({
 								loggedIn={loggedIn}
 								onVote={onVote}
 							/>
-						</div>
+						) : (
+							<DeletedPost post={post} />
+						)}
 					</div>
 				)
 			})}
