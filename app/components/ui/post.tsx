@@ -164,7 +164,9 @@ export function PostDetails({
 							<input type="hidden" name="postId" value={post.id} />
 							<input type="hidden" name="tag" value={post.tag} />
 							<input type="hidden" name="userId" value={user?.id} />
-							<button className="ml-2">delete</button>
+							<button className="ml-2 bg-red-400 text-white px-1 rounded">
+								delete
+							</button>
 						</Form>
 					)}
 					{showReplyForm && (

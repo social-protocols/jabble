@@ -77,19 +77,18 @@ export async function deletePost(id: number, byUserId: string) {
 		.selectAll()
 		.executeTakeFirst()
 
-	invariant(user, `Cannot delete post: Deleting user ${byUserId} not found`)
+	invariant(user, `Cannot delete post: User ${byUserId} not found`)
 	invariant(
 		user.isAdmin,
 		`Cannot delete post: User ${byUserId} doesn't have permission`,
 	)
 
-	const existingPostQueryResult = await db
+	const existingPost = await db
 		.selectFrom('Post')
 		.where('id', '=', id)
 		.selectAll()
-		.execute()
+		.executeTakeFirst()
 
-	const existingPost = existingPostQueryResult[0]
 	invariant(existingPost, `Cannot delete post: Post ${id} not found`)
 
 	if (existingPost.deletedAt != null) {
@@ -99,12 +98,44 @@ export async function deletePost(id: number, byUserId: string) {
 
 	await db
 		.updateTable('Post')
-		.set({
-			deletedAt: Date.now(),
-		})
+		.set({ deletedAt: Date.now() })
 		.where('id', '=', id)
 		.execute()
 }
+
+export async function restoreDeletedPost(id: number, byUserId: string) {
+	const user = await db
+		.selectFrom('User')
+		.where('id', '=', byUserId)
+		.selectAll()
+		.executeTakeFirst()
+
+	invariant(user, `Cannot restore post: User ${byUserId} not found`)
+	invariant(
+		user.isAdmin,
+		`Cannot restore post: User ${byUserId} doesn't have permission`,
+	)
+
+	const existingPost = await db
+		.selectFrom('Post')
+		.where('id', '=', id)
+		.selectAll()
+		.executeTakeFirst()
+
+	invariant(existingPost, `Cannot delete post: Post ${id} not found`)
+
+	if (existingPost.deletedAt == null) {
+		console.warn(`Cannot restore non-deleted post ${id}`)
+		return
+	}
+
+	await db
+		.updateTable('Post')
+		.set({ deletedAt: null })
+		.where('id', '=', id)
+		.execute()
+}
+
 
 export async function getTransitiveParents(id: number): Promise<Post[]> {
 	let result: Post[] = await db
