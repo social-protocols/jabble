@@ -179,6 +179,7 @@ export async function getChronologicalToplevelPosts(
 	let query = db
 		.selectFrom('Post')
 		.where('Post.parentId', 'is', null)
+		.where('Post.deletedAt', 'is', null)
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
 		.leftJoin('PostStats', join =>
 			join

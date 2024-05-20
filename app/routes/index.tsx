@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { PostForm } from '#app/components/ui/post-form.tsx'
-import { PostContent } from '#app/components/ui/post.tsx'
+import { PostContent, CommentIcon } from '#app/components/ui/post.tsx'
 import * as rankingTs from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 
@@ -89,10 +89,6 @@ export function TopLevelPost({
 	post: rankingTs.ScoredPost
 	className?: string
 }) {
-	const nRepliesString =
-		post.nReplies === 1 ? '1 reply' : `${post.nReplies} replies`
-
-	let informedProbabilityString = Math.round(post.p * 100) / 100
 	const ageString = moment(post.createdAt).fromNow()
 
 	return (
@@ -115,16 +111,9 @@ export function TopLevelPost({
 					deactivateLinks={false}
 					linkTo={`/tags/${post.tag}/posts/${post.id}`}
 				/>
-
 				<div className="mt-2 flex w-full text-sm">
-					<Link to={`/tags/${post.tag}/stats/${post.id}`} className="hyperlink">
-						{informedProbabilityString}%
-					</Link>
-					<Link
-						to={`/tags/${post.tag}/posts/${post.id}`}
-						className="hyperlink ml-2"
-					>
-						{nRepliesString}
+					<Link to={`/tags/${post.tag}/posts/${post.id}`} className="ml-2">
+						<CommentIcon needsVote={false} nReplies={post.nReplies} />
 					</Link>
 				</div>
 			</div>
