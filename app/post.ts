@@ -5,58 +5,77 @@ import { invariant } from '#app/utils/misc.tsx'
 import { Direction, vote } from '#app/vote.ts'
 
 import { getOrInsertTagId } from './tag.ts'
+import { Transaction } from 'kysely'
+import { DB } from './db/kysely-types.ts'
 
 export async function createPost(
 	tag: string,
 	parentId: number | null, // TODO: use parentId?: number
 	content: string,
 	authorId: string,
+	trx?: Transaction<DB>,
 ): Promise<number> {
-	const results: { id: number }[] = await db
-		.insertInto('Post')
-		.values({ content, parentId, authorId })
-		.returning('id')
-		.execute()
+	async function executeQueryInTransaction(trxLocal: Transaction<DB>) {
+		const result: { id: number } = await trxLocal
+			.insertInto('Post')
+			.values({ content, parentId, authorId })
+			.returning('id')
+			.executeTakeFirstOrThrow()
 
-	invariant(results[0], `Reply to ${parentId} not submitted successfully`)
-	const postId: number = results[0].id
+		invariant(result, `Reply to ${parentId} not submitted successfully`)
+		const postId: number = result.id
 
-	const direction: Direction = Direction.Up
+		const direction: Direction = Direction.Up
 
-	await vote(tag, authorId, postId, null, direction)
+		await vote(tag, authorId, postId, null, direction, trxLocal)
 
-	const tagId = await getOrInsertTagId(tag)
+		const tagId = await getOrInsertTagId(tag, trxLocal)
 
-	if (parentId != null) {
-		await incrementReplyCount(tagId, parentId)
+		if (parentId !== null) {
+			await incrementReplyCount(tagId, parentId, trxLocal)
+		}
+
+		return postId
 	}
 
-	return postId
+	return trx
+		? await executeQueryInTransaction(trx)
+		: await db.transaction().execute(async (trxLocal) => await executeQueryInTransaction(trxLocal))
 }
 
-export async function initPostStats(tagId: number, postId: number) {
-	let query = db
-		.insertInto('PostStats')
-		.values({
-			tagId: tagId,
-			postId: postId,
-			replies: 0,
-		})
-		// ignore conflict
-		.onConflict(oc => oc.column('postId').doNothing())
-	await query.execute()
+export async function initPostStats(tagId: number, postId: number, trx?: Transaction<DB>) {
+	async function executeInTrx(localTrx: Transaction<DB>) {
+		await localTrx
+			.insertInto('PostStats')
+			.values({
+				tagId: tagId,
+				postId: postId,
+				replies: 0,
+			})
+			// ignore conflict
+			.onConflict(oc => oc.column('postId').doNothing())
+			.execute()
+	}
+	trx
+		? await executeInTrx(trx)
+		: await db.transaction().execute(async (trxLocal) => await executeInTrx(trxLocal))
 }
 
-export async function incrementReplyCount(tagId: number, postId: number) {
-	await initPostStats(tagId, postId)
-	await db
-		.updateTable('PostStats')
-		.set(eb => ({
-			replies: eb.bxp('replies', '+', 1),
-		}))
-		.where('tagId', '=', tagId)
-		.where('postId', '=', postId)
-		.execute()
+export async function incrementReplyCount(tagId: number, postId: number, trx?: Transaction<DB>) {
+	async function executeInTrx(localTrx: Transaction<DB>) {
+		await initPostStats(tagId, postId, localTrx)
+		await localTrx
+			.updateTable('PostStats')
+			.set(eb => ({
+				replies: eb.bxp('replies', '+', 1),
+			}))
+			.where('tagId', '=', tagId)
+			.where('postId', '=', postId)
+			.execute()
+		}
+		trx
+			? await executeInTrx(trx)
+			: await db.transaction().execute(async (trxLocal) => await executeInTrx(trxLocal))
 }
 
 export async function getPost(id: number): Promise<Post> {

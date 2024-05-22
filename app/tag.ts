@@ -5,28 +5,30 @@ import { Transaction } from 'kysely'
 import { DB } from './db/kysely-types.ts'
 
 export async function getOrInsertTagId(tag: string, trx?: Transaction<DB>): Promise<number> {
-	async function executeQueryInTrx(trx: Transaction<DB>) {
-		let existingTag: Tag | undefined = await trx
+	async function executeQueryInTrx(trxLocal: Transaction<DB>, tagToPersist: string) {
+		let existingTag: Tag | undefined = await trxLocal
 			.selectFrom('Tag')
-			.where('tag', '=', tag)
+			.where('tag', '=', tagToPersist)
 			.selectAll()
 			.executeTakeFirst()
 
 		if (!existingTag) {
-			await trx.insertInto('Tag').values({ tag: tag }).execute()
-			existingTag = await trx
+			await trxLocal.insertInto('Tag').values({ tag: tagToPersist }).execute()
+			existingTag = await trxLocal
 				.selectFrom('Tag')
-				.where('tag', '=', tag)
+				.where('tag', '=', tagToPersist)
 				.selectAll()
 				.executeTakeFirstOrThrow()
 		}
 
-		invariant(existingTag, `Couldn't find or create tag ${tag}`)
+		invariant(existingTag, `Couldn't find or create tag ${tagToPersist}`)
 
 		return existingTag.id
 	}
 
-	return trx
-		? await executeQueryInTrx(trx)
-		: await db.transaction().execute(async (trx) => executeQueryInTrx(trx))
+	const persistedTagId = trx
+		? await executeQueryInTrx(trx, tag)
+		: await db.transaction().execute(async (trxLocal) => await executeQueryInTrx(trxLocal, tag))
+
+	return persistedTagId
 }
