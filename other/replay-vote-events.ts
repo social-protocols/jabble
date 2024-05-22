@@ -1,4 +1,4 @@
-import { VoteEvent } from '../app/db/kysely-types.js'
+import { type VoteEvent } from '../app/db/types.ts'
 import { db } from '../app/db.ts'
 import { sendVoteEvent } from '../app/globalbrain.ts'
 
@@ -7,7 +7,7 @@ async function replayVoteEvents() {
 		.selectFrom('VoteEvent')
 		.selectAll()
 		.execute()
-	
+
 	for (const ve of voteEvents) {
 		await sendVoteEvent(ve)
 	}
