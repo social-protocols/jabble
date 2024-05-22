@@ -8,7 +8,7 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
@@ -16,24 +16,10 @@
           overlays = [ ];
           config.allowUnfree = false;
         };
-        juliabuild_packages = with pkgs; [
-          diffutils
-          julia_19-bin
-          python3 # for node-gyp
-          gcc
-          gnumake
-          gnused
-          llvmPackages.libcxxStdenv
-          llvmPackages.libcxx
-          libcxxStdenv
-          libcxx
-          sqlite
-          nodejs_20
-        ];
       in
       {
         devShells = {
-          default = with pkgs; pkgs.mkShellNoCC {
+          default = with pkgs; mkShellNoCC {
             buildInputs = [
               git
               just
@@ -45,20 +31,29 @@
               docker
               flyctl
 
-              less
-              fzf
-
               python3
-              xcbuild
               julia_19-bin
 
               # darwin.apple_sdk.frameworks.Security
             ];
           };
-          juliabuild = with pkgs; pkgs.mkShellNoCC {
-            buildInputs = juliabuild_packages;
+          build = with pkgs; mkShellNoCC {
+            buildInputs = [
+              diffutils
+              julia_19-bin
+              python3 # for node-gyp
+              gcc
+              gnumake
+              gnused
+              llvmPackages.libcxxStdenv
+              llvmPackages.libcxx
+              libcxxStdenv
+              libcxx
+              sqlite
+              nodejs_20
+            ];
           };
-          base = with pkgs; pkgs.mkShellNoCC {
+          base = with pkgs; mkShellNoCC {
             buildInputs = [
               julia_19-bin
               nodejs_20
