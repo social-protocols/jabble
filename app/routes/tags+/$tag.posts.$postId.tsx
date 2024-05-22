@@ -1,7 +1,6 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 
-import { Link, useLoaderData } from '@remix-run/react'
-import { useState } from 'react'
+import { Link, useLoaderData, useNavigate } from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 
@@ -91,19 +90,8 @@ export default function Post() {
 
 	let vote = allVoteStates.get(post.id)
 
-	// https://stackoverflow.com/questions/46240647/how-to-force-a-functional-react-component-to-render/53837442#53837442
-	// force this component to re-render when there is any vote on a child.
-	function useForceUpdate() {
-		const [_, setValue] = useState(0) // integer state
-		return () => {
-			console.log('forceUpdate')
-			setValue(value => value + 1)
-		} // update state to force render
-		// A function that increment 👆🏻 the previous state like here
-		// is better than directly setting `setValue(value + 1)`
-	}
-
-	const forceUpdate = useForceUpdate()
+	const navigate = useNavigate()
+	const reloadPage = () => navigate('.', { replace: true })
 
 	const otherRepliesToDisplay = otherReplies.filter(
 		p => p.id !== post.topNoteId,
@@ -142,7 +130,7 @@ export default function Post() {
 						loggedIn={loggedIn}
 						targetId={post.id}
 						criticalThreadId={post.criticalThreadId}
-						onVote={forceUpdate}
+						onVote={reloadPage}
 					/>
 				</>
 			)}
@@ -153,7 +141,7 @@ export default function Post() {
 						posts={otherRepliesToDisplay}
 						voteStates={votes}
 						loggedIn={loggedIn}
-						onVote={forceUpdate}
+						onVote={reloadPage}
 					/>
 				</>
 			)}

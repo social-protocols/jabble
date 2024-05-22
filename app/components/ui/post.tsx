@@ -70,9 +70,7 @@ export function PostDetails({
 		setShowReplyForm(false)
 	}
 
-	const visibleVoteState = voteFetcher.data
-		? voteFetcher.data.voteState
-		: voteState || defaultVoteState(post.id)
+	const visibleVoteState = voteState || defaultVoteState(post.id)
 
 	const needsVote: boolean =
 		!visibleVoteState.isInformed && visibleVoteState.vote !== Direction.Neutral
