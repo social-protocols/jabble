@@ -62,7 +62,7 @@
             buildInputs = [
               julia_19-bin
               nodejs_20
-              sqlite
+              sqlite-interactive
               fuse3 # for litefs
               busybox
             ];
