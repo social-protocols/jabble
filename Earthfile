@@ -167,6 +167,8 @@ ci-test:
   BUILD +docker-image
 
 ci-deploy:
+  # To run manually:
+  # FLY_API_TOKEN=$(flyctl tokens create deploy) earthly --allow-privileged --secret FLY_API_TOKEN +ci-deploy --COMMIT_SHA=$(git rev-parse HEAD)
   BUILD +ci-test
   ARG --required COMMIT_SHA
-  DO +app-deploy --COMMIT_SHA=$COMMIT_SHA
+  BUILD +app-deploy --COMMIT_SHA=$COMMIT_SHA
