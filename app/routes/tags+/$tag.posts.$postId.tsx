@@ -1,7 +1,6 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 
 import { Link, useLoaderData, useNavigate } from '@remix-run/react'
-import { useState } from 'react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 
