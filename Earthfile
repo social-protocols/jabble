@@ -116,6 +116,16 @@ docker-image:
   CMD ["/bin/sh", "-c", "/usr/local/bin/litefs mount"]
   SAVE IMAGE jabble:latest
 
+app-e2e-test-setup:
+  FROM +app-setup
+  COPY --dir e2e playwright.config.ts ./
+
+docker-image-e2e-test:
+  FROM earthly/dind:alpine-3.19-docker-25.0.5-r0
+  COPY docker-compose.yml ./
+  WITH DOCKER --load tests:latest=+app-e2e-test-setup --load jabble:latest=+docker-image --compose docker-compose.yml
+    RUN docker run --network host tests:latest /bin/sh -c 'CI=true npx playwright test'
+  END
 
 app-deploy:
   # run locally:
@@ -146,7 +156,7 @@ app-lint:
 ci-test:
   BUILD +app-typecheck
   BUILD +app-lint
-  BUILD +docker-image
+  BUILD +docker-image-e2e-test
 
 ci-deploy:
   # To run manually:
