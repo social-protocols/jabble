@@ -22,7 +22,7 @@ env:
   FORCE_COLOR: 1
 
 jobs:
-  lint:
+  test:
     name: Test
     runs-on: ubuntu-22.04 # https://github.com/actions/runner-images?tab=readme-ov-file#available-images
     timeout-minutes: 60
