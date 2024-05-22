@@ -23,6 +23,7 @@ export type Post = {
 	content: string
 	authorId: string
 	createdAt: Generated<number>
+	deletedAt: number | null
 }
 export type PostStats = {
 	tagId: number
@@ -45,6 +46,7 @@ export type User = {
 	email: string
 	username: string
 	createdAt: Generated<number>
+	isAdmin: number
 }
 export type Verification = {
 	id: string

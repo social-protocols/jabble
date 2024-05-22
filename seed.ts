@@ -20,6 +20,7 @@ export async function seed() {
 			id: alice,
 			username: 'alice',
 			email: 'alice@test.com',
+			isAdmin: 0,
 		})
 		.execute()
 
@@ -37,6 +38,7 @@ export async function seed() {
 			id: bob,
 			username: 'bob',
 			email: 'bob@test.com',
+			isAdmin: 0,
 			// password: { create: createPassword('bob') },
 		})
 		.execute()
@@ -47,6 +49,7 @@ export async function seed() {
 			id: charlie,
 			username: 'charlie',
 			email: 'charlie@test.com',
+			isAdmin: 0,
 			// password: { create: createPassword('charlie') },
 		})
 		.execute()
@@ -159,6 +162,7 @@ export async function seed() {
 			id: id,
 			username: 'developer',
 			email: 'test@test.com',
+			isAdmin: 0,
 		})
 		.execute()
 
@@ -169,6 +173,29 @@ export async function seed() {
 		.values({
 			hash: hashedPassword,
 			userId: id,
+		})
+		.returningAll()
+		.executeTakeFirstOrThrow()
+
+	// Create test admin user with password 'password'. For testing admin features.
+	const adminId = 'testadmin'
+	await db
+		.insertInto('User')
+		.values({
+			id: adminId,
+			username: 'testadmin',
+			email: 'admin@test.com',
+			isAdmin: 1,
+		})
+		.execute()
+
+	const hashedAdminPassword = await bcrypt.hash('password', 10)
+
+	await db
+		.insertInto('Password')
+		.values({
+			hash: hashedAdminPassword,
+			userId: adminId,
 		})
 		.returningAll()
 		.executeTakeFirstOrThrow()

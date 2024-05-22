@@ -5,6 +5,7 @@ import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { type Post } from '#app/db/types.ts'
 import { type ScoredPost, type ScoredNote } from '#app/ranking.ts'
+import { useOptionalUser } from '#app/utils/user.ts'
 import { Direction, type VoteState, defaultVoteState } from '#app/vote.ts'
 import { Truncate } from './Truncate.tsx'
 
@@ -58,6 +59,9 @@ export function PostDetails({
 	// So we need to get the current state of the user's vote on this post from the fetcher
 	const voteFetcher = useFetcher<{ voteState: VoteState; postId: number }>()
 
+	const user = useOptionalUser()
+	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
+
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
 	const ageString = moment(post.createdAt).fromNow()
@@ -77,6 +81,8 @@ export function PostDetails({
 		onVote && onVote()
 		voteFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
 	}
+
+	const navigate = useNavigate()
 
 	return (
 		<div
@@ -116,28 +122,53 @@ export function PostDetails({
 					<span className="ml-auto opacity-50">{ageString}</span>
 				</div>
 
-				<PostContent
-					content={post.content}
-					maxLines={teaser ? postTeaserMaxLines : undefined}
-					deactivateLinks={false}
-					linkTo={`/tags/${post.tag}/posts/${post.id}`}
-				/>
+				{post.deletedAt == null ? (
+					<PostContent
+						content={post.content}
+						maxLines={teaser ? postTeaserMaxLines : undefined}
+						deactivateLinks={false}
+						linkTo={`/tags/${post.tag}/posts/${post.id}`}
+					/>
+				) : (
+					<div
+						style={{ cursor: 'pointer' }}
+						className={'italic text-gray-400'}
+						onClick={() =>
+							`/tags/${post.tag}/posts/${post.id}` &&
+							navigate(`/tags/${post.tag}/posts/${post.id}`)
+						}
+					>
+						This post was deleted.
+					</div>
+				)}
 
 				<div className="mt-2 flex w-full text-sm">
 					<Link to={`/tags/${post.tag}/posts/${post.id}`} className="ml-2">
 						<CommentIcon needsVote={needsVote} nReplies={post.nReplies} />
 					</Link>
-					<button
-						className="hyperlink ml-2"
-						onClick={() => {
-							setShowReplyForm(!showReplyForm)
-							return false
-						}}
-						style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
-						// preventScrollReset={true}
-					>
-						reply
-					</button>
+					{post.deletedAt == null && (
+						<button
+							className="hyperlink ml-2"
+							onClick={() => {
+								setShowReplyForm(!showReplyForm)
+								return false
+							}}
+							style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
+							// preventScrollReset={true}
+						>
+							reply
+						</button>
+					)}
+					{post.deletedAt == null && isAdminUser && (
+						<Form id="delete-post-form" method="POST" action="/deletePost">
+							<input type="hidden" name="postId" value={post.id} />
+							<input type="hidden" name="tag" value={post.tag} />
+							<input type="hidden" name="userId" value={user?.id} />
+							<button className="ml-2 rounded bg-red-400 px-1 text-white">
+								delete
+							</button>
+						</Form>
+					)}
 					{showReplyForm && (
 						<button
 							className="ml-auto pr-2"
@@ -176,11 +207,15 @@ export function ParentPost({
 					key={parentPost.id}
 					className="postparent mb-1 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"
 				>
-					<PostContent
-						content={parentPost.content}
-						maxLines={3}
-						deactivateLinks={true}
-					/>
+					{parentPost.deletedAt == null ? (
+						<PostContent
+							content={parentPost.content}
+							maxLines={3}
+							deactivateLinks={true}
+						/>
+					) : (
+						<div className={'italic text-gray-400'}>This post was deleted.</div>
+					)}
 				</div>
 			</Link>
 		</div>

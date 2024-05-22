@@ -142,6 +142,7 @@ export async function getRankedPosts(tag: string): Promise<RankedPost[]> {
 				.on('PostStats.tagId', '=', tagId),
 		)
 		.innerJoin('Tag', 'Tag.id', 'FullScore.tagId')
+		.where('Post.deletedAt', 'is', null)
 		.select('tag')
 		.selectAll('Post')
 		.selectAll('FullScore')
@@ -178,6 +179,7 @@ export async function getChronologicalToplevelPosts(
 	let query = db
 		.selectFrom('Post')
 		.where('Post.parentId', 'is', null)
+		.where('Post.deletedAt', 'is', null)
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
 		.leftJoin('PostStats', join =>
 			join

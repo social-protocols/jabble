@@ -6,6 +6,7 @@ import invariant from 'tiny-invariant'
 import { z } from 'zod'
 
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { DeletedPost } from '#app/components/ui/deleted-post.tsx'
 import { PostContent, PostDetails } from '#app/components/ui/post.tsx'
 import { ReplyThread } from '#app/components/ui/reply-thread.tsx'
 import { getCriticalThread, type ThreadPost } from '#app/conversations.ts'
@@ -119,14 +120,18 @@ export default function Post() {
 				&nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
 			</div>
 			<ParentThread transitiveParents={transitiveParents} tag={tag} />
-			<PostDetails
-				key={post.id}
-				post={post}
-				note={null}
-				teaser={false}
-				voteState={vote}
-				loggedIn={loggedIn}
-			/>
+			{post.deletedAt == null ? (
+				<PostDetails
+					key={post.id}
+					post={post}
+					note={null}
+					teaser={false}
+					voteState={vote}
+					loggedIn={loggedIn}
+				/>
+			) : (
+				<DeletedPost post={post} />
+			)}
 			{noReplies && <h2 className="mb-4 font-medium">No Replies</h2>}
 			{criticalThread.length > 0 && (
 				<>
@@ -171,11 +176,20 @@ function ParentThread({
 						key={parentPost.id}
 						className="postparent mb-1 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"
 					>
-						<PostContent
-							content={parentPost.content}
-							maxLines={3}
-							deactivateLinks={true}
-						/>
+						{parentPost.deletedAt == null ? (
+							<PostContent
+								content={parentPost.content}
+								maxLines={3}
+								deactivateLinks={true}
+							/>
+						) : (
+							<div
+								style={{ cursor: 'pointer' }}
+								className={'italic text-gray-400'}
+							>
+								This post was deleted.
+							</div>
+						)}
 					</div>
 				</Link>
 			))}
@@ -203,10 +217,9 @@ function DirectReplies({
 		<>
 			{posts.map(post => {
 				const vs = voteStatesMap.get(post.id)
-
 				return (
 					<div key={post.id}>
-						<div className="rounded-lg">
+						{post.deletedAt == null ? (
 							<PostDetails
 								post={post}
 								note={null}
@@ -215,7 +228,9 @@ function DirectReplies({
 								loggedIn={loggedIn}
 								onVote={onVote}
 							/>
-						</div>
+						) : (
+							<DeletedPost post={post} />
+						)}
 					</div>
 				)
 			})}

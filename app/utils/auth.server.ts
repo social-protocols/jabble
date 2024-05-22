@@ -146,6 +146,7 @@ export async function signup({
 			id: createId(),
 			email: email.toLowerCase(),
 			username: username.toLowerCase(),
+			isAdmin: 0,
 		})
 		.returning('id')
 		.executeTakeFirstOrThrow()

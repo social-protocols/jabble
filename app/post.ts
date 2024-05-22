@@ -70,13 +70,86 @@ export async function getPost(id: number): Promise<Post> {
 	return result
 }
 
+export async function deletePost(id: number, byUserId: string) {
+	const user = await db
+		.selectFrom('User')
+		.where('id', '=', byUserId)
+		.selectAll()
+		.executeTakeFirst()
+
+	invariant(user, `Cannot delete post: User ${byUserId} not found`)
+	invariant(
+		user.isAdmin,
+		`Cannot delete post: User ${byUserId} doesn't have permission`,
+	)
+
+	const existingPost = await db
+		.selectFrom('Post')
+		.where('id', '=', id)
+		.selectAll()
+		.executeTakeFirst()
+
+	invariant(existingPost, `Cannot delete post: Post ${id} not found`)
+
+	if (existingPost.deletedAt != null) {
+		console.warn(`Cannot delete post: Post ${id} already deleted`)
+		return
+	}
+
+	await db
+		.updateTable('Post')
+		.set({ deletedAt: Date.now() })
+		.where('id', '=', id)
+		.execute()
+}
+
+export async function restoreDeletedPost(id: number, byUserId: string) {
+	const user = await db
+		.selectFrom('User')
+		.where('id', '=', byUserId)
+		.selectAll()
+		.executeTakeFirst()
+
+	invariant(user, `Cannot restore post: User ${byUserId} not found`)
+	invariant(
+		user.isAdmin,
+		`Cannot restore post: User ${byUserId} doesn't have permission`,
+	)
+
+	const existingPost = await db
+		.selectFrom('Post')
+		.where('id', '=', id)
+		.selectAll()
+		.executeTakeFirst()
+
+	invariant(existingPost, `Cannot delete post: Post ${id} not found`)
+
+	if (existingPost.deletedAt == null) {
+		console.warn(`Cannot restore non-deleted post ${id}`)
+		return
+	}
+
+	await db
+		.updateTable('Post')
+		.set({ deletedAt: null })
+		.where('id', '=', id)
+		.execute()
+}
+
 export async function getTransitiveParents(id: number): Promise<Post[]> {
 	let result: Post[] = await db
 		.withRecursive('transitive_parents', db =>
 			db
 				.selectFrom('Post')
 				.where('id', '=', id)
-				.select(['id', 'parentId', 'authorId', 'content', 'createdAt'])
+				.select([
+					'id',
+					'parentId',
+					'authorId',
+					'content',
+					'createdAt',
+					'deletedAt',
+				])
 				.unionAll(db =>
 					db
 						.selectFrom('Post as P')
@@ -87,6 +160,7 @@ export async function getTransitiveParents(id: number): Promise<Post[]> {
 							'P.authorId',
 							'P.content',
 							'P.createdAt',
+							'P.deletedAt',
 						]),
 				),
 		)
