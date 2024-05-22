@@ -26,7 +26,7 @@ nix-dev-shell:
 
 
 node-ext:
-  FROM +nix-dev-shell --DEVSHELL='juliabuild'
+  FROM +nix-dev-shell --DEVSHELL='build'
   WORKDIR /app
 
   ARG GLOBALBRAIN_REF=7d8123c872e338ef7c1c14ad18e0b56672b199e4
@@ -59,7 +59,7 @@ node-ext:
   SAVE ARTIFACT /artifact
 
 app-setup:
-  FROM +nix-dev-shell --DEVSHELL='juliabuild'
+  FROM +nix-dev-shell --DEVSHELL='build'
   WORKDIR /app
   COPY package.json package-lock.json .npmrc ./
   RUN npm install --include=dev && rm -rf /root/.npm /root/.node-gyp
