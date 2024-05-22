@@ -64,13 +64,3 @@ export default function TagPage() {
 		</>
 	)
 }
-
-export const shouldRevalidate: ShouldRevalidateFunction = (args: {
-	formAction?: string | undefined
-}) => {
-	// Optimization that makes it so /votes don't reload the page
-	if (args.formAction == '/vote') {
-		return false
-	}
-	return true
-}

@@ -11,14 +11,12 @@ export function ReplyThread({
 	targetId,
 	criticalThreadId,
 	loggedIn,
-	onVote,
 }: {
 	posts: ThreadPost[]
 	votes: Map<number, VoteState>
 	targetId: number
 	criticalThreadId: number | null
 	loggedIn: boolean
-	onVote?: Function
 }) {
 	const targetVote = votes.get(targetId)
 
@@ -58,7 +56,6 @@ export function ReplyThread({
 									teaser={true}
 									voteState={vote}
 									loggedIn={loggedIn}
-									onVote={onVote}
 									isConvincing={isConvincing}
 								/>
 							</div>

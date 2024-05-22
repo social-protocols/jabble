@@ -1,6 +1,6 @@
-import { Link, useFetcher, useNavigate, Form } from '@remix-run/react'
+import { Link, useNavigate, Form } from '@remix-run/react'
 import moment from 'moment'
-import { useState, type CSSProperties, type FormEvent } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { type Post } from '#app/db/types.ts'
@@ -45,7 +45,6 @@ export function PostDetails({
 	teaser,
 	voteState,
 	loggedIn,
-	onVote,
 	isConvincing,
 }: {
 	post: ScoredPost
@@ -53,12 +52,8 @@ export function PostDetails({
 	teaser: boolean
 	voteState?: VoteState
 	loggedIn: boolean
-	onVote?: Function
 	isConvincing?: boolean
 }) {
-	// So we need to get the current state of the user's vote on this post from the fetcher
-	const voteFetcher = useFetcher<{ voteState: VoteState; postId: number }>()
-
 	const user = useOptionalUser()
 	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
 
@@ -70,17 +65,10 @@ export function PostDetails({
 		setShowReplyForm(false)
 	}
 
-	const visibleVoteState = voteFetcher.data
-		? voteFetcher.data.voteState
-		: voteState || defaultVoteState(post.id)
+	const visibleVoteState = voteState || defaultVoteState(post.id)
 
 	const needsVote: boolean =
 		!visibleVoteState.isInformed && visibleVoteState.vote !== Direction.Neutral
-
-	const handleVoteSubmit = function (event: FormEvent<HTMLFormElement>) {
-		onVote && onVote()
-		voteFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
-	}
 
 	const navigate = useNavigate()
 
@@ -94,11 +82,7 @@ export function PostDetails({
 				className="mt-5"
 				style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
 			>
-				<voteFetcher.Form
-					method="POST"
-					action="/vote"
-					onSubmit={handleVoteSubmit}
-				>
+				<Form method="POST" action="/vote">
 					<VoteButtons
 						postId={post.id}
 						tag={post.tag}
@@ -106,7 +90,7 @@ export function PostDetails({
 						vote={visibleVoteState}
 						pCurrent={post.p}
 					/>
-				</voteFetcher.Form>
+				</Form>
 			</div>
 			<div
 				className={

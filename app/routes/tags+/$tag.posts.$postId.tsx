@@ -91,20 +91,6 @@ export default function Post() {
 
 	let vote = allVoteStates.get(post.id)
 
-	// https://stackoverflow.com/questions/46240647/how-to-force-a-functional-react-component-to-render/53837442#53837442
-	// force this component to re-render when there is any vote on a child.
-	function useForceUpdate() {
-		const [_, setValue] = useState(0) // integer state
-		return () => {
-			console.log('forceUpdate')
-			setValue(value => value + 1)
-		} // update state to force render
-		// A function that increment 👆🏻 the previous state like here
-		// is better than directly setting `setValue(value + 1)`
-	}
-
-	const forceUpdate = useForceUpdate()
-
 	const otherRepliesToDisplay = otherReplies.filter(
 		p => p.id !== post.topNoteId,
 	)
@@ -142,7 +128,6 @@ export default function Post() {
 						loggedIn={loggedIn}
 						targetId={post.id}
 						criticalThreadId={post.criticalThreadId}
-						onVote={forceUpdate}
 					/>
 				</>
 			)}
@@ -153,7 +138,6 @@ export default function Post() {
 						posts={otherRepliesToDisplay}
 						voteStates={votes}
 						loggedIn={loggedIn}
-						onVote={forceUpdate}
 					/>
 				</>
 			)}
@@ -201,12 +185,10 @@ function DirectReplies({
 	posts,
 	voteStates,
 	loggedIn,
-	onVote,
 }: {
 	posts: ScoredPost[]
 	voteStates: VoteState[]
 	loggedIn: boolean
-	onVote: Function
 }) {
 	const voteStatesMap = new Map<number, VoteState>()
 	voteStates.forEach(voteState => {
@@ -226,7 +208,6 @@ function DirectReplies({
 								teaser={true}
 								voteState={vs}
 								loggedIn={loggedIn}
-								onVote={onVote}
 							/>
 						) : (
 							<DeletedPost post={post} />
