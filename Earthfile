@@ -26,7 +26,7 @@ nix-dev-shell:
 
 
 node-ext:
-  FROM +nix-dev-shell --DEVSHELL='juliabuild'
+  FROM +nix-dev-shell --DEVSHELL='build'
   WORKDIR /app
 
   ARG GLOBALBRAIN_REF=v0.1.8
@@ -59,7 +59,7 @@ node-ext:
   SAVE ARTIFACT /artifact
 
 app-setup:
-  FROM +nix-dev-shell --DEVSHELL='juliabuild'
+  FROM +nix-dev-shell --DEVSHELL='build'
   WORKDIR /app
   COPY package.json package-lock.json .npmrc ./
   RUN npm install --include=dev && rm -rf /root/.npm /root/.node-gyp
@@ -167,6 +167,8 @@ ci-test:
   BUILD +docker-image
 
 ci-deploy:
+  # To run manually:
+  # FLY_API_TOKEN=$(flyctl tokens create deploy) earthly --allow-privileged --secret FLY_API_TOKEN +ci-deploy --COMMIT_SHA=$(git rev-parse HEAD)
   BUILD +ci-test
   ARG --required COMMIT_SHA
-  DO +app-deploy --COMMIT_SHA=$COMMIT_SHA
+  BUILD +app-deploy --COMMIT_SHA=$COMMIT_SHA
