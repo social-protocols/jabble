@@ -1,7 +1,7 @@
 name: 🚀 Deploy
 on:
-  push:
-    branches: ['main']
+  pull_request:
+    types: [opened, synchronize]
   workflow_dispatch:
 
 concurrency:
@@ -22,9 +22,9 @@ env:
   FORCE_COLOR: 1
 
 jobs:
-  deploy:
-    name: Deploy
-    runs-on: ubuntu-22.04
+  lint:
+    name: Test
+    runs-on: ubuntu-22.04 # https://github.com/actions/runner-images?tab=readme-ov-file#available-images
     timeout-minutes: 60
 
     steps:
@@ -34,10 +34,7 @@ jobs:
         version: ${{ env.EARTHLY_VERSION }}
 
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: Deploy
-      run:
-        earthly --allow-privileged --secret FLY_API_TOKEN +ci-deploy --COMMIT_SHA=${{ github.sha }}
-      env:
-        FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    - name: Test
+      run: earthly +ci-test
