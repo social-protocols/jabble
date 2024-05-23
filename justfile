@@ -57,6 +57,9 @@ reseed:
 import-hn:
 	npx tsx import-hn.ts ./other/hn-data/*.json.gz
 
+import-society-library json userid:
+	npx tsx other/import-society-library-debatemap.ts {{json}} {{userid}}
+
 # delete local database, download production database
 download-prod-db:
   rm -f "$APP_DATABASE_PATH"
