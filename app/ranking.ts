@@ -294,6 +294,8 @@ async function getRankedRepliesInternal(
 }
 
 export async function getRankedDirectReplies(tag: string, targetId: number) {
+	const tagId = await getOrInsertTagId(tag)
+
 	const query = db
 		.selectFrom('Post')
 		.innerJoin('Effect', 'Effect.noteId', 'Post.id')
@@ -301,6 +303,7 @@ export async function getRankedDirectReplies(tag: string, targetId: number) {
 		.where('Post.parentId', '=', targetId)
 		.where('Effect.postId', '=', targetId)
 		.where('Effect.noteId', 'is not', null)
+		.where('Effect.tagId', '=', tagId)
 		.select('Effect.noteId as postId')
 		.select('Effect.p as targetP')
 		.select('Effect.pSize as targetPSize')
@@ -322,11 +325,7 @@ export async function getRankedDirectReplies(tag: string, targetId: number) {
 		// reversed because we sort ascending
 		.reverse()
 
-	const scoredPosts = await Promise.all(
-		resultSorted.map(item => getScoredPost(tag, item.postId as number)),
-	)
-
-	return scoredPosts
+	return resultSorted
 }
 
 export async function getRankedTags(): Promise<string[]> {
