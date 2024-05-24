@@ -1,10 +1,9 @@
-import { Transaction, sql } from 'kysely'
+import { type Transaction, sql } from 'kysely'
 import { type VoteEvent, type InsertableVoteEvent } from '#app/db/types.ts'
 import { sendVoteEvent } from '#app/globalbrain.ts'
-import { db } from './db.ts'
+import { type DB } from './db/kysely-types.ts'
 import { getOrInsertTagId } from './tag.ts'
 import { invariant } from './utils/misc.tsx'
-import { DB } from './db/kysely-types.ts'
 
 export enum Direction {
 	Up = 1,
@@ -28,109 +27,99 @@ export function defaultVoteState(postId: number): VoteState {
 
 // The vote function inserts a vote record in voteHistory, and also updates attention stats
 export async function vote(
+	trx: Transaction<DB>,
 	tag: string,
 	userId: string,
 	postId: number,
 	noteId: number | null,
 	direction: Direction,
-	trx?: Transaction<DB>,
 ): Promise<VoteEvent> {
-	async function executeInTrx(trxLocal: Transaction<DB>) {
-		const tagId = await getOrInsertTagId(tag, trxLocal)
+	const tagId = await getOrInsertTagId(trx, tag)
 
-		let voteEvent: VoteEvent = await insertVoteEvent(
-			tagId,
-			userId,
-			postId,
-			noteId,
-			direction,
-			trxLocal,
-		)
+	let voteEvent: VoteEvent = await insertVoteEvent(
+		trx,
+		tagId,
+		userId,
+		postId,
+		noteId,
+		direction,
+	)
 
-		await sendVoteEvent(voteEvent, trxLocal)
+	await sendVoteEvent(trx, voteEvent)
 
-		return voteEvent
-	}
-
-	return trx
-		? await executeInTrx(trx)
-		: await db.transaction().execute(async (trxLocal) => await executeInTrx(trxLocal))
+	return voteEvent
 }
 
 async function insertVoteEvent(
+	trx: Transaction<DB>,
 	tagId: number,
 	userId: string,
 	postId: number,
 	noteId: number | null,
 	vote: Direction,
-	trx?: Transaction<DB>,
 ): Promise<VoteEvent> {
-	async function executeInTrx(trxLocal: Transaction<DB>) {
-		const voteInt = vote as number
+	const voteInt = vote as number
 
-		const post: { parentId: number | null } | undefined = await trxLocal
-			.selectFrom('Post')
-			.where('id', '=', postId)
-			.select('parentId')
-			.executeTakeFirst()
+	const post: { parentId: number | null } | undefined = await trx
+		.selectFrom('Post')
+		.where('id', '=', postId)
+		.select('parentId')
+		.executeTakeFirst()
 
-		invariant(
-			post,
-			`Post ${postId} not found when inserting vote ${vote} for user ${userId}`,
-		)
+	invariant(
+		post,
+		`Post ${postId} not found when inserting vote ${vote} for user ${userId}`,
+	)
 
-		const parentId = post.parentId
+	const parentId = post.parentId
 
-		const voteEvent: InsertableVoteEvent = {
-			userId: userId,
-			tagId: tagId,
-			parentId: parentId,
-			postId: postId,
-			noteId: noteId,
-			vote: voteInt,
-		}
-
-		const results: VoteEvent[] = await trxLocal
-			.insertInto('VoteEvent')
-			.values(voteEvent)
-			.returning([
-				'voteEventId',
-				'voteEventTime',
-				'userId',
-				'tagId',
-				'parentId',
-				'postId',
-				'noteId',
-				'vote',
-			])
-			.execute()
-
-		invariant(
-			results[0],
-			`VoteEvent insert for user ${userId} on post ${postId} failed`,
-		)
-
-		const outputVoteEvent = results[0]
-		invariant(
-			outputVoteEvent.voteEventId > 0,
-			`Generated voteEventId for user ${userId} on post ${postId} must be greater than 0`,
-		)
-
-		return outputVoteEvent
+	const voteEvent: InsertableVoteEvent = {
+		userId: userId,
+		tagId: tagId,
+		parentId: parentId,
+		postId: postId,
+		noteId: noteId,
+		vote: voteInt,
 	}
-	return trx
-		? await executeInTrx(trx)
-		: await db.transaction().execute(async (trxLocal) => await executeInTrx(trxLocal))
+
+	const results: VoteEvent[] = await trx
+		.insertInto('VoteEvent')
+		.values(voteEvent)
+		.returning([
+			'voteEventId',
+			'voteEventTime',
+			'userId',
+			'tagId',
+			'parentId',
+			'postId',
+			'noteId',
+			'vote',
+		])
+		.execute()
+
+	invariant(
+		results[0],
+		`VoteEvent insert for user ${userId} on post ${postId} failed`,
+	)
+
+	const outputVoteEvent = results[0]
+	invariant(
+		outputVoteEvent.voteEventId > 0,
+		`Generated voteEventId for user ${userId} on post ${postId} must be greater than 0`,
+	)
+
+	return outputVoteEvent
 }
 
 export async function getUserVotes(
+	trx: Transaction<DB>,
 	userId: string,
 	tag: string,
 	postIds: number[],
 ): Promise<VoteState[]> {
-	let tagId = await getOrInsertTagId(tag)
+	let tagId = await getOrInsertTagId(trx, tag)
 
-	return await db
+	return await trx
 		.selectFrom('Post')
 		.innerJoin('Score', 'Score.postId', 'Post.id')
 		.leftJoin('Vote', join =>

@@ -6,6 +6,7 @@ import { Markdown } from '#app/components/markdown.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { PostForm } from '#app/components/ui/post-form.tsx'
 import { PostContent, CommentIcon } from '#app/components/ui/post.tsx'
+import { db } from '#app/db.js'
 import * as rankingTs from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 
@@ -20,7 +21,9 @@ export default function Index() {
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId: string | null = await getUserId(request)
 	const loggedIn = userId !== null
-	const feed = await rankingTs.getChronologicalToplevelPosts('global')
+	const feed = await db.transaction().execute(async trx => {
+		return rankingTs.getChronologicalToplevelPosts(trx, 'global')
+	})
 	return { loggedIn, feed }
 }
 

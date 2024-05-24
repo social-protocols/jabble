@@ -1,34 +1,28 @@
+import { type Transaction } from 'kysely'
 import { type Tag } from '#app/db/types.ts' // this is the Database interface we defined earlier
-import { db } from '#app/db.ts'
+import { type DB } from './db/kysely-types.ts'
 import { invariant } from './utils/misc.tsx'
-import { Transaction } from 'kysely'
-import { DB } from './db/kysely-types.ts'
 
-export async function getOrInsertTagId(tag: string, trx?: Transaction<DB>): Promise<number> {
-	async function executeQueryInTrx(trxLocal: Transaction<DB>, tagToPersist: string) {
-		let existingTag: Tag | undefined = await trxLocal
+export async function getOrInsertTagId(
+	trx: Transaction<DB>,
+	tag: string,
+): Promise<number> {
+	let existingTag: Tag | undefined = await trx
+		.selectFrom('Tag')
+		.where('tag', '=', tag)
+		.selectAll()
+		.executeTakeFirst()
+
+	if (!existingTag) {
+		await trx.insertInto('Tag').values({ tag: tag }).execute()
+		existingTag = await trx
 			.selectFrom('Tag')
-			.where('tag', '=', tagToPersist)
+			.where('tag', '=', tag)
 			.selectAll()
-			.executeTakeFirst()
-
-		if (!existingTag) {
-			await trxLocal.insertInto('Tag').values({ tag: tagToPersist }).execute()
-			existingTag = await trxLocal
-				.selectFrom('Tag')
-				.where('tag', '=', tagToPersist)
-				.selectAll()
-				.executeTakeFirstOrThrow()
-		}
-
-		invariant(existingTag, `Couldn't find or create tag ${tagToPersist}`)
-
-		return existingTag.id
+			.executeTakeFirstOrThrow()
 	}
 
-	const persistedTagId = trx
-		? await executeQueryInTrx(trx, tag)
-		: await db.transaction().execute(async (trxLocal) => await executeQueryInTrx(trxLocal, tag))
+	invariant(existingTag, `Couldn't find or create tag ${tag}`)
 
-	return persistedTagId
+	return existingTag.id
 }

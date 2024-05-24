@@ -1,7 +1,7 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
-
 import { z } from 'zod'
 import { zfd } from 'zod-form-data'
+import { db } from '#app/db.js'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { Direction, getUserVotes, vote, type VoteState } from '#app/vote.ts'
 
@@ -56,9 +56,13 @@ export const action = async (args: ActionFunctionArgs) => {
 	const postId = parsedData.postId
 	const tag = parsedData.tag
 
-	const v = await vote(tag, userId, postId, noteId, newState)
+	const v = await db
+		.transaction()
+		.execute(async trx => vote(trx, tag, userId, postId, noteId, newState))
 
-	const voteState: VoteState[] = await getUserVotes(v.userId, tag, [v.postId])
+	const voteState: VoteState[] = await db
+		.transaction()
+		.execute(async trx => getUserVotes(trx, v.userId, tag, [v.postId]))
 
 	return { voteState: voteState[0], postId: postId }
 }

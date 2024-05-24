@@ -1,85 +1,75 @@
 import assert from 'assert'
+import { type Transaction } from 'kysely'
 import { type Post } from '#app/db/types.ts'
-import { db } from '#app/db.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { Direction, vote } from '#app/vote.ts'
-
+import { type DB } from './db/kysely-types.ts'
 import { getOrInsertTagId } from './tag.ts'
-import { Transaction } from 'kysely'
-import { DB } from './db/kysely-types.ts'
 
 export async function createPost(
+	trx: Transaction<DB>,
 	tag: string,
 	parentId: number | null, // TODO: use parentId?: number
 	content: string,
 	authorId: string,
-	trx?: Transaction<DB>,
 ): Promise<number> {
-	async function executeQueryInTransaction(trxLocal: Transaction<DB>) {
-		const result: { id: number } = await trxLocal
-			.insertInto('Post')
-			.values({ content, parentId, authorId })
-			.returning('id')
-			.executeTakeFirstOrThrow()
+	const result: { id: number } = await trx
+		.insertInto('Post')
+		.values({ content, parentId, authorId })
+		.returning('id')
+		.executeTakeFirstOrThrow()
 
-		invariant(result, `Reply to ${parentId} not submitted successfully`)
-		const postId: number = result.id
+	invariant(result, `Reply to ${parentId} not submitted successfully`)
+	const postId: number = result.id
 
-		const direction: Direction = Direction.Up
+	const direction: Direction = Direction.Up
 
-		await vote(tag, authorId, postId, null, direction, trxLocal)
+	await vote(trx, tag, authorId, postId, null, direction)
 
-		const tagId = await getOrInsertTagId(tag, trxLocal)
+	const tagId = await getOrInsertTagId(trx, tag)
 
-		if (parentId !== null) {
-			await incrementReplyCount(tagId, parentId, trxLocal)
-		}
-
-		return postId
+	if (parentId !== null) {
+		await incrementReplyCount(trx, tagId, parentId)
 	}
 
-	return trx
-		? await executeQueryInTransaction(trx)
-		: await db.transaction().execute(async (trxLocal) => await executeQueryInTransaction(trxLocal))
+	return postId
 }
 
-export async function initPostStats(tagId: number, postId: number, trx?: Transaction<DB>) {
-	async function executeInTrx(localTrx: Transaction<DB>) {
-		await localTrx
-			.insertInto('PostStats')
-			.values({
-				tagId: tagId,
-				postId: postId,
-				replies: 0,
-			})
-			// ignore conflict
-			.onConflict(oc => oc.column('postId').doNothing())
-			.execute()
-	}
-	trx
-		? await executeInTrx(trx)
-		: await db.transaction().execute(async (trxLocal) => await executeInTrx(trxLocal))
+export async function initPostStats(
+	trx: Transaction<DB>,
+	tagId: number,
+	postId: number,
+) {
+	await trx
+		.insertInto('PostStats')
+		.values({
+			tagId: tagId,
+			postId: postId,
+			replies: 0,
+		})
+		// ignore conflict
+		.onConflict(oc => oc.column('postId').doNothing())
+		.execute()
 }
 
-export async function incrementReplyCount(tagId: number, postId: number, trx?: Transaction<DB>) {
-	async function executeInTrx(localTrx: Transaction<DB>) {
-		await initPostStats(tagId, postId, localTrx)
-		await localTrx
-			.updateTable('PostStats')
-			.set(eb => ({
-				replies: eb.bxp('replies', '+', 1),
-			}))
-			.where('tagId', '=', tagId)
-			.where('postId', '=', postId)
-			.execute()
-		}
-		trx
-			? await executeInTrx(trx)
-			: await db.transaction().execute(async (trxLocal) => await executeInTrx(trxLocal))
+export async function incrementReplyCount(
+	trx: Transaction<DB>,
+	tagId: number,
+	postId: number,
+) {
+	await initPostStats(trx, tagId, postId)
+	await trx
+		.updateTable('PostStats')
+		.set(eb => ({
+			replies: eb.bxp('replies', '+', 1),
+		}))
+		.where('tagId', '=', tagId)
+		.where('postId', '=', postId)
+		.execute()
 }
 
-export async function getPost(id: number): Promise<Post> {
-	let result: Post | undefined = await db
+export async function getPost(trx: Transaction<DB>, id: number): Promise<Post> {
+	let result: Post | undefined = await trx
 		.selectFrom('Post')
 		.where('id', '=', id)
 		.selectAll()
@@ -89,8 +79,12 @@ export async function getPost(id: number): Promise<Post> {
 	return result
 }
 
-export async function deletePost(id: number, byUserId: string) {
-	const user = await db
+export async function deletePost(
+	trx: Transaction<DB>,
+	id: number,
+	byUserId: string,
+) {
+	const user = await trx
 		.selectFrom('User')
 		.where('id', '=', byUserId)
 		.selectAll()
@@ -102,7 +96,7 @@ export async function deletePost(id: number, byUserId: string) {
 		`Cannot delete post: User ${byUserId} doesn't have permission`,
 	)
 
-	const existingPost = await db
+	const existingPost = await trx
 		.selectFrom('Post')
 		.where('id', '=', id)
 		.selectAll()
@@ -115,15 +109,19 @@ export async function deletePost(id: number, byUserId: string) {
 		return
 	}
 
-	await db
+	await trx
 		.updateTable('Post')
 		.set({ deletedAt: Date.now() })
 		.where('id', '=', id)
 		.execute()
 }
 
-export async function restoreDeletedPost(id: number, byUserId: string) {
-	const user = await db
+export async function restoreDeletedPost(
+	trx: Transaction<DB>,
+	id: number,
+	byUserId: string,
+) {
+	const user = await trx
 		.selectFrom('User')
 		.where('id', '=', byUserId)
 		.selectAll()
@@ -135,7 +133,7 @@ export async function restoreDeletedPost(id: number, byUserId: string) {
 		`Cannot restore post: User ${byUserId} doesn't have permission`,
 	)
 
-	const existingPost = await db
+	const existingPost = await trx
 		.selectFrom('Post')
 		.where('id', '=', id)
 		.selectAll()
@@ -148,15 +146,18 @@ export async function restoreDeletedPost(id: number, byUserId: string) {
 		return
 	}
 
-	await db
+	await trx
 		.updateTable('Post')
 		.set({ deletedAt: null })
 		.where('id', '=', id)
 		.execute()
 }
 
-export async function getTransitiveParents(id: number): Promise<Post[]> {
-	let result: Post[] = await db
+export async function getTransitiveParents(
+	trx: Transaction<DB>,
+	id: number,
+): Promise<Post[]> {
+	let result: Post[] = await trx
 		.withRecursive('transitive_parents', db =>
 			db
 				.selectFrom('Post')

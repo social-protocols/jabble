@@ -22,7 +22,7 @@ export async function importHN() {
 }
 
 async function importHNPostsFromFile(tag: string, filename: string) {
-	await getOrInsertTagId(tag)
+	await db.transaction().execute(async trx => getOrInsertTagId(trx, tag))
 
 	await readJsonLinesFromFile(filename)
 		.then(async items => {
@@ -69,7 +69,11 @@ async function importHNPostsFromFile(tag: string, filename: string) {
 					}
 				}
 
-				const postId = await createPost(tag, parentId, markdown, ourUserId)
+				const postId = await db
+					.transaction()
+					.execute(async trx =>
+						createPost(trx, tag, parentId, markdown, ourUserId),
+					)
 
 				idMap.set(item.id, postId)
 				bar1.update(++i)

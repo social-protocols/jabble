@@ -1,5 +1,5 @@
-import { sql } from 'kysely'
-import { db } from '#app/db.ts'
+import { type Transaction, sql } from 'kysely'
+import { type DB } from './db/kysely-types.ts'
 import { getScoredPost, type ScoredPost } from './ranking.ts'
 import { getOrInsertTagId } from './tag.ts'
 import { relativeEntropy } from './utils/entropy.ts'
@@ -11,12 +11,13 @@ export type ThreadPost = ScoredPost & {
 }
 
 export async function getCriticalThread(
+	trx: Transaction<DB>,
 	postId: number,
 	tag: string,
 ): Promise<ThreadPost[]> {
-	const tagId = await getOrInsertTagId(tag)
+	const tagId = await getOrInsertTagId(trx, tag)
 
-	const postWithCriticalThreadId = await db
+	const postWithCriticalThreadId = await trx
 		.withRecursive('CriticalThread', db =>
 			db
 				.selectFrom('Score')
@@ -47,10 +48,10 @@ export async function getCriticalThread(
 	})
 
 	const scoredPosts = await Promise.all(
-		postWithCriticalThreadId.map(post => getScoredPost(tag, post.postId)),
+		postWithCriticalThreadId.map(post => getScoredPost(trx, tag, post.postId)),
 	)
 
-	const effects = await db
+	const effects = await trx
 		.selectFrom('Effect')
 		.where(
 			'noteId',

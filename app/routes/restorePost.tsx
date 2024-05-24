@@ -2,6 +2,7 @@ import { type ActionFunctionArgs } from '@remix-run/node'
 import { redirect } from '@remix-run/server-runtime'
 import { z } from 'zod'
 import { zfd } from 'zod-form-data'
+import { db } from '#app/db.js'
 import { restoreDeletedPost } from '#app/post.ts'
 import { invariant } from '#app/utils/misc.tsx'
 
@@ -29,7 +30,9 @@ export const action = async (args: ActionFunctionArgs) => {
 		`Tried restoring deleted post ${postId} from tag ${tag} without a userId`,
 	)
 
-	await restoreDeletedPost(postId, userId)
+	await db
+		.transaction()
+		.execute(async trx => restoreDeletedPost(trx, postId, userId))
 
 	return redirect(`/tags/${tag}/posts/${postId}`)
 }
