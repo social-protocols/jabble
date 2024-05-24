@@ -319,6 +319,7 @@ export async function getRankedDirectReplies(
 		.where('Effect.postId', '=', targetId)
 		.where('Effect.noteId', 'is not', null)
 		.where('Effect.tagId', '=', tagId)
+		.where('Score.tagId', '=', tagId)
 		.select('Effect.noteId as postId')
 		.select('Effect.p as targetP')
 		.select('Effect.pSize as targetPSize')
