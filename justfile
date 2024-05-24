@@ -97,16 +97,16 @@ download-production-data:
 	fly ssh sftp get /data/vote-events.jsonl $SOCIAL_PROTOCOLS_DATADIR/production/vote-events.jsonl
 	fly ssh sftp get /litefs/data/sqlite.db $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db
 	fly ssh sftp get /litefs/data/global-brain.db $SOCIAL_PROTOCOLS_DATADIR/production/global-brain.db
+	fly ssh sftp get /litefs/data/sqlite.db $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db-wal
+	fly ssh sftp get /litefs/data/global-brain.db $SOCIAL_PROTOCOLS_DATADIR/production/global-brain.db-wal
+
 
 use-production-data:
 	cp -f $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db $SOCIAL_PROTOCOLS_DATADIR/
+	cp -f $SOCIAL_PROTOCOLS_DATADIR/production/global-brain.db $SOCIAL_PROTOCOLS_DATADIR/
+	cp -f $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db-wal $SOCIAL_PROTOCOLS_DATADIR/
+	cp -f $SOCIAL_PROTOCOLS_DATADIR/production/global-brain.db-wal $SOCIAL_PROTOCOLS_DATADIR/
 	just migrate
-	sqlite3 $APP_DATABASE_PATH "delete from scoreEvent; delete from score;"
-	rm -f "$SCORE_EVENTS_PATH"
-	rm -f "$VOTE_EVENTS_PATH"
-	rm -f "$GB_DATABASE_PATH"
-	touch "$SCORE_EVENTS_PATH"
-
 
 production-db:
 	fly ssh console -C 'sqlite3 /litefs/data/sqlite.db'
