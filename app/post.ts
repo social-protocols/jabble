@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { type Transaction } from 'kysely'
-import { VoteEvent, type Post } from '#app/db/types.ts'
+import { type VoteEvent, type Post } from '#app/db/types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { Direction, vote } from '#app/vote.ts'
 import { type DB } from './db/kysely-types.ts'
@@ -20,7 +20,14 @@ export async function createPost(
 
 	invariant(persistedPost, `Reply to ${parentId} not submitted successfully`)
 
-	const voteEvent: VoteEvent = await vote(trx, tag, authorId, persistedPost.id, null, Direction.Up)
+	const voteEvent: VoteEvent = await vote(
+		trx,
+		tag,
+		authorId,
+		persistedPost.id,
+		null,
+		Direction.Up,
+	)
 
 	if (parentId !== null) {
 		await incrementReplyCount(trx, voteEvent.tagId, parentId)
