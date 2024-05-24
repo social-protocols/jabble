@@ -3,6 +3,7 @@ import { type ActionFunctionArgs, redirect } from '@remix-run/node'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 import { zfd } from 'zod-form-data'
+import { db } from '#app/db.ts'
 import { createPost } from '#app/post.ts'
 import { getOrInsertTagId } from '#app/tag.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
@@ -24,12 +25,14 @@ export const action = async (args: ActionFunctionArgs) => {
 	const content = parsedData.content
 	const parentId = parsedData.parentId || null
 	const tag = parsedData.tag
-	await getOrInsertTagId(tag)
+	await db.transaction().execute(async trx => getOrInsertTagId(trx, tag))
 
 	invariant(content, 'content !== undefined')
 	invariant(tag, "tag !== ''")
 
-	let postId = await createPost(tag, parentId, content, userId)
+	let postId = await db
+		.transaction()
+		.execute(async trx => createPost(trx, tag, parentId, content, userId))
 
 	return redirect(`/tags/${tag}/posts/${postId}`)
 }

@@ -9,7 +9,7 @@ async function replayVoteEvents() {
 		.execute()
 
 	for (const ve of voteEvents) {
-		await sendVoteEvent(ve)
+		await db.transaction().execute(async trx => sendVoteEvent(trx, ve))
 	}
 }
 

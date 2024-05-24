@@ -1,12 +1,10 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-
 import { useLoaderData } from '@remix-run/react'
-
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
-
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
+import { db } from '#app/db.ts'
 import { type ScoredPost, getScoredPost, getEffects } from '#app/ranking.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
 
@@ -19,9 +17,16 @@ export async function loader({ params }: LoaderFunctionArgs) {
 	const postId: number = postIdSchema.parse(params.postId)
 	const tag: string = tagSchema.parse(params.tag)
 
-	const post: ScoredPost = await getScoredPost(tag, postId)
+	const post: ScoredPost = await db
+		.transaction()
+		.execute(async trx => getScoredPost(trx, tag, postId))
 
-	const effects = post.parentId == null ? [] : await getEffects(tag, post.id)
+	const effects =
+		post.parentId == null
+			? []
+			: await db
+					.transaction()
+					.execute(async trx => getEffects(trx, tag, post.id))
 
 	// So the first of the replies and the top note are not necessarily the same thing?!?
 	// The top note is the most convincing one. But the replies are ordered by *information rate*.

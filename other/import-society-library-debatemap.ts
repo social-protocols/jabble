@@ -1,4 +1,5 @@
 import fs from 'fs'
+import { db } from '#app/db.ts'
 import { createPost } from '../app/post.ts'
 import { invariant } from '../app/utils/misc.tsx'
 
@@ -62,7 +63,9 @@ function removePrefix(wording: string, prefix: string) {
 async function importQuestion(question: Question) {
 	let wording = removePrefix(question.question, '[question] ')
 
-	const postId = await createPost(societyLibraryTag, null, wording, userId)
+	const postId = await db.transaction().execute(async trx => {
+		return createPost(trx, societyLibraryTag, null, wording, userId)
+	})
 	console.log(`Inserted question. post ${postId}: ${wording}`)
 
 	for (const position of question.positions) {
@@ -73,7 +76,9 @@ async function importQuestion(question: Question) {
 async function importPosition(parentId: number, position: Position) {
 	let wording = removePrefix(position.position, '[position] ')
 
-	const postId = await createPost(societyLibraryTag, parentId, wording, userId)
+	const postId = await db.transaction().execute(async trx => {
+		return createPost(trx, societyLibraryTag, parentId, wording, userId)
+	})
 	console.log(`Inserted position. post ${postId}: ${wording}`)
 
 	for (const category of position.categories) {
@@ -90,7 +95,9 @@ async function importCategory(parentId: number, category: Category) {
 async function importClaim(parentId: number, claim: Claim) {
 	let wording = removePrefix(claim.claim, '[for reasons like] ')
 
-	const postId = await createPost(societyLibraryTag, parentId, wording, userId)
+	const postId = await db.transaction().execute(async trx => {
+		return createPost(trx, societyLibraryTag, parentId, wording, userId)
+	})
 	console.log(`Inserted claim. post ${postId}: ${wording}`)
 
 	for (const example of claim.examples) {
@@ -104,7 +111,9 @@ async function importClaim(parentId: number, claim: Claim) {
 async function importExample(parentId: number, example: Example) {
 	let wording = removePrefix(example.original_example, '[original example] ')
 
-	const postId = await createPost(societyLibraryTag, parentId, wording, userId)
+	const postId = await db.transaction().execute(async trx => {
+		return createPost(trx, societyLibraryTag, parentId, wording, userId)
+	})
 	console.log(`Inserted example. post ${postId}: ${wording}`)
 
 	for (const evidence of example.evidence) {
@@ -113,18 +122,22 @@ async function importExample(parentId: number, example: Example) {
 }
 
 async function importEvidence(parentId: number, evidence: Evidence) {
-	const postId = await createPost(
-		societyLibraryTag,
-		parentId,
-		`
+	const postId = await db.transaction().execute(async trx => {
+		return createPost(
+			trx,
+			societyLibraryTag,
+			parentId,
+			`
 > ${evidence.quote}
 
 ${evidence.url} 
 
 ${evidence.reasoning}
-		`,
-		userId,
-	)
+			`,
+			userId,
+		)
+	})
+
 	console.log(
 		`Inserted evidence. post ${postId}: ${evidence.quote} ${evidence.url} ${evidence.reasoning}`,
 	)
@@ -136,6 +149,8 @@ async function importCounterClaim(parentId: number, counterClaim: string) {
 		'[Those who disagree with this point might reason] ',
 	)
 
-	const postId = await createPost(societyLibraryTag, parentId, wording, userId)
+	const postId = await db.transaction().execute(async trx => {
+		return createPost(trx, societyLibraryTag, parentId, wording, userId)
+	})
 	console.log(`Inserted counter claim. post ${postId}: ${wording}`)
 }
