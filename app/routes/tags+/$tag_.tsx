@@ -1,9 +1,5 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import {
-	useLoaderData,
-	type ShouldRevalidateFunction,
-	Link,
-} from '@remix-run/react'
+import { useLoaderData, type ShouldRevalidateFunction } from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 import { Feed } from '#app/components/ui/feed.tsx'
@@ -53,10 +49,6 @@ export default function TagPage() {
 
 	return (
 		<>
-			<div className="mb-5">
-				<Link to={`/`}>Home</Link>
-				&nbsp; &gt; <Link to={`/tags/${tag}`}>#{tag}</Link>
-			</div>
 			{loggedIn && <PostForm tag={tag} className="mb-5" />}
 			<Feed
 				posts={posts}
