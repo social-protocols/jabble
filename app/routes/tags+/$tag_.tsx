@@ -2,7 +2,6 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import {
 	useLoaderData,
 	type ShouldRevalidateFunction,
-	Link,
 } from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
