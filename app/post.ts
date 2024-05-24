@@ -55,7 +55,7 @@ export async function incrementReplyCount(
 	await trx
 		.updateTable('PostStats')
 		.set(eb => ({
-			replies: eb.bxp('replies', '+', 1),
+			replies: eb('replies', '+', 1),
 		}))
 		.where('tagId', '=', tagId)
 		.where('postId', '=', postId)
