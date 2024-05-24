@@ -1,7 +1,7 @@
 import fs from 'fs'
+import { db } from '#app/db.ts'
 import { createPost } from '../app/post.ts'
 import { invariant } from '../app/utils/misc.tsx'
-import { db } from '#app/db.ts'
 
 // Filename is first commandline argument
 // const debateFilename = 'society-library-openai-debatemap.json'
