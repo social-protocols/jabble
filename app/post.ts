@@ -1,10 +1,9 @@
 import assert from 'assert'
 import { type Transaction } from 'kysely'
-import { type Post } from '#app/db/types.ts'
+import { VoteEvent, type Post } from '#app/db/types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { Direction, vote } from '#app/vote.ts'
 import { type DB } from './db/kysely-types.ts'
-import { getOrInsertTagId } from './tag.ts'
 
 export async function createPost(
 	trx: Transaction<DB>,
@@ -13,26 +12,21 @@ export async function createPost(
 	content: string,
 	authorId: string,
 ): Promise<number> {
-	const result: { id: number } = await trx
+	const persistedPost: Post = await trx
 		.insertInto('Post')
 		.values({ content, parentId, authorId })
-		.returning('id')
+		.returningAll()
 		.executeTakeFirstOrThrow()
 
-	invariant(result, `Reply to ${parentId} not submitted successfully`)
-	const postId: number = result.id
+	invariant(persistedPost, `Reply to ${parentId} not submitted successfully`)
 
-	const direction: Direction = Direction.Up
-
-	await vote(trx, tag, authorId, postId, null, direction)
-
-	const tagId = await getOrInsertTagId(trx, tag)
+	const voteEvent: VoteEvent = await vote(trx, tag, authorId, persistedPost.id, null, Direction.Up)
 
 	if (parentId !== null) {
-		await incrementReplyCount(trx, tagId, parentId)
+		await incrementReplyCount(trx, voteEvent.tagId, parentId)
 	}
 
-	return postId
+	return persistedPost.id
 }
 
 export async function initPostStats(
