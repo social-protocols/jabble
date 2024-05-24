@@ -1,8 +1,5 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import {
-	useLoaderData,
-	type ShouldRevalidateFunction,
-} from '@remix-run/react'
+import { useLoaderData, type ShouldRevalidateFunction } from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 import { Feed } from '#app/components/ui/feed.tsx'
