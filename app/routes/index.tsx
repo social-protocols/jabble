@@ -102,10 +102,6 @@ export function TopLevelPost({
 		>
 			<div className="postteaser flex w-full min-w-0 flex-col">
 				<div className="mt-1 text-right text-sm opacity-50">
-					posted in{' '}
-					<Link className="font-bold" to={`/tags/${post.tag}`}>
-						#{post.tag}
-					</Link>{' '}
 					{ageString}
 				</div>
 				<PostContent
