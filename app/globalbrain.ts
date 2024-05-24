@@ -41,7 +41,13 @@ export async function processScoreEvents(
 
 	await Promise.all(
 		lines.map(async (line: string) => {
-			const data: any = JSON.parse(line)
+			let data: any = {}
+
+			try {
+				data = JSON.parse(line)
+			} catch (error) {
+				console.log(`Error parsing JSON line ${line}: ${error}`)
+			}
 
 			if (data['score'] !== undefined) {
 				await insertScoreEvent(trx, data)
