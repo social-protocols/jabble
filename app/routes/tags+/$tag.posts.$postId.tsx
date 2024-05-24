@@ -9,7 +9,7 @@ import { PostContent, PostDetails } from '#app/components/ui/post.tsx'
 import { ReplyThread } from '#app/components/ui/reply-thread.tsx'
 import { getCriticalThread, type ThreadPost } from '#app/conversations.ts'
 import { type Post } from '#app/db/types.ts'
-import { db } from '#app/db.js'
+import { db } from '#app/db.ts'
 import { getTransitiveParents } from '#app/post.ts'
 import {
 	getRankedDirectReplies,

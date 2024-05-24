@@ -1,7 +1,7 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { zfd } from 'zod-form-data'
-import { db } from '#app/db.js'
+import { db } from '#app/db.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { Direction, getUserVotes, vote, type VoteState } from '#app/vote.ts'
 

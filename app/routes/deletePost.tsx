@@ -2,7 +2,7 @@ import { type ActionFunctionArgs } from '@remix-run/node'
 import { redirect } from '@remix-run/server-runtime'
 import { z } from 'zod'
 import { zfd } from 'zod-form-data'
-import { db } from '#app/db.js'
+import { db } from '#app/db.ts'
 import { deletePost } from '#app/post.ts'
 import { invariant } from '#app/utils/misc.tsx'
 

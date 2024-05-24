@@ -6,7 +6,7 @@ import { Markdown } from '#app/components/markdown.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { PostForm } from '#app/components/ui/post-form.tsx'
 import { PostContent, CommentIcon } from '#app/components/ui/post.tsx'
-import { db } from '#app/db.js'
+import { db } from '#app/db.ts'
 import * as rankingTs from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 

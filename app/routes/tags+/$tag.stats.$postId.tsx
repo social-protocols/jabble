@@ -4,7 +4,7 @@ import invariant from 'tiny-invariant'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
-import { db } from '#app/db.js'
+import { db } from '#app/db.ts'
 import { type ScoredPost, getScoredPost, getEffects } from '#app/ranking.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
 
