@@ -6,11 +6,10 @@ import {
 } from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
-
 import { Feed } from '#app/components/ui/feed.tsx'
 import { PostForm } from '#app/components/ui/post-form.tsx'
+import { db } from '#app/db.ts'
 import { getRankedPosts } from '#app/ranking.ts'
-
 import { getUserId } from '#app/utils/auth.server.ts'
 import { type VoteState, getUserVotes } from '#app/vote.ts'
 
@@ -22,15 +21,20 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 	const userId: string | null = await getUserId(request)
 
-	const rankedPosts = await getRankedPosts(tag)
+	const rankedPosts = await db
+		.transaction()
+		.execute(async trx => getRankedPosts(trx, tag))
 	const posts = rankedPosts
 	let votes: VoteState[] = []
 	if (userId) {
-		votes = await getUserVotes(
-			userId,
-			tag,
-			rankedPosts.map(p => p.id),
-		)
+		votes = await db.transaction().execute(async trx => {
+			return getUserVotes(
+				trx,
+				userId,
+				tag,
+				rankedPosts.map(p => p.id),
+			)
+		})
 	}
 
 	const loggedIn = userId !== null

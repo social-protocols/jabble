@@ -1,41 +1,47 @@
 import assert from 'assert'
-import { type Post } from '#app/db/types.ts'
-import { db } from '#app/db.ts'
+import { type Transaction } from 'kysely'
+import { type VoteEvent, type Post } from '#app/db/types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { Direction, vote } from '#app/vote.ts'
-
-import { getOrInsertTagId } from './tag.ts'
+import { type DB } from './db/kysely-types.ts'
 
 export async function createPost(
+	trx: Transaction<DB>,
 	tag: string,
 	parentId: number | null, // TODO: use parentId?: number
 	content: string,
 	authorId: string,
 ): Promise<number> {
-	const results: { id: number }[] = await db
+	const persistedPost: Post = await trx
 		.insertInto('Post')
 		.values({ content, parentId, authorId })
-		.returning('id')
-		.execute()
+		.returningAll()
+		.executeTakeFirstOrThrow()
 
-	invariant(results[0], `Reply to ${parentId} not submitted successfully`)
-	const postId: number = results[0].id
+	invariant(persistedPost, `Reply to ${parentId} not submitted successfully`)
 
-	const direction: Direction = Direction.Up
+	const voteEvent: VoteEvent = await vote(
+		trx,
+		tag,
+		authorId,
+		persistedPost.id,
+		null,
+		Direction.Up,
+	)
 
-	await vote(tag, authorId, postId, null, direction)
-
-	const tagId = await getOrInsertTagId(tag)
-
-	if (parentId != null) {
-		await incrementReplyCount(tagId, parentId)
+	if (parentId !== null) {
+		await incrementReplyCount(trx, voteEvent.tagId, parentId)
 	}
 
-	return postId
+	return persistedPost.id
 }
 
-export async function initPostStats(tagId: number, postId: number) {
-	let query = db
+export async function initPostStats(
+	trx: Transaction<DB>,
+	tagId: number,
+	postId: number,
+) {
+	await trx
 		.insertInto('PostStats')
 		.values({
 			tagId: tagId,
@@ -44,23 +50,27 @@ export async function initPostStats(tagId: number, postId: number) {
 		})
 		// ignore conflict
 		.onConflict(oc => oc.column('postId').doNothing())
-	await query.execute()
+		.execute()
 }
 
-export async function incrementReplyCount(tagId: number, postId: number) {
-	await initPostStats(tagId, postId)
-	await db
+export async function incrementReplyCount(
+	trx: Transaction<DB>,
+	tagId: number,
+	postId: number,
+) {
+	await initPostStats(trx, tagId, postId)
+	await trx
 		.updateTable('PostStats')
 		.set(eb => ({
-			replies: eb.bxp('replies', '+', 1),
+			replies: eb('replies', '+', 1),
 		}))
 		.where('tagId', '=', tagId)
 		.where('postId', '=', postId)
 		.execute()
 }
 
-export async function getPost(id: number): Promise<Post> {
-	let result: Post | undefined = await db
+export async function getPost(trx: Transaction<DB>, id: number): Promise<Post> {
+	let result: Post | undefined = await trx
 		.selectFrom('Post')
 		.where('id', '=', id)
 		.selectAll()
@@ -70,8 +80,12 @@ export async function getPost(id: number): Promise<Post> {
 	return result
 }
 
-export async function deletePost(id: number, byUserId: string) {
-	const user = await db
+export async function deletePost(
+	trx: Transaction<DB>,
+	id: number,
+	byUserId: string,
+) {
+	const user = await trx
 		.selectFrom('User')
 		.where('id', '=', byUserId)
 		.selectAll()
@@ -83,7 +97,7 @@ export async function deletePost(id: number, byUserId: string) {
 		`Cannot delete post: User ${byUserId} doesn't have permission`,
 	)
 
-	const existingPost = await db
+	const existingPost = await trx
 		.selectFrom('Post')
 		.where('id', '=', id)
 		.selectAll()
@@ -96,15 +110,19 @@ export async function deletePost(id: number, byUserId: string) {
 		return
 	}
 
-	await db
+	await trx
 		.updateTable('Post')
 		.set({ deletedAt: Date.now() })
 		.where('id', '=', id)
 		.execute()
 }
 
-export async function restoreDeletedPost(id: number, byUserId: string) {
-	const user = await db
+export async function restoreDeletedPost(
+	trx: Transaction<DB>,
+	id: number,
+	byUserId: string,
+) {
+	const user = await trx
 		.selectFrom('User')
 		.where('id', '=', byUserId)
 		.selectAll()
@@ -116,7 +134,7 @@ export async function restoreDeletedPost(id: number, byUserId: string) {
 		`Cannot restore post: User ${byUserId} doesn't have permission`,
 	)
 
-	const existingPost = await db
+	const existingPost = await trx
 		.selectFrom('Post')
 		.where('id', '=', id)
 		.selectAll()
@@ -129,15 +147,18 @@ export async function restoreDeletedPost(id: number, byUserId: string) {
 		return
 	}
 
-	await db
+	await trx
 		.updateTable('Post')
 		.set({ deletedAt: null })
 		.where('id', '=', id)
 		.execute()
 }
 
-export async function getTransitiveParents(id: number): Promise<Post[]> {
-	let result: Post[] = await db
+export async function getTransitiveParents(
+	trx: Transaction<DB>,
+	id: number,
+): Promise<Post[]> {
+	let result: Post[] = await trx
 		.withRecursive('transitive_parents', db =>
 			db
 				.selectFrom('Post')

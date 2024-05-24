@@ -1,11 +1,15 @@
 import global_brain from '@socialprotocols/globalbrain-node'
+import { type Transaction } from 'kysely'
+import { type DB } from './db/kysely-types.ts'
 import { type VoteEvent } from './db/types.ts'
-import { db } from './db.ts'
 
 const gbDatabasePath = process.env.GB_DATABASE_PATH
 
-export async function sendVoteEvent(voteEvent: VoteEvent) {
-	const json = JSON.stringify(voteEvent, (key, value) => {
+export async function sendVoteEvent(
+	trx: Transaction<DB>,
+	voteEvent: VoteEvent,
+) {
+	const json = JSON.stringify(voteEvent, (_key, value) => {
 		if (value && typeof value === 'object' && !Array.isArray(value)) {
 			const replacement: any = {}
 			for (const k in value) {
@@ -23,10 +27,11 @@ export async function sendVoteEvent(voteEvent: VoteEvent) {
 		json,
 	)
 
-	return processScoreEvents(result, voteEvent)
+	return processScoreEvents(trx, result, voteEvent)
 }
 
 export async function processScoreEvents(
+	trx: Transaction<DB>,
 	scoreEventsJsonl: String,
 	voteEvent: VoteEvent,
 ) {
@@ -45,7 +50,7 @@ export async function processScoreEvents(
 			}
 
 			if (data['score'] !== undefined) {
-				await insertScoreEvent(data)
+				await insertScoreEvent(trx, data)
 				console.log('Inserted score event for post', data['score']['post_id'])
 				if (
 					data['vote_event_id'] == voteEvent.voteEventId &&
@@ -61,7 +66,7 @@ export async function processScoreEvents(
 					'on post',
 					data['effect']['post_id'],
 				)
-				await insertEffectEvent(data)
+				await insertEffectEvent(trx, data)
 			} else {
 				throw new Error('Unknown event type')
 			}
@@ -82,14 +87,14 @@ export async function processScoreEvents(
 	)
 }
 
-async function insertScoreEvent(data: any) {
+async function insertScoreEvent(trx: Transaction<DB>, data: any) {
 	const data_flat = {
 		voteEventId: data['vote_event_id'],
 		voteEventTime: data['vote_event_time'],
 		...snakeToCamelCaseObject(data['score']),
 	}
 
-	const result = await db
+	const result = await trx
 		.insertInto('ScoreEvent')
 		.values(data_flat)
 		.onConflict(oc => oc.columns(['voteEventId', 'postId']).doNothing())
@@ -98,14 +103,14 @@ async function insertScoreEvent(data: any) {
 	return result
 }
 
-async function insertEffectEvent(data: any) {
+async function insertEffectEvent(trx: Transaction<DB>, data: any) {
 	const data_flat = {
 		voteEventId: data['vote_event_id'],
 		voteEventTime: data['vote_event_time'],
 		...snakeToCamelCaseObject(data['effect']),
 	}
 
-	await db
+	await trx
 		.insertInto('EffectEvent')
 		.values(data_flat)
 		.onConflict(oc =>

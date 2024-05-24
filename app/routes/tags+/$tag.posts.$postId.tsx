@@ -1,16 +1,14 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-
 import { Link, useLoaderData, useNavigate } from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
-
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { DeletedPost } from '#app/components/ui/deleted-post.tsx'
 import { PostContent, PostDetails } from '#app/components/ui/post.tsx'
 import { ReplyThread } from '#app/components/ui/reply-thread.tsx'
 import { getCriticalThread, type ThreadPost } from '#app/conversations.ts'
 import { type Post } from '#app/db/types.ts'
-
+import { db } from '#app/db.ts'
 import { getTransitiveParents } from '#app/post.ts'
 import {
 	getRankedDirectReplies,
@@ -31,31 +29,42 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	const tag: string = tagSchema.parse(params.tag)
 
 	const userId: string | null = await getUserId(request)
-	const post: ScoredPost = await getScoredPost(tag, postId)
+	const post: ScoredPost = await db
+		.transaction()
+		.execute(async trx => getScoredPost(trx, tag, postId))
 
 	invariantResponse(post, 'Post not found', { status: 404 })
 
-	const transitiveParents = await getTransitiveParents(post.id)
+	const transitiveParents = await db
+		.transaction()
+		.execute(async trx => getTransitiveParents(trx, post.id))
 
-	let criticalThread: ThreadPost[] = await getCriticalThread(post.id, tag)
+	let criticalThread: ThreadPost[] = await db
+		.transaction()
+		.execute(async trx => getCriticalThread(trx, post.id, tag))
 
-	const otherReplies: ScoredPost[] = await getRankedDirectReplies(tag, post.id)
+	const otherReplies: ScoredPost[] = await db
+		.transaction()
+		.execute(async trx => getRankedDirectReplies(trx, tag, post.id))
 
 	let votes: VoteState[] =
 		userId === null
 			? []
-			: await getUserVotes(
-					userId,
-					tag,
-					otherReplies
-						.map(p => p.id)
-						.concat(criticalThread.map(p => p.id))
-						.concat([post.id])
-						// dedupe array: https://stackoverflow.com/a/23282067/13607059
-						.filter(function (item, i, ar) {
-							return ar.indexOf(item) === i
-						}),
-				)
+			: await db.transaction().execute(async trx => {
+					return getUserVotes(
+						trx,
+						userId,
+						tag,
+						otherReplies
+							.map(p => p.id)
+							.concat(criticalThread.map(p => p.id))
+							.concat([post.id])
+							// dedupe array: https://stackoverflow.com/a/23282067/13607059
+							.filter(function (item, i, ar) {
+								return ar.indexOf(item) === i
+							}),
+					)
+				})
 
 	const loggedIn = userId !== null
 
