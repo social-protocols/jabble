@@ -309,6 +309,8 @@ export async function getRankedDirectReplies(
 	tag: string,
 	targetId: number,
 ) {
+	const tagId = await getOrInsertTagId(trx, tag)
+
 	const query = trx
 		.selectFrom('Post')
 		.innerJoin('Effect', 'Effect.noteId', 'Post.id')
@@ -316,6 +318,7 @@ export async function getRankedDirectReplies(
 		.where('Post.parentId', '=', targetId)
 		.where('Effect.postId', '=', targetId)
 		.where('Effect.noteId', 'is not', null)
+		.where('Effect.tagId', '=', tagId)
 		.select('Effect.noteId as postId')
 		.select('Effect.p as targetP')
 		.select('Effect.pSize as targetPSize')
