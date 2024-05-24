@@ -343,7 +343,3 @@ export async function getRankedDirectReplies(
 
 	return scoredPosts
 }
-
-export async function getRankedTags(): Promise<string[]> {
-	return []
-}
