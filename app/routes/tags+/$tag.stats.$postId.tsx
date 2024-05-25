@@ -19,14 +19,14 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
 	const post: ScoredPost = await db
 		.transaction()
-		.execute(async trx => getScoredPost(trx, tag, postId))
+		.execute(async trx => getScoredPost(trx, postId))
 
 	const effects =
 		post.parentId == null
 			? []
 			: await db
 					.transaction()
-					.execute(async trx => getEffects(trx, tag, post.id))
+					.execute(async trx => getEffects(trx, post.id))
 
 	// So the first of the replies and the top note are not necessarily the same thing?!?
 	// The top note is the most convincing one. But the replies are ordered by *information rate*.

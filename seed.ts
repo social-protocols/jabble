@@ -56,7 +56,6 @@ export async function seed() {
 	// await seedStats()
 
 	// First, alice creates a post
-	const tag = 'global'
 	let post1 = await db.transaction().execute(async trx => {
 		return createPost(
 			trx,
@@ -67,7 +66,7 @@ export async function seed() {
 	})
 
 	// Then, bob views the page
-	await db.transaction().execute(async trx => await getRankedPosts(trx, tag))
+	await db.transaction().execute(async trx => await getRankedPosts(trx))
 
 	// Then bob posts a response to alice's post
 	let post2 = await db.transaction().execute(async trx => {
@@ -85,7 +84,7 @@ export async function seed() {
 	)
 
 	// bob views home page
-	db.transaction().execute(async trx => await getRankedPosts(trx, tag))
+	db.transaction().execute(async trx => await getRankedPosts(trx))
 
 	// And responds to bob's response
 	let post3 = await db.transaction().execute(async trx => {
@@ -108,7 +107,7 @@ export async function seed() {
 	})
 
 	// Bob then views the page again
-	await db.transaction().execute(async trx => getRankedPosts(trx, tag))
+	await db.transaction().execute(async trx => getRankedPosts(trx))
 
 	// And respond's to Alices's latest post
 	await db.transaction().execute(async trx => {
@@ -131,7 +130,7 @@ export async function seed() {
 	})
 
 	// Bob then views the page once again
-	await db.transaction().execute(async trx => getRankedPosts(trx, tag))
+	await db.transaction().execute(async trx => getRankedPosts(trx))
 	// console.log("Ranked posts", posts)
 
 	// And respond's to Alice's third post

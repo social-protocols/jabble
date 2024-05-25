@@ -2,7 +2,6 @@ import { type Transaction, sql } from 'kysely'
 import { type Effect, type Post, type FullScore } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { type DB } from './db/kysely-types.ts'
 import { getPost } from './post.ts'
-import { getOrInsertTagId } from './tag.ts'
 import { relativeEntropy } from './utils/entropy.ts'
 
 // Post with score and the effect of its top note
@@ -22,11 +21,10 @@ export type RankedPost = ScoredPost & {
 
 export async function getScoredPost(
 	trx: Transaction<DB>,
-	tag: string,
 	postId: number,
 ): Promise<ScoredPost> {
-	const tagId = await getOrInsertTagId(trx)
-	return getScoredPostInternal(trx, tagId, postId)
+	const legacyTagId = 1
+	return getScoredPostInternal(trx, legacyTagId, postId)
 }
 
 async function getScoredPostInternal(
@@ -68,9 +66,9 @@ export async function getTopNote(
 	tag: string,
 	post: ScoredPost,
 ): Promise<ScoredNote | null> {
-	const tagId = await getOrInsertTagId(trx)
+	const legacyTagId = 1
 	return post.topNoteId !== null
-		? getScoredNoteInternal(trx, tagId, post.topNoteId)
+		? getScoredNoteInternal(trx, legacyTagId, post.topNoteId)
 		: null
 }
 
@@ -110,10 +108,10 @@ async function getScoredNoteInternal(
 
 export async function getEffects(
 	trx: Transaction<DB>,
-	tag: string,
 	postId: number,
 ): Promise<Effect[]> {
-	return await getEffectsInternal(trx, await getOrInsertTagId(trx), postId)
+	const legacyTagId = 1
+	return await getEffectsInternal(trx, legacyTagId, postId)
 }
 
 async function getEffectsInternal(
@@ -135,11 +133,8 @@ async function getEffectsInternal(
 	return effects
 }
 
-export async function getRankedPosts(
-	trx: Transaction<DB>,
-	tag: string,
-): Promise<RankedPost[]> {
-	const tagId = await getOrInsertTagId(trx)
+export async function getRankedPosts(trx: Transaction<DB>): Promise<RankedPost[]> {
+	const legacyTagId = 1
 
 	let query = trx
 		.selectFrom('Post')
@@ -147,7 +142,7 @@ export async function getRankedPosts(
 		.leftJoin('PostStats', join =>
 			join
 				.onRef('PostStats.postId', '=', 'Post.id')
-				.on('PostStats.tagId', '=', tagId),
+				.on('PostStats.tagId', '=', legacyTagId),
 		)
 		.innerJoin('Tag', 'Tag.id', 'FullScore.tagId')
 		.where('Post.deletedAt', 'is', null)
@@ -157,7 +152,7 @@ export async function getRankedPosts(
 		.select(eb =>
 			eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'),
 		)
-		.where('FullScore.tagId', '=', tagId)
+		.where('FullScore.tagId', '=', legacyTagId)
 		.orderBy('FullScore.score', 'desc')
 		.limit(MAX_RESULTS)
 
@@ -168,10 +163,10 @@ export async function getRankedPosts(
 			return {
 				...post,
 				note: post.topNoteId
-					? await getScoredNoteInternal(trx, tagId, post.topNoteId)
+					? await getScoredNoteInternal(trx, legacyTagId, post.topNoteId)
 					: null,
 				parent: post.parentId ? await getPost(trx, post.parentId) : null,
-				effects: await getEffectsInternal(trx, tagId, post.id),
+				effects: await getEffectsInternal(trx, legacyTagId, post.id),
 				isCritical: false,
 			}
 		}),
@@ -179,11 +174,8 @@ export async function getRankedPosts(
 	return rankedPosts
 }
 
-export async function getChronologicalToplevelPosts(
-	trx: Transaction<DB>,
-	tag?: string,
-): Promise<ScoredPost[]> {
-	const tagId = tag == null ? null : await getOrInsertTagId(trx)
+export async function getChronologicalToplevelPosts(trx: Transaction<DB>): Promise<ScoredPost[]> {
+	const legacyTagId = 1
 
 	let query = trx
 		.selectFrom('Post')
@@ -200,7 +192,7 @@ export async function getChronologicalToplevelPosts(
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))
-		.where(sql<boolean>`ifnull(FullScore.tagId = ${tagId}, true)`)
+		.where(sql<boolean>`ifnull(FullScore.tagId = ${legacyTagId}, true)`)
 		.orderBy('Post.createdAt', 'desc')
 		.limit(MAX_RESULTS)
 
@@ -223,9 +215,9 @@ export async function getRankedReplies(
 	trx: Transaction<DB>,
 	parentId: number,
 ): Promise<RankedPost[]> {
-	const tagId = await getOrInsertTagId(trx)
+	const legacyTagId = 1
 
-	const tree = await getRankedRepliesInternal(trx, tagId, parentId, parentId)
+	const tree = await getRankedRepliesInternal(trx, legacyTagId, parentId, parentId)
 	return tree
 }
 
@@ -305,10 +297,9 @@ async function getRankedRepliesInternal(
 
 export async function getRankedDirectReplies(
 	trx: Transaction<DB>,
-	tag: string,
 	targetId: number,
 ) {
-	const tagId = await getOrInsertTagId(trx)
+	const legacyTagId = 1
 
 	const query = trx
 		.selectFrom('Post')
@@ -317,8 +308,8 @@ export async function getRankedDirectReplies(
 		.where('Post.parentId', '=', targetId)
 		.where('Effect.postId', '=', targetId)
 		.where('Effect.noteId', 'is not', null)
-		.where('Effect.tagId', '=', tagId)
-		.where('Score.tagId', '=', tagId)
+		.where('Effect.tagId', '=', legacyTagId)
+		.where('Score.tagId', '=', legacyTagId)
 		.select('Effect.noteId as postId')
 		.select('Effect.p as targetP')
 		.select('Effect.pSize as targetPSize')
@@ -341,7 +332,7 @@ export async function getRankedDirectReplies(
 		.reverse()
 
 	const scoredPosts = await Promise.all(
-		resultSorted.map(item => getScoredPost(trx, tag, item.postId as number)),
+		resultSorted.map(item => getScoredPost(trx, item.postId as number)),
 	)
 
 	return scoredPosts

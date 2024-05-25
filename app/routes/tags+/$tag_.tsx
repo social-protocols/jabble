@@ -19,7 +19,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 	const rankedPosts = await db
 		.transaction()
-		.execute(async trx => getRankedPosts(trx, tag))
+		.execute(async trx => getRankedPosts(trx))
 	const posts = rankedPosts
 	let votes: VoteState[] = []
 	if (userId) {

@@ -2,7 +2,6 @@ import { type Transaction, sql } from 'kysely'
 import { type VoteEvent, type InsertableVoteEvent } from '#app/db/types.ts'
 import { sendVoteEvent } from '#app/globalbrain.ts'
 import { type DB } from './db/kysely-types.ts'
-import { getOrInsertTagId } from './tag.ts'
 import { invariant } from './utils/misc.tsx'
 
 export enum Direction {
@@ -33,11 +32,8 @@ export async function vote(
 	noteId: number | null,
 	direction: Direction,
 ): Promise<VoteEvent> {
-	const tagId = await getOrInsertTagId(trx)
-
 	let voteEvent: VoteEvent = await insertVoteEvent(
 		trx,
-		tagId,
 		userId,
 		postId,
 		noteId,
@@ -51,12 +47,13 @@ export async function vote(
 
 async function insertVoteEvent(
 	trx: Transaction<DB>,
-	tagId: number,
 	userId: string,
 	postId: number,
 	noteId: number | null,
 	vote: Direction,
 ): Promise<VoteEvent> {
+	const legacyTagId = 1
+
 	const voteInt = vote as number
 
 	const post: { parentId: number | null } | undefined = await trx
@@ -74,7 +71,7 @@ async function insertVoteEvent(
 
 	const voteEvent: InsertableVoteEvent = {
 		userId: userId,
-		tagId: tagId,
+		tagId: legacyTagId,
 		parentId: parentId,
 		postId: postId,
 		noteId: noteId,
@@ -115,7 +112,7 @@ export async function getUserVotes(
 	userId: string,
 	postIds: number[],
 ): Promise<VoteState[]> {
-	let tagId = await getOrInsertTagId(trx)
+	let legacyTagId = 1
 
 	return await trx
 		.selectFrom('Post')
@@ -124,7 +121,7 @@ export async function getUserVotes(
 			join
 				.onRef('Vote.postId', '=', 'Post.id')
 				.on('Vote.userId', '=', userId)
-				.on('Vote.tagId', '=', tagId),
+				.on('Vote.tagId', '=', legacyTagId),
 		)
 		.where(eb => eb('id', 'in', postIds))
 		.leftJoin('Vote as VoteOnCriticalReply', join =>

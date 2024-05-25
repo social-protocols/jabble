@@ -22,7 +22,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	const userId: string | null = await getUserId(request)
 	const loggedIn = userId !== null
 	const feed = await db.transaction().execute(async trx => {
-		return rankingTs.getChronologicalToplevelPosts(trx, 'global')
+		return rankingTs.getChronologicalToplevelPosts(trx)
 	})
 	return { loggedIn, feed }
 }

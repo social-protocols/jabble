@@ -31,7 +31,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	const userId: string | null = await getUserId(request)
 	const post: ScoredPost = await db
 		.transaction()
-		.execute(async trx => getScoredPost(trx, tag, postId))
+		.execute(async trx => getScoredPost(trx, postId))
 
 	invariantResponse(post, 'Post not found', { status: 404 })
 
@@ -45,7 +45,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 	const otherReplies: ScoredPost[] = await db
 		.transaction()
-		.execute(async trx => getRankedDirectReplies(trx, tag, post.id))
+		.execute(async trx => getRankedDirectReplies(trx, post.id))
 
 	let votes: VoteState[] =
 		userId === null

@@ -1,7 +1,6 @@
 import { type Transaction, sql } from 'kysely'
 import { type DB } from './db/kysely-types.ts'
 import { getScoredPost, type ScoredPost } from './ranking.ts'
-import { getOrInsertTagId } from './tag.ts'
 import { relativeEntropy } from './utils/entropy.ts'
 import { invariant } from './utils/misc.tsx'
 
@@ -15,19 +14,19 @@ export async function getCriticalThread(
 	postId: number,
 	tag: string,
 ): Promise<ThreadPost[]> {
-	const tagId = await getOrInsertTagId(trx)
+	const legacyTagId = 1
 
 	const postWithCriticalThreadId = await trx
 		.withRecursive('CriticalThread', db =>
 			db
 				.selectFrom('Score')
 				.where('postId', '=', postId)
-				.where('tagId', '=', tagId)
+				.where('tagId', '=', legacyTagId)
 				.select(['postId', 'topNoteId', 'criticalThreadId'])
 				.unionAll(db =>
 					db
 						.selectFrom('Score as S')
-						.where('tagId', '=', tagId)
+						.where('tagId', '=', legacyTagId)
 						.innerJoin('CriticalThread as CT', 'S.postId', 'CT.topNoteId')
 						.select(['S.postId', 'S.topNoteId', 'S.criticalThreadId']),
 				),
@@ -48,7 +47,7 @@ export async function getCriticalThread(
 	})
 
 	const scoredPosts = await Promise.all(
-		postWithCriticalThreadId.map(post => getScoredPost(trx, tag, post.postId)),
+		postWithCriticalThreadId.map(post => getScoredPost(trx, post.postId)),
 	)
 
 	const effects = await trx
