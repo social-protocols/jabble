@@ -113,7 +113,7 @@ production-db:
 
 
 install-node-extension-from-earthly:
-  earthly --artifact +node-ext/artifact/ ./GlobalBrain.jl/globalbrain-node
+  earthly --artifact +globalbrain-node-package/artifact ./GlobalBrain.jl/globalbrain-node
   (cd ./GlobalBrain.jl/globalbrain-node && npm install)
   npm install --ignore-scripts --save './GlobalBrain.jl/globalbrain-node'
 
