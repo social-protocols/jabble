@@ -30,7 +30,7 @@ globalbrain-node-package:
   # is used from the justfile.
   # This target only exists to have the GLOBALBRAIN_REF in a central place.
   FROM scratch
-  ARG GLOBALBRAIN_REF=030876dae018bd0ef7b0d276037a500e273ec5ac # TODO: list this reference only once (https://docs.earthly.dev/docs/earthfile#global)
+  ARG GLOBALBRAIN_REF=1faee4c3dc1f96e1ae6568bb5a98725da72130a0 # TODO: list this reference only once (https://docs.earthly.dev/docs/earthfile#global)
   COPY github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_REF+node-ext/artifact /artifact
   # COPY ../GlobalBrain.jl+node-ext/artifact /artifact
   SAVE ARTIFACT /artifact
@@ -39,7 +39,7 @@ globalbrain-node-package:
 GLOBALBRAIN_INSTALL_AND_TEST:
   # is used in other targets
   FUNCTION
-  ARG GLOBALBRAIN_REF=030876dae018bd0ef7b0d276037a500e273ec5ac # TODO: list this reference only once (https://docs.earthly.dev/docs/earthfile#global)
+  ARG GLOBALBRAIN_REF=1faee4c3dc1f96e1ae6568bb5a98725da72130a0 # TODO: list this reference only once (https://docs.earthly.dev/docs/earthfile#global)
   ARG --required destination
   DO github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_REF+INSTALL_NPM_PACKAGE --destination=$destination
   # DO ../GlobalBrain.jl+INSTALL_NPM_PACKAGE --destination=$destination
