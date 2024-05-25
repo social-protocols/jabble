@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { type Transaction } from 'kysely'
-import { type VoteEvent, type Post } from '#app/db/types.ts'
+import { type Post } from '#app/db/types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { Direction, vote } from '#app/vote.ts'
 import { type DB } from './db/kysely-types.ts'

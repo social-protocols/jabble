@@ -41,7 +41,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 	let criticalThread: ThreadPost[] = await db
 		.transaction()
-		.execute(async trx => getCriticalThread(trx, post.id, tag))
+		.execute(async trx => getCriticalThread(trx, post.id))
 
 	const otherReplies: ScoredPost[] = await db
 		.transaction()

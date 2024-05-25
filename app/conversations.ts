@@ -12,10 +12,7 @@ export type ThreadPost = ScoredPost & {
 export async function getCriticalThread(
 	trx: Transaction<DB>,
 	postId: number,
-	tag: string,
 ): Promise<ThreadPost[]> {
-	const legacyTagId = 1
-
 	const postWithCriticalThreadId = await trx
 		.withRecursive('CriticalThread', db =>
 			db

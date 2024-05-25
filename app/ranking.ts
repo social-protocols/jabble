@@ -126,8 +126,7 @@ export async function getRankedPosts(trx: Transaction<DB>): Promise<RankedPost[]
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
 		.leftJoin('PostStats', join =>
-			join
-				.onRef('PostStats.postId', '=', 'Post.id')
+			join.onRef('PostStats.postId', '=', 'Post.id')
 		)
 		.where('Post.deletedAt', 'is', null)
 		.selectAll('Post')
@@ -157,8 +156,6 @@ export async function getRankedPosts(trx: Transaction<DB>): Promise<RankedPost[]
 }
 
 export async function getChronologicalToplevelPosts(trx: Transaction<DB>): Promise<ScoredPost[]> {
-	const legacyTagId = 1
-
 	let query = trx
 		.selectFrom('Post')
 		.where('Post.parentId', 'is', null)
@@ -171,7 +168,6 @@ export async function getChronologicalToplevelPosts(trx: Transaction<DB>): Promi
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))
-		.where(sql<boolean>`ifnull(FullScore.tagId = ${legacyTagId}, true)`)
 		.orderBy('Post.createdAt', 'desc')
 		.limit(MAX_RESULTS)
 
@@ -194,15 +190,12 @@ export async function getRankedReplies(
 	trx: Transaction<DB>,
 	parentId: number,
 ): Promise<RankedPost[]> {
-	const legacyTagId = 1
-
-	const tree = await getRankedRepliesInternal(trx, legacyTagId, parentId, parentId)
+	const tree = await getRankedRepliesInternal(trx, parentId, parentId)
 	return tree
 }
 
 async function getRankedRepliesInternal(
 	trx: Transaction<DB>,
-	tagId: number,
 	targetId: number,
 	parentId: number,
 ): Promise<RankedPost[]> {
@@ -262,7 +255,7 @@ async function getRankedRepliesInternal(
 					effects: effects,
 					isCritical: isCritical,
 				},
-				...(await getRankedRepliesInternal(trx, tagId, targetId, post.id)),
+				...(await getRankedRepliesInternal(trx, targetId, post.id)),
 			]
 		}),
 	)
