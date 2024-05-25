@@ -21,12 +21,10 @@ export async function getCriticalThread(
 			db
 				.selectFrom('Score')
 				.where('postId', '=', postId)
-				.where('tagId', '=', legacyTagId)
 				.select(['postId', 'topNoteId', 'criticalThreadId'])
 				.unionAll(db =>
 					db
 						.selectFrom('Score as S')
-						.where('tagId', '=', legacyTagId)
 						.innerJoin('CriticalThread as CT', 'S.postId', 'CT.topNoteId')
 						.select(['S.postId', 'S.topNoteId', 'S.criticalThreadId']),
 				),

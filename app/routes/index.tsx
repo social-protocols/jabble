@@ -92,6 +92,8 @@ export function TopLevelPost({
 	post: rankingTs.ScoredPost
 	className?: string
 }) {
+	const legacyTag = 'global'
+
 	const ageString = moment(post.createdAt).fromNow()
 
 	return (
@@ -106,10 +108,10 @@ export function TopLevelPost({
 					content={post.content}
 					maxLines={3}
 					deactivateLinks={false}
-					linkTo={`/tags/${post.tag}/posts/${post.id}`}
+					linkTo={`/tags/${legacyTag}/posts/${post.id}`}
 				/>
 				<div className="mt-2 flex w-full text-sm">
-					<Link to={`/tags/${post.tag}/posts/${post.id}`} className="ml-2">
+					<Link to={`/tags/${legacyTag}/posts/${post.id}`} className="ml-2">
 						<CommentIcon needsVote={false} nReplies={post.nReplies} />
 					</Link>
 				</div>

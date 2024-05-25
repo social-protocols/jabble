@@ -56,6 +56,8 @@ export function PostDetails({
 	onVote?: Function
 	isConvincing?: boolean
 }) {
+	const legacyTag = 'global'
+
 	// So we need to get the current state of the user's vote on this post from the fetcher
 	const voteFetcher = useFetcher<{ voteState: VoteState; postId: number }>()
 
@@ -99,7 +101,7 @@ export function PostDetails({
 				>
 					<VoteButtons
 						postId={post.id}
-						tag={post.tag}
+						tag={legacyTag}
 						noteId={note !== null ? note.id : null}
 						vote={visibleVoteState}
 						pCurrent={post.p}
@@ -125,15 +127,15 @@ export function PostDetails({
 						content={post.content}
 						maxLines={teaser ? postTeaserMaxLines : undefined}
 						deactivateLinks={false}
-						linkTo={`/tags/${post.tag}/posts/${post.id}`}
+						linkTo={`/tags/${legacyTag}/posts/${post.id}`}
 					/>
 				) : (
 					<div
 						style={{ cursor: 'pointer' }}
 						className={'italic text-gray-400'}
 						onClick={() =>
-							`/tags/${post.tag}/posts/${post.id}` &&
-							navigate(`/tags/${post.tag}/posts/${post.id}`)
+							`/tags/${legacyTag}/posts/${post.id}` &&
+							navigate(`/tags/${legacyTag}/posts/${post.id}`)
 						}
 					>
 						This post was deleted.
@@ -141,7 +143,7 @@ export function PostDetails({
 				)}
 
 				<div className="mt-2 flex w-full text-sm">
-					<Link to={`/tags/${post.tag}/posts/${post.id}`} className="ml-2">
+					<Link to={`/tags/${legacyTag}/posts/${post.id}`} className="ml-2">
 						<CommentIcon needsVote={needsVote} nReplies={post.nReplies} />
 					</Link>
 					{post.deletedAt == null && (
@@ -160,7 +162,7 @@ export function PostDetails({
 					{post.deletedAt == null && isAdminUser && (
 						<Form id="delete-post-form" method="POST" action="/deletePost">
 							<input type="hidden" name="postId" value={post.id} />
-							<input type="hidden" name="tag" value={post.tag} />
+							<input type="hidden" name="tag" value={legacyTag} />
 							<input type="hidden" name="userId" value={user?.id} />
 							<button className="ml-2 rounded bg-red-400 px-1 text-white">
 								delete
@@ -183,7 +185,7 @@ export function PostDetails({
 						action="/reply"
 						onSubmit={handleReplySubmit}
 					>
-						<ReplyForm post={post} tag={post.tag} className="mt-2" />
+						<ReplyForm post={post} tag={legacyTag} className="mt-2" />
 					</Form>
 				)}
 			</div>

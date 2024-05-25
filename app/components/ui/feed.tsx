@@ -15,6 +15,8 @@ export function Feed({
 	loggedIn: boolean
 	showNotes: boolean
 }) {
+	const legacyTag = 'global'
+
 	return (
 		<>
 			{posts.map((post, i) => {
@@ -37,7 +39,7 @@ export function Feed({
 							(followsParent ? (
 								<div className="link-to-parent threadline" />
 							) : (
-								<ParentPost parentPost={post.parent} tag={post.tag} />
+								<ParentPost parentPost={post.parent} tag={legacyTag} />
 							))}
 						<PostDetails
 							post={post}

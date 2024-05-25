@@ -112,8 +112,6 @@ export async function getUserVotes(
 	userId: string,
 	postIds: number[],
 ): Promise<VoteState[]> {
-	let legacyTagId = 1
-
 	return await trx
 		.selectFrom('Post')
 		.innerJoin('Score', 'Score.postId', 'Post.id')
@@ -121,14 +119,12 @@ export async function getUserVotes(
 			join
 				.onRef('Vote.postId', '=', 'Post.id')
 				.on('Vote.userId', '=', userId)
-				.on('Vote.tagId', '=', legacyTagId),
 		)
 		.where(eb => eb('id', 'in', postIds))
 		.leftJoin('Vote as VoteOnCriticalReply', join =>
 			join
 				.onRef('VoteOnCriticalReply.postId', '=', 'criticalThreadId')
 				.onRef('VoteOnCriticalReply.userId', '=', 'Vote.userId')
-				.onRef('VoteOnCriticalReply.tagId', '=', 'Vote.tagId'),
 		)
 		.select('Post.id as postId')
 		.select(sql<number>`ifnull(Vote.vote,0)`.as('vote'))

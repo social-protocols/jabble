@@ -19,7 +19,7 @@ export async function createPost(
 
 	invariant(persistedPost, `Reply to ${parentId} not submitted successfully`)
 
-	const voteEvent: VoteEvent = await vote(
+	await vote(
 		trx,
 		authorId,
 		persistedPost.id,
@@ -28,7 +28,7 @@ export async function createPost(
 	)
 
 	if (parentId !== null) {
-		await incrementReplyCount(trx, voteEvent.tagId, parentId)
+		await incrementReplyCount(trx, parentId)
 	}
 
 	return persistedPost.id
@@ -36,13 +36,11 @@ export async function createPost(
 
 export async function initPostStats(
 	trx: Transaction<DB>,
-	tagId: number,
 	postId: number,
 ) {
 	await trx
 		.insertInto('PostStats')
 		.values({
-			tagId: tagId,
 			postId: postId,
 			replies: 0,
 		})
@@ -53,16 +51,14 @@ export async function initPostStats(
 
 export async function incrementReplyCount(
 	trx: Transaction<DB>,
-	tagId: number,
 	postId: number,
 ) {
-	await initPostStats(trx, tagId, postId)
+	await initPostStats(trx, postId)
 	await trx
 		.updateTable('PostStats')
 		.set(eb => ({
 			replies: eb('replies', '+', 1),
 		}))
-		.where('tagId', '=', tagId)
 		.where('postId', '=', postId)
 		.execute()
 }
