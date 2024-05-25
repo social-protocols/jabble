@@ -19,47 +19,37 @@
       in
       {
         devShells = {
-          default = with pkgs; mkShellNoCC {
-            buildInputs = [
+          default = pkgs.mkShellNoCC {
+            buildInputs = with pkgs; [
               git
               just
 
               sqlite-interactive
               nodejs_20
+              python3 # for node-gyp
+              gcc # for node-gyp
 
               earthly
               docker
               flyctl
 
-              python3
-              julia_19-bin
-
               # darwin.apple_sdk.frameworks.Security
             ];
           };
-          build = with pkgs; mkShellNoCC {
-            buildInputs = [
-              diffutils
-              julia_19-bin
-              python3 # for node-gyp
-              gcc
-              gnumake
-              gnused
-              llvmPackages.libcxxStdenv
-              llvmPackages.libcxx
-              libcxxStdenv
-              libcxx
-              sqlite
+          build = pkgs.mkShellNoCC {
+            buildInputs = with pkgs; [
               nodejs_20
+              sqlite
+              python3 # for node-gyp
+              gcc # for node-gyp
             ];
           };
-          base = with pkgs; mkShellNoCC {
-            buildInputs = [
-              julia_19-bin
+          production = pkgs.mkShellNoCC {
+            buildInputs = with pkgs; [
               nodejs_20
               sqlite-interactive
               fuse3 # for litefs
-              busybox
+              busybox # for swap tools
             ];
           };
         };

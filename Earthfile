@@ -16,6 +16,7 @@ nix-dev-shell:
   COPY ci_sh.sh /bin/sh
   ARG ARCH=$(uname -m)
   # cache `/nix`, especially `/nix/store`, with correct chmod and a global id, so we can reuse it
+  # only works before installing nix
   # CACHE --persist --sharing shared --chmod 0755 --id nix-store /nix
   WORKDIR /app
   COPY flake.nix flake.lock .
@@ -25,56 +26,38 @@ nix-dev-shell:
   RUN nix print-dev-env ".#$DEVSHELL" >> /root/sh_env
 
 
-node-ext:
-  FROM +nix-dev-shell --DEVSHELL='build'
-  WORKDIR /app
-
-  ARG GLOBALBRAIN_REF=v0.1.8
-  RUN wget https://github.com/social-protocols/GlobalBrain.jl/archive/$GLOBALBRAIN_REF.tar.gz \
-   && mkdir GlobalBrain.jl \
-   && tar zxvf $GLOBALBRAIN_REF.tar.gz --directory GlobalBrain.jl --strip-components=1 \
-   && rm $GLOBALBRAIN_REF.tar.gz
-
-  WORKDIR /app/GlobalBrain.jl
-  RUN julia -t auto --code-coverage=none --check-bounds=yes --project -e 'using Pkg; Pkg.instantiate(); Pkg.precompile()'
-
-  WORKDIR /app/GlobalBrain.jl/globalbrain-node/julia
-  RUN julia -t auto --startup-file=no --project -e 'using Pkg; Pkg.instantiate(); include("build.jl")'
-
-  WORKDIR /app/GlobalBrain.jl/globalbrain-node
-  RUN npm install
-  RUN npm test
-
-  # Create artifact
-  RUN mkdir -p /artifact/julia/build \
-   && cp -r julia/build /artifact/julia/ \
-   && cp -r build /artifact/ \
-   && cp package.json /artifact/ \
-   && cp package-lock.json /artifact/ \
-   && cp binding.gyp /artifact/ \
-   && cp binding.cc /artifact/ \
-   && cp index.js /artifact/ \
-   && cp test.js /artifact/
-
+globalbrain-node-package:
+  # is used from the justfile.
+  # This target only exists to have the GLOBALBRAIN_REF in a central place.
+  FROM scratch
+  ARG GLOBALBRAIN_REF=1faee4c3dc1f96e1ae6568bb5a98725da72130a0 # TODO: list this reference only once (https://docs.earthly.dev/docs/earthfile#global)
+  COPY github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_REF+node-ext/artifact /artifact
+  # COPY ../GlobalBrain.jl+node-ext/artifact /artifact
   SAVE ARTIFACT /artifact
+
+
+GLOBALBRAIN_INSTALL_AND_TEST:
+  # is used in other targets
+  FUNCTION
+  ARG GLOBALBRAIN_REF=1faee4c3dc1f96e1ae6568bb5a98725da72130a0 # TODO: list this reference only once (https://docs.earthly.dev/docs/earthfile#global)
+  ARG --required destination
+  DO github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_REF+INSTALL_NPM_PACKAGE --destination=$destination
+  # DO ../GlobalBrain.jl+INSTALL_NPM_PACKAGE --destination=$destination
+  RUN cd $destination && npm test # because this target is a function, test runs on the callsite
+
 
 app-setup:
   FROM +nix-dev-shell --DEVSHELL='build'
+  DO +GLOBALBRAIN_INSTALL_AND_TEST --destination=/globalbrain-node-package
+
   WORKDIR /app
   COPY package.json package-lock.json .npmrc ./
   RUN npm install --include=dev && rm -rf /root/.npm /root/.node-gyp
-  COPY --dir other sql ./
+  RUN npm install --save '/globalbrain-node-package' # will compile node extension for this environment
+  COPY --dir other ./
   RUN npx tsx ./other/build-icons.ts
+  COPY --dir sql ./
   COPY --dir app server public types ./
-
-  COPY --dir +node-ext/artifact ./globalbrain-node
-  WORKDIR /app
-  RUN npm install --save './globalbrain-node'
-
-  WORKDIR /app/globalbrain-node
-  RUN npm test
-
-  WORKDIR /app
   COPY index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
 
 app-build:
@@ -92,7 +75,7 @@ app-deploy-litefs:
    SAVE ARTIFACT /usr/local/bin/litefs
 
 docker-image:
-  FROM +nix-dev-shell --DEVSHELL='base'
+  FROM +nix-dev-shell --DEVSHELL='production'
 
   WORKDIR /app
 
@@ -105,13 +88,13 @@ docker-image:
   COPY other/litefs.yml /etc/litefs.yml
   RUN mkdir -p /data ${LITEFS_DIR}
 
+
+  DO +GLOBALBRAIN_INSTALL_AND_TEST --destination=/globalbrain-node-package # should not compile anything, because the build environment was the same
+
   # npm run build
   COPY --dir other app server public types index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
   COPY --dir +app-build/server-build +app-build/build +app-build/public +app-build/node_modules +app-build/package-lock.json +app-build/package.json ./
-  COPY --dir +node-ext/artifact ./globalbrain-node
 
-  # should not install anything
-  RUN cd ./globalbrain-node && npm test
 
   # startup & migrations
   COPY --dir migrate.ts migrations startup.sh index.js ./
@@ -158,7 +141,6 @@ app-typecheck:
 app-lint:
   FROM +app-setup
   COPY .eslintrc.cjs .prettierrc.js .prettierignore ./
-  RUN rm -r globalbrain-node # TODO: globalbrain-node should not be here
   RUN npx eslint --max-warnings=0 . # also checks formatting
 
 ci-test:
