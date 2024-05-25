@@ -28,13 +28,12 @@ export function defaultVoteState(postId: number): VoteState {
 // The vote function inserts a vote record in voteHistory, and also updates attention stats
 export async function vote(
 	trx: Transaction<DB>,
-	tag: string,
 	userId: string,
 	postId: number,
 	noteId: number | null,
 	direction: Direction,
 ): Promise<VoteEvent> {
-	const tagId = await getOrInsertTagId(trx, tag)
+	const tagId = await getOrInsertTagId(trx, 'global')
 
 	let voteEvent: VoteEvent = await insertVoteEvent(
 		trx,

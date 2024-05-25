@@ -7,7 +7,6 @@ import { type DB } from './db/kysely-types.ts'
 
 export async function createPost(
 	trx: Transaction<DB>,
-	tag: string,
 	parentId: number | null, // TODO: use parentId?: number
 	content: string,
 	authorId: string,
@@ -22,7 +21,6 @@ export async function createPost(
 
 	const voteEvent: VoteEvent = await vote(
 		trx,
-		tag,
 		authorId,
 		persistedPost.id,
 		null,

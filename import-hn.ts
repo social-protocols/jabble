@@ -72,7 +72,7 @@ async function importHNPostsFromFile(tag: string, filename: string) {
 				const postId = await db
 					.transaction()
 					.execute(async trx =>
-						createPost(trx, tag, parentId, markdown, ourUserId),
+						createPost(trx, parentId, markdown, ourUserId),
 					)
 
 				idMap.set(item.id, postId)

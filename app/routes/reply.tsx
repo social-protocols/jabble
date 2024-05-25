@@ -32,7 +32,7 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	let postId = await db
 		.transaction()
-		.execute(async trx => createPost(trx, tag, parentId, content, userId))
+		.execute(async trx => createPost(trx, parentId, content, userId))
 
 	return redirect(`/tags/${tag}/posts/${postId}`)
 }

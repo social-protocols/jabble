@@ -58,7 +58,7 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	const v = await db
 		.transaction()
-		.execute(async trx => vote(trx, tag, userId, postId, noteId, newState))
+		.execute(async trx => vote(trx, userId, postId, noteId, newState))
 
 	const voteState: VoteState[] = await db
 		.transaction()
