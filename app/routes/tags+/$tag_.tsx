@@ -27,7 +27,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 			return getUserVotes(
 				trx,
 				userId,
-				tag,
 				rankedPosts.map(p => p.id),
 			)
 		})

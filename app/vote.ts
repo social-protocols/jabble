@@ -33,7 +33,7 @@ export async function vote(
 	noteId: number | null,
 	direction: Direction,
 ): Promise<VoteEvent> {
-	const tagId = await getOrInsertTagId(trx, 'global')
+	const tagId = await getOrInsertTagId(trx)
 
 	let voteEvent: VoteEvent = await insertVoteEvent(
 		trx,
@@ -113,10 +113,9 @@ async function insertVoteEvent(
 export async function getUserVotes(
 	trx: Transaction<DB>,
 	userId: string,
-	tag: string,
 	postIds: number[],
 ): Promise<VoteState[]> {
-	let tagId = await getOrInsertTagId(trx, tag)
+	let tagId = await getOrInsertTagId(trx)
 
 	return await trx
 		.selectFrom('Post')

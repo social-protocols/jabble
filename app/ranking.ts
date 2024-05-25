@@ -25,7 +25,7 @@ export async function getScoredPost(
 	tag: string,
 	postId: number,
 ): Promise<ScoredPost> {
-	const tagId = await getOrInsertTagId(trx, tag)
+	const tagId = await getOrInsertTagId(trx)
 	return getScoredPostInternal(trx, tagId, postId)
 }
 
@@ -68,7 +68,7 @@ export async function getTopNote(
 	tag: string,
 	post: ScoredPost,
 ): Promise<ScoredNote | null> {
-	const tagId = await getOrInsertTagId(trx, tag)
+	const tagId = await getOrInsertTagId(trx)
 	return post.topNoteId !== null
 		? getScoredNoteInternal(trx, tagId, post.topNoteId)
 		: null
@@ -113,7 +113,7 @@ export async function getEffects(
 	tag: string,
 	postId: number,
 ): Promise<Effect[]> {
-	return await getEffectsInternal(trx, await getOrInsertTagId(trx, tag), postId)
+	return await getEffectsInternal(trx, await getOrInsertTagId(trx), postId)
 }
 
 async function getEffectsInternal(
@@ -139,7 +139,7 @@ export async function getRankedPosts(
 	trx: Transaction<DB>,
 	tag: string,
 ): Promise<RankedPost[]> {
-	const tagId = await getOrInsertTagId(trx, tag)
+	const tagId = await getOrInsertTagId(trx)
 
 	let query = trx
 		.selectFrom('Post')
@@ -183,7 +183,7 @@ export async function getChronologicalToplevelPosts(
 	trx: Transaction<DB>,
 	tag?: string,
 ): Promise<ScoredPost[]> {
-	const tagId = tag == null ? null : await getOrInsertTagId(trx, tag)
+	const tagId = tag == null ? null : await getOrInsertTagId(trx)
 
 	let query = trx
 		.selectFrom('Post')
@@ -221,10 +221,9 @@ export async function getChronologicalToplevelPosts(
 
 export async function getRankedReplies(
 	trx: Transaction<DB>,
-	tag: string,
 	parentId: number,
 ): Promise<RankedPost[]> {
-	const tagId = await getOrInsertTagId(trx, tag)
+	const tagId = await getOrInsertTagId(trx)
 
 	const tree = await getRankedRepliesInternal(trx, tagId, parentId, parentId)
 	return tree
@@ -309,7 +308,7 @@ export async function getRankedDirectReplies(
 	tag: string,
 	targetId: number,
 ) {
-	const tagId = await getOrInsertTagId(trx, tag)
+	const tagId = await getOrInsertTagId(trx)
 
 	const query = trx
 		.selectFrom('Post')

@@ -54,7 +54,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 					return getUserVotes(
 						trx,
 						userId,
-						tag,
 						otherReplies
 							.map(p => p.id)
 							.concat(criticalThread.map(p => p.id))

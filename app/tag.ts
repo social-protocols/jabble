@@ -3,10 +3,8 @@ import { type Tag } from '#app/db/types.ts' // this is the Database interface we
 import { type DB } from './db/kysely-types.ts'
 import { invariant } from './utils/misc.tsx'
 
-export async function getOrInsertTagId(
-	trx: Transaction<DB>,
-	tag: string,
-): Promise<number> {
+export async function getOrInsertTagId(trx: Transaction<DB>): Promise<number> {
+	const tag = 'global'
 	let existingTag: Tag | undefined = await trx
 		.selectFrom('Tag')
 		.where('tag', '=', tag)

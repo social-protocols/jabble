@@ -22,7 +22,7 @@ export async function importHN() {
 }
 
 async function importHNPostsFromFile(tag: string, filename: string) {
-	await db.transaction().execute(async trx => getOrInsertTagId(trx, tag))
+	await db.transaction().execute(async trx => getOrInsertTagId(trx))
 
 	await readJsonLinesFromFile(filename)
 		.then(async items => {

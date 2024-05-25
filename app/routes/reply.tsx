@@ -25,7 +25,7 @@ export const action = async (args: ActionFunctionArgs) => {
 	const content = parsedData.content
 	const parentId = parsedData.parentId || null
 	const tag = parsedData.tag
-	await db.transaction().execute(async trx => getOrInsertTagId(trx, tag))
+	await db.transaction().execute(async trx => getOrInsertTagId(trx))
 
 	invariant(content, 'content !== undefined')
 	invariant(tag, "tag !== ''")

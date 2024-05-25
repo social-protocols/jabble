@@ -15,7 +15,7 @@ export async function getCriticalThread(
 	postId: number,
 	tag: string,
 ): Promise<ThreadPost[]> {
-	const tagId = await getOrInsertTagId(trx, tag)
+	const tagId = await getOrInsertTagId(trx)
 
 	const postWithCriticalThreadId = await trx
 		.withRecursive('CriticalThread', db =>
