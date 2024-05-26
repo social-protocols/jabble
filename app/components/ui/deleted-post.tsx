@@ -5,8 +5,6 @@ import { useOptionalUser } from '#app/utils/user.ts'
 import { CommentIcon } from './post.tsx'
 
 export function DeletedPost({ post }: { post: ScoredPost }) {
-	const legacyTag = 'global'
-
 	const ageString = moment(post.createdAt).fromNow()
 
 	const navigate = useNavigate()
@@ -29,21 +27,20 @@ export function DeletedPost({ post }: { post: ScoredPost }) {
 					style={{ cursor: 'pointer' }}
 					className={'italic text-gray-400'}
 					onClick={() =>
-						`/tags/${legacyTag}/posts/${post.id}` &&
-						navigate(`/tags/${legacyTag}/posts/${post.id}`)
+						`/posts/${post.id}` &&
+						navigate(`/posts/${post.id}`)
 					}
 				>
 					This post was deleted.
 				</div>
 
 				<div className="mt-2 flex w-full text-sm">
-					<Link to={`/tags/${legacyTag}/posts/${post.id}`} className="ml-2">
+					<Link to={`/posts/${post.id}`} className="ml-2">
 						<CommentIcon needsVote={false} nReplies={post.nReplies} />
 					</Link>
 					{isAdminUser && (
 						<Form id="restore-post-form" method="POST" action="/restorePost">
 							<input type="hidden" name="postId" value={post.id} />
-							<input type="hidden" name="tag" value={legacyTag} />
 							<input type="hidden" name="userId" value={user?.id} />
 							<button className="ml-2 rounded bg-green-600 px-1 text-white">
 								restore

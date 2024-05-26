@@ -52,8 +52,6 @@ async function insertVoteEvent(
 	noteId: number | null,
 	vote: Direction,
 ): Promise<VoteEvent> {
-	const legacyTagId = 1
-
 	const voteInt = vote as number
 
 	const post: { parentId: number | null } | undefined = await trx
@@ -69,6 +67,7 @@ async function insertVoteEvent(
 
 	const parentId = post.parentId
 
+	const legacyTagId = 1
 	const voteEvent: InsertableVoteEvent = {
 		userId: userId,
 		tagId: legacyTagId,

@@ -7,12 +7,10 @@ import { restoreDeletedPost } from '#app/post.ts'
 import { invariant } from '#app/utils/misc.tsx'
 
 const postIdSchema = z.coerce.number()
-const tagSchema = z.coerce.string()
 const userIdSchema = z.coerce.string().optional()
 
 const postRestorationSchema = zfd.formData({
 	postId: postIdSchema,
-	tag: tagSchema,
 	userId: userIdSchema,
 })
 
@@ -22,17 +20,16 @@ export const action = async (args: ActionFunctionArgs) => {
 	const parsedData = postRestorationSchema.parse(formData)
 
 	const postId = parsedData.postId
-	const tag = parsedData.tag
 	const userId = parsedData.userId
 
 	invariant(
 		userId,
-		`Tried restoring deleted post ${postId} from tag ${tag} without a userId`,
+		`Tried restoring deleted post ${postId} without a userId`,
 	)
 
 	await db
 		.transaction()
 		.execute(async trx => restoreDeletedPost(trx, postId, userId))
 
-	return redirect(`/tags/${tag}/posts/${postId}`)
+	return redirect(`/posts/${postId}`)
 }

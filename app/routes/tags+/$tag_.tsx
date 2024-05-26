@@ -48,7 +48,7 @@ export default function TagPage() {
 
 	return (
 		<>
-			{loggedIn && <PostForm tag={tag} className="mb-5" />}
+			{loggedIn && <PostForm className="mb-5" />}
 			<Feed
 				posts={posts}
 				votes={p}

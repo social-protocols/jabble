@@ -56,8 +56,6 @@ export function PostDetails({
 	onVote?: Function
 	isConvincing?: boolean
 }) {
-	const legacyTag = 'global'
-
 	// So we need to get the current state of the user's vote on this post from the fetcher
 	const voteFetcher = useFetcher<{ voteState: VoteState; postId: number }>()
 
@@ -101,7 +99,6 @@ export function PostDetails({
 				>
 					<VoteButtons
 						postId={post.id}
-						tag={legacyTag}
 						noteId={note !== null ? note.id : null}
 						vote={visibleVoteState}
 						pCurrent={post.p}
@@ -127,15 +124,15 @@ export function PostDetails({
 						content={post.content}
 						maxLines={teaser ? postTeaserMaxLines : undefined}
 						deactivateLinks={false}
-						linkTo={`/tags/${legacyTag}/posts/${post.id}`}
+						linkTo={`/posts/${post.id}`}
 					/>
 				) : (
 					<div
 						style={{ cursor: 'pointer' }}
 						className={'italic text-gray-400'}
 						onClick={() =>
-							`/tags/${legacyTag}/posts/${post.id}` &&
-							navigate(`/tags/${legacyTag}/posts/${post.id}`)
+							`/posts/${post.id}` &&
+							navigate(`/posts/${post.id}`)
 						}
 					>
 						This post was deleted.
@@ -143,7 +140,7 @@ export function PostDetails({
 				)}
 
 				<div className="mt-2 flex w-full text-sm">
-					<Link to={`/tags/${legacyTag}/posts/${post.id}`} className="ml-2">
+					<Link to={`/posts/${post.id}`} className="ml-2">
 						<CommentIcon needsVote={needsVote} nReplies={post.nReplies} />
 					</Link>
 					{post.deletedAt == null && (
@@ -162,7 +159,6 @@ export function PostDetails({
 					{post.deletedAt == null && isAdminUser && (
 						<Form id="delete-post-form" method="POST" action="/deletePost">
 							<input type="hidden" name="postId" value={post.id} />
-							<input type="hidden" name="tag" value={legacyTag} />
 							<input type="hidden" name="userId" value={user?.id} />
 							<button className="ml-2 rounded bg-red-400 px-1 text-white">
 								delete
@@ -185,7 +181,7 @@ export function PostDetails({
 						action="/reply"
 						onSubmit={handleReplySubmit}
 					>
-						<ReplyForm post={post} tag={legacyTag} className="mt-2" />
+						<ReplyForm post={post} className="mt-2" />
 					</Form>
 				)}
 			</div>
@@ -193,16 +189,10 @@ export function PostDetails({
 	)
 }
 
-export function ParentPost({
-	parentPost,
-	tag,
-}: {
-	parentPost: Post
-	tag: string
-}) {
+export function ParentPost({ parentPost }: { parentPost: Post }) {
 	return (
 		<div className="threadline">
-			<Link key={parentPost.id} to={`/tags/${tag}/posts/${parentPost.id}`}>
+			<Link key={parentPost.id} to={`/posts/${parentPost.id}`}>
 				<div
 					key={parentPost.id}
 					className="postparent mb-1 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"
@@ -224,17 +214,14 @@ export function ParentPost({
 
 function ReplyForm({
 	post,
-	tag,
 	className,
 }: {
 	post: ScoredPost
-	tag: string
 	className: string
 }) {
 	return (
 		<div className={'flex flex-col items-end ' + className}>
 			<input type="hidden" name="parentId" value={post.id} />
-			<input type="hidden" name="tag" value={tag} />
 
 			<Textarea
 				name="content"
@@ -256,13 +243,11 @@ function ReplyForm({
 }
 
 export function VoteButtons({
-	tag,
 	postId,
 	noteId,
 	vote,
 	pCurrent,
 }: {
-	tag: string
 	postId: number
 	noteId: number | null
 	vote: VoteState
@@ -276,7 +261,6 @@ export function VoteButtons({
 	return (
 		<>
 			<input type="hidden" name="postId" value={postId} />
-			<input type="hidden" name="tag" value={tag} />
 			<input type="hidden" name="state" value={Direction[vote.vote]} />
 
 			{noteId === null ? (
@@ -289,7 +273,7 @@ export function VoteButtons({
 				<button name="direction" value="Up" className={upClass}>
 					▲
 				</button>
-				<Link to={`/tags/${tag}/stats/${postId}`} className="hyperlink">
+				<Link to={`/stats/${postId}`} className="hyperlink">
 					<div className="text-xs">{pCurrentString}</div>
 				</Link>
 				<button name="direction" value="Down" className={downClass}>

@@ -51,7 +51,7 @@ Read [how Jabble makes conversations better](https://github.com/social-protocols
 			</div>
 
 			{showNewDiscussionForm ? (
-				<PostForm tag="global" className="mb-4" />
+				<PostForm className="mb-4" />
 			) : (
 				loggedIn && (
 					<div className="mb-4 flex justify-end">{newDiscussionButton()}</div>
@@ -92,8 +92,6 @@ export function TopLevelPost({
 	post: rankingTs.ScoredPost
 	className?: string
 }) {
-	const legacyTag = 'global'
-
 	const ageString = moment(post.createdAt).fromNow()
 
 	return (
@@ -108,10 +106,10 @@ export function TopLevelPost({
 					content={post.content}
 					maxLines={3}
 					deactivateLinks={false}
-					linkTo={`/tags/${legacyTag}/posts/${post.id}`}
+					linkTo={`/posts/${post.id}`}
 				/>
 				<div className="mt-2 flex w-full text-sm">
-					<Link to={`/tags/${legacyTag}/posts/${post.id}`} className="ml-2">
+					<Link to={`/posts/${post.id}`} className="ml-2">
 						<CommentIcon needsVote={false} nReplies={post.nReplies} />
 					</Link>
 				</div>

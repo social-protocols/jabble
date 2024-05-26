@@ -2,13 +2,7 @@ import { useFetcher } from '@remix-run/react'
 import { useState, type FormEvent } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 
-export function PostForm({
-	tag,
-	className,
-}: {
-	tag: string
-	className?: string
-}) {
+export function PostForm({ className }: { className?: string }) {
 	const [textAreaValue, setTextAreaValue] = useState<string>('')
 
 	const replyFetcher = useFetcher<{ newPostId: number }>()
@@ -25,7 +19,6 @@ export function PostForm({
 			onSubmit={handleSubmit}
 		>
 			<div className={`flex flex-col items-end ${className || ''}`}>
-				<input type="hidden" name="tag" value={`${tag}`} />
 				<Textarea
 					placeholder="What's on your mind?"
 					name="content"

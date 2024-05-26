@@ -8,7 +8,6 @@ import { requireUserId } from '#app/utils/auth.server.ts'
 
 const replySchema = zfd.formData({
 	parentId: z.coerce.number().optional(),
-	tag: z.coerce.string(),
 	content: z.coerce.string(),
 })
 
@@ -22,14 +21,12 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	const content = parsedData.content
 	const parentId = parsedData.parentId || null
-	const tag = parsedData.tag
 
 	invariant(content, 'content !== undefined')
-	invariant(tag, "tag !== ''")
 
 	let postId = await db
 		.transaction()
 		.execute(async trx => createPost(trx, parentId, content, userId))
 
-	return redirect(`/tags/${tag}/posts/${postId}`)
+	return redirect(`/posts/${postId}`)
 }
