@@ -26,10 +26,7 @@ export function DeletedPost({ post }: { post: ScoredPost }) {
 				<div
 					style={{ cursor: 'pointer' }}
 					className={'italic text-gray-400'}
-					onClick={() =>
-						`/posts/${post.id}` &&
-						navigate(`/posts/${post.id}`)
-					}
+					onClick={() => `/posts/${post.id}` && navigate(`/posts/${post.id}`)}
 				>
 					This post was deleted.
 				</div>

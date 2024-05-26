@@ -34,8 +34,7 @@ async function getScoredPostInternal(
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
 		.leftJoin('PostStats', join =>
-			join
-				.onRef('PostStats.postId', '=', 'Post.id')
+			join.onRef('PostStats.postId', '=', 'Post.id'),
 		)
 		.selectAll('Post')
 		.selectAll('FullScore')
@@ -47,9 +46,7 @@ async function getScoredPostInternal(
 	const scoredPost = (await query.execute())[0]
 
 	if (scoredPost === undefined) {
-		throw new Error(
-			`Failed to read scored post postId=${postId}`,
-		)
+		throw new Error(`Failed to read scored post postId=${postId}`)
 	}
 
 	return scoredPost
@@ -76,8 +73,7 @@ async function getScoredNoteInternal(
 				.onRef('Effect.postId', '=', 'Post.parentId'),
 		)
 		.leftJoin('PostStats', join =>
-			join
-				.onRef('PostStats.postId', '=', 'Post.id')
+			join.onRef('PostStats.postId', '=', 'Post.id'),
 		)
 		.selectAll('Post')
 		.selectAll('Effect')
@@ -87,9 +83,7 @@ async function getScoredNoteInternal(
 	const scoredNote = (await query.execute())[0]
 
 	if (scoredNote === undefined) {
-		throw new Error(
-			`Failed to read scored post postId=${postId}`,
-		)
+		throw new Error(`Failed to read scored post postId=${postId}`)
 	}
 
 	return scoredNote
@@ -108,10 +102,7 @@ async function getEffectsInternal(
 ): Promise<Effect[]> {
 	let query = trx
 		.selectFrom('Post')
-		.innerJoin('Effect', join =>
-			join
-				.on('Effect.noteId', '=', postId),
-		)
+		.innerJoin('Effect', join => join.on('Effect.noteId', '=', postId))
 		.innerJoin('Post as TargetPost', 'TargetPost.id', 'Effect.postId')
 		.selectAll('Effect')
 		.where('Post.id', '=', postId)
@@ -121,12 +112,14 @@ async function getEffectsInternal(
 	return effects
 }
 
-export async function getRankedPosts(trx: Transaction<DB>): Promise<RankedPost[]> {
+export async function getRankedPosts(
+	trx: Transaction<DB>,
+): Promise<RankedPost[]> {
 	let query = trx
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
 		.leftJoin('PostStats', join =>
-			join.onRef('PostStats.postId', '=', 'Post.id')
+			join.onRef('PostStats.postId', '=', 'Post.id'),
 		)
 		.where('Post.deletedAt', 'is', null)
 		.selectAll('Post')
@@ -155,15 +148,16 @@ export async function getRankedPosts(trx: Transaction<DB>): Promise<RankedPost[]
 	return rankedPosts
 }
 
-export async function getChronologicalToplevelPosts(trx: Transaction<DB>): Promise<ScoredPost[]> {
+export async function getChronologicalToplevelPosts(
+	trx: Transaction<DB>,
+): Promise<ScoredPost[]> {
 	let query = trx
 		.selectFrom('Post')
 		.where('Post.parentId', 'is', null)
 		.where('Post.deletedAt', 'is', null)
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
 		.leftJoin('PostStats', join =>
-			join
-				.onRef('PostStats.postId', '=', 'Post.id')
+			join.onRef('PostStats.postId', '=', 'Post.id'),
 		)
 		.selectAll('Post')
 		.selectAll('FullScore')
@@ -204,8 +198,7 @@ async function getRankedRepliesInternal(
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
 		.where('parentId', '=', parentId)
 		.leftJoin('PostStats', join =>
-			join
-				.onRef('PostStats.postId', '=', 'Post.id')
+			join.onRef('PostStats.postId', '=', 'Post.id'),
 		)
 		.innerJoin('Effect', join =>
 			join

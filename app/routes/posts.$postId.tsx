@@ -148,8 +148,7 @@ export default function Post() {
 	)
 }
 
-function ParentThread({ transitiveParents }: { transitiveParents: Post[]
-}) {
+function ParentThread({ transitiveParents }: { transitiveParents: Post[] }) {
 	return (
 		<div className="threadline">
 			{transitiveParents.map(parentPost => (
@@ -230,4 +229,3 @@ export function ErrorBoundary() {
 		/>
 	)
 }
-

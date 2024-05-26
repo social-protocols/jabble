@@ -22,10 +22,7 @@ export const action = async (args: ActionFunctionArgs) => {
 	const postId = parsedData.postId
 	const userId = parsedData.userId
 
-	invariant(
-		userId,
-		`Tried deleting post ${postId} without a userId`,
-	)
+	invariant(userId, `Tried deleting post ${postId} without a userId`)
 
 	await db.transaction().execute(async trx => deletePost(trx, postId, userId))
 

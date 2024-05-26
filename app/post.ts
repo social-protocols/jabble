@@ -19,13 +19,7 @@ export async function createPost(
 
 	invariant(persistedPost, `Reply to ${parentId} not submitted successfully`)
 
-	await vote(
-		trx,
-		authorId,
-		persistedPost.id,
-		null,
-		Direction.Up,
-	)
+	await vote(trx, authorId, persistedPost.id, null, Direction.Up)
 
 	if (parentId !== null) {
 		await incrementReplyCount(trx, parentId)
@@ -34,10 +28,7 @@ export async function createPost(
 	return persistedPost.id
 }
 
-export async function initPostStats(
-	trx: Transaction<DB>,
-	postId: number,
-) {
+export async function initPostStats(trx: Transaction<DB>, postId: number) {
 	await trx
 		.insertInto('PostStats')
 		.values({

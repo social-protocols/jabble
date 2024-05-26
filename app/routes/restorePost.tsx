@@ -22,10 +22,7 @@ export const action = async (args: ActionFunctionArgs) => {
 	const postId = parsedData.postId
 	const userId = parsedData.userId
 
-	invariant(
-		userId,
-		`Tried restoring deleted post ${postId} without a userId`,
-	)
+	invariant(userId, `Tried restoring deleted post ${postId} without a userId`)
 
 	await db
 		.transaction()

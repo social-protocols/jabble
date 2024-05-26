@@ -115,15 +115,13 @@ export async function getUserVotes(
 		.selectFrom('Post')
 		.innerJoin('Score', 'Score.postId', 'Post.id')
 		.leftJoin('Vote', join =>
-			join
-				.onRef('Vote.postId', '=', 'Post.id')
-				.on('Vote.userId', '=', userId)
+			join.onRef('Vote.postId', '=', 'Post.id').on('Vote.userId', '=', userId),
 		)
 		.where(eb => eb('id', 'in', postIds))
 		.leftJoin('Vote as VoteOnCriticalReply', join =>
 			join
 				.onRef('VoteOnCriticalReply.postId', '=', 'criticalThreadId')
-				.onRef('VoteOnCriticalReply.userId', '=', 'Vote.userId')
+				.onRef('VoteOnCriticalReply.userId', '=', 'Vote.userId'),
 		)
 		.select('Post.id as postId')
 		.select(sql<number>`ifnull(Vote.vote,0)`.as('vote'))

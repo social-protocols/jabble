@@ -41,7 +41,6 @@ export async function up(db: Kysely<any>): Promise<void> {
 
 	await sql`drop table VoteEventDeprecated`.execute(db)
 
-
 	// Update Vote schema
 	// ------------------
 
@@ -90,7 +89,6 @@ export async function up(db: Kysely<any>): Promise<void> {
 				;
 			end;
 	`.execute(db)
-
 
 	// Update ScoreEvent schema
 	// ------------------------
@@ -150,7 +148,6 @@ export async function up(db: Kysely<any>): Promise<void> {
 				);
 		end;
 	`.execute(db)
-
 
 	// Update EffectEvent schema
 	// -------------------------
@@ -256,4 +253,3 @@ export async function up(db: Kysely<any>): Promise<void> {
 	// Reactivate foreign keys.
 	await sql`pragma foreign_keys = on`.execute(db)
 }
-
