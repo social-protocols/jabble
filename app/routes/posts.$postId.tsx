@@ -20,13 +20,10 @@ import { invariantResponse } from '#app/utils/misc.tsx'
 import { getUserVotes, type VoteState } from '#app/vote.ts'
 
 const postIdSchema = z.coerce.number()
-const tagSchema = z.coerce.string()
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	invariant(params.postId, 'Missing postid param')
-	invariant(params.tag, 'Missing tag param')
 	const postId: number = postIdSchema.parse(params.postId)
-	const tag: string = tagSchema.parse(params.tag)
 
 	const userId: string | null = await getUserId(request)
 	const post: ScoredPost = await db
@@ -70,7 +67,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	let result = json({
 		post,
 		transitiveParents,
-		tag,
 		votes,
 		loggedIn,
 		criticalThread,
@@ -84,7 +80,6 @@ export default function Post() {
 	const {
 		post,
 		transitiveParents,
-		tag,
 		votes,
 		loggedIn,
 		criticalThread,
@@ -111,7 +106,7 @@ export default function Post() {
 
 	return (
 		<>
-			<ParentThread transitiveParents={transitiveParents} tag={tag} />
+			<ParentThread transitiveParents={transitiveParents} />
 			{post.deletedAt == null ? (
 				<PostDetails
 					key={post.id}
@@ -153,17 +148,12 @@ export default function Post() {
 	)
 }
 
-function ParentThread({
-	transitiveParents,
-	tag,
-}: {
-	transitiveParents: Post[]
-	tag: string
+function ParentThread({ transitiveParents }: { transitiveParents: Post[]
 }) {
 	return (
 		<div className="threadline">
 			{transitiveParents.map(parentPost => (
-				<Link key={parentPost.id} to={`/tags/${tag}/posts/${parentPost.id}`}>
+				<Link key={parentPost.id} to={`/posts/${parentPost.id}`}>
 					<div
 						key={parentPost.id}
 						className="postparent mb-1 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"
@@ -240,3 +230,4 @@ export function ErrorBoundary() {
 		/>
 	)
 }
+
