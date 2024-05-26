@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 env:
-  EARTHLY_VERSION: v0.8.10
+  EARTHLY_VERSION: v0.8.12
   EARTHLY_TOKEN: ${{ secrets.EARTHLY_TOKEN }}
   EARTHLY_ORG: ${{ secrets.EARTHLY_ORG }}
   EARTHLY_SATELLITE: ${{ secrets.EARTHLY_SATELLITE }}
