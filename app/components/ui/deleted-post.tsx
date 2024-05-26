@@ -26,13 +26,13 @@ export function DeletedPost({ post }: { post: ScoredPost }) {
 				<div
 					style={{ cursor: 'pointer' }}
 					className={'italic text-gray-400'}
-					onClick={() => `/posts/${post.id}` && navigate(`/posts/${post.id}`)}
+					onClick={() => `/post/${post.id}` && navigate(`/post/${post.id}`)}
 				>
 					This post was deleted.
 				</div>
 
 				<div className="mt-2 flex w-full text-sm">
-					<Link to={`/posts/${post.id}`} className="ml-2">
+					<Link to={`/post/${post.id}`} className="ml-2">
 						<CommentIcon needsVote={false} nReplies={post.nReplies} />
 					</Link>
 					{isAdminUser && (

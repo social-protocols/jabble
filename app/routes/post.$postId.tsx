@@ -152,7 +152,7 @@ function ParentThread({ transitiveParents }: { transitiveParents: Post[] }) {
 	return (
 		<div className="threadline">
 			{transitiveParents.map(parentPost => (
-				<Link key={parentPost.id} to={`/posts/${parentPost.id}`}>
+				<Link key={parentPost.id} to={`/post/${parentPost.id}`}>
 					<div
 						key={parentPost.id}
 						className="postparent mb-1 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"

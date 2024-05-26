@@ -26,5 +26,5 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	await db.transaction().execute(async trx => deletePost(trx, postId, userId))
 
-	return redirect(`/posts/${postId}`)
+	return redirect(`/post/${postId}`)
 }

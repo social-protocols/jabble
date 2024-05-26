@@ -28,5 +28,5 @@ export const action = async (args: ActionFunctionArgs) => {
 		.transaction()
 		.execute(async trx => restoreDeletedPost(trx, postId, userId))
 
-	return redirect(`/posts/${postId}`)
+	return redirect(`/post/${postId}`)
 }

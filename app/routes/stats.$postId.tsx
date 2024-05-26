@@ -53,7 +53,7 @@ export default function PostStats() {
 	//   - informationRate = voteRate * (1 + log(p))
 
 	const overallMarkdown = `
-# Stats for post [${post.id}](/posts/${post.id})
+# Stats for post [${post.id}](/post/${post.id})
 
 ## Overall
 

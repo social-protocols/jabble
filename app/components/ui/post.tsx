@@ -124,20 +124,20 @@ export function PostDetails({
 						content={post.content}
 						maxLines={teaser ? postTeaserMaxLines : undefined}
 						deactivateLinks={false}
-						linkTo={`/posts/${post.id}`}
+						linkTo={`/post/${post.id}`}
 					/>
 				) : (
 					<div
 						style={{ cursor: 'pointer' }}
 						className={'italic text-gray-400'}
-						onClick={() => `/posts/${post.id}` && navigate(`/posts/${post.id}`)}
+						onClick={() => `/post/${post.id}` && navigate(`/post/${post.id}`)}
 					>
 						This post was deleted.
 					</div>
 				)}
 
 				<div className="mt-2 flex w-full text-sm">
-					<Link to={`/posts/${post.id}`} className="ml-2">
+					<Link to={`/post/${post.id}`} className="ml-2">
 						<CommentIcon needsVote={needsVote} nReplies={post.nReplies} />
 					</Link>
 					{post.deletedAt == null && (
@@ -189,7 +189,7 @@ export function PostDetails({
 export function ParentPost({ parentPost }: { parentPost: Post }) {
 	return (
 		<div className="threadline">
-			<Link key={parentPost.id} to={`/posts/${parentPost.id}`}>
+			<Link key={parentPost.id} to={`/post/${parentPost.id}`}>
 				<div
 					key={parentPost.id}
 					className="postparent mb-1 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"

@@ -106,10 +106,10 @@ export function TopLevelPost({
 					content={post.content}
 					maxLines={3}
 					deactivateLinks={false}
-					linkTo={`/posts/${post.id}`}
+					linkTo={`/post/${post.id}`}
 				/>
 				<div className="mt-2 flex w-full text-sm">
-					<Link to={`/posts/${post.id}`} className="ml-2">
+					<Link to={`/post/${post.id}`} className="ml-2">
 						<CommentIcon needsVote={false} nReplies={post.nReplies} />
 					</Link>
 				</div>
