@@ -114,3 +114,5 @@ install-node-extension-from-earthly:
   (cd ./GlobalBrain.jl/globalbrain-node && npm install)
   npm install --ignore-scripts --save './GlobalBrain.jl/globalbrain-node'
 
+recent-sessions:
+	fly ssh console -C 'other/recent-sessions.sh'
