@@ -48,6 +48,58 @@ export async function up(db: Kysely<any>): Promise<void> {
 
 		await sql`alter table Vote rename to VoteDeprecated`.execute(trx)
 
+		// Prior to moving all the votes in the new Vote table, we need to delete
+		// duplicates that happened when reposting a post under a different tag.
+		// As we are removing tags here, these will violate the unique constraints
+		// on the new Vote table.
+		await sql`
+			with posts_with_tag_counts as (
+				select
+					postId
+					, count(distinct tagId) as count
+				from VoteDeprecated
+				group by postId
+			)
+			, duplicates as (
+				select *
+				from posts_with_tag_counts
+				where count > 1
+			)
+			, duplicates_with_votes as (
+				select *
+				from duplicates
+				left outer join VoteDeprecated
+				on VoteDeprecated.postId = duplicates.postId
+				order by VoteDeprecated.postId
+			)
+			, original_posts_from_duplicates as (
+				select
+					postId
+					, min(voteEventTime) as minVoteEventTime
+				from duplicates_with_votes
+				group by postId
+			)
+			, votes_to_delete as (
+				select
+					d.postId
+					, d.userId
+					, d.voteEventTime
+				from duplicates_with_votes d
+				left join original_posts_from_duplicates o
+				on d.postId = o.postId
+				and d.voteEventTime = o.minVoteEventTime
+				where o.postId is null
+			)
+			delete from VoteDeprecated
+			where exists (
+				select 1
+				from votes_to_delete
+				where VoteDeprecated.postId = votes_to_delete.postId
+				and VoteDeprecated.userId = votes_to_delete.userId
+				and VoteDeprecated.voteEventTime = votes_to_delete.voteEventTime
+			)
+		`.execute(trx)
+
 		await sql`
 			create table 'Vote' (
 				userId string,
@@ -97,7 +149,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 
 		await sql`drop trigger afterInsertOnScoreEvent`.execute(trx)
 
-		await sql`alter table Score rename to ScoreDeprecated`.execute(trx)
+		await sql`drop table Score`.execute(trx)
 
 		await sql`
 			CREATE TABLE Score(
@@ -114,24 +166,6 @@ export async function up(db: Kysely<any>): Promise<void> {
 				, primary key(postId)
 			) strict;
 		`.execute(trx)
-
-		await sql`
-			insert into Score
-			select
-					voteEventId
-				, voteEventTime
-				, postId
-				, topNoteId
-				, criticalThreadId
-				, o
-				, oCount
-				, oSize
-				, p
-				, score
-			from ScoreDeprecated
-		`.execute(trx)
-
-		await sql`drop table ScoreDeprecated`.execute(trx)
 
 		await sql`
 			CREATE TRIGGER afterInsertOnScoreEvent after insert on ScoreEvent
@@ -156,7 +190,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 
 		await sql`drop trigger afterInsertEffectEvent`.execute(trx)
 
-		await sql`alter table Effect rename to EffectDeprecated`.execute(trx)
+		await sql`drop table Effect`.execute(trx)
 
 		await sql`
 			CREATE TABLE Effect(
@@ -175,26 +209,6 @@ export async function up(db: Kysely<any>): Promise<void> {
 				, primary key(postId, noteId)
 			) strict;
 		`.execute(trx)
-
-		await sql`
-			insert into Effect
-			select
-					voteEventId
-				, voteEventTime
-				, postId
-				, noteId
-				, topSubthreadId
-				, p
-				, pCount
-				, pSize
-				, q
-				, qCount
-				, qSize
-				, r
-			from EffectDeprecated
-		`.execute(trx)
-
-		await sql`drop table EffectDeprecated`.execute(trx)
 
 		await sql`
 			CREATE TRIGGER afterInsertEffectEvent after insert on EffectEvent begin
@@ -251,6 +265,13 @@ export async function up(db: Kysely<any>): Promise<void> {
 		// -----------------------
 
 		await sql`drop table Tag`.execute(trx)
+
+		// Clear EffectEvent and ScoreEvent tables
+		// ---------------------------------------
+
+		await sql`delete from EffectEvent`.execute(trx)
+		
+		await sql`delete from ScoreEvent`.execute(trx)
 
 		// Reactivate foreign keys.
 		await sql`pragma foreign_keys = on`.execute(trx)
