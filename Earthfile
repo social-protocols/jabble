@@ -63,12 +63,13 @@ app-setup:
 app-build:
   FROM +app-setup
   RUN npm run build
-  SAVE ARTIFACT server-build AS LOCAL server-build
-  SAVE ARTIFACT build AS LOCAL build
-  SAVE ARTIFACT public AS LOCAL public
-  SAVE ARTIFACT node_modules AS LOCAL node_modules
-  SAVE ARTIFACT package-lock.json AS LOCAL package-lock.json
-  SAVE ARTIFACT package.json AS LOCAL package.json
+  SAVE ARTIFACT server-build
+  SAVE ARTIFACT build
+  SAVE ARTIFACT public
+  SAVE ARTIFACT node_modules
+  SAVE ARTIFACT package-lock.json
+  SAVE ARTIFACT package.json
+  SAVE ARTIFACT .npmrc
 
 app-deploy-litefs:
    FROM flyio/litefs:0.5.10
@@ -93,7 +94,7 @@ docker-image:
 
   # npm run build
   COPY --dir other app server public types index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
-  COPY --dir +app-build/server-build +app-build/build +app-build/public +app-build/node_modules +app-build/package-lock.json +app-build/package.json ./
+  COPY --dir +app-build/server-build +app-build/build +app-build/public +app-build/node_modules +app-build/package-lock.json +app-build/package.json +app-build/.npmrc ./
 
 
   # startup & migrations
@@ -107,8 +108,6 @@ docker-image:
   ENV CACHE_DATABASE_PATH="/$LITEFS_DIR/$CACHE_DATABASE_FILENAME"
   ENV INTERNAL_PORT="8080"
   ENV PORT="8081"
-  ENV VOTE_EVENTS_PATH=/data/vote-events.jsonl
-  ENV SCORE_EVENTS_PATH=/data/score-events.jsonl
 
   RUN nix-collect-garbage
   RUN du -sh /* \
