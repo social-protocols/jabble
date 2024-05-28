@@ -117,15 +117,24 @@ docker-image:
   SAVE IMAGE jabble:latest
 
 app-e2e-test-run:
-  FROM +nix-dev-shell --DEVSHELL='e2e'
+  # set up an image with dind (docker in docker) and nix
+  FROM earthly/dind:alpine-3.19-docker-25.0.5-r0
+  RUN apk add curl \
+   && curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install linux \
+    --extra-conf "sandbox = false" \
+    --init none \
+    --no-confirm
+  ENV PATH="${PATH}:/nix/var/nix/profiles/default/bin"
+  WORKDIR /app
+  COPY flake.nix flake.lock .
+  RUN nix develop .#e2e --command echo warmed up
   COPY --dir e2e playwright.config.ts ./
-  CMD ["/bin/sh", "-c", "until curl --silent --fail http://localhost:8081 > /dev/null; do sleep 1; done && CI=true playwright test"]
 
 docker-image-e2e-test:
-  FROM earthly/dind:alpine-3.19-docker-25.0.5-r0
+  FROM +app-e2e-test-run
   COPY docker-compose.yml ./
-  WITH DOCKER --load run-tests:latest=+app-e2e-test-run --load jabble:latest=+docker-image --compose docker-compose.yml
-    RUN docker image ls && docker run --network host run-tests:latest
+  WITH DOCKER --load jabble:latest=+docker-image --compose docker-compose.yml
+    RUN docker image ls && until curl --silent --fail http://localhost:8081 > /dev/null; do sleep 1; done && CI=true nix develop --impure .#e2e --command playwright test
   END
 
 app-deploy:

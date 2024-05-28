@@ -56,7 +56,6 @@
             buildInputs = with pkgs; [
               playwright-driver.browsers # e2e tests
               playwright-test # e2e tests
-
             ];
             shellHook = ''
               export PLAYWRIGHT_BROWSERS_PATH="${pkgs.playwright-driver.browsers}"
