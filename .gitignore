@@ -18,3 +18,7 @@ node_modules/
 .env
 .DS_Store
 GlobalBrain.jl/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
