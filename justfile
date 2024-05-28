@@ -31,7 +31,8 @@ dev:
 
 # open database in sqlite commandline 
 db:
-	sqlite3 $APP_DATABASE_PATH
+	# sqlite3 $APP_DATABASE_PATH
+	litecli $APP_DATABASE_PATH
 
 # run typescript typechecker
 typecheck:
