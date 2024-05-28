@@ -63,12 +63,12 @@ app-setup:
 app-build:
   FROM +app-setup
   RUN npm run build
-  SAVE ARTIFACT server-build AS LOCAL server-build
-  SAVE ARTIFACT build AS LOCAL build
-  SAVE ARTIFACT public AS LOCAL public
-  SAVE ARTIFACT node_modules AS LOCAL node_modules
-  SAVE ARTIFACT package-lock.json AS LOCAL package-lock.json
-  SAVE ARTIFACT package.json AS LOCAL package.json
+  SAVE ARTIFACT server-build
+  SAVE ARTIFACT build
+  SAVE ARTIFACT public
+  SAVE ARTIFACT node_modules
+  SAVE ARTIFACT package-lock.json
+  SAVE ARTIFACT package.json
 
 app-deploy-litefs:
    FROM flyio/litefs:0.5.10
