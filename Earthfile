@@ -116,7 +116,7 @@ docker-image:
   CMD ["/bin/sh", "-c", "/usr/local/bin/litefs mount"]
   SAVE IMAGE jabble:latest
 
-app-e2e-test-run:
+docker-image-e2e-test:
   # set up an image with dind (docker in docker) and nix
   FROM earthly/dind:alpine-3.19-docker-25.0.5-r0
   RUN apk add curl \
@@ -127,14 +127,14 @@ app-e2e-test-run:
   ENV PATH="${PATH}:/nix/var/nix/profiles/default/bin"
   WORKDIR /app
   COPY flake.nix flake.lock .
-  RUN nix develop .#e2e --command echo warmed up
+  RUN nix develop ".#e2e" --command echo warmed up
   COPY --dir e2e playwright.config.ts ./
-
-docker-image-e2e-test:
-  FROM +app-e2e-test-run
   COPY docker-compose.yml ./
   WITH DOCKER --load jabble:latest=+docker-image --compose docker-compose.yml
-    RUN docker image ls && until curl --silent --fail http://localhost:8081 > /dev/null; do sleep 1; done && CI=true nix develop --impure .#e2e --command playwright test
+    RUN docker image ls \
+     && echo waiting for http server to show up... \
+     && timeout 60s sh -c 'until curl --silent --fail http://localhost:8081 > /dev/null; do sleep 1; done' \
+     && CI=true nix develop --impure ".#e2e" --command playwright test
   END
 
 app-deploy:
