@@ -110,6 +110,12 @@ docker-image:
   ENV VOTE_EVENTS_PATH=/data/vote-events.jsonl
   ENV SCORE_EVENTS_PATH=/data/score-events.jsonl
 
+  RUN nix-collect-garbage
+  RUN du -sh /* \
+   && find /app -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 du -sh | sort -hr | head -20 \
+   && find /nix/store -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 du -sh | sort -hr | head -20 \
+   && find /app/node_modules -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 du -sh | sort -hr | head -20
+
   # starting the application is defined in litefs.yml
   # test locally without litefs:
   # docker run -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET sha256:xyzxyz /bin/sh startup.sh
@@ -130,9 +136,10 @@ docker-image-e2e-test:
   RUN nix develop ".#e2e" --command echo warmed up
   COPY --dir e2e playwright.config.ts ./
   COPY docker-compose.yml ./
-  WITH DOCKER --load jabble:latest=+docker-image --compose docker-compose.yml
+  WITH DOCKER --load jabble:latest=+docker-image
     RUN docker image ls \
-     && echo waiting for http server to show up... \
+     && (docker-compose up &) \
+     && echo waiting for http server to come online... \
      && timeout 60s sh -c 'until curl --silent --fail http://localhost:8081 > /dev/null; do sleep 1; done' \
      && CI=true nix develop --impure ".#e2e" --command playwright test
   END
