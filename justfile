@@ -16,7 +16,6 @@ reset-db:
 reset-all:
   rm -rf ~/social-protocols-data/*
   mkdir -p ~/social-protocols-data
-  touch $SCORE_EVENTS_PATH
   rm -f "$GB_DATABASE_PATH"
   just reset-db
 
@@ -89,8 +88,6 @@ download-production-data:
 	# todo: use sqlite .backup command and download copy
 	rm -rf $SOCIAL_PROTOCOLS_DATADIR/production/
 	mkdir -p $SOCIAL_PROTOCOLS_DATADIR/production/
-	fly ssh sftp get /data/score-events.jsonl $SOCIAL_PROTOCOLS_DATADIR/production/score-events.jsonl
-	fly ssh sftp get /data/vote-events.jsonl $SOCIAL_PROTOCOLS_DATADIR/production/vote-events.jsonl
 	fly ssh sftp get /litefs/data/sqlite.db $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db
 	fly ssh sftp get /litefs/data/global-brain.db $SOCIAL_PROTOCOLS_DATADIR/production/global-brain.db
 	fly ssh sftp get /litefs/data/sqlite.db $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db-wal
