@@ -50,7 +50,10 @@
               sqlite
               python3 # for node-gyp
               gcc # for node-gyp
-
+            ];
+          };
+          e2e = pkgs.mkShellNoCC {
+            buildInputs = with pkgs; [
               playwright-driver.browsers # e2e tests
               playwright-test # e2e tests
 

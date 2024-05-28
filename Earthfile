@@ -117,15 +117,15 @@ docker-image:
   SAVE IMAGE jabble:latest
 
 app-e2e-test-run:
-  FROM +app-setup
+  FROM +nix-dev-shell --DEVSHELL='e2e'
   COPY --dir e2e playwright.config.ts ./
-  CMD ["/bin/sh", "-c", "until curl --silent --fail http://localhost:8081 > /dev/null; do sleep 1; done && CI=true npx playwright test"]
+  CMD ["/bin/sh", "-c", "until curl --silent --fail http://localhost:8081 > /dev/null; do sleep 1; done && CI=true playwright test"]
 
 docker-image-e2e-test:
   FROM earthly/dind:alpine-3.19-docker-25.0.5-r0
   COPY docker-compose.yml ./
   WITH DOCKER --load run-tests:latest=+app-e2e-test-run --load jabble:latest=+docker-image --compose docker-compose.yml
-    RUN docker run --network host run-tests:latest
+    RUN docker image ls && docker run --network host run-tests:latest
   END
 
 app-deploy:
