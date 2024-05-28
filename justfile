@@ -31,8 +31,7 @@ dev:
 
 # open database in sqlite commandline 
 db:
-	# sqlite3 $APP_DATABASE_PATH
-	litecli $APP_DATABASE_PATH
+	sqlite3 $APP_DATABASE_PATH
 
 # run typescript typechecker
 typecheck:
@@ -66,7 +65,7 @@ download-prod-db:
   rm -f "$APP_DATABASE_PATH"
   rm -f "$APP_DATABASE_PATH"-shm
   rm -f "$APP_DATABASE_PATH"-wal
-  flyctl ssh console -C "sqlite3 /litefs/data/sqlite.db '.backup /data/backup.db'"
+  flyctl ssh console -C "/bin/sh -c \"sqlite3 /litefs/data/sqlite.db '.backup /data/backup.db'\""
   flyctl ssh sftp get /data/backup.db "$APP_DATABASE_PATH" || true
 
 # build the docker container
