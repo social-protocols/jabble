@@ -69,6 +69,7 @@ app-build:
   SAVE ARTIFACT node_modules
   SAVE ARTIFACT package-lock.json
   SAVE ARTIFACT package.json
+  SAVE ARTIFACT .npmrc
 
 app-deploy-litefs:
    FROM flyio/litefs:0.5.10
@@ -93,7 +94,7 @@ docker-image:
 
   # npm run build
   COPY --dir other app server public types index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
-  COPY --dir +app-build/server-build +app-build/build +app-build/public +app-build/node_modules +app-build/package-lock.json +app-build/package.json ./
+  COPY --dir +app-build/server-build +app-build/build +app-build/public +app-build/node_modules +app-build/package-lock.json +app-build/package.json +app-build/.npmrc ./
 
 
   # startup & migrations
