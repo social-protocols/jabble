@@ -63,12 +63,13 @@ app-setup:
 app-build:
   FROM +app-setup
   RUN npm run build
-  SAVE ARTIFACT server-build AS LOCAL server-build
-  SAVE ARTIFACT build AS LOCAL build
-  SAVE ARTIFACT public AS LOCAL public
-  SAVE ARTIFACT node_modules AS LOCAL node_modules
-  SAVE ARTIFACT package-lock.json AS LOCAL package-lock.json
-  SAVE ARTIFACT package.json AS LOCAL package.json
+  SAVE ARTIFACT server-build
+  SAVE ARTIFACT build
+  SAVE ARTIFACT public
+  SAVE ARTIFACT node_modules
+  SAVE ARTIFACT package-lock.json
+  SAVE ARTIFACT package.json
+  SAVE ARTIFACT .npmrc
 
 app-deploy-litefs:
    FROM flyio/litefs:0.5.10
@@ -93,7 +94,7 @@ docker-image:
 
   # npm run build
   COPY --dir other app server public types index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
-  COPY --dir +app-build/server-build +app-build/build +app-build/public +app-build/node_modules +app-build/package-lock.json +app-build/package.json ./
+  COPY --dir +app-build/server-build +app-build/build +app-build/public +app-build/node_modules +app-build/package-lock.json +app-build/package.json +app-build/.npmrc ./
 
 
   # startup & migrations
@@ -107,8 +108,12 @@ docker-image:
   ENV CACHE_DATABASE_PATH="/$LITEFS_DIR/$CACHE_DATABASE_FILENAME"
   ENV INTERNAL_PORT="8080"
   ENV PORT="8081"
-  ENV VOTE_EVENTS_PATH=/data/vote-events.jsonl
-  ENV SCORE_EVENTS_PATH=/data/score-events.jsonl
+
+  RUN nix-collect-garbage
+  RUN du -sh /* \
+   && find /app -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 du -sh | sort -hr | head -20 \
+   && find /nix/store -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 du -sh | sort -hr | head -20 \
+   && find /app/node_modules -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 du -sh | sort -hr | head -20
 
   # starting the application is defined in litefs.yml
   # test locally without litefs:
@@ -116,6 +121,27 @@ docker-image:
   CMD ["/bin/sh", "-c", "/usr/local/bin/litefs mount"]
   SAVE IMAGE jabble:latest
 
+docker-image-e2e-test:
+  # set up an image with dind (docker in docker) and nix
+  FROM earthly/dind:alpine-3.19-docker-25.0.5-r0
+  RUN apk add curl \
+   && curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install linux \
+    --extra-conf "sandbox = false" \
+    --init none \
+    --no-confirm
+  ENV PATH="${PATH}:/nix/var/nix/profiles/default/bin"
+  WORKDIR /app
+  COPY flake.nix flake.lock .
+  RUN nix develop ".#e2e" --command echo warmed up
+  COPY --dir e2e playwright.config.ts ./
+  COPY docker-compose.yml ./
+  WITH DOCKER --load jabble:latest=+docker-image
+    RUN docker image ls \
+     && (docker-compose up &) \
+     && echo waiting for http server to come online... \
+     && timeout 60s sh -c 'until curl --silent --fail http://localhost:8081 > /dev/null; do sleep 1; done' \
+     && CI=true nix develop --impure ".#e2e" --command playwright test
+  END
 
 app-deploy:
   # run locally:
@@ -146,7 +172,7 @@ app-lint:
 ci-test:
   BUILD +app-typecheck
   BUILD +app-lint
-  BUILD +docker-image
+  BUILD +docker-image-e2e-test
 
 ci-deploy:
   # To run manually:
