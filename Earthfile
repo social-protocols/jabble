@@ -107,8 +107,6 @@ docker-image:
   ENV CACHE_DATABASE_PATH="/$LITEFS_DIR/$CACHE_DATABASE_FILENAME"
   ENV INTERNAL_PORT="8080"
   ENV PORT="8081"
-  ENV VOTE_EVENTS_PATH=/data/vote-events.jsonl
-  ENV SCORE_EVENTS_PATH=/data/score-events.jsonl
 
   # starting the application is defined in litefs.yml
   # test locally without litefs:
