@@ -59,7 +59,6 @@
     "@types/cli-progress": "^3.11.5",
     "address": "^2.0.1",
     "autoprefixer": "^10.4.16",
-    "aws-sdk": "^2.1620.0",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^8.6.0",
     "bloom-filters": "^3.0.1",
