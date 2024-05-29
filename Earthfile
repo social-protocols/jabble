@@ -41,7 +41,7 @@ GLOBALBRAIN_INSTALL_AND_TEST:
   FUNCTION
   ARG GLOBALBRAIN_REF=666912803e1f7582730ba2a195771a84310ed00c # TODO: list this reference only once (https://docs.earthly.dev/docs/earthfile#global)
   ARG --required destination
-  COPY github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_REF+node-ext $destination
+  COPY github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_REF+node-ext/artifact $destination
   # COPY ../GlobalBrain.jl+node-ext/artifact $destination
   RUN cd $destination && npm test # because this target is a function, test runs on the callsite
 
