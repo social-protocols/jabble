@@ -16,7 +16,6 @@ reset-db:
 reset-all:
   rm -rf ~/social-protocols-data/*
   mkdir -p ~/social-protocols-data
-  touch $SCORE_EVENTS_PATH
   rm -f "$GB_DATABASE_PATH"
   just reset-db
 
@@ -79,11 +78,7 @@ docker-build-mac:
 
 # run the app in the docker container (you must run docker-build first)
 docker-run:
-	docker run --rm -it -p 8081:8081 -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET --name jabble jabble:latest /bin/sh startup.sh 
-
-# delete the docker container
-docker-rm:
-	docker rm -f jabble
+  docker-compose up
 
 # exec /bin/bash in the running docker container
 docker-exec:
@@ -93,8 +88,6 @@ download-production-data:
 	# todo: use sqlite .backup command and download copy
 	rm -rf $SOCIAL_PROTOCOLS_DATADIR/production/
 	mkdir -p $SOCIAL_PROTOCOLS_DATADIR/production/
-	fly ssh sftp get /data/score-events.jsonl $SOCIAL_PROTOCOLS_DATADIR/production/score-events.jsonl
-	fly ssh sftp get /data/vote-events.jsonl $SOCIAL_PROTOCOLS_DATADIR/production/vote-events.jsonl
 	fly ssh sftp get /litefs/data/sqlite.db $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db
 	fly ssh sftp get /litefs/data/global-brain.db $SOCIAL_PROTOCOLS_DATADIR/production/global-brain.db
 	fly ssh sftp get /litefs/data/sqlite.db $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db-wal
@@ -117,3 +110,5 @@ install-node-extension-from-earthly:
   (cd ./GlobalBrain.jl/globalbrain-node && npm install)
   npm install --ignore-scripts --save './GlobalBrain.jl/globalbrain-node'
 
+recent-sessions:
+	fly ssh console -C 'other/recent-sessions.sh'
