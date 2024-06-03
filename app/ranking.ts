@@ -102,7 +102,9 @@ async function getEffectsInternal(
 ): Promise<Effect[]> {
 	let query = trx
 		.selectFrom('Post')
-		.innerJoin('EffectWithDefault as Effect', join => join.on('Effect.noteId', '=', postId))
+		.innerJoin('EffectWithDefault as Effect', join =>
+			join.on('Effect.noteId', '=', postId),
+		)
 		.innerJoin('Post as TargetPost', 'TargetPost.id', 'Effect.postId')
 		.selectAll('Effect')
 		.where('Post.id', '=', postId)
