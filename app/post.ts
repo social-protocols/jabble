@@ -10,6 +10,7 @@ export async function createPost(
 	parentId: number | null, // TODO: use parentId?: number
 	content: string,
 	authorId: string,
+	withUpvote?: boolean,
 ): Promise<number> {
 	const persistedPost: Post = await trx
 		.insertInto('Post')
@@ -19,7 +20,9 @@ export async function createPost(
 
 	invariant(persistedPost, `Reply to ${parentId} not submitted successfully`)
 
-	await vote(trx, authorId, persistedPost.id, null, Direction.Up)
+	if (withUpvote !== undefined ? withUpvote : true) {
+		await vote(trx, authorId, persistedPost.id, null, Direction.Up)
+	}
 
 	if (parentId !== null) {
 		await incrementReplyCount(trx, parentId)
