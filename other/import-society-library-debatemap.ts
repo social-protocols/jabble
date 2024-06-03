@@ -15,12 +15,21 @@ var topLevelQuestion: Question = JSON.parse(
 	fs.readFileSync(debateFilename, 'utf-8'),
 ) as Question
 
-const userId: string = (() => {
+const username: string = (() => {
 	const id = process.argv[3]
 	invariant(id, 'no userId provided')
 	return id
 })()
-console.log('author userid: ', userId)
+console.log('author username: ', username)
+
+const userId = await db.transaction().execute(async trx => {
+	const user = await trx
+		.selectFrom('User')
+		.select('id')
+		.where('username', '=', username)
+		.executeTakeFirstOrThrow()
+	return user.id
+})
 
 console.log('Got debate map for question', topLevelQuestion)
 
