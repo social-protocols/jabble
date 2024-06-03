@@ -231,6 +231,10 @@ function ReplyForm({
 			/>
 
 			<div>
+				<div>
+					<label htmlFor="isPrivate">private </label>
+					<input type="checkbox" name="isPrivate" id="isPrivate" value="private" />
+				</div>
 				<button className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700">
 					Reply
 				</button>

@@ -10,11 +10,12 @@ export async function createPost(
 	parentId: number | null, // TODO: use parentId?: number
 	content: string,
 	authorId: string,
+	isPrivate: boolean,
 ): Promise<number> {
-	const isPrivate: number = 0 // TODO
+	const isPrivateNumber: number = isPrivate ? 1 : 0
 	const persistedPost: Post = await trx
 		.insertInto('Post')
-		.values({ content: content, parentId: parentId, authorId: authorId, isPrivate: isPrivate })
+		.values({ content: content, parentId: parentId, authorId: authorId, isPrivate: isPrivateNumber })
 		.returningAll()
 		.executeTakeFirstOrThrow()
 
