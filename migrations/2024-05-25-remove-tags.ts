@@ -1,9 +1,7 @@
 import { type Kysely, sql } from 'kysely'
 
 export async function up(db: Kysely<any>): Promise<void> {
-
-	db.transaction().execute(async (trx) => {
-
+	db.transaction().execute(async trx => {
 		// We deactivate foreign keys for this migration to make altering constraints
 		// less cumbersome.
 		await sql`PRAGMA foreign_keys = off`.execute(trx)
@@ -270,11 +268,10 @@ export async function up(db: Kysely<any>): Promise<void> {
 		// ---------------------------------------
 
 		await sql`delete from EffectEvent`.execute(trx)
-		
+
 		await sql`delete from ScoreEvent`.execute(trx)
 
 		// Reactivate foreign keys.
 		await sql`pragma foreign_keys = on`.execute(trx)
-
 	})
 }
