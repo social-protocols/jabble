@@ -28,7 +28,7 @@ nix-dev-shell:
 
 globalbrain-node-package:
   FROM scratch
-  ARG GLOBALBRAIN_REF=228f35ac458dd838eab9ce9bc8163c495d76bd04
+  ARG GLOBALBRAIN_REF=5b7f692ffe6ea8870932f12fd213fad4a8bfe8f9
   COPY github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_REF+node-ext/artifact /artifact
   # COPY ../GlobalBrain.jl+node-ext/artifact /artifact
   SAVE ARTIFACT /artifact
