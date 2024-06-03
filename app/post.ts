@@ -1,13 +1,12 @@
 import assert from 'assert'
 import { type Transaction } from 'kysely'
-import { type VoteEvent, type Post } from '#app/db/types.ts'
+import { type Post } from '#app/db/types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { Direction, vote } from '#app/vote.ts'
 import { type DB } from './db/kysely-types.ts'
 
 export async function createPost(
 	trx: Transaction<DB>,
-	tag: string,
 	parentId: number | null, // TODO: use parentId?: number
 	content: string,
 	authorId: string,
@@ -20,31 +19,19 @@ export async function createPost(
 
 	invariant(persistedPost, `Reply to ${parentId} not submitted successfully`)
 
-	const voteEvent: VoteEvent = await vote(
-		trx,
-		tag,
-		authorId,
-		persistedPost.id,
-		null,
-		Direction.Up,
-	)
+	await vote(trx, authorId, persistedPost.id, null, Direction.Up)
 
 	if (parentId !== null) {
-		await incrementReplyCount(trx, voteEvent.tagId, parentId)
+		await incrementReplyCount(trx, parentId)
 	}
 
 	return persistedPost.id
 }
 
-export async function initPostStats(
-	trx: Transaction<DB>,
-	tagId: number,
-	postId: number,
-) {
+export async function initPostStats(trx: Transaction<DB>, postId: number) {
 	await trx
 		.insertInto('PostStats')
 		.values({
-			tagId: tagId,
 			postId: postId,
 			replies: 0,
 		})
@@ -55,16 +42,14 @@ export async function initPostStats(
 
 export async function incrementReplyCount(
 	trx: Transaction<DB>,
-	tagId: number,
 	postId: number,
 ) {
-	await initPostStats(trx, tagId, postId)
+	await initPostStats(trx, postId)
 	await trx
 		.updateTable('PostStats')
 		.set(eb => ({
 			replies: eb('replies', '+', 1),
 		}))
-		.where('tagId', '=', tagId)
 		.where('postId', '=', postId)
 		.execute()
 }

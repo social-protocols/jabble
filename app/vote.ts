@@ -2,7 +2,6 @@ import { type Transaction, sql } from 'kysely'
 import { type VoteEvent, type InsertableVoteEvent } from '#app/db/types.ts'
 import { sendVoteEvent } from '#app/globalbrain.ts'
 import { type DB } from './db/kysely-types.ts'
-import { getOrInsertTagId } from './tag.ts'
 import { invariant } from './utils/misc.tsx'
 
 export enum Direction {
@@ -28,17 +27,13 @@ export function defaultVoteState(postId: number): VoteState {
 // The vote function inserts a vote record in voteHistory, and also updates attention stats
 export async function vote(
 	trx: Transaction<DB>,
-	tag: string,
 	userId: string,
 	postId: number,
 	noteId: number | null,
 	direction: Direction,
 ): Promise<VoteEvent> {
-	const tagId = await getOrInsertTagId(trx, tag)
-
 	let voteEvent: VoteEvent = await insertVoteEvent(
 		trx,
-		tagId,
 		userId,
 		postId,
 		noteId,
@@ -52,7 +47,6 @@ export async function vote(
 
 async function insertVoteEvent(
 	trx: Transaction<DB>,
-	tagId: number,
 	userId: string,
 	postId: number,
 	noteId: number | null,
@@ -73,9 +67,10 @@ async function insertVoteEvent(
 
 	const parentId = post.parentId
 
+	const legacyTagId = 1
 	const voteEvent: InsertableVoteEvent = {
 		userId: userId,
-		tagId: tagId,
+		tagId: legacyTagId,
 		parentId: parentId,
 		postId: postId,
 		noteId: noteId,
@@ -114,26 +109,19 @@ async function insertVoteEvent(
 export async function getUserVotes(
 	trx: Transaction<DB>,
 	userId: string,
-	tag: string,
 	postIds: number[],
 ): Promise<VoteState[]> {
-	let tagId = await getOrInsertTagId(trx, tag)
-
 	return await trx
 		.selectFrom('Post')
 		.innerJoin('Score', 'Score.postId', 'Post.id')
 		.leftJoin('Vote', join =>
-			join
-				.onRef('Vote.postId', '=', 'Post.id')
-				.on('Vote.userId', '=', userId)
-				.on('Vote.tagId', '=', tagId),
+			join.onRef('Vote.postId', '=', 'Post.id').on('Vote.userId', '=', userId),
 		)
 		.where(eb => eb('id', 'in', postIds))
 		.leftJoin('Vote as VoteOnCriticalReply', join =>
 			join
 				.onRef('VoteOnCriticalReply.postId', '=', 'criticalThreadId')
-				.onRef('VoteOnCriticalReply.userId', '=', 'Vote.userId')
-				.onRef('VoteOnCriticalReply.tagId', '=', 'Vote.tagId'),
+				.onRef('VoteOnCriticalReply.userId', '=', 'Vote.userId'),
 		)
 		.select('Post.id as postId')
 		.select(sql<number>`ifnull(Vote.vote,0)`.as('vote'))

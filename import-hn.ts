@@ -6,10 +6,8 @@ import { glob } from 'glob'
 import TurndownService from 'turndown'
 import { db } from '#app/db.ts'
 import { createPost } from '#app/post.ts'
-import { getOrInsertTagId } from '#app/tag.ts'
 
 const turndownService = new TurndownService({ emDelimiter: '*' })
-const tag = 'hacker-news'
 
 export async function importHN() {
 	let patterns = process.argv.slice(2)
@@ -17,13 +15,11 @@ export async function importHN() {
 
 	const files = await glob(patterns, {})
 	files.forEach(file => {
-		importHNPostsFromFile(tag, file)
+		importHNPostsFromFile(file)
 	})
 }
 
-async function importHNPostsFromFile(tag: string, filename: string) {
-	await db.transaction().execute(async trx => getOrInsertTagId(trx, tag))
-
+async function importHNPostsFromFile(filename: string) {
 	await readJsonLinesFromFile(filename)
 		.then(async items => {
 			const bar1 = new cliProgress.SingleBar(
@@ -71,9 +67,7 @@ async function importHNPostsFromFile(tag: string, filename: string) {
 
 				const postId = await db
 					.transaction()
-					.execute(async trx =>
-						createPost(trx, tag, parentId, markdown, ourUserId),
-					)
+					.execute(async trx => createPost(trx, parentId, markdown, ourUserId))
 
 				idMap.set(item.id, postId)
 				bar1.update(++i)

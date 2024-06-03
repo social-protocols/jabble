@@ -2,11 +2,10 @@ import { type Transaction, sql } from 'kysely'
 import { type Effect, type Post, type FullScore } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { type DB } from './db/kysely-types.ts'
 import { getPost } from './post.ts'
-import { getOrInsertTagId } from './tag.ts'
 import { relativeEntropy } from './utils/entropy.ts'
 
 // Post with score and the effect of its top note
-export type ScoredPost = Post & FullScore & { nReplies: number; tag: string }
+export type ScoredPost = Post & FullScore & { nReplies: number }
 
 // Post with its effect on its parent
 export type ScoredNote = Post & Effect
@@ -22,42 +21,32 @@ export type RankedPost = ScoredPost & {
 
 export async function getScoredPost(
 	trx: Transaction<DB>,
-	tag: string,
 	postId: number,
 ): Promise<ScoredPost> {
-	const tagId = await getOrInsertTagId(trx, tag)
-	return getScoredPostInternal(trx, tagId, postId)
+	return getScoredPostInternal(trx, postId)
 }
 
 async function getScoredPostInternal(
 	trx: Transaction<DB>,
-	tagId: number,
 	postId: number,
 ): Promise<ScoredPost> {
 	let query = trx
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
 		.leftJoin('PostStats', join =>
-			join
-				.onRef('PostStats.postId', '=', 'Post.id')
-				.on('PostStats.tagId', '=', tagId),
+			join.onRef('PostStats.postId', '=', 'Post.id'),
 		)
-		.innerJoin('Tag', 'Tag.id', 'FullScore.tagId')
-		.select('tag')
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(eb =>
 			eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'),
 		)
 		.where('Post.id', '=', postId)
-		.where('FullScore.tagId', '=', tagId)
 
 	const scoredPost = (await query.execute())[0]
 
 	if (scoredPost === undefined) {
-		throw new Error(
-			`Failed to read scored post tagId=${tagId} postId=${postId}`,
-		)
+		throw new Error(`Failed to read scored post postId=${postId}`)
 	}
 
 	return scoredPost
@@ -65,32 +54,26 @@ async function getScoredPostInternal(
 
 export async function getTopNote(
 	trx: Transaction<DB>,
-	tag: string,
 	post: ScoredPost,
 ): Promise<ScoredNote | null> {
-	const tagId = await getOrInsertTagId(trx, tag)
 	return post.topNoteId !== null
-		? getScoredNoteInternal(trx, tagId, post.topNoteId)
+		? getScoredNoteInternal(trx, post.topNoteId)
 		: null
 }
 
 async function getScoredNoteInternal(
 	trx: Transaction<DB>,
-	tagId: number,
 	postId: number,
 ): Promise<ScoredNote> {
 	let query = trx
 		.selectFrom('Post')
 		.innerJoin('Effect', join =>
 			join
-				.on('Effect.tagId', '=', tagId)
 				.on('Effect.noteId', '=', postId)
 				.onRef('Effect.postId', '=', 'Post.parentId'),
 		)
 		.leftJoin('PostStats', join =>
-			join
-				.onRef('PostStats.postId', '=', 'Post.id')
-				.on('PostStats.tagId', '=', tagId),
+			join.onRef('PostStats.postId', '=', 'Post.id'),
 		)
 		.selectAll('Post')
 		.selectAll('Effect')
@@ -100,9 +83,7 @@ async function getScoredNoteInternal(
 	const scoredNote = (await query.execute())[0]
 
 	if (scoredNote === undefined) {
-		throw new Error(
-			`Failed to read scored post tagId=${tagId} postId=${postId}`,
-		)
+		throw new Error(`Failed to read scored post postId=${postId}`)
 	}
 
 	return scoredNote
@@ -110,22 +91,18 @@ async function getScoredNoteInternal(
 
 export async function getEffects(
 	trx: Transaction<DB>,
-	tag: string,
 	postId: number,
 ): Promise<Effect[]> {
-	return await getEffectsInternal(trx, await getOrInsertTagId(trx, tag), postId)
+	return await getEffectsInternal(trx, postId)
 }
 
 async function getEffectsInternal(
 	trx: Transaction<DB>,
-	tagId: number,
 	postId: number,
 ): Promise<Effect[]> {
 	let query = trx
 		.selectFrom('Post')
-		.innerJoin('Effect', join =>
-			join.on('Effect.tagId', '=', tagId).on('Effect.noteId', '=', postId),
-		)
+		.innerJoin('Effect', join => join.on('Effect.noteId', '=', postId))
 		.innerJoin('Post as TargetPost', 'TargetPost.id', 'Effect.postId')
 		.selectAll('Effect')
 		.where('Post.id', '=', postId)
@@ -137,27 +114,19 @@ async function getEffectsInternal(
 
 export async function getRankedPosts(
 	trx: Transaction<DB>,
-	tag: string,
 ): Promise<RankedPost[]> {
-	const tagId = await getOrInsertTagId(trx, tag)
-
 	let query = trx
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
 		.leftJoin('PostStats', join =>
-			join
-				.onRef('PostStats.postId', '=', 'Post.id')
-				.on('PostStats.tagId', '=', tagId),
+			join.onRef('PostStats.postId', '=', 'Post.id'),
 		)
-		.innerJoin('Tag', 'Tag.id', 'FullScore.tagId')
 		.where('Post.deletedAt', 'is', null)
-		.select('tag')
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(eb =>
 			eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'),
 		)
-		.where('FullScore.tagId', '=', tagId)
 		.orderBy('FullScore.score', 'desc')
 		.limit(MAX_RESULTS)
 
@@ -168,10 +137,10 @@ export async function getRankedPosts(
 			return {
 				...post,
 				note: post.topNoteId
-					? await getScoredNoteInternal(trx, tagId, post.topNoteId)
+					? await getScoredNoteInternal(trx, post.topNoteId)
 					: null,
 				parent: post.parentId ? await getPost(trx, post.parentId) : null,
-				effects: await getEffectsInternal(trx, tagId, post.id),
+				effects: await getEffectsInternal(trx, post.id),
 				isCritical: false,
 			}
 		}),
@@ -181,26 +150,18 @@ export async function getRankedPosts(
 
 export async function getChronologicalToplevelPosts(
 	trx: Transaction<DB>,
-	tag?: string,
 ): Promise<ScoredPost[]> {
-	const tagId = tag == null ? null : await getOrInsertTagId(trx, tag)
-
 	let query = trx
 		.selectFrom('Post')
 		.where('Post.parentId', 'is', null)
 		.where('Post.deletedAt', 'is', null)
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
 		.leftJoin('PostStats', join =>
-			join
-				.onRef('PostStats.postId', '=', 'Post.id')
-				.onRef('PostStats.tagId', '=', 'FullScore.tagId'),
+			join.onRef('PostStats.postId', '=', 'Post.id'),
 		)
-		.innerJoin('Tag', 'Tag.id', 'FullScore.tagId')
-		.select('tag')
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))
-		.where(sql<boolean>`ifnull(FullScore.tagId = ${tagId}, true)`)
 		.orderBy('Post.createdAt', 'desc')
 		.limit(MAX_RESULTS)
 
@@ -211,7 +172,7 @@ export async function getChronologicalToplevelPosts(
 			return {
 				...post,
 				parent: post.parentId ? await getPost(trx, post.parentId) : null,
-				effects: await getEffectsInternal(trx, post.tagId, post.id),
+				effects: await getEffectsInternal(trx, post.id),
 			}
 		}),
 	)
@@ -221,18 +182,14 @@ export async function getChronologicalToplevelPosts(
 
 export async function getRankedReplies(
 	trx: Transaction<DB>,
-	tag: string,
 	parentId: number,
 ): Promise<RankedPost[]> {
-	const tagId = await getOrInsertTagId(trx, tag)
-
-	const tree = await getRankedRepliesInternal(trx, tagId, parentId, parentId)
+	const tree = await getRankedRepliesInternal(trx, parentId, parentId)
 	return tree
 }
 
 async function getRankedRepliesInternal(
 	trx: Transaction<DB>,
-	tagId: number,
 	targetId: number,
 	parentId: number,
 ): Promise<RankedPost[]> {
@@ -240,14 +197,9 @@ async function getRankedRepliesInternal(
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
 		.where('parentId', '=', parentId)
-		.where('FullScore.tagId', '=', tagId)
 		.leftJoin('PostStats', join =>
-			join
-				.onRef('PostStats.postId', '=', 'Post.id')
-				.on('PostStats.tagId', '=', tagId),
+			join.onRef('PostStats.postId', '=', 'Post.id'),
 		)
-		.innerJoin('Tag', 'Tag.id', 'FullScore.tagId')
-		.select('tag')
 		.innerJoin('Effect', join =>
 			join
 				.on('Effect.postId', '=', targetId)
@@ -278,7 +230,7 @@ async function getRankedRepliesInternal(
 
 	const results: RankedPost[][] = await Promise.all(
 		immediateChildren.map(async (post: ScoredPost) => {
-			const effects = await getEffectsInternal(trx, tagId, post.id)
+			const effects = await getEffectsInternal(trx, post.id)
 			const targetEffect: Effect | undefined = effects.find(
 				e => e.postId == targetId,
 			)
@@ -290,13 +242,13 @@ async function getRankedRepliesInternal(
 				{
 					...post,
 					note: post.topNoteId
-						? await getScoredNoteInternal(trx, tagId, post.topNoteId)
+						? await getScoredNoteInternal(trx, post.topNoteId)
 						: null,
 					parent: post.parentId ? await getPost(trx, post.parentId) : null,
 					effects: effects,
 					isCritical: isCritical,
 				},
-				...(await getRankedRepliesInternal(trx, tagId, targetId, post.id)),
+				...(await getRankedRepliesInternal(trx, targetId, post.id)),
 			]
 		}),
 	)
@@ -306,11 +258,8 @@ async function getRankedRepliesInternal(
 
 export async function getRankedDirectReplies(
 	trx: Transaction<DB>,
-	tag: string,
 	targetId: number,
 ) {
-	const tagId = await getOrInsertTagId(trx, tag)
-
 	const query = trx
 		.selectFrom('Post')
 		.innerJoin('Effect', 'Effect.noteId', 'Post.id')
@@ -318,8 +267,6 @@ export async function getRankedDirectReplies(
 		.where('Post.parentId', '=', targetId)
 		.where('Effect.postId', '=', targetId)
 		.where('Effect.noteId', 'is not', null)
-		.where('Effect.tagId', '=', tagId)
-		.where('Score.tagId', '=', tagId)
 		.select('Effect.noteId as postId')
 		.select('Effect.p as targetP')
 		.select('Effect.pSize as targetPSize')
@@ -342,7 +289,7 @@ export async function getRankedDirectReplies(
 		.reverse()
 
 	const scoredPosts = await Promise.all(
-		resultSorted.map(item => getScoredPost(trx, tag, item.postId as number)),
+		resultSorted.map(item => getScoredPost(trx, item.postId as number)),
 	)
 
 	return scoredPosts

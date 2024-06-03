@@ -54,15 +54,14 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	const noteId = parsedData.noteId === undefined ? null : parsedData.noteId
 	const postId = parsedData.postId
-	const tag = parsedData.tag
 
 	const v = await db
 		.transaction()
-		.execute(async trx => vote(trx, tag, userId, postId, noteId, newState))
+		.execute(async trx => vote(trx, userId, postId, noteId, newState))
 
 	const voteState: VoteState[] = await db
 		.transaction()
-		.execute(async trx => getUserVotes(trx, v.userId, tag, [v.postId]))
+		.execute(async trx => getUserVotes(trx, v.userId, [v.postId]))
 
 	return { voteState: voteState[0], postId: postId }
 }

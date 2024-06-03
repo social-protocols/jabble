@@ -26,22 +26,18 @@ export function DeletedPost({ post }: { post: ScoredPost }) {
 				<div
 					style={{ cursor: 'pointer' }}
 					className={'italic text-gray-400'}
-					onClick={() =>
-						`/tags/${post.tag}/posts/${post.id}` &&
-						navigate(`/tags/${post.tag}/posts/${post.id}`)
-					}
+					onClick={() => `/post/${post.id}` && navigate(`/post/${post.id}`)}
 				>
 					This post was deleted.
 				</div>
 
 				<div className="mt-2 flex w-full text-sm">
-					<Link to={`/tags/${post.tag}/posts/${post.id}`} className="ml-2">
+					<Link to={`/post/${post.id}`} className="ml-2">
 						<CommentIcon needsVote={false} nReplies={post.nReplies} />
 					</Link>
 					{isAdminUser && (
 						<Form id="restore-post-form" method="POST" action="/restorePost">
 							<input type="hidden" name="postId" value={post.id} />
-							<input type="hidden" name="tag" value={post.tag} />
 							<input type="hidden" name="userId" value={user?.id} />
 							<button className="ml-2 rounded bg-green-600 px-1 text-white">
 								restore

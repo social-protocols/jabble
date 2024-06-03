@@ -37,7 +37,7 @@ export function Feed({
 							(followsParent ? (
 								<div className="link-to-parent threadline" />
 							) : (
-								<ParentPost parentPost={post.parent} tag={post.tag} />
+								<ParentPost parentPost={post.parent} />
 							))}
 						<PostDetails
 							post={post}

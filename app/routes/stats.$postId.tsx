@@ -9,24 +9,19 @@ import { type ScoredPost, getScoredPost, getEffects } from '#app/ranking.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
 
 const postIdSchema = z.coerce.number()
-const tagSchema = z.coerce.string()
 
 export async function loader({ params }: LoaderFunctionArgs) {
 	invariant(params.postId, 'Missing postid param')
-	invariant(params.tag, 'Missing tag param')
 	const postId: number = postIdSchema.parse(params.postId)
-	const tag: string = tagSchema.parse(params.tag)
 
 	const post: ScoredPost = await db
 		.transaction()
-		.execute(async trx => getScoredPost(trx, tag, postId))
+		.execute(async trx => getScoredPost(trx, postId))
 
 	const effects =
 		post.parentId == null
 			? []
-			: await db
-					.transaction()
-					.execute(async trx => getEffects(trx, tag, post.id))
+			: await db.transaction().execute(async trx => getEffects(trx, post.id))
 
 	// So the first of the replies and the top note are not necessarily the same thing?!?
 	// The top note is the most convincing one. But the replies are ordered by *information rate*.
@@ -37,14 +32,13 @@ export async function loader({ params }: LoaderFunctionArgs) {
 	let result = json({
 		post,
 		effects,
-		tag,
 	})
 
 	return result
 }
 
 export default function PostStats() {
-	const { post, effects, tag } = useLoaderData<typeof loader>()
+	const { post, effects } = useLoaderData<typeof loader>()
 
 	// const dkl = relativeEntropy(post.p, post.q)
 	// const totalRelativeEntropy = post.qSize * dkl
@@ -59,16 +53,14 @@ export default function PostStats() {
 	//   - informationRate = voteRate * (1 + log(p))
 
 	const overallMarkdown = `
-# Stats for post [${post.id}](/tags/${tag}/posts/${
-		post.id
-	}) in [#${tag}](/tags/${tag})
+# Stats for post [${post.id}](/post/${post.id})
 
 ## Overall
 
 - **parent:** ${
 		post.parentId == null
 			? 'null'
-			: `[${post.parentId}](/tags/${tag}/stats/${post.parentId})`
+			: `[${post.parentId}](/stats/${post.parentId})`
 	}
 - **overall votes:** ${post.oCount} ▲ ${
 		post.oSize - post.oCount
@@ -93,7 +85,7 @@ export default function PostStats() {
 - **top note id:** ${
 					post.topNoteId == null
 						? 'null'
-						: `[${post.topNoteId}](/tags/${tag}/stats/${post.topNoteId})`
+						: `[${post.topNoteId}](/stats/${post.topNoteId})`
 				}
 - **informed votes:** &nbsp;&nbsp;&nbsp;&nbsp; ${post.pCount} ▲ ${
 					post.pSize - post.pCount
@@ -117,7 +109,7 @@ ${effects
 	.map(
 		e => `
 
-### on [post ${e.postId}](/tags/${tag}/stats/${e.postId})
+### on [post ${e.postId}](/stats/${e.postId})
 
 - **informed votes:** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${e.pCount} ▲  ${
 			e.pSize - e.pCount

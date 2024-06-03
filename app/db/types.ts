@@ -9,7 +9,6 @@ import type * as schema from '#app/db/kysely-types.ts'
 
 export type User = Selectable<schema.User>
 export type Post = Selectable<schema.Post>
-export type Tag = Selectable<schema.Tag>
 export type Password = Selectable<schema.Password>
 export type PostStats = Selectable<schema.PostStats>
 export type Verification = Selectable<schema.Verification>

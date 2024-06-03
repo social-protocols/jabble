@@ -22,7 +22,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	const userId: string | null = await getUserId(request)
 	const loggedIn = userId !== null
 	const feed = await db.transaction().execute(async trx => {
-		return rankingTs.getChronologicalToplevelPosts(trx, 'global')
+		return rankingTs.getChronologicalToplevelPosts(trx)
 	})
 	return { loggedIn, feed }
 }
@@ -51,7 +51,7 @@ Read [how Jabble makes conversations better](https://github.com/social-protocols
 			</div>
 
 			{showNewDiscussionForm ? (
-				<PostForm tag="global" className="mb-4" />
+				<PostForm className="mb-4" />
 			) : (
 				loggedIn && (
 					<div className="mb-4 flex justify-end">{newDiscussionButton()}</div>
@@ -106,10 +106,10 @@ export function TopLevelPost({
 					content={post.content}
 					maxLines={3}
 					deactivateLinks={false}
-					linkTo={`/tags/${post.tag}/posts/${post.id}`}
+					linkTo={`/post/${post.id}`}
 				/>
 				<div className="mt-2 flex w-full text-sm">
-					<Link to={`/tags/${post.tag}/posts/${post.id}`} className="ml-2">
+					<Link to={`/post/${post.id}`} className="ml-2">
 						<CommentIcon needsVote={false} nReplies={post.nReplies} />
 					</Link>
 				</div>

@@ -56,11 +56,9 @@ export async function seed() {
 	// await seedStats()
 
 	// First, alice creates a post
-	const tag = 'global'
 	let post1 = await db.transaction().execute(async trx => {
 		return createPost(
 			trx,
-			tag,
 			null,
 			'So, pregnant people can’t cross state lines to get abortions but guys like Kyle Rittenhouse can cross state lines to murder people. Seems fair.',
 			alice,
@@ -68,13 +66,12 @@ export async function seed() {
 	})
 
 	// Then, bob views the page
-	await db.transaction().execute(async trx => await getRankedPosts(trx, tag))
+	await db.transaction().execute(async trx => await getRankedPosts(trx))
 
 	// Then bob posts a response to alice's post
 	let post2 = await db.transaction().execute(async trx => {
 		return createPost(
 			trx,
-			tag,
 			post1,
 			'Kyle Rittenhouse was acquitted of murder charges. Clear video evidence showed he acted in self defense.',
 			bob,
@@ -83,17 +80,16 @@ export async function seed() {
 
 	// And also downvotes (with their own post as a note -- this is an important detail)
 	db.transaction().execute(
-		async trx => await vote(trx, tag, bob, post1, post2, Direction.Down),
+		async trx => await vote(trx, bob, post1, post2, Direction.Down),
 	)
 
 	// bob views home page
-	db.transaction().execute(async trx => await getRankedPosts(trx, tag))
+	db.transaction().execute(async trx => await getRankedPosts(trx))
 
 	// And responds to bob's response
 	let post3 = await db.transaction().execute(async trx => {
 		return createPost(
 			trx,
-			tag,
 			post2,
 			'That trial was a sham. They were never going to convict.',
 			alice,
@@ -104,7 +100,6 @@ export async function seed() {
 	let post4 = await db.transaction().execute(async trx => {
 		return createPost(
 			trx,
-			tag,
 			null,
 			'Sudafed, Benadryl and most decongestants don’t work: FDA advisory panel https://trib.al/sJmOJBP',
 			alice,
@@ -112,13 +107,12 @@ export async function seed() {
 	})
 
 	// Bob then views the page again
-	await db.transaction().execute(async trx => getRankedPosts(trx, tag))
+	await db.transaction().execute(async trx => getRankedPosts(trx))
 
 	// And respond's to Alices's latest post
 	await db.transaction().execute(async trx => {
 		return createPost(
 			trx,
-			tag,
 			post4,
 			'This is misleading. Regular Benadryl is an antihistamine; it is not a decongestant. There is a Benadryl branded product that is impacted. https://www.nbcnews.com/news/amp/rcna104424',
 			bob,
@@ -129,7 +123,6 @@ export async function seed() {
 	let post6 = await db.transaction().execute(async trx => {
 		return createPost(
 			trx,
-			tag,
 			null,
 			"Right now, real wages for the average American worker is higher than it was before the pandemic, with lower wage workers seeing the largest gains. That's Bidenomics.",
 			alice,
@@ -137,14 +130,13 @@ export async function seed() {
 	})
 
 	// Bob then views the page once again
-	await db.transaction().execute(async trx => getRankedPosts(trx, tag))
+	await db.transaction().execute(async trx => getRankedPosts(trx))
 	// console.log("Ranked posts", posts)
 
 	// And respond's to Alice's third post
 	let post7 = await db.transaction().execute(async trx => {
 		return createPost(
 			trx,
-			tag,
 			post6,
 			"The tweet's claim about real wages contains a factual error. On 3/15/20 when US COVID lockdowns began real wages adjusted for inflation (AFI) were $11.15. As of 7/16/23 real wages AFI are $11.05. Real wages AFI remain lower (not higher) than before the pandemic.",
 			bob,
@@ -152,32 +144,32 @@ export async function seed() {
 	})
 
 	await db.transaction().execute(async trx => {
-		vote(trx, tag, alice, post6, post7, Direction.Down)
+		vote(trx, alice, post6, post7, Direction.Down)
 
 		// agreed with 2 (shown 3)
-		vote(trx, tag, charlie, post2, post3, Direction.Up)
+		vote(trx, charlie, post2, post3, Direction.Up)
 
 		// changed mind after seeing 2
-		vote(trx, tag, charlie, post1, post2, Direction.Down)
+		vote(trx, charlie, post1, post2, Direction.Down)
 
 		// changed mind back (for no particular reason)
-		vote(trx, tag, charlie, post1, post2, Direction.Up)
+		vote(trx, charlie, post1, post2, Direction.Up)
 
 		// duplicate vote
-		vote(trx, tag, charlie, post1, post2, Direction.Up)
+		vote(trx, charlie, post1, post2, Direction.Up)
 
 		// changed mind back again
-		vote(trx, tag, charlie, post1, post2, Direction.Down)
+		vote(trx, charlie, post1, post2, Direction.Down)
 
 		// and s some other votes
-		vote(trx, tag, charlie, post1, post2, Direction.Down)
-		vote(trx, tag, charlie, post2, post3, Direction.Down)
-		vote(trx, tag, charlie, post2, post3, Direction.Up)
-		vote(trx, tag, charlie, 3, null, 1)
-		vote(trx, tag, charlie, 2, null, -1)
-		vote(trx, tag, bob, 6, null, -1)
-		vote(trx, tag, alice, 5, null, -1)
-		vote(trx, tag, alice, 4, null, -1)
+		vote(trx, charlie, post1, post2, Direction.Down)
+		vote(trx, charlie, post2, post3, Direction.Down)
+		vote(trx, charlie, post2, post3, Direction.Up)
+		vote(trx, charlie, 3, null, 1)
+		vote(trx, charlie, 2, null, -1)
+		vote(trx, bob, 6, null, -1)
+		vote(trx, alice, 5, null, -1)
+		vote(trx, alice, 4, null, -1)
 	})
 
 	// Create developer user with password 'password'. Can login with this user by pointing browser to /dev-login

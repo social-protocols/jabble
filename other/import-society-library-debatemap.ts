@@ -13,7 +13,6 @@ var topLevelQuestion: Question = JSON.parse(
 	fs.readFileSync(debateFilename, 'utf-8'),
 ) as Question
 
-const societyLibraryTag = 'society-library'
 const userId: string = (() => {
 	const id = process.argv[3]
 	invariant(id, 'no userId provided')
@@ -64,7 +63,7 @@ async function importQuestion(question: Question) {
 	let wording = removePrefix(question.question, '[question] ')
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, societyLibraryTag, null, wording, userId)
+		return createPost(trx, null, wording, userId)
 	})
 	console.log(`Inserted question. post ${postId}: ${wording}`)
 
@@ -77,7 +76,7 @@ async function importPosition(parentId: number, position: Position) {
 	let wording = removePrefix(position.position, '[position] ')
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, societyLibraryTag, parentId, wording, userId)
+		return createPost(trx, parentId, wording, userId)
 	})
 	console.log(`Inserted position. post ${postId}: ${wording}`)
 
@@ -96,7 +95,7 @@ async function importClaim(parentId: number, claim: Claim) {
 	let wording = removePrefix(claim.claim, '[for reasons like] ')
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, societyLibraryTag, parentId, wording, userId)
+		return createPost(trx, parentId, wording, userId)
 	})
 	console.log(`Inserted claim. post ${postId}: ${wording}`)
 
@@ -112,7 +111,7 @@ async function importExample(parentId: number, example: Example) {
 	let wording = removePrefix(example.original_example, '[original example] ')
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, societyLibraryTag, parentId, wording, userId)
+		return createPost(trx, parentId, wording, userId)
 	})
 	console.log(`Inserted example. post ${postId}: ${wording}`)
 
@@ -125,7 +124,6 @@ async function importEvidence(parentId: number, evidence: Evidence) {
 	const postId = await db.transaction().execute(async trx => {
 		return createPost(
 			trx,
-			societyLibraryTag,
 			parentId,
 			`
 > ${evidence.quote}
@@ -150,7 +148,7 @@ async function importCounterClaim(parentId: number, counterClaim: string) {
 	)
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, societyLibraryTag, parentId, wording, userId)
+		return createPost(trx, parentId, wording, userId)
 	})
 	console.log(`Inserted counter claim. post ${postId}: ${wording}`)
 }

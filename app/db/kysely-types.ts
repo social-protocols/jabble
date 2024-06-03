@@ -7,7 +7,6 @@ export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
 export type Vote = {
 	userId: string
-	tagId: number
 	postId: number
 	vote: number
 	latestVoteEventId: number
@@ -26,7 +25,6 @@ export type Post = {
 	deletedAt: number | null
 }
 export type PostStats = {
-	tagId: number
 	postId: number
 	replies: number
 }
@@ -36,10 +34,6 @@ export type Session = {
 	createdAt: Generated<number>
 	updatedAt: number
 	userId: string
-}
-export type Tag = {
-	id: Generated<number>
-	tag: string
 }
 export type User = {
 	id: string
@@ -99,7 +93,6 @@ export type VoteEvent = {
 export type Score = {
 	voteEventId: number
 	voteEventTime: number
-	tagId: number | null
 	parentId: number | null
 	postId: number
 	topNoteId: number | null
@@ -114,7 +107,6 @@ export type Score = {
 export type Effect = {
 	voteEventId: number
 	voteEventTime: number
-	tagId: number
 	postId: number
 	noteId: number | null
 	topSubthreadId: number | null
@@ -130,7 +122,6 @@ export type Effect = {
 export type FullScore = {
 	voteEventId: number
 	voteEventTime: number
-	tagId: number
 	postId: number
 	noteId: number | null
 	topSubthreadId: number | null
@@ -155,7 +146,6 @@ export type DB = {
 	Post: Post
 	PostStats: PostStats
 	Session: Session
-	Tag: Tag
 	User: User
 	Verification: Verification
 	VoteEvent: VoteEvent
