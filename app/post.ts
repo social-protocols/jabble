@@ -11,9 +11,10 @@ export async function createPost(
 	content: string,
 	authorId: string,
 ): Promise<number> {
+	const isPrivate: number = 0 // TODO
 	const persistedPost: Post = await trx
 		.insertInto('Post')
-		.values({ content, parentId, authorId })
+		.values({ content: content, parentId: parentId, authorId: authorId, isPrivate: isPrivate })
 		.returningAll()
 		.executeTakeFirstOrThrow()
 
@@ -155,6 +156,7 @@ export async function getTransitiveParents(
 					'content',
 					'createdAt',
 					'deletedAt',
+					'isPrivate',
 				])
 				.unionAll(db =>
 					db
@@ -167,6 +169,7 @@ export async function getTransitiveParents(
 							'P.content',
 							'P.createdAt',
 							'P.deletedAt',
+							'P.isPrivate',
 						]),
 				),
 		)
