@@ -102,7 +102,7 @@ async function getEffectsInternal(
 ): Promise<Effect[]> {
 	let query = trx
 		.selectFrom('Post')
-		.innerJoin('Effect', join => join.on('Effect.noteId', '=', postId))
+		.innerJoin('EffectWithDefault as Effect', join => join.on('Effect.noteId', '=', postId))
 		.innerJoin('Post as TargetPost', 'TargetPost.id', 'Effect.postId')
 		.selectAll('Effect')
 		.where('Post.id', '=', postId)
@@ -200,7 +200,7 @@ async function getRankedRepliesInternal(
 		.leftJoin('PostStats', join =>
 			join.onRef('PostStats.postId', '=', 'Post.id'),
 		)
-		.innerJoin('Effect', join =>
+		.innerJoin('EffectWithDefault as Effect', join =>
 			join
 				.on('Effect.postId', '=', targetId)
 				.onRef('Effect.noteId', '=', 'Post.id'),
@@ -260,10 +260,11 @@ export async function getRankedDirectReplies(
 	trx: Transaction<DB>,
 	targetId: number,
 ) {
+	console.log('Direct replies')
 	const query = trx
 		.selectFrom('Post')
-		.innerJoin('Effect', 'Effect.noteId', 'Post.id')
-		.innerJoin('Score', 'Score.postId', 'Effect.noteId')
+		.innerJoin('EffectWithDefault as Effect', 'Effect.noteId', 'Post.id')
+		.innerJoin('ScoreWithDefault as Score', 'Score.postId', 'Effect.noteId')
 		.where('Post.parentId', '=', targetId)
 		.where('Effect.postId', '=', targetId)
 		.where('Effect.noteId', 'is not', null)
