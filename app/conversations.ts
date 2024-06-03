@@ -16,12 +16,12 @@ export async function getCriticalThread(
 	const postWithCriticalThreadId = await trx
 		.withRecursive('CriticalThread', db =>
 			db
-				.selectFrom('Score')
+				.selectFrom('ScoreWithDefault as Score')
 				.where('postId', '=', postId)
 				.select(['postId', 'topNoteId', 'criticalThreadId'])
 				.unionAll(db =>
 					db
-						.selectFrom('Score as S')
+						.selectFrom('ScoreWithDefault as S')
 						.innerJoin('CriticalThread as CT', 'S.postId', 'CT.topNoteId')
 						.select(['S.postId', 'S.topNoteId', 'S.criticalThreadId']),
 				),
