@@ -129,8 +129,7 @@ docker-image:
    && find /nix/store \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20 \
    && find /app \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20 \
    && find /app/node_modules \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20 \
-   && find /root \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20 \
-   && find /root/.cache \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20
+   && find /root \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20
 
   # starting the application is defined in litefs.yml
   # test locally without litefs:
@@ -150,8 +149,7 @@ docker-image-e2e-test:
   WORKDIR /app
   COPY flake.nix flake.lock .
   RUN nix develop ".#e2e" --command echo warmed up
-  COPY --dir e2e playwright.config.ts ./
-  COPY docker-compose.yml ./
+  COPY --dir e2e playwright.config.ts docker-compose.yml ./
   WITH DOCKER --load jabble:latest=+docker-image
     RUN docker image ls \
      && (docker-compose up &) \
