@@ -1,5 +1,5 @@
 import { useFetcher } from '@remix-run/react'
-import { useState, type FormEvent } from 'react'
+import { type ChangeEvent, useState, type FormEvent } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 
 export function PostForm({
@@ -11,10 +11,16 @@ export function PostForm({
 }) {
 	const [textAreaValue, setTextAreaValue] = useState<string>('')
 
+	const [isPrivate, setIsPrivate] = useState<number>(0)
+
 	const replyFetcher = useFetcher<{ newPostId: number }>()
 	const handleSubmit = function (event: FormEvent<HTMLFormElement>) {
 		replyFetcher.submit(event.currentTarget)
 		setTextAreaValue('')
+	}
+
+	function handleCheckboxChange(event: ChangeEvent<HTMLInputElement>) {
+		setIsPrivate(Number(event.target.checked))
 	}
 
 	return (
@@ -35,12 +41,12 @@ export function PostForm({
 				<div className={'flex flex-row'}>
 					{showPrivateFlag && (
 						<div className="mr-2 mt-2">
+							<input type="hidden" name="isPrivate" value={isPrivate} />
 							<input
 								className={'mr-2'}
 								type="checkbox"
-								name="isPrivate"
-								id="isPrivate"
-								value="private"
+								name="isPrivateCheckbox"
+								onChange={handleCheckboxChange}
 							/>
 							<label className={'text-gray-700'} htmlFor="isPrivate">
 								private
