@@ -178,7 +178,7 @@ export function PostDetails({
 						action="/reply"
 						onSubmit={handleReplySubmit}
 					>
-						<ReplyForm post={post} className="mt-2" />
+						<ReplyForm post={post} isPrivate={post.isPrivate} className="mt-2" />
 					</Form>
 				)}
 			</div>
@@ -211,14 +211,17 @@ export function ParentPost({ parentPost }: { parentPost: Post }) {
 
 function ReplyForm({
 	post,
+	isPrivate,
 	className,
 }: {
 	post: ScoredPost
+	isPrivate: number
 	className: string
 }) {
 	return (
 		<div className={'flex flex-col items-end ' + className}>
 			<input type="hidden" name="parentId" value={post.id} />
+			<input type="hidden" name="isPrivate" value={isPrivate ? 'private' : undefined} />
 
 			<Textarea
 				name="content"
@@ -231,10 +234,6 @@ function ReplyForm({
 			/>
 
 			<div>
-				<div>
-					<label htmlFor="isPrivate">private </label>
-					<input type="checkbox" name="isPrivate" id="isPrivate" value="private" />
-				</div>
 				<button className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700">
 					Reply
 				</button>
