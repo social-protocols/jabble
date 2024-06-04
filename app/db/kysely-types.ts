@@ -106,8 +106,6 @@ export type Score = {
 }
 
 export type Effect = {
-	voteEventId: number
-	voteEventTime: number
 	postId: number
 	noteId: number | null
 	topSubthreadId: number | null
@@ -118,6 +116,13 @@ export type Effect = {
 	qCount: number
 	qSize: number
 	r: number
+}
+
+export type EffectWithDefault = Effect
+
+export type EffectEvent = Effect & {
+	voteEventId: number
+	voteEventTime: number
 }
 
 export type FullScore = {
@@ -151,8 +156,10 @@ export type DB = {
 	Verification: Verification
 	VoteEvent: VoteEvent
 	Score: Score
+	ScoreWithDefault: Score
 	ScoreEvent: Score
 	Effect: Effect
-	EffectEvent: Effect
+	EffectWithDefault: EffectWithDefault
+	EffectEvent: EffectEvent
 	FullScore: FullScore
 }

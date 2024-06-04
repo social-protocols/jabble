@@ -9,16 +9,27 @@ const debateFilename = process.argv[2]
 invariant(debateFilename !== undefined, 'missing filename argument')
 console.log('debateFilename:', debateFilename)
 
+const withUpvote = false
+
 var topLevelQuestion: Question = JSON.parse(
 	fs.readFileSync(debateFilename, 'utf-8'),
 ) as Question
 
-const userId: string = (() => {
+const username: string = (() => {
 	const id = process.argv[3]
 	invariant(id, 'no userId provided')
 	return id
 })()
-console.log('author userid: ', userId)
+console.log('author username: ', username)
+
+const userId = await db.transaction().execute(async trx => {
+	const user = await trx
+		.selectFrom('User')
+		.select('id')
+		.where('username', '=', username)
+		.executeTakeFirstOrThrow()
+	return user.id
+})
 
 console.log('Got debate map for question', topLevelQuestion)
 
@@ -63,7 +74,7 @@ async function importQuestion(question: Question) {
 	let wording = removePrefix(question.question, '[question] ')
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, null, wording, userId, true)
+		return createPost(trx, null, wording, userId, { isPrivate: true, withUpvote: withUpvote })
 	})
 	console.log(`Inserted question. post ${postId}: ${wording}`)
 
@@ -76,7 +87,7 @@ async function importPosition(parentId: number, position: Position) {
 	let wording = removePrefix(position.position, '[position] ')
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, parentId, wording, userId, true)
+		return createPost(trx, parentId, wording, userId, { isPrivate: true, withUpvote: withUpvote })
 	})
 	console.log(`Inserted position. post ${postId}: ${wording}`)
 
@@ -95,7 +106,7 @@ async function importClaim(parentId: number, claim: Claim) {
 	let wording = removePrefix(claim.claim, '[for reasons like] ')
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, parentId, wording, userId, true)
+		return createPost(trx, parentId, wording, userId, { isPrivate: true, withUpvote: withUpvote })
 	})
 	console.log(`Inserted claim. post ${postId}: ${wording}`)
 
@@ -111,7 +122,7 @@ async function importExample(parentId: number, example: Example) {
 	let wording = removePrefix(example.original_example, '[original example] ')
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, parentId, wording, userId, true)
+		return createPost(trx, parentId, wording, userId, { isPrivate: true, withUpvote: withUpvote })
 	})
 	console.log(`Inserted example. post ${postId}: ${wording}`)
 
@@ -133,7 +144,7 @@ ${evidence.url}
 ${evidence.reasoning}
 			`,
 			userId,
-			true,
+			{ isPrivate: true, withUpvote: withUpvote },
 		)
 	})
 
@@ -149,7 +160,7 @@ async function importCounterClaim(parentId: number, counterClaim: string) {
 	)
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, parentId, wording, userId, true)
+		return createPost(trx, parentId, wording, userId, { isPrivate: true, withUpvote: withUpvote })
 	})
 	console.log(`Inserted counter claim. post ${postId}: ${wording}`)
 }

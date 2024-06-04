@@ -10,7 +10,7 @@ export async function createPost(
 	parentId: number | null, // TODO: use parentId?: number
 	content: string,
 	authorId: string,
-	isPrivate: boolean,
+	options?: { isPrivate: boolean, withUpvote?: boolean },
 ): Promise<number> {
 	const persistedPost: Post = await trx
 		.insertInto('Post')
@@ -18,14 +18,16 @@ export async function createPost(
 			content: content,
 			parentId: parentId,
 			authorId: authorId,
-			isPrivate: Number(isPrivate),
+			isPrivate: options ? Number(options.isPrivate) : 0,
 		})
 		.returningAll()
 		.executeTakeFirstOrThrow()
 
 	invariant(persistedPost, `Reply to ${parentId} not submitted successfully`)
 
-	await vote(trx, authorId, persistedPost.id, null, Direction.Up)
+	if (options?.withUpvote !== undefined ? options.withUpvote : true) {
+		await vote(trx, authorId, persistedPost.id, null, Direction.Up)
+	}
 
 	if (parentId !== null) {
 		await incrementReplyCount(trx, parentId)
