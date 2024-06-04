@@ -63,7 +63,7 @@ async function importQuestion(question: Question) {
 	let wording = removePrefix(question.question, '[question] ')
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, null, wording, userId)
+		return createPost(trx, null, wording, userId, true)
 	})
 	console.log(`Inserted question. post ${postId}: ${wording}`)
 
@@ -76,7 +76,7 @@ async function importPosition(parentId: number, position: Position) {
 	let wording = removePrefix(position.position, '[position] ')
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, parentId, wording, userId)
+		return createPost(trx, parentId, wording, userId, true)
 	})
 	console.log(`Inserted position. post ${postId}: ${wording}`)
 
@@ -95,7 +95,7 @@ async function importClaim(parentId: number, claim: Claim) {
 	let wording = removePrefix(claim.claim, '[for reasons like] ')
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, parentId, wording, userId)
+		return createPost(trx, parentId, wording, userId, true)
 	})
 	console.log(`Inserted claim. post ${postId}: ${wording}`)
 
@@ -111,7 +111,7 @@ async function importExample(parentId: number, example: Example) {
 	let wording = removePrefix(example.original_example, '[original example] ')
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, parentId, wording, userId)
+		return createPost(trx, parentId, wording, userId, true)
 	})
 	console.log(`Inserted example. post ${postId}: ${wording}`)
 
@@ -133,6 +133,7 @@ ${evidence.url}
 ${evidence.reasoning}
 			`,
 			userId,
+			true,
 		)
 	})
 
@@ -148,7 +149,7 @@ async function importCounterClaim(parentId: number, counterClaim: string) {
 	)
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, parentId, wording, userId)
+		return createPost(trx, parentId, wording, userId, true)
 	})
 	console.log(`Inserted counter claim. post ${postId}: ${wording}`)
 }
