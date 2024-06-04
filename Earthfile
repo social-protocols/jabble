@@ -2,11 +2,19 @@
 
 VERSION 0.8
 
+nix:
+  FROM ubuntu:24.04
+  RUN apt-get update && apt-get install -y curl \
+   && curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install linux \
+    --extra-conf "sandbox = false" \
+    --init none \
+    --no-confirm \
+   && apt-get remove curl -y
+  ENV PATH="${PATH}:/nix/var/nix/profiles/default/bin"
+
 nix-dev-shell:
   ARG --required DEVSHELL
-  FROM nixos/nix:2.20.4
-  # enable flakes
-  RUN echo "extra-experimental-features = nix-command flakes" >> /etc/nix/nix.conf
+  FROM +nix
   # replace /bin/sh with a script that sources `/root/sh_env` for every RUN command.
   # we use this to execute all `RUN`-commands in our nix dev shell.
   # we need to explicitly delete `/bin/sh` first, because it's a symlink to `/bin/busybox`,
@@ -21,9 +29,20 @@ nix-dev-shell:
   WORKDIR /app
   COPY flake.nix flake.lock .
   # build our dev-shell, creating a gcroot, so it won't be garbage collected by nix.
-  RUN nix build --out-link /root/flake-devShell-gcroot ".#devShells.$ARCH-linux.$DEVSHELL"
-  # set up our `/root/sh_env` file to source our flake env, will be used by ALL `RUN`-commands!
-  RUN nix print-dev-env ".#$DEVSHELL" >> /root/sh_env
+  # Then set up our `/root/sh_env` file to source our flake env, will be used by ALL `RUN`-commands!
+  RUN nix build --out-link /root/flake-devShell-gcroot ".#devShells.$ARCH-linux.$DEVSHELL" \
+   && nix print-dev-env ".#$DEVSHELL" >> /root/sh_env \
+   && nix-collect-garbage
+
+nix-packages:
+  ARG --required PACKAGES
+  FROM +nix
+  WORKDIR /app
+  COPY flake.nix flake.lock .
+  RUN nix profile install --impure ".#$PACKAGES" \
+   && nix-collect-garbage \
+   && rm -rf /root/.cache
+  # RUN nix store optimise # hard linking can save ~40M
 
 
 globalbrain-node-package:
@@ -73,7 +92,7 @@ app-deploy-litefs:
    SAVE ARTIFACT /usr/local/bin/litefs
 
 docker-image:
-  FROM +nix-dev-shell --DEVSHELL='production'
+  FROM +nix-packages --PACKAGES='production'
 
   WORKDIR /app
 
@@ -106,11 +125,12 @@ docker-image:
   ENV INTERNAL_PORT="8080"
   ENV PORT="8081"
 
-  RUN nix-collect-garbage
-  RUN du -sh /* \
-   && find /app -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 du -sh | sort -hr | head -20 \
-   && find /nix/store -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 du -sh | sort -hr | head -20 \
-   && find /app/node_modules -mindepth 1 -maxdepth 1 -type d -print0 | xargs -0 du -sh | sort -hr | head -20
+  RUN find / \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20 \
+   && find /nix/store \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20 \
+   && find /app \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20 \
+   && find /app/node_modules \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20 \
+   && find /root \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20 \
+   && find /root/.cache \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20
 
   # starting the application is defined in litefs.yml
   # test locally without litefs:

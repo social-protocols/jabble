@@ -62,12 +62,14 @@
               export PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=true
             '';
           };
-          production = pkgs.mkShellNoCC {
-            buildInputs = with pkgs; [
+        };
+        packages = {
+          production = pkgs.buildEnv {
+            name = "production";
+            paths = with pkgs; [
               nodejs_20
               sqlite-interactive
               fuse3 # for litefs
-              busybox # for swap tools
             ];
           };
         };

@@ -8,6 +8,6 @@ services:
       - SESSION_SECRET=super-duper-s3cret
       - HONEYPOT_SECRET=super-duper-s3cret
       - INTERNAL_COMMAND_TOKEN=some-made-up-token
-    command: /bin/sh startup.sh
+    command: ./startup.sh
     init: true # make ctrl+c work
     restart: no
