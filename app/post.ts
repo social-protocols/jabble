@@ -10,17 +10,22 @@ export async function createPost(
 	parentId: number | null, // TODO: use parentId?: number
 	content: string,
 	authorId: string,
-	withUpvote?: boolean,
+	options?: { isPrivate: boolean; withUpvote?: boolean },
 ): Promise<number> {
 	const persistedPost: Post = await trx
 		.insertInto('Post')
-		.values({ content, parentId, authorId })
+		.values({
+			content: content,
+			parentId: parentId,
+			authorId: authorId,
+			isPrivate: options ? Number(options.isPrivate) : 0,
+		})
 		.returningAll()
 		.executeTakeFirstOrThrow()
 
 	invariant(persistedPost, `Reply to ${parentId} not submitted successfully`)
 
-	if (withUpvote !== undefined ? withUpvote : true) {
+	if (options?.withUpvote !== undefined ? options.withUpvote : true) {
 		await vote(trx, authorId, persistedPost.id, null, Direction.Up)
 	}
 
@@ -158,6 +163,7 @@ export async function getTransitiveParents(
 					'content',
 					'createdAt',
 					'deletedAt',
+					'isPrivate',
 				])
 				.unionAll(db =>
 					db
@@ -170,6 +176,7 @@ export async function getTransitiveParents(
 							'P.content',
 							'P.createdAt',
 							'P.deletedAt',
+							'P.isPrivate',
 						]),
 				),
 		)

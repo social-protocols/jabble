@@ -23,6 +23,7 @@ export type Post = {
 	authorId: string
 	createdAt: Generated<number>
 	deletedAt: number | null
+	isPrivate: number
 }
 export type PostStats = {
 	postId: number

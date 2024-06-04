@@ -51,7 +51,7 @@ Read [how Jabble makes conversations better](https://github.com/social-protocols
 			</div>
 
 			{showNewDiscussionForm ? (
-				<PostForm className="mb-4" />
+				<PostForm showPrivateFlag={true} className="mb-4" />
 			) : (
 				loggedIn && (
 					<div className="mb-4 flex justify-end">{newDiscussionButton()}</div>
@@ -80,7 +80,8 @@ Read [how Jabble makes conversations better](https://github.com/social-protocols
 }
 
 function PostList({ feed }: { feed: rankingTs.ScoredPost[] }) {
-	return feed.map(post => {
+	const filteredFeed = feed.filter(post => !post.isPrivate)
+	return filteredFeed.map(post => {
 		return <TopLevelPost key={post.id} post={post} className="flex-1" />
 	})
 }

@@ -178,7 +178,11 @@ export function PostDetails({
 						action="/reply"
 						onSubmit={handleReplySubmit}
 					>
-						<ReplyForm post={post} className="mt-2" />
+						<ReplyForm
+							post={post}
+							isPrivate={Boolean(post.isPrivate)}
+							className="mt-2"
+						/>
 					</Form>
 				)}
 			</div>
@@ -211,14 +215,17 @@ export function ParentPost({ parentPost }: { parentPost: Post }) {
 
 function ReplyForm({
 	post,
+	isPrivate,
 	className,
 }: {
 	post: ScoredPost
+	isPrivate: boolean
 	className: string
 }) {
 	return (
 		<div className={'flex flex-col items-end ' + className}>
 			<input type="hidden" name="parentId" value={post.id} />
+			<input type="hidden" name="isPrivate" value={Number(isPrivate)} />
 
 			<Textarea
 				name="content"

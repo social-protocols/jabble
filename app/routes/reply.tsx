@@ -9,6 +9,7 @@ import { requireUserId } from '#app/utils/auth.server.ts'
 const replySchema = zfd.formData({
 	parentId: z.coerce.number().optional(),
 	content: z.coerce.string(),
+	isPrivate: z.coerce.number(),
 })
 
 export const action = async (args: ActionFunctionArgs) => {
@@ -21,12 +22,16 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	const content = parsedData.content
 	const parentId = parsedData.parentId || null
+	const isPrivate = Boolean(parsedData.isPrivate)
 
 	invariant(content, 'content !== undefined')
 
-	let postId = await db
-		.transaction()
-		.execute(async trx => createPost(trx, parentId, content, userId))
+	let postId = await db.transaction().execute(async trx =>
+		createPost(trx, parentId, content, userId, {
+			isPrivate: isPrivate,
+			withUpvote: true,
+		}),
+	)
 
 	return redirect(`/post/${postId}`)
 }
