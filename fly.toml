@@ -13,7 +13,7 @@ source = "data"
 destination = "/data"
 
 [deploy]
-release_command = "/bin/sh -c 'node ./other/sentry-create-release'"
+release_command = "node ./other/sentry-create-release"
 
 [[services]]
 internal_port = 8_080

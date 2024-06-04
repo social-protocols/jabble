@@ -134,7 +134,7 @@ docker-image:
   # starting the application is defined in litefs.yml
   # test locally without litefs:
   # docker run -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET sha256:xyzxyz /bin/sh startup.sh
-  CMD ["/bin/sh", "-c", "/usr/local/bin/litefs mount"]
+  CMD ["/usr/local/bin/litefs", "mount"]
   SAVE IMAGE jabble:latest
 
 docker-image-e2e-test:
