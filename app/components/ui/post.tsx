@@ -180,7 +180,7 @@ export function PostDetails({
 					>
 						<ReplyForm
 							post={post}
-							isPrivate={post.isPrivate}
+							isPrivate={Boolean(post.isPrivate)}
 							className="mt-2"
 						/>
 					</Form>
@@ -219,7 +219,7 @@ function ReplyForm({
 	className,
 }: {
 	post: ScoredPost
-	isPrivate: number
+	isPrivate: boolean
 	className: string
 }) {
 	return (
@@ -228,7 +228,7 @@ function ReplyForm({
 			<input
 				type="hidden"
 				name="isPrivate"
-				value={isPrivate ? 'private' : undefined}
+				value={Number(isPrivate)}
 			/>
 
 			<Textarea
