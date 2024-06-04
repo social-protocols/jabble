@@ -26,9 +26,12 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	invariant(content, 'content !== undefined')
 
-	let postId = await db
-		.transaction()
-		.execute(async trx => createPost(trx, parentId, content, userId, { isPrivate: isPrivate, withUpvote: true }))
+	let postId = await db.transaction().execute(async trx =>
+		createPost(trx, parentId, content, userId, {
+			isPrivate: isPrivate,
+			withUpvote: true,
+		}),
+	)
 
 	return redirect(`/post/${postId}`)
 }

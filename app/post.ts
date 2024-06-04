@@ -10,7 +10,7 @@ export async function createPost(
 	parentId: number | null, // TODO: use parentId?: number
 	content: string,
 	authorId: string,
-	options?: { isPrivate: boolean, withUpvote?: boolean },
+	options?: { isPrivate: boolean; withUpvote?: boolean },
 ): Promise<number> {
 	const persistedPost: Post = await trx
 		.insertInto('Post')
