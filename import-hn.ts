@@ -68,7 +68,7 @@ async function importHNPostsFromFile(filename: string) {
 				const postId = await db
 					.transaction()
 					.execute(async trx =>
-						createPost(trx, parentId, markdown, ourUserId, false),
+						createPost(trx, parentId, markdown, ourUserId, { isPrivate: false, withUpvote: true }),
 					)
 
 				idMap.set(item.id, postId)

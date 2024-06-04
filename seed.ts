@@ -62,7 +62,7 @@ export async function seed() {
 			null,
 			'So, pregnant people can’t cross state lines to get abortions but guys like Kyle Rittenhouse can cross state lines to murder people. Seems fair.',
 			alice,
-			false,
+			{ isPrivate: false, withUpvote: true },
 		)
 	})
 
@@ -76,7 +76,7 @@ export async function seed() {
 			post1,
 			'Kyle Rittenhouse was acquitted of murder charges. Clear video evidence showed he acted in self defense.',
 			bob,
-			false,
+			{ isPrivate: false, withUpvote: true },
 		)
 	})
 
@@ -95,7 +95,7 @@ export async function seed() {
 			post2,
 			'That trial was a sham. They were never going to convict.',
 			alice,
-			false,
+			{ isPrivate: false, withUpvote: true },
 		)
 	})
 
@@ -106,7 +106,7 @@ export async function seed() {
 			null,
 			'Sudafed, Benadryl and most decongestants don’t work: FDA advisory panel https://trib.al/sJmOJBP',
 			alice,
-			false,
+			{ isPrivate: false, withUpvote: true },
 		)
 	})
 
@@ -120,7 +120,7 @@ export async function seed() {
 			post4,
 			'This is misleading. Regular Benadryl is an antihistamine; it is not a decongestant. There is a Benadryl branded product that is impacted. https://www.nbcnews.com/news/amp/rcna104424',
 			bob,
-			false,
+			{ isPrivate: false, withUpvote: true },
 		)
 	})
 
@@ -131,7 +131,7 @@ export async function seed() {
 			null,
 			"Right now, real wages for the average American worker is higher than it was before the pandemic, with lower wage workers seeing the largest gains. That's Bidenomics.",
 			alice,
-			false,
+			{ isPrivate: false, withUpvote: true },
 		)
 	})
 
@@ -146,7 +146,7 @@ export async function seed() {
 			post6,
 			"The tweet's claim about real wages contains a factual error. On 3/15/20 when US COVID lockdowns began real wages adjusted for inflation (AFI) were $11.15. As of 7/16/23 real wages AFI are $11.05. Real wages AFI remain lower (not higher) than before the pandemic.",
 			bob,
-			false,
+			{ isPrivate: false, withUpvote: true },
 		)
 	})
 
