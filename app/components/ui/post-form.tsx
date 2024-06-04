@@ -32,18 +32,20 @@ export function PostForm({
 					onChange={event => setTextAreaValue(event.target.value)}
 					className="mb-2 w-full"
 				/>
-				{showPrivateFlag && (
-					<div>
-						<label htmlFor="isPrivate">private </label>
-						<input type="checkbox" name="isPrivate" id="isPrivate" value="private" />
-					</div>
-				)}
-				<button
-					disabled={replyFetcher.state !== 'idle'}
-					className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700"
-				>
-					{replyFetcher.state === 'idle' ? 'Post' : 'submitting...'}
-				</button>
+				<div className={'flex flex-row'}>
+					{showPrivateFlag && (
+						<div className='mr-2 mt-2'>
+							<input className={'mr-2'} type="checkbox" name="isPrivate" id="isPrivate" value="private" />
+							<label className={'text-gray-700'} htmlFor="isPrivate">private</label>
+						</div>
+					)}
+					<button
+						disabled={replyFetcher.state !== 'idle'}
+						className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700"
+					>
+						{replyFetcher.state === 'idle' ? 'Post' : 'submitting...'}
+					</button>
+				</div>
 			</div>
 		</replyFetcher.Form>
 	)
