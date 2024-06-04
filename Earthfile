@@ -9,7 +9,7 @@ nix:
     --extra-conf "sandbox = false" \
     --init none \
     --no-confirm \
-   && apt-get remove curl -y
+   && apt remove --auto-remove -y curl
   ENV PATH="${PATH}:/nix/var/nix/profiles/default/bin"
 
 nix-dev-shell:
