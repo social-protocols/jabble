@@ -225,11 +225,7 @@ function ReplyForm({
 	return (
 		<div className={'flex flex-col items-end ' + className}>
 			<input type="hidden" name="parentId" value={post.id} />
-			<input
-				type="hidden"
-				name="isPrivate"
-				value={Number(isPrivate)}
-			/>
+			<input type="hidden" name="isPrivate" value={Number(isPrivate)} />
 
 			<Textarea
 				name="content"
