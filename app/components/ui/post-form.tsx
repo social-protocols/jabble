@@ -4,9 +4,9 @@ import { Textarea } from '#app/components/ui/textarea.tsx'
 
 export function PostForm({
 	showPrivateFlag = false,
-	className
+	className,
 }: {
-	showPrivateFlag: boolean,
+	showPrivateFlag: boolean
 	className?: string
 }) {
 	const [textAreaValue, setTextAreaValue] = useState<string>('')
@@ -34,9 +34,17 @@ export function PostForm({
 				/>
 				<div className={'flex flex-row'}>
 					{showPrivateFlag && (
-						<div className='mr-2 mt-2'>
-							<input className={'mr-2'} type="checkbox" name="isPrivate" id="isPrivate" value="private" />
-							<label className={'text-gray-700'} htmlFor="isPrivate">private</label>
+						<div className="mr-2 mt-2">
+							<input
+								className={'mr-2'}
+								type="checkbox"
+								name="isPrivate"
+								id="isPrivate"
+								value="private"
+							/>
+							<label className={'text-gray-700'} htmlFor="isPrivate">
+								private
+							</label>
 						</div>
 					)}
 					<button

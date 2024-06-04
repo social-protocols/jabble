@@ -15,7 +15,12 @@ export async function createPost(
 	const isPrivateNumber: number = isPrivate ? 1 : 0
 	const persistedPost: Post = await trx
 		.insertInto('Post')
-		.values({ content: content, parentId: parentId, authorId: authorId, isPrivate: isPrivateNumber })
+		.values({
+			content: content,
+			parentId: parentId,
+			authorId: authorId,
+			isPrivate: isPrivateNumber,
+		})
 		.returningAll()
 		.executeTakeFirstOrThrow()
 

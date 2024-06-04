@@ -178,7 +178,11 @@ export function PostDetails({
 						action="/reply"
 						onSubmit={handleReplySubmit}
 					>
-						<ReplyForm post={post} isPrivate={post.isPrivate} className="mt-2" />
+						<ReplyForm
+							post={post}
+							isPrivate={post.isPrivate}
+							className="mt-2"
+						/>
 					</Form>
 				)}
 			</div>
@@ -221,7 +225,11 @@ function ReplyForm({
 	return (
 		<div className={'flex flex-col items-end ' + className}>
 			<input type="hidden" name="parentId" value={post.id} />
-			<input type="hidden" name="isPrivate" value={isPrivate ? 'private' : undefined} />
+			<input
+				type="hidden"
+				name="isPrivate"
+				value={isPrivate ? 'private' : undefined}
+			/>
 
 			<Textarea
 				name="content"
