@@ -29,14 +29,12 @@ export async function vote(
 	trx: Transaction<DB>,
 	userId: string,
 	postId: number,
-	noteId: number | null,
 	direction: Direction,
 ): Promise<VoteEvent> {
 	let voteEvent: VoteEvent = await insertVoteEvent(
 		trx,
 		userId,
 		postId,
-		noteId,
 		direction,
 	)
 
@@ -49,7 +47,6 @@ async function insertVoteEvent(
 	trx: Transaction<DB>,
 	userId: string,
 	postId: number,
-	noteId: number | null,
 	vote: Direction,
 ): Promise<VoteEvent> {
 	const voteInt = vote as number
@@ -71,7 +68,6 @@ async function insertVoteEvent(
 		userId: userId,
 		parentId: parentId,
 		postId: postId,
-		noteId: noteId,
 		vote: voteInt,
 	}
 
@@ -84,7 +80,6 @@ async function insertVoteEvent(
 			'userId',
 			'parentId',
 			'postId',
-			'noteId',
 			'vote',
 		])
 		.execute()

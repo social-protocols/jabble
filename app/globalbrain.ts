@@ -60,8 +60,8 @@ export async function processScoreEvents(
 				}
 			} else if (data['effect'] !== undefined) {
 				console.log(
-					'Inserted effect event for note',
-					data['effect']['note_id'],
+					'Inserted effect event for comment',
+					data['effect']['comment_id'],
 					'on post',
 					data['effect']['post_id'],
 				)
@@ -113,7 +113,7 @@ async function insertEffectEvent(trx: Transaction<DB>, data: any) {
 		.insertInto('EffectEvent')
 		.values(data_flat)
 		.onConflict(oc =>
-			oc.columns(['voteEventId', 'postId', 'noteId']).doNothing(),
+			oc.columns(['voteEventId', 'postId', 'commentId']).doNothing(),
 		)
 		.execute()
 }

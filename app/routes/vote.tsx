@@ -6,7 +6,6 @@ import { requireUserId } from '#app/utils/auth.server.ts'
 import { Direction, getUserVotes, vote, type VoteState } from '#app/vote.ts'
 
 const postIdSchema = z.coerce.number()
-const noteIdSchema = z.coerce.number().optional()
 const tagSchema = z.coerce.string()
 
 // little hack described here: https://stackoverflow.com/questions/76797356/zod-nativeenum-type-checks-enums-value
@@ -32,7 +31,6 @@ function parseDirection(
 const oneBasedRankSchema = z.coerce.number().optional()
 const voteSchema = zfd.formData({
 	postId: postIdSchema,
-	noteId: noteIdSchema,
 	tag: tagSchema,
 	direction: directionSchema,
 	state: directionSchema,
@@ -52,12 +50,11 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	const userId: string = await requireUserId(request)
 
-	const noteId = parsedData.noteId === undefined ? null : parsedData.noteId
 	const postId = parsedData.postId
 
 	const v = await db
 		.transaction()
-		.execute(async trx => vote(trx, userId, postId, noteId, newState))
+		.execute(async trx => vote(trx, userId, postId, newState))
 
 	const voteState: VoteState[] = await db
 		.transaction()

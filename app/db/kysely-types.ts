@@ -86,7 +86,6 @@ export type VoteEvent = {
 	userId: string
 	parentId: number | null
 	postId: number
-	noteId: number | null
 	vote: number
 }
 
@@ -95,7 +94,7 @@ export type Score = {
 	voteEventTime: number
 	parentId: number | null
 	postId: number
-	topNoteId: number | null
+	topCommentId: number | null
 	criticalThreadId: number | null
 	o: number
 	oCount: number
@@ -106,8 +105,8 @@ export type Score = {
 
 export type Effect = {
 	postId: number
-	noteId: number | null
-	topSubthreadId: number | null
+	commentId: number | null
+	topCommentId: number | null
 	p: number
 	pCount: number
 	pSize: number
@@ -126,10 +125,9 @@ export type EffectEvent = Effect & {
 
 export type FullScore = {
 	voteEventId: number
-	voteEventTime: number
 	postId: number
-	noteId: number | null
-	topSubthreadId: number | null
+	topCommentId: number | null
+	criticalThreadId: number | null
 	p: number
 	pCount: number
 	pSize: number
@@ -137,8 +135,6 @@ export type FullScore = {
 	qCount: number
 	qSize: number
 	r: number
-	topNoteId: number | null
-	criticalThreadId: number | null
 	o: number
 	oCount: number
 	oSize: number

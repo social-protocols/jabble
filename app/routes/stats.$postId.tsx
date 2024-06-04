@@ -23,11 +23,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
 			? []
 			: await db.transaction().execute(async trx => getEffects(trx, post.id))
 
-	// So the first of the replies and the top note are not necessarily the same thing?!?
-	// The top note is the most convincing one. But the replies are ordered by *information rate*.
-
-	// let topNote: Post | null = replies.length > 0 ? replies[0]! : null
-	// let topNote = post.topNoteId ? await getPost(post.topNoteId) : null
+	// So the first of the replies and the top comment are not necessarily the same thing?!?
+	// The top comment is the most convincing one. But the replies are ordered by *information rate*.
 
 	let result = json({
 		post,
@@ -69,23 +66,16 @@ export default function PostStats() {
 - **score:** ${post.score}
 `
 
-	// - **p:** ${post.p.toFixed(3)}
-	// - p = ${
-	// 	post.topNoteId === null
-	// 		? 'q'
-	// 		: `Bayesian Average(upvotes/votes given shown top note ${post.topNoteId}), q)`
-	// }
-
-	const topNoteMarkdown =
-		post.topNoteId == null
+	const topCommentMarkdown =
+		post.topCommentId == null
 			? ''
 			: `
-## Top Note 
+## Top Reply 
 
-- **top note id:** ${
-					post.topNoteId == null
+- **top reply id:** ${
+					post.topCommentId == null
 						? 'null'
-						: `[${post.topNoteId}](/stats/${post.topNoteId})`
+						: `[${post.topCommentId}](/stats/${post.topCommentId})`
 				}
 - **informed votes:** &nbsp;&nbsp;&nbsp;&nbsp; ${post.pCount} ▲ ${
 					post.pSize - post.pCount
@@ -141,7 +131,7 @@ ${effects
 	return (
 		<div className="markdown">
 			<Markdown deactivateLinks={false}>
-				{overallMarkdown + topNoteMarkdown + effectsMarkdown}
+				{overallMarkdown + topCommentMarkdown + effectsMarkdown}
 			</Markdown>
 		</div>
 	)

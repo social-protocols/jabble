@@ -207,19 +207,6 @@
 	}
 
 	.postteaser .markdown,
-	.note .markdown {
-		/*	Override font size increases for headers when shown in parent thread or as note*/
-		h1,
-		h2,
-		h3,
-		h4,
-		h5,
-		h6 {
-			@apply text-base font-semibold;
-			line-height: var(--post-content-line-height);
-			margin-bottom: 0px;
-		}
-	}
 	.ellipsis {
 		position: relative;
 		padding-left: 0px;
