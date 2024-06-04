@@ -84,7 +84,6 @@ export type VoteEvent = {
 	voteEventId: Generated<number>
 	voteEventTime: Generated<number>
 	userId: string
-	tagId: number
 	parentId: number | null
 	postId: number
 	noteId: number | null

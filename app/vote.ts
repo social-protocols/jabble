@@ -67,10 +67,8 @@ async function insertVoteEvent(
 
 	const parentId = post.parentId
 
-	const legacyTagId = 1
 	const voteEvent: InsertableVoteEvent = {
 		userId: userId,
-		tagId: legacyTagId,
 		parentId: parentId,
 		postId: postId,
 		noteId: noteId,
@@ -84,7 +82,6 @@ async function insertVoteEvent(
 			'voteEventId',
 			'voteEventTime',
 			'userId',
-			'tagId',
 			'parentId',
 			'postId',
 			'noteId',

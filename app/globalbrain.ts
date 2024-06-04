@@ -54,7 +54,6 @@ export async function processScoreEvents(
 				console.log('Inserted score event for post', data['score']['post_id'])
 				if (
 					data['vote_event_id'] == voteEvent.voteEventId &&
-					data['score']['tag_id'] == voteEvent.tagId &&
 					data['score']['post_id'] == voteEvent.postId
 				) {
 					gotExpectedScoreEvent = true
@@ -75,7 +74,7 @@ export async function processScoreEvents(
 
 	if (!gotExpectedScoreEvent) {
 		console.error(
-			`Expected score event not found: ${voteEvent.voteEventId}, ${voteEvent.tagId}, ${voteEvent.postId}`,
+			`Expected score event not found: ${voteEvent.voteEventId}, ${voteEvent.postId}`,
 		)
 	}
 
