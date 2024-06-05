@@ -83,11 +83,11 @@ export function PostDetails({
 	return (
 		<div
 			className={
-				'mb-2 flex w-full flex-row space-x-4 rounded-lg bg-post px-5 pb-5'
+				'mb-2 flex w-full flex-row space-x-4 rounded-sm bg-post px-2'
 			}
 		>
 			<div
-				className="mt-5"
+				className="flex flex-col justify-center"
 				style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
 			>
 				<voteFetcher.Form
@@ -107,7 +107,7 @@ export function PostDetails({
 					'flex w-full min-w-0 flex-col' + (teaser ? ' postteaser' : '')
 				}
 			>
-				<div className="mb-1 mt-2 flex text-sm">
+				<div className="flex text-xs">
 					{isConvincing && (
 						<span className="rounded bg-blue-100 px-1 italic text-blue-600">
 							Convincing
@@ -133,7 +133,7 @@ export function PostDetails({
 					</div>
 				)}
 
-				<div className="mt-2 flex w-full text-sm">
+				<div className="my-2 flex w-full text-sm">
 					<Link to={`/post/${post.id}`} className="ml-2">
 						<CommentIcon needsVote={needsVote} nReplies={post.nReplies} />
 					</Link>
