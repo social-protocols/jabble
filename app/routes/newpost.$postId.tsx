@@ -35,11 +35,17 @@ export default function Post() {
 	const { post, replyTree, loggedIn } = useLoaderData<typeof loader>()
 	return (
 		<>
-			<div className={'mb-5'}>
+			<div className={'mb-2'}>
 				<PostDetails post={post} teaser={false} loggedIn={loggedIn} />
 			</div>
-			<h1 className={'mb-5'}>Replies</h1>
-			<TreeReplies replyTree={replyTree} loggedIn={loggedIn} />
+			<h1 className={'mb-2'}>Replies</h1>
+			<div
+				className={
+					'border-left-solid ml-2 border-l-4 border-gray-300 pl-2'
+				}
+			>
+				<TreeReplies replyTree={replyTree} loggedIn={loggedIn} />
+			</div>
 		</>
 	)
 }
