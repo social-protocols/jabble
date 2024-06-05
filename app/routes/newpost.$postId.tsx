@@ -54,7 +54,7 @@ export function TreeReplies({
 					return (
 						<>
 							<PostDetails post={tree.post} teaser={false} loggedIn={loggedIn} />
-							<div className={'border-l-4 border-left-solid border-gray-300 pl-4'}>
+							<div className={'border-l-4 border-left-solid border-gray-300 ml-2 pl-2'}>
 								<TreeReplies replyTree={tree} loggedIn={loggedIn} />
 							</div>
 						</>
