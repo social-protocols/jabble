@@ -51,7 +51,6 @@ export async function processScoreEvents(
 
 			if (data['score'] !== undefined) {
 				await insertScoreEvent(trx, data)
-				console.log('Inserted score event for post', data['score']['post_id'])
 				if (
 					data['vote_event_id'] == voteEvent.voteEventId &&
 					data['score']['post_id'] == voteEvent.postId
@@ -59,12 +58,6 @@ export async function processScoreEvents(
 					gotExpectedScoreEvent = true
 				}
 			} else if (data['effect'] !== undefined) {
-				console.log(
-					'Inserted effect event for comment',
-					data['effect']['comment_id'],
-					'on post',
-					data['effect']['post_id'],
-				)
 				await insertEffectEvent(trx, data)
 			} else {
 				throw new Error('Unknown event type')
