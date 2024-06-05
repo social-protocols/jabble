@@ -53,7 +53,6 @@ app-setup:
   RUN npm install --save '/globalbrain-node-package' # will compile node extension for this environment
   COPY --dir other ./
   RUN npx tsx ./other/build-icons.ts
-  COPY --dir sql ./
   COPY --dir app server public types ./
   COPY index.js tsconfig.json remix.config.js tailwind.config.ts postcss.config.js components.json ./
 
