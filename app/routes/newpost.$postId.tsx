@@ -17,9 +17,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	const postId = postIdSchema.parse(params.postId)
 	const post: ScoredPost = await db.transaction().execute(async trx => getScoredPost(trx, postId))
 
-	const rankedReplies: RankedPost[] = await db.transaction()
-		.execute(async trx => getRankedReplies(trx, postId))
-
 	const replyTree: ReplyTree = await db.transaction().execute(async trx => getReplyTree(trx, postId))
 
 	return json({ post, replyTree, loggedIn })
