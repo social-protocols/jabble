@@ -118,4 +118,4 @@ recent-sessions:
 
 replay-vote-events:
 	rm -f $SOCIAL_PROTOCOLS_DATADIR/global-brain.db
-	npx tsx other/replay-vote-events.ts
+	time npx tsx other/replay-vote-events.ts
