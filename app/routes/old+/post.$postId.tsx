@@ -1,10 +1,11 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { Link, useLoaderData, useNavigate } from '@remix-run/react'
+import { useLoaderData, useNavigate } from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { DeletedPost } from '#app/components/ui/deleted-post.tsx'
-import { PostContent, PostDetails } from '#app/components/ui/post.tsx'
+import { ParentThread } from '#app/components/ui/parent-thread.tsx'
+import { PostDetails } from '#app/components/ui/post.tsx'
 import { ReplyThread } from '#app/components/ui/reply-thread.tsx'
 import { getCriticalThread, type ThreadPost } from '#app/conversations.ts'
 import { type Post } from '#app/db/types.ts'
@@ -144,36 +145,6 @@ export default function Post() {
 				</>
 			)}
 		</>
-	)
-}
-
-function ParentThread({ transitiveParents }: { transitiveParents: Post[] }) {
-	return (
-		<div className="threadline">
-			{transitiveParents.map(parentPost => (
-				<Link key={parentPost.id} to={`/post/${parentPost.id}`}>
-					<div
-						key={parentPost.id}
-						className="postparent mb-1 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"
-					>
-						{parentPost.deletedAt == null ? (
-							<PostContent
-								content={parentPost.content}
-								maxLines={3}
-								deactivateLinks={true}
-							/>
-						) : (
-							<div
-								style={{ cursor: 'pointer' }}
-								className={'italic text-gray-400'}
-							>
-								This post was deleted.
-							</div>
-						)}
-					</div>
-				</Link>
-			))}
-		</div>
 	)
 }
 
