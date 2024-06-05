@@ -7,13 +7,11 @@ export function Feed({
 	votes,
 	rootId,
 	loggedIn,
-	showNotes,
 }: {
 	posts: RankedPost[]
 	votes: Map<number, VoteState>
 	rootId: number | null
 	loggedIn: boolean
-	showNotes: boolean
 }) {
 	return (
 		<>
@@ -21,7 +19,6 @@ export function Feed({
 				let vote: VoteState = votes.get(post.id) || defaultVoteState(post.id)
 
 				let followsParent = posts[i - 1]?.id == post.parentId
-				let followedByTopnote = posts[i + 1]?.id == post.topNoteId
 				const directReply = rootId !== null && post.parentId == rootId
 
 				const borderStyle = post.isCritical
@@ -41,7 +38,6 @@ export function Feed({
 							))}
 						<PostDetails
 							post={post}
-							note={showNotes && !followedByTopnote ? post.note : null}
 							teaser={true}
 							voteState={vote}
 							loggedIn={loggedIn}

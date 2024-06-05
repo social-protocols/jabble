@@ -26,7 +26,7 @@ export async function createPost(
 	invariant(persistedPost, `Reply to ${parentId} not submitted successfully`)
 
 	if (options?.withUpvote !== undefined ? options.withUpvote : true) {
-		await vote(trx, authorId, persistedPost.id, null, Direction.Up)
+		await vote(trx, authorId, persistedPost.id, Direction.Up)
 	}
 
 	if (parentId !== null) {

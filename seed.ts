@@ -80,16 +80,16 @@ export async function seed() {
 		)
 	})
 
-	// And also downvotes (with their own post as a note -- this is an important detail)
+	// And also downvotes
 	db.transaction().execute(
-		async trx => await vote(trx, bob, post1, post2, Direction.Down),
+		async trx => await vote(trx, bob, post1, Direction.Down),
 	)
 
 	// bob views home page
 	db.transaction().execute(async trx => await getRankedPosts(trx))
 
 	// And responds to bob's response
-	let post3 = await db.transaction().execute(async trx => {
+	await db.transaction().execute(async trx => {
 		return createPost(
 			trx,
 			post2,
@@ -140,7 +140,7 @@ export async function seed() {
 	// console.log("Ranked posts", posts)
 
 	// And respond's to Alice's third post
-	let post7 = await db.transaction().execute(async trx => {
+	await db.transaction().execute(async trx => {
 		return createPost(
 			trx,
 			post6,
@@ -151,32 +151,32 @@ export async function seed() {
 	})
 
 	await db.transaction().execute(async trx => {
-		vote(trx, alice, post6, post7, Direction.Down)
+		vote(trx, alice, post6, Direction.Down)
 
 		// agreed with 2 (shown 3)
-		vote(trx, charlie, post2, post3, Direction.Up)
+		vote(trx, charlie, post2, Direction.Up)
 
 		// changed mind after seeing 2
-		vote(trx, charlie, post1, post2, Direction.Down)
+		vote(trx, charlie, post1, Direction.Down)
 
 		// changed mind back (for no particular reason)
-		vote(trx, charlie, post1, post2, Direction.Up)
+		vote(trx, charlie, post1, Direction.Up)
 
 		// duplicate vote
-		vote(trx, charlie, post1, post2, Direction.Up)
+		vote(trx, charlie, post1, Direction.Up)
 
 		// changed mind back again
-		vote(trx, charlie, post1, post2, Direction.Down)
+		vote(trx, charlie, post1, Direction.Down)
 
 		// and s some other votes
-		vote(trx, charlie, post1, post2, Direction.Down)
-		vote(trx, charlie, post2, post3, Direction.Down)
-		vote(trx, charlie, post2, post3, Direction.Up)
-		vote(trx, charlie, 3, null, 1)
-		vote(trx, charlie, 2, null, -1)
-		vote(trx, bob, 6, null, -1)
-		vote(trx, alice, 5, null, -1)
-		vote(trx, alice, 4, null, -1)
+		vote(trx, charlie, post1, Direction.Down)
+		vote(trx, charlie, post2, Direction.Down)
+		vote(trx, charlie, post2, Direction.Up)
+		vote(trx, charlie, 3, 1)
+		vote(trx, charlie, 2, -1)
+		vote(trx, bob, 6, -1)
+		vote(trx, alice, 5, -1)
+		vote(trx, alice, 4, -1)
 	})
 
 	// Create developer user with password 'password'. Can login with this user by pointing browser to /dev-login

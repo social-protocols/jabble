@@ -54,7 +54,6 @@ export function ReplyThread({
 							<div style={borderStyle} className="rounded-lg">
 								<PostDetails
 									post={post}
-									note={null}
 									teaser={true}
 									voteState={vote}
 									loggedIn={loggedIn}

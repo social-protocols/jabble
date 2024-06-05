@@ -18,12 +18,12 @@ export async function getCriticalThread(
 			db
 				.selectFrom('ScoreWithDefault as Score')
 				.where('postId', '=', postId)
-				.select(['postId', 'topNoteId', 'criticalThreadId'])
+				.select(['postId', 'topCommentId', 'criticalThreadId'])
 				.unionAll(db =>
 					db
 						.selectFrom('ScoreWithDefault as S')
-						.innerJoin('CriticalThread as CT', 'S.postId', 'CT.topNoteId')
-						.select(['S.postId', 'S.topNoteId', 'S.criticalThreadId']),
+						.innerJoin('CriticalThread as CT', 'S.postId', 'CT.topCommentId')
+						.select(['S.postId', 'S.topCommentId', 'S.criticalThreadId']),
 				),
 		)
 		.selectFrom('CriticalThread')
@@ -48,7 +48,7 @@ export async function getCriticalThread(
 	const effects = await trx
 		.selectFrom('Effect')
 		.where(
-			'noteId',
+			'commentId',
 			'in',
 			scoredPosts.map(post => post.id),
 		)
@@ -57,11 +57,11 @@ export async function getCriticalThread(
 
 	const effectSizes = effects.map(effect => {
 		invariant(
-			effect.noteId,
-			`Got effect for post ${effect.postId} with noteId = null`,
+			effect.commentId,
+			`Got effect for post ${effect.postId} with commentId = null`,
 		)
 		return {
-			postId: effect.noteId,
+			postId: effect.commentId,
 			effectSize: relativeEntropy(effect.p, effect.q),
 		}
 	})
