@@ -14,7 +14,10 @@ reset-db:
 
 # reset-db and also delete vote and score events files
 reset-all:
-  rm -rf ~/social-protocols-data/*
+  rm -rf ~/social-protocols-data/*.db
+  rm -rf ~/social-protocols-data/*.db-wal
+  rm -rf ~/social-protocols-data/*.db-shm
+  rm -rf ~/social-protocols-data/*.jsonl
   mkdir -p ~/social-protocols-data
   rm -f "$GB_DATABASE_PATH"
   just reset-db
