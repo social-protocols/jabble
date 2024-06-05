@@ -73,6 +73,15 @@ export async function getPost(trx: Transaction<DB>, id: number): Promise<Post> {
 	return result
 }
 
+export async function getReplyIds(trx: Transaction<DB>, postId: number): Promise<number[]> {
+	const result: { id: number }[] = await trx
+		.selectFrom('Post')
+		.where('parentId', '=', postId)
+		.select('id')
+		.execute()
+	return result.map(postResult => postResult.id)
+}
+
 export async function deletePost(
 	trx: Transaction<DB>,
 	id: number,

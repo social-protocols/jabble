@@ -1,7 +1,7 @@
 import { type Transaction, sql } from 'kysely'
 import { type Effect, type Post, type FullScore } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { type DB } from './db/kysely-types.ts'
-import { getPost } from './post.ts'
+import { getPost, getReplyIds } from './post.ts'
 import { relativeEntropy } from './utils/entropy.ts'
 
 // Post with score and the effect of its top reply
@@ -13,6 +13,29 @@ export type RankedPost = ScoredPost & {
 	parent: Post | null
 	effects: Effect[]
 	isCritical: boolean
+}
+
+export type ReplyTree = {
+	post: ScoredPost
+	replies: ReplyTree[]
+}
+
+export async function getReplyTree(trx: Transaction<DB>, postId: number): Promise<ReplyTree> {
+	const directReplyIds = await getReplyIds(trx, postId)
+	const post = await getScoredPost(trx, postId)
+	if (directReplyIds.length === 0) {
+		return {
+			post: post,
+			replies: []
+		}
+	}
+	const replies: ReplyTree[] = await Promise.all(
+		directReplyIds.map(async replyId => await getReplyTree(trx, replyId))
+	)
+	return {
+		post: post,
+		replies: replies
+	}
 }
 
 export async function getScoredPost(
