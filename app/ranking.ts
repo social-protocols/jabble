@@ -20,13 +20,16 @@ export type ReplyTree = {
 	replies: ReplyTree[]
 }
 
-export async function getReplyTree(trx: Transaction<DB>, postId: number): Promise<ReplyTree> {
+export async function getReplyTree(
+	trx: Transaction<DB>,
+	postId: number,
+): Promise<ReplyTree> {
 	const directReplyIds = await getReplyIds(trx, postId)
 	const post = await getScoredPost(trx, postId)
 	if (directReplyIds.length === 0) {
 		return {
 			post: post,
-			replies: []
+			replies: [],
 		}
 	}
 	const effectsOnParent: Effect[] = await getEffects(trx, postId)
@@ -37,36 +40,40 @@ export async function getReplyTree(trx: Transaction<DB>, postId: number): Promis
 		}
 		effectLookup.set(e.commentId, e)
 	}
-	const scoredReplies: ScoredPost[] = await Promise.all(directReplyIds.map(async replyId => await getScoredPost(trx, replyId)))
-	let scoredRepliesLookup: Map<number, ScoredPost> = new Map<number, ScoredPost>()
+	const scoredReplies: ScoredPost[] = await Promise.all(
+		directReplyIds.map(async replyId => await getScoredPost(trx, replyId)),
+	)
+	let scoredRepliesLookup: Map<number, ScoredPost> = new Map<
+		number,
+		ScoredPost
+	>()
 	for (const r of scoredReplies) {
 		scoredRepliesLookup.set(r.id, r)
 	}
-	const directReplyIdsSorted = directReplyIds
-		.sort((a, b) => {
-			const effectA = effectLookup.get(a)
-			const targetPA = effectA ? effectA.p : 0
-			const targetQA = effectA ? effectA.q : 0
-			const targetPSizeA = effectA ? effectA.pSize : 0
+	const directReplyIdsSorted = directReplyIds.sort((a, b) => {
+		const effectA = effectLookup.get(a)
+		const targetPA = effectA ? effectA.p : 0
+		const targetQA = effectA ? effectA.q : 0
+		const targetPSizeA = effectA ? effectA.pSize : 0
 
-			const effectB = effectLookup.get(b)
-			const targetPB = effectB ? effectB.p : 0
-			const targetQB = effectB ? effectB.q : 0
-			const targetPSizeB = effectB ? effectB.pSize : 0
+		const effectB = effectLookup.get(b)
+		const targetPB = effectB ? effectB.p : 0
+		const targetQB = effectB ? effectB.q : 0
+		const targetPSizeB = effectB ? effectB.pSize : 0
 
-			const scoredPostA = scoredRepliesLookup.get(a)
-			const scoredPostB = scoredRepliesLookup.get(b)
-			const scoreA = scoredPostA ? scoredPostA.score : 0
-			const scoreB = scoredPostB ? scoredPostB.score : 0
+		const scoredPostA = scoredRepliesLookup.get(a)
+		const scoredPostB = scoredRepliesLookup.get(b)
+		const scoreA = scoredPostA ? scoredPostA.score : 0
+		const scoreB = scoredPostB ? scoredPostB.score : 0
 
-			return (
-				relativeEntropy(targetPB, targetQB) * targetPSizeB -
-					relativeEntropy(targetPA, targetQA) * targetPSizeA ||
-				scoreB - scoreA
-			)})
+		return (
+			relativeEntropy(targetPB, targetQB) * targetPSizeB -
+				relativeEntropy(targetPA, targetQA) * targetPSizeA || scoreB - scoreA
+		)
+	})
 
 	const replies: ReplyTree[] = await Promise.all(
-		directReplyIdsSorted.map(async replyId => await getReplyTree(trx, replyId))
+		directReplyIdsSorted.map(async replyId => await getReplyTree(trx, replyId)),
 	)
 	return {
 		post: post,

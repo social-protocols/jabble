@@ -82,9 +82,7 @@ export function PostDetails({
 
 	return (
 		<div
-			className={
-				'mb-2 flex w-full flex-row space-x-4 rounded-sm bg-post px-2'
-			}
+			className={'mb-2 flex w-full flex-row space-x-4 rounded-sm bg-post px-2'}
 		>
 			<div
 				className="flex flex-col justify-center"

@@ -1,12 +1,17 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
-import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { type Post } from '#app/db/types.ts'
-import { getUserId } from '#app/utils/auth.server.ts'
-import { PostDetails } from '#app/components/ui/post.tsx'
 import { z } from 'zod'
-import { RankedPost, ReplyTree, ScoredPost, getRankedReplies, getReplyTree, getScoredPost } from '#app/ranking.ts'
+import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { PostDetails } from '#app/components/ui/post.tsx'
+import { type Post } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
+import {
+	type ReplyTree,
+	type ScoredPost,
+	getReplyTree,
+	getScoredPost,
+} from '#app/ranking.ts'
+import { getUserId } from '#app/utils/auth.server.ts'
 
 const postIdSchema = z.coerce.number()
 
@@ -15,9 +20,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	const loggedIn = userId !== null
 
 	const postId = postIdSchema.parse(params.postId)
-	const post: ScoredPost = await db.transaction().execute(async trx => getScoredPost(trx, postId))
+	const post: ScoredPost = await db
+		.transaction()
+		.execute(async trx => getScoredPost(trx, postId))
 
-	const replyTree: ReplyTree = await db.transaction().execute(async trx => getReplyTree(trx, postId))
+	const replyTree: ReplyTree = await db
+		.transaction()
+		.execute(async trx => getReplyTree(trx, postId))
 
 	return json({ post, replyTree, loggedIn })
 }
@@ -38,7 +47,7 @@ export default function Post() {
 export function TreeReplies({
 	replyTree,
 	loggedIn,
-} : {
+}: {
 	replyTree: ReplyTree
 	loggedIn: boolean
 }) {
@@ -48,14 +57,18 @@ export function TreeReplies({
 	return (
 		<>
 			{replyTree.replies.map(tree => {
-					return (
-						<>
-							<PostDetails post={tree.post} teaser={false} loggedIn={loggedIn} />
-							<div className={'border-l-4 border-left-solid border-gray-300 ml-2 pl-2'}>
-								<TreeReplies replyTree={tree} loggedIn={loggedIn} />
-							</div>
-						</>
-					)
+				return (
+					<>
+						<PostDetails post={tree.post} teaser={false} loggedIn={loggedIn} />
+						<div
+							className={
+								'border-left-solid ml-2 border-l-4 border-gray-300 pl-2'
+							}
+						>
+							<TreeReplies replyTree={tree} loggedIn={loggedIn} />
+						</div>
+					</>
+				)
 			})}
 		</>
 	)
@@ -70,4 +83,3 @@ export function ErrorBoundary() {
 		/>
 	)
 }
-
