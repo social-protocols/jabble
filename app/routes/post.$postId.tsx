@@ -44,12 +44,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 			: await db.transaction().execute(async trx => {
 					return getUserVotes(trx, userId, allPostIds)
 				})
+	console.log('voteStates', voteStates)
 
-	return json({ post, replyTree, transitiveParents, voteStates, loggedIn })
+	return json({ post, replyTree, transitiveParents, loggedIn })
 }
 
 export default function Post() {
-	const { post, replyTree, transitiveParents, voteStates, loggedIn } =
+	const { post, replyTree, transitiveParents, loggedIn } =
 		useLoaderData<typeof loader>()
 	return (
 		<>
