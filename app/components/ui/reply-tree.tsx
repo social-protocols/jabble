@@ -10,7 +10,10 @@ export function TreeReplies({
 	replyTree: ReplyTree
 	loggedIn: boolean
 }) {
-	const effectOnParentSize = relativeEntropy(replyTree.effect ? replyTree.effect.p : 0, replyTree.effect? replyTree.effect.q : 0)
+	const effectOnParentSize = relativeEntropy(
+		replyTree.effect ? replyTree.effect.p : 0,
+		replyTree.effect ? replyTree.effect.q : 0,
+	)
 	const isConvincing = effectOnParentSize > CONVINCINGNESS_THRESHOLD
 
 	if (replyTree.replies.length === 0) {
