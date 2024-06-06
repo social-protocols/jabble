@@ -2,7 +2,7 @@ import { Form, Link, useNavigate } from '@remix-run/react'
 import moment from 'moment'
 import { type ScoredPost } from '#app/ranking.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
-import { NeedsVote } from './post.tsx'
+import { CommentIcon } from '#app/components/ui/post.tsx'
 
 export function DeletedPost({ post }: { post: ScoredPost }) {
 	const ageString = moment(post.createdAt).fromNow()
@@ -33,7 +33,7 @@ export function DeletedPost({ post }: { post: ScoredPost }) {
 
 				<div className="mt-2 flex w-full text-sm">
 					<Link to={`/post/${post.id}`} className="ml-2">
-						<NeedsVote needsVote={false} />
+						<CommentIcon needsVote={false} />
 					</Link>
 					{isAdminUser && (
 						<Form id="restore-post-form" method="POST" action="/restorePost">

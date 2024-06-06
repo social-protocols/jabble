@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { PostForm } from '#app/components/ui/post-form.tsx'
-import { PostContent, NeedsVote } from '#app/components/ui/post.tsx'
+import { PostContent, CommentIcon } from '#app/components/ui/post.tsx'
 import { db } from '#app/db.ts'
 import * as rankingTs from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
@@ -111,7 +111,7 @@ export function TopLevelPost({
 				/>
 				<div className="mt-2 flex w-full text-sm">
 					<Link to={`/post/${post.id}`} className="ml-2">
-						<NeedsVote needsVote={false} />
+						<CommentIcon needsVote={false} />
 					</Link>
 				</div>
 			</div>

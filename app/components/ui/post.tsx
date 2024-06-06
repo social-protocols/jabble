@@ -146,7 +146,7 @@ export function PostActionBar({
 						style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
 						// preventScrollReset={true}
 					>
-						🗨 Reply
+						Reply
 					</button>
 				)}
 				{isConvincing && (
@@ -156,7 +156,7 @@ export function PostActionBar({
 				)}
 				{loggedIn && (
 					<Link className="ml-2" to={`/post/${post.id}`}>
-						<NeedsVote needsVote={needsVote} />
+						<CommentIcon needsVote={needsVote} />
 					</Link>
 				)}
 				{post.deletedAt == null && isAdminUser && false && (
@@ -279,7 +279,7 @@ export function VoteButtons({
 	)
 }
 
-export function NeedsVote({ needsVote }: { needsVote: boolean }) {
+export function CommentIcon({ needsVote }: { needsVote: boolean }) {
 	const notificationIconCss: CSSProperties = {
 		position: 'relative',
 		display: 'inline-block',
@@ -305,8 +305,11 @@ export function NeedsVote({ needsVote }: { needsVote: boolean }) {
 
 	return (
 		<>
-			<div className="rounded-sm bg-yellow-100 px-1 italic text-yellow-900">
-				Critical comment needs your vote
+			<div style={notificationIconCss}>
+				{needsVote && <div style={blueDotCss}></div>}
+				<div style={speechBalloonCss} className="text-sm">
+					🗨
+				</div>
 			</div>
 		</>
 	)
