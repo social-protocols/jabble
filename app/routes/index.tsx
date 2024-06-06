@@ -100,7 +100,7 @@ export function TopLevelPost({
 		<div
 			className={`flex w-full flex-row rounded-lg ${className || ''}`}
 		>
-			<div className="postteaser flex w-full min-w-0 flex-col pb-2 border-b-2 border-solid">
+			<div className="postteaser flex w-full min-w-0 flex-col pb-2 border-b-2 border-solid border-post">
 				<div className="mt-1 text-right text-sm opacity-50">{ageString}</div>
 				<PostContent
 					content={post.content}
