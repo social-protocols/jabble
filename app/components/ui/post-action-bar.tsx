@@ -34,25 +34,26 @@ export function PostActionBar({
 
 	return (
 		<>
-			<div className="mb-3 flex w-full space-x-2 text-sm">
+			<div className="mb-3 flex w-full text-sm">
 				{post.deletedAt == null && loggedIn && (
 					<button
 						onClick={() => {
 							setShowReplyForm(!showReplyForm)
 							return false
 						}}
+						className='mr-2'
 						style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
 					>
 						Reply
 					</button>
 				)}
 				{isConvincing && (
-					<span className="rounded bg-blue-100 px-1 italic text-blue-600">
+					<span className="rounded bg-blue-100 px-1 italic text-blue-600 mr-2">
 						Convincing
 					</span>
 				)}
 				{loggedIn && (
-					<Link className="ml-2" to={`/post/${post.id}`}>
+					<Link className="mr-2" to={`/post/${post.id}`}>
 						<CommentIcon needsVote={needsVote} />
 					</Link>
 				)}
