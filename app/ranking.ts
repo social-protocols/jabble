@@ -1,10 +1,10 @@
 import { type Transaction, sql } from 'kysely'
+import { MAX_POSTS_PER_PAGE } from '#app/constants.ts'
 import { type Effect, type Post, type FullScore } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { type DB } from './db/kysely-types.ts'
 import { getPost, getReplyIds } from './post.ts'
 import { relativeEntropy } from './utils/entropy.ts'
 import { type VoteState, defaultVoteState, getUserVotes } from './vote.ts'
-import { MAX_POSTS_PER_PAGE } from '#app/constants.ts'
 
 // Post with score and the effect of its top reply
 export type ScoredPost = Post & FullScore & { nReplies: number }
@@ -46,8 +46,8 @@ export async function getReplyTree(
 
 	const voteState: VoteState =
 		userVotesResult !== undefined && userVotesResult.length > 0
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			? userVotesResult[0]!
+			? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				userVotesResult[0]!
 			: defaultVoteState(postId)
 
 	if (directReplyIds.length === 0) {

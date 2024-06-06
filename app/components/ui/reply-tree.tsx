@@ -1,7 +1,7 @@
 import { CONVINCINGNESS_THRESHOLD } from '#app/constants.ts'
 import { type ReplyTree } from '#app/ranking.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
-import { PostDetails } from './post.tsx'
+import { PostDetails } from './post-details.tsx'
 
 export function TreeReplies({
 	replyTree,

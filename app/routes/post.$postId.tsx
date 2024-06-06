@@ -3,7 +3,7 @@ import { useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
-import { PostDetails } from '#app/components/ui/post.tsx'
+import { PostDetails } from '#app/components/ui/post-details.tsx'
 import { TreeReplies } from '#app/components/ui/reply-tree.tsx'
 import { type Post } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
@@ -38,11 +38,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		.execute(async trx => getTransitiveParents(trx, post.id))
 
 	const allPostIds = getAllPostIdsInTree(replyTree)
-	const voteStates: VoteState[] = userId === null
-		? []
-		: await db.transaction().execute(async trx => {
-				return getUserVotes( trx, userId, allPostIds)
-			})
+	const voteStates: VoteState[] =
+		userId === null
+			? []
+			: await db.transaction().execute(async trx => {
+					return getUserVotes(trx, userId, allPostIds)
+				})
 
 	return json({ post, replyTree, transitiveParents, voteStates, loggedIn })
 }

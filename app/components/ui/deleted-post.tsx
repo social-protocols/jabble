@@ -2,7 +2,7 @@ import { Form, Link, useNavigate } from '@remix-run/react'
 import moment from 'moment'
 import { type ScoredPost } from '#app/ranking.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
-import { CommentIcon } from '#app/components/ui/post.tsx'
+import { CommentIcon } from './comment-icon.tsx'
 
 export function DeletedPost({ post }: { post: ScoredPost }) {
 	const ageString = moment(post.createdAt).fromNow()

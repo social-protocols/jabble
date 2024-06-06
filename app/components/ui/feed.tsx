@@ -1,6 +1,7 @@
-import { PostDetails, ParentPost } from '#app/components/ui/post.tsx'
+import { PostDetails } from '#app/components/ui/post-details.tsx'
 import { type RankedPost } from '#app/ranking.ts'
 import { type VoteState, Direction, defaultVoteState } from '#app/vote.ts'
+import { ParentPost } from './parent-post.tsx'
 
 export function Feed({
 	posts,

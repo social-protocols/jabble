@@ -1,6 +1,6 @@
 import { Link } from '@remix-run/react'
 import { type Post } from '#app/db/types.ts'
-import { PostContent } from './post.tsx'
+import { PostContent } from './post-content.tsx'
 
 export function ParentThread({
 	transitiveParents,

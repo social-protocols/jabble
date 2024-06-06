@@ -1,4 +1,4 @@
-import { PostDetails } from '#app/components/ui/post.tsx'
+import { PostDetails } from '#app/components/ui/post-details.tsx'
 import { type ScoredPost } from '#app/ranking.ts'
 import { type VoteState } from '#app/vote.ts'
 import { DeletedPost } from './deleted-post.tsx'
