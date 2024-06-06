@@ -23,7 +23,8 @@
 		/* prefixed with foreground because it should look good on the background */
 		--foreground-destructive: 345 82.7% 40.8%;
 
-		--background: rgb(241, 245, 249);
+		/* --background: rgb(241, 245, 249); */
+		--background: rgb(255, 255, 255)
 		--foreground: rgb(2, 8, 23);
 
 		--muted: 210 40% 93%;
@@ -55,7 +56,7 @@
 
 		--radius: 0.5rem;
 
-		--post: white;
+		--post: #f3f4f6; /* gray-100 */
 		--postparent-foreground: #434343;
 		--postparent-threadline: #bcbfc2;
 		--note: #f1f5f9;

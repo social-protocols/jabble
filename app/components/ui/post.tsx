@@ -57,21 +57,7 @@ export function PostDetails({
 	// So we need to get the current state of the user's vote on this post from the fetcher
 	const voteFetcher = useFetcher<{ voteState: VoteState; postId: number }>()
 
-	const user = useOptionalUser()
-	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
-
-	const [showReplyForm, setShowReplyForm] = useState(false)
-
-	const ageString = moment(post.createdAt).fromNow()
-
-	const handleReplySubmit = function () {
-		setShowReplyForm(false)
-	}
-
 	const visibleVoteState = voteState || defaultVoteState(post.id)
-
-	const needsVote: boolean =
-		!visibleVoteState.isInformed && visibleVoteState.vote !== Direction.Neutral
 
 	const handleVoteSubmit = function (event: FormEvent<HTMLFormElement>) {
 		onVote && onVote()
@@ -82,12 +68,9 @@ export function PostDetails({
 
 	return (
 		<div
-			className={'mb-2 flex w-full flex-row space-x-4 rounded-sm bg-post px-2'}
+			className={'flex w-full rounded-sm'}
 		>
-			<div
-				className="flex flex-col justify-center"
-				style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
-			>
+			<div className={'mr-2'} style={{ visibility: loggedIn ? 'visible' : 'hidden' }}>
 				<voteFetcher.Form
 					method="POST"
 					action="/vote"
@@ -100,20 +83,7 @@ export function PostDetails({
 					/>
 				</voteFetcher.Form>
 			</div>
-			<div
-				className={
-					'flex w-full min-w-0 flex-col' + (teaser ? ' postteaser' : '')
-				}
-			>
-				<div className="flex text-xs">
-					{isConvincing && (
-						<span className="rounded bg-blue-100 px-1 italic text-blue-600">
-							Convincing
-						</span>
-					)}
-					<span className="ml-auto opacity-50">{ageString}</span>
-				</div>
-
+			<div className={'flex flex-col min-w-0 space-y-1 mb-3' + (teaser ? ' postteaser' : '')}>
 				{post.deletedAt == null ? (
 					<PostContent
 						content={post.content}
@@ -130,58 +100,99 @@ export function PostDetails({
 						This post was deleted.
 					</div>
 				)}
-
-				<div className="my-2 flex w-full text-sm">
-					<Link to={`/post/${post.id}`} className="ml-2">
-						<CommentIcon needsVote={needsVote} nReplies={post.nReplies} />
-					</Link>
-					{post.deletedAt == null && (
-						<button
-							className="hyperlink ml-2"
-							onClick={() => {
-								setShowReplyForm(!showReplyForm)
-								return false
-							}}
-							style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
-							// preventScrollReset={true}
-						>
-							reply
-						</button>
-					)}
-					{post.deletedAt == null && isAdminUser && (
-						<Form id="delete-post-form" method="POST" action="/deletePost">
-							<input type="hidden" name="postId" value={post.id} />
-							<input type="hidden" name="userId" value={user?.id} />
-							<button className="ml-2 rounded bg-red-400 px-1 text-white">
-								delete
-							</button>
-						</Form>
-					)}
-					{showReplyForm && (
-						<button
-							className="ml-auto pr-2"
-							onClick={() => setShowReplyForm(false)}
-						>
-							✕
-						</button>
-					)}
-				</div>
-				{showReplyForm && (
-					<Form
-						id="reply-form"
-						method="POST"
-						action="/reply"
-						onSubmit={handleReplySubmit}
-					>
-						<ReplyForm
-							post={post}
-							isPrivate={Boolean(post.isPrivate)}
-							className="mt-2"
-						/>
-					</Form>
-				)}
+				<PostActionBar
+					post={post}
+					visibleVoteState={visibleVoteState}
+					isConvincing={isConvincing || false}
+					loggedIn={loggedIn}
+				/>
 			</div>
 		</div>
+	)
+}
+
+export function PostActionBar({
+	post,
+	visibleVoteState,
+	loggedIn,
+	isConvincing,
+}: {
+	post: ScoredPost
+	visibleVoteState: VoteState
+	loggedIn: boolean
+	isConvincing: boolean
+}) {
+	const user = useOptionalUser()
+	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
+
+	const [showReplyForm, setShowReplyForm] = useState(false)
+
+	const ageString = moment(post.createdAt).fromNow()
+
+	const handleReplySubmit = function () {
+		setShowReplyForm(false)
+	}
+
+	const needsVote: boolean =
+		!visibleVoteState.isInformed && visibleVoteState.vote !== Direction.Neutral
+
+	return (
+		<>
+			<div className="mb-3 flex w-full text-sm space-x-2">
+				{post.deletedAt == null && (
+					<button
+						onClick={() => {
+							setShowReplyForm(!showReplyForm)
+							return false
+						}}
+						style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
+						// preventScrollReset={true}
+					>
+						🗨 Reply
+					</button>
+				)}
+				{isConvincing || Math.random() > 0.5 && (
+					<span className="rounded bg-blue-100 px-1 italic text-blue-600">
+						Convincing
+					</span>
+				)}
+				<Link className='ml-2' to={`/post/${post.id}`}>
+					<NeedsVote needsVote={needsVote} />
+				</Link>
+				{post.deletedAt == null && isAdminUser && false && (
+					<Form id="delete-post-form" method="POST" action="/deletePost">
+						<input type="hidden" name="postId" value={post.id} />
+						<input type="hidden" name="userId" value={user?.id} />
+						<button className="rounded bg-red-400 px-1 text-white">
+							delete
+						</button>
+					</Form>
+				)}
+				<span className="opacity-50">{ageString}</span>
+				{showReplyForm && (
+					<button
+						className="ml-auto pr-2"
+						onClick={() => setShowReplyForm(false)}
+					>
+						✕
+					</button>
+				)}
+			</div>
+			{showReplyForm && (
+				<Form
+					id="reply-form"
+					method="POST"
+					action="/reply"
+					onSubmit={handleReplySubmit}
+				>
+					<ReplyForm
+						post={post}
+						isPrivate={Boolean(post.isPrivate)}
+						className="mt-2"
+					/>
+				</Form>
+			)}
+		</>
 	)
 }
 
@@ -253,8 +264,6 @@ export function VoteButtons({
 	const upClass = vote.vote == Direction.Up ? '' : 'opacity-30'
 	const downClass = vote.vote == Direction.Down ? '' : 'opacity-30'
 
-	const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
-
 	return (
 		<>
 			<input type="hidden" name="postId" value={postId} />
@@ -264,9 +273,11 @@ export function VoteButtons({
 				<button name="direction" value="Up" className={upClass}>
 					▲
 				</button>
+				{/*
 				<Link to={`/stats/${postId}`} className="hyperlink">
 					<div className="text-xs">{pCurrentString}</div>
 				</Link>
+				*/}
 				<button name="direction" value="Down" className={downClass}>
 					▼
 				</button>
@@ -275,12 +286,10 @@ export function VoteButtons({
 	)
 }
 
-export function CommentIcon({
+export function NeedsVote({
 	needsVote,
-	nReplies,
 }: {
 	needsVote: boolean
-	nReplies: number
 }) {
 	const notificationIconCss: CSSProperties = {
 		position: 'relative',
@@ -307,13 +316,9 @@ export function CommentIcon({
 
 	return (
 		<>
-			<div style={notificationIconCss}>
-				{needsVote && <div style={blueDotCss}></div>}
-				<div style={speechBalloonCss} className="text-sm">
-					💬
-				</div>
+			<div className='bg-yellow-100 px-1 rounded-sm text-yellow-900'>
+				Critical comment needs your vote
 			</div>
-			&nbsp;{nReplies}
 		</>
 	)
 }
