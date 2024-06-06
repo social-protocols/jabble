@@ -14,7 +14,10 @@ reset-db:
 
 # reset-db and also delete vote and score events files
 reset-all:
-  rm -rf ~/social-protocols-data/*
+  rm -rf ~/social-protocols-data/*.db
+  rm -rf ~/social-protocols-data/*.db-wal
+  rm -rf ~/social-protocols-data/*.db-shm
+  rm -rf ~/social-protocols-data/*.jsonl
   mkdir -p ~/social-protocols-data
   rm -f "$GB_DATABASE_PATH"
   just reset-db
@@ -64,7 +67,7 @@ download-prod-db:
   rm -f "$APP_DATABASE_PATH"
   rm -f "$APP_DATABASE_PATH"-shm
   rm -f "$APP_DATABASE_PATH"-wal
-  flyctl ssh console -C "/bin/sh -c \"sqlite3 /litefs/data/sqlite.db '.backup /data/backup.db'\""
+  flyctl ssh console -C "sqlite3 /litefs/data/sqlite.db '.backup /data/backup.db'"
   flyctl ssh sftp get /data/backup.db "$APP_DATABASE_PATH" || true
 
 # build the docker container
@@ -115,4 +118,4 @@ recent-sessions:
 
 replay-vote-events:
 	rm -f $SOCIAL_PROTOCOLS_DATADIR/global-brain.db
-	npx tsx other/replay-vote-events.ts
+	time npx tsx other/replay-vote-events.ts
