@@ -4,16 +4,12 @@ import { type DB } from './db/kysely-types.ts'
 import { getPost } from './post.ts'
 import { relativeEntropy } from './utils/entropy.ts'
 
-// Post with score and the effect of its top note
+// Post with score and the effect of its top reply
 export type ScoredPost = Post & FullScore & { nReplies: number }
-
-// Post with its effect on its parent
-export type ScoredNote = Post & Effect
 
 export const MAX_RESULTS = 100
 
 export type RankedPost = ScoredPost & {
-	note: ScoredNote | null
 	parent: Post | null
 	effects: Effect[]
 	isCritical: boolean
@@ -52,43 +48,6 @@ async function getScoredPostInternal(
 	return scoredPost
 }
 
-export async function getTopNote(
-	trx: Transaction<DB>,
-	post: ScoredPost,
-): Promise<ScoredNote | null> {
-	return post.topNoteId !== null
-		? getScoredNoteInternal(trx, post.topNoteId)
-		: null
-}
-
-async function getScoredNoteInternal(
-	trx: Transaction<DB>,
-	postId: number,
-): Promise<ScoredNote> {
-	let query = trx
-		.selectFrom('Post')
-		.innerJoin('Effect', join =>
-			join
-				.on('Effect.noteId', '=', postId)
-				.onRef('Effect.postId', '=', 'Post.parentId'),
-		)
-		.leftJoin('PostStats', join =>
-			join.onRef('PostStats.postId', '=', 'Post.id'),
-		)
-		.selectAll('Post')
-		.selectAll('Effect')
-		.select(sql<number>`replies`.as('nReplies'))
-		.where('Post.id', '=', postId)
-
-	const scoredNote = (await query.execute())[0]
-
-	if (scoredNote === undefined) {
-		throw new Error(`Failed to read scored post postId=${postId}`)
-	}
-
-	return scoredNote
-}
-
 export async function getEffects(
 	trx: Transaction<DB>,
 	postId: number,
@@ -103,7 +62,7 @@ async function getEffectsInternal(
 	let query = trx
 		.selectFrom('Post')
 		.innerJoin('EffectWithDefault as Effect', join =>
-			join.on('Effect.noteId', '=', postId),
+			join.on('Effect.commentId', '=', postId),
 		)
 		.innerJoin('Post as TargetPost', 'TargetPost.id', 'Effect.postId')
 		.selectAll('Effect')
@@ -138,9 +97,6 @@ export async function getRankedPosts(
 		scoredPosts.map(async post => {
 			return {
 				...post,
-				note: post.topNoteId
-					? await getScoredNoteInternal(trx, post.topNoteId)
-					: null,
 				parent: post.parentId ? await getPost(trx, post.parentId) : null,
 				effects: await getEffectsInternal(trx, post.id),
 				isCritical: false,
@@ -192,7 +148,7 @@ export async function getRankedReplies(
 
 async function getRankedRepliesInternal(
 	trx: Transaction<DB>,
-	targetId: number,
+	postId: number,
 	parentId: number,
 ): Promise<RankedPost[]> {
 	let query = trx
@@ -204,8 +160,8 @@ async function getRankedRepliesInternal(
 		)
 		.innerJoin('EffectWithDefault as Effect', join =>
 			join
-				.on('Effect.postId', '=', targetId)
-				.onRef('Effect.noteId', '=', 'Post.id'),
+				.on('Effect.postId', '=', postId)
+				.onRef('Effect.commentId', '=', 'Post.id'),
 		)
 		.select(sql<number>`Effect.p`.as(`targetP`))
 		.select(sql<number>`Effect.q`.as(`targetQ`))
@@ -234,23 +190,20 @@ async function getRankedRepliesInternal(
 		immediateChildren.map(async (post: ScoredPost) => {
 			const effects = await getEffectsInternal(trx, post.id)
 			const targetEffect: Effect | undefined = effects.find(
-				e => e.postId == targetId,
+				e => e.postId == postId,
 			)
 
 			const isCritical = targetEffect
-				? targetEffect.topSubthreadId === targetEffect.noteId
+				? targetEffect.topCommentId === targetEffect.commentId
 				: false
 			return [
 				{
 					...post,
-					note: post.topNoteId
-						? await getScoredNoteInternal(trx, post.topNoteId)
-						: null,
 					parent: post.parentId ? await getPost(trx, post.parentId) : null,
 					effects: effects,
 					isCritical: isCritical,
 				},
-				...(await getRankedRepliesInternal(trx, targetId, post.id)),
+				...(await getRankedRepliesInternal(trx, postId, post.id)),
 			]
 		}),
 	)
@@ -260,17 +213,17 @@ async function getRankedRepliesInternal(
 
 export async function getRankedDirectReplies(
 	trx: Transaction<DB>,
-	targetId: number,
+	postId: number,
 ) {
 	console.log('Direct replies')
 	const query = trx
 		.selectFrom('Post')
-		.innerJoin('EffectWithDefault as Effect', 'Effect.noteId', 'Post.id')
-		.innerJoin('ScoreWithDefault as Score', 'Score.postId', 'Effect.noteId')
-		.where('Post.parentId', '=', targetId)
-		.where('Effect.postId', '=', targetId)
-		.where('Effect.noteId', 'is not', null)
-		.select('Effect.noteId as postId')
+		.innerJoin('EffectWithDefault as Effect', 'Effect.commentId', 'Post.id')
+		.innerJoin('ScoreWithDefault as Score', 'Score.postId', 'Effect.commentId')
+		.where('Post.parentId', '=', postId)
+		.where('Effect.postId', '=', postId)
+		.where('Effect.commentId', 'is not', null)
+		.select('Effect.commentId as postId')
 		.select('Effect.p as targetP')
 		.select('Effect.pSize as targetPSize')
 		.select('Effect.q as targetQ')

@@ -4,7 +4,7 @@ import { useState, type CSSProperties, type FormEvent } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { type Post } from '#app/db/types.ts'
-import { type ScoredPost, type ScoredNote } from '#app/ranking.ts'
+import { type ScoredPost } from '#app/ranking.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 import { Direction, type VoteState, defaultVoteState } from '#app/vote.ts'
 import { Truncate } from './Truncate.tsx'
@@ -41,7 +41,6 @@ export function PostContent({
 
 export function PostDetails({
 	post,
-	note,
 	teaser,
 	voteState,
 	loggedIn,
@@ -49,7 +48,6 @@ export function PostDetails({
 	isConvincing,
 }: {
 	post: ScoredPost
-	note: ScoredNote | null
 	teaser: boolean
 	voteState?: VoteState
 	loggedIn: boolean
@@ -99,7 +97,6 @@ export function PostDetails({
 				>
 					<VoteButtons
 						postId={post.id}
-						noteId={note !== null ? note.id : null}
 						vote={visibleVoteState}
 						pCurrent={post.p}
 					/>
@@ -248,12 +245,10 @@ function ReplyForm({
 
 export function VoteButtons({
 	postId,
-	noteId,
 	vote,
 	pCurrent,
 }: {
 	postId: number
-	noteId: number | null
 	vote: VoteState
 	pCurrent: number
 }) {
@@ -266,12 +261,6 @@ export function VoteButtons({
 		<>
 			<input type="hidden" name="postId" value={postId} />
 			<input type="hidden" name="state" value={Direction[vote.vote]} />
-
-			{noteId === null ? (
-				<></>
-			) : (
-				<input type="hidden" name="noteId" value={noteId} />
-			)}
 
 			<div className="flex flex-col text-xl">
 				<button name="direction" value="Up" className={upClass}>

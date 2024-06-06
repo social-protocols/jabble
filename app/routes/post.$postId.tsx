@@ -97,7 +97,7 @@ export default function Post() {
 	const reloadPage = () => navigate('.', { replace: true })
 
 	const otherRepliesToDisplay = otherReplies.filter(
-		p => p.id !== post.topNoteId,
+		p => p.id !== post.topCommentId,
 	)
 
 	const otherRepliesToDisplayExist = otherRepliesToDisplay.length > 0
@@ -111,7 +111,6 @@ export default function Post() {
 				<PostDetails
 					key={post.id}
 					post={post}
-					note={null}
 					teaser={false}
 					voteState={vote}
 					loggedIn={loggedIn}
@@ -203,7 +202,6 @@ function DirectReplies({
 						{post.deletedAt == null ? (
 							<PostDetails
 								post={post}
-								note={null}
 								teaser={true}
 								voteState={vs}
 								loggedIn={loggedIn}

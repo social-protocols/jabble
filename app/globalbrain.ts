@@ -51,21 +51,13 @@ export async function processScoreEvents(
 
 			if (data['score'] !== undefined) {
 				await insertScoreEvent(trx, data)
-				console.log('Inserted score event for post', data['score']['post_id'])
 				if (
 					data['vote_event_id'] == voteEvent.voteEventId &&
-					data['score']['tag_id'] == voteEvent.tagId &&
 					data['score']['post_id'] == voteEvent.postId
 				) {
 					gotExpectedScoreEvent = true
 				}
 			} else if (data['effect'] !== undefined) {
-				console.log(
-					'Inserted effect event for note',
-					data['effect']['note_id'],
-					'on post',
-					data['effect']['post_id'],
-				)
 				await insertEffectEvent(trx, data)
 			} else {
 				throw new Error('Unknown event type')
@@ -75,7 +67,7 @@ export async function processScoreEvents(
 
 	if (!gotExpectedScoreEvent) {
 		console.error(
-			`Expected score event not found: ${voteEvent.voteEventId}, ${voteEvent.tagId}, ${voteEvent.postId}`,
+			`Expected score event not found: ${voteEvent.voteEventId}, ${voteEvent.postId}`,
 		)
 	}
 
@@ -114,7 +106,7 @@ async function insertEffectEvent(trx: Transaction<DB>, data: any) {
 		.insertInto('EffectEvent')
 		.values(data_flat)
 		.onConflict(oc =>
-			oc.columns(['voteEventId', 'postId', 'noteId']).doNothing(),
+			oc.columns(['voteEventId', 'postId', 'commentId']).doNothing(),
 		)
 		.execute()
 }

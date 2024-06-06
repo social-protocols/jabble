@@ -51,10 +51,6 @@ export const extendedTheme = {
 			foreground: 'var(--postparent-foreground)',
 			threadline: 'var(--postparent-threadline)',
 		},
-		note: {
-			DEFAULT: 'var(--note)',
-			foreground: 'var(--note-foreground)',
-		},
 	},
 	borderRadius: {
 		lg: 'var(--radius)',
