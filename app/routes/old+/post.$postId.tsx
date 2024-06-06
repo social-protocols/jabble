@@ -4,11 +4,11 @@ import invariant from 'tiny-invariant'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { DeletedPost } from '#app/components/ui/deleted-post.tsx'
+import { DirectReplies } from '#app/components/ui/direct-replies.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostDetails } from '#app/components/ui/post.tsx'
 import { ReplyThread } from '#app/components/ui/reply-thread.tsx'
 import { getCriticalThread, type ThreadPost } from '#app/conversations.ts'
-import { type Post } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
 import { getTransitiveParents } from '#app/post.ts'
 import {
@@ -144,46 +144,6 @@ export default function PostDeprecated() {
 					/>
 				</>
 			)}
-		</>
-	)
-}
-
-function DirectReplies({
-	posts,
-	voteStates,
-	loggedIn,
-	onVote,
-}: {
-	posts: ScoredPost[]
-	voteStates: VoteState[]
-	loggedIn: boolean
-	onVote: Function
-}) {
-	const voteStatesMap = new Map<number, VoteState>()
-	voteStates.forEach(voteState => {
-		voteStatesMap.set(voteState.postId, voteState)
-	})
-
-	return (
-		<>
-			{posts.map(post => {
-				const vs = voteStatesMap.get(post.id)
-				return (
-					<div key={post.id}>
-						{post.deletedAt == null ? (
-							<PostDetails
-								post={post}
-								teaser={true}
-								voteState={vs}
-								loggedIn={loggedIn}
-								onVote={onVote}
-							/>
-						) : (
-							<DeletedPost post={post} />
-						)}
-					</div>
-				)
-			})}
 		</>
 	)
 }

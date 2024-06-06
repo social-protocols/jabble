@@ -67,22 +67,21 @@ export function PostDetails({
 	const navigate = useNavigate()
 
 	return (
-		<div
-			className={'flex w-full'}
-		>
+		<div className={'flex w-full'}>
 			<div className={'mr-2'} style={{ display: loggedIn ? 'block' : 'none' }}>
 				<voteFetcher.Form
 					method="POST"
 					action="/vote"
 					onSubmit={handleVoteSubmit}
 				>
-					<VoteButtons
-						postId={post.id}
-						vote={visibleVoteState}
-					/>
+					<VoteButtons postId={post.id} vote={visibleVoteState} />
 				</voteFetcher.Form>
 			</div>
-			<div className={'flex flex-col min-w-0 space-y-1 mb-3' + (teaser ? ' postteaser' : '')}>
+			<div
+				className={
+					'mb-3 flex min-w-0 flex-col space-y-1' + (teaser ? ' postteaser' : '')
+				}
+			>
 				{post.deletedAt == null ? (
 					<PostContent
 						content={post.content}
@@ -137,7 +136,7 @@ export function PostActionBar({
 
 	return (
 		<>
-			<div className="mb-3 flex w-full text-sm space-x-2">
+			<div className="mb-3 flex w-full space-x-2 text-sm">
 				{post.deletedAt == null && loggedIn && (
 					<button
 						onClick={() => {
@@ -150,13 +149,14 @@ export function PostActionBar({
 						🗨 Reply
 					</button>
 				)}
-				{isConvincing || Math.random() > 0.5 && (
-					<span className="rounded bg-blue-100 px-1 italic text-blue-600">
-						Convincing
-					</span>
-				)}
+				{isConvincing ||
+					(Math.random() > 0.5 && (
+						<span className="rounded bg-blue-100 px-1 italic text-blue-600">
+							Convincing
+						</span>
+					))}
 				{loggedIn && (
-					<Link className='ml-2' to={`/post/${post.id}`}>
+					<Link className="ml-2" to={`/post/${post.id}`}>
 						<NeedsVote needsVote={needsVote} />
 					</Link>
 				)}
@@ -280,11 +280,7 @@ export function VoteButtons({
 	)
 }
 
-export function NeedsVote({
-	needsVote,
-}: {
-	needsVote: boolean
-}) {
+export function NeedsVote({ needsVote }: { needsVote: boolean }) {
 	const notificationIconCss: CSSProperties = {
 		position: 'relative',
 		display: 'inline-block',
@@ -310,7 +306,7 @@ export function NeedsVote({
 
 	return (
 		<>
-			<div className='bg-yellow-100 px-1 rounded-sm text-yellow-900 italic'>
+			<div className="rounded-sm bg-yellow-100 px-1 italic text-yellow-900">
 				Critical comment needs your vote
 			</div>
 		</>

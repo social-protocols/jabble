@@ -8,17 +8,17 @@ export function ParentThread({
 	transitiveParents: Post[]
 }) {
 	return (
-		<div className="threadline">
+		<div className="ml-1 border-l-4 border-solid border-post">
 			{transitiveParents.map(parentPost => (
 				<Link key={parentPost.id} to={`/post/${parentPost.id}`}>
 					<div
 						key={parentPost.id}
-						className="postparent mb-1 ml-3 rounded-lg bg-post p-3 text-sm text-postparent-foreground"
+						className="postparent mb-4 ml-4 text-sm text-postparent-foreground"
 					>
 						{parentPost.deletedAt == null ? (
 							<PostContent
 								content={parentPost.content}
-								maxLines={3}
+								maxLines={1}
 								deactivateLinks={true}
 							/>
 						) : (

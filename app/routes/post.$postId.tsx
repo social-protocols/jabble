@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostDetails } from '#app/components/ui/post.tsx'
+import { TreeReplies } from '#app/components/ui/reply-tree.tsx'
 import { type Post } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
 import { getTransitiveParents } from '#app/post.ts'
@@ -28,7 +29,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 	const replyTree: ReplyTree = await db
 		.transaction()
-		.execute(async trx => getReplyTree(trx, postId))
+		.execute(async trx => getReplyTree(trx, postId, userId))
 
 	const transitiveParents = await db
 		.transaction()
@@ -43,43 +44,17 @@ export default function Post() {
 	return (
 		<>
 			<ParentThread transitiveParents={transitiveParents} />
-			<div className={'mb-2 rounded-sm p-2 bg-post'}>
-				<PostDetails post={post} teaser={false} loggedIn={loggedIn} />
+			<div className={'mb-2 rounded-sm bg-post p-2'}>
+				<PostDetails
+					post={post}
+					teaser={false}
+					voteState={replyTree.voteState}
+					loggedIn={loggedIn}
+				/>
 			</div>
-			<div className={'border-left-solid border-l-4 border-post pl-3 ml-2'}>
+			<div className={'border-left-solid ml-2 border-l-4 border-post pl-3'}>
 				<TreeReplies replyTree={replyTree} loggedIn={loggedIn} />
 			</div>
-		</>
-	)
-}
-
-export function TreeReplies({
-	replyTree,
-	loggedIn,
-}: {
-	replyTree: ReplyTree
-	loggedIn: boolean
-}) {
-	if (replyTree.replies.length === 0) {
-		return <></>
-	}
-	return (
-		<>
-			{replyTree.replies.map(tree => {
-				return (
-					<>
-						<PostDetails key={tree.post.id} post={tree.post} teaser={false} loggedIn={loggedIn} />
-						<div
-							key={`${tree.post.id}-threadline`}
-							className={
-								'border-left-solid border-l-4 border-post pl-3 ml-2'
-							}
-						>
-							<TreeReplies key={`${tree.post.id}-children`} replyTree={tree} loggedIn={loggedIn} />
-						</div>
-					</>
-				)
-			})}
 		</>
 	)
 }
