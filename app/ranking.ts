@@ -23,6 +23,13 @@ export type ReplyTree = {
 	replies: ReplyTree[]
 }
 
+export function getAllPostIdsInTree(tree: ReplyTree): number[] {
+	if (tree.replies.length === 0) {
+		return [tree.post.id]
+	}
+	return [tree.post.id].concat(tree.replies.flatMap(getAllPostIdsInTree))
+}
+
 export async function getReplyTree(
 	trx: Transaction<DB>,
 	postId: number,
@@ -30,15 +37,17 @@ export async function getReplyTree(
 ): Promise<ReplyTree> {
 	const directReplyIds = await getReplyIds(trx, postId)
 	const post = await getScoredPost(trx, postId)
-	const effect: Effect | undefined = post.parentId == null
-		? undefined
-		: await getEffect(trx, post.parentId, postId)
+	const effect: Effect | undefined =
+		post.parentId == null
+			? undefined
+			: await getEffect(trx, post.parentId, postId)
 
 	const userVotesResult: VoteState[] | undefined =
 		userId !== null ? await getUserVotes(trx, userId, [postId]) : undefined
 
 	const voteState: VoteState =
 		userVotesResult !== undefined && userVotesResult.length > 0
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			? userVotesResult[0]!
 			: defaultVoteState(postId)
 
@@ -103,7 +112,11 @@ export async function getReplyTree(
 	}
 }
 
-export async function getEffect(trx: Transaction<DB>, postId: number, commentId: number): Promise<Effect | undefined> {
+export async function getEffect(
+	trx: Transaction<DB>,
+	postId: number,
+	commentId: number,
+): Promise<Effect | undefined> {
 	const effect: Effect | undefined = await trx
 		.selectFrom('Effect')
 		.where('postId', '=', postId)

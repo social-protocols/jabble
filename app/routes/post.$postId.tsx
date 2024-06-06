@@ -11,10 +11,12 @@ import { getTransitiveParents } from '#app/post.ts'
 import {
 	type ReplyTree,
 	type ScoredPost,
+	getAllPostIdsInTree,
 	getReplyTree,
 	getScoredPost,
 } from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
+import { type VoteState, getUserVotes } from '#app/vote.ts'
 
 const postIdSchema = z.coerce.number()
 
@@ -35,11 +37,18 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		.transaction()
 		.execute(async trx => getTransitiveParents(trx, post.id))
 
-	return json({ post, replyTree, transitiveParents, loggedIn })
+	const allPostIds = getAllPostIdsInTree(replyTree)
+	const voteStates: VoteState[] = userId === null
+		? []
+		: await db.transaction().execute(async trx => {
+				return getUserVotes( trx, userId, allPostIds)
+			})
+
+	return json({ post, replyTree, transitiveParents, voteStates, loggedIn })
 }
 
 export default function Post() {
-	const { post, replyTree, transitiveParents, loggedIn } =
+	const { post, replyTree, transitiveParents, voteStates, loggedIn } =
 		useLoaderData<typeof loader>()
 	return (
 		<>
