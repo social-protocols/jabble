@@ -68,13 +68,14 @@ export function TreeReplies({
 			{replyTree.replies.map(tree => {
 				return (
 					<>
-						<PostDetails post={tree.post} teaser={false} loggedIn={loggedIn} />
+						<PostDetails key={tree.post.id} post={tree.post} teaser={false} loggedIn={loggedIn} />
 						<div
+							key={`${tree.post.id}-threadline`}
 							className={
 								'border-left-solid border-l-4 border-post pl-3 ml-2'
 							}
 						>
-							<TreeReplies replyTree={tree} loggedIn={loggedIn} />
+							<TreeReplies key={`${tree.post.id}-children`} replyTree={tree} loggedIn={loggedIn} />
 						</div>
 					</>
 				)

@@ -77,7 +77,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	return result
 }
 
-export default function Post() {
+export default function PostDeprecated() {
 	const {
 		post,
 		transitiveParents,
