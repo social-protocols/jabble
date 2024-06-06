@@ -1,0 +1,1 @@
+export const CONVINCINGNESS_THRESHOLD = 0.1
