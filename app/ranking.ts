@@ -4,11 +4,10 @@ import { type DB } from './db/kysely-types.ts'
 import { getPost, getReplyIds } from './post.ts'
 import { relativeEntropy } from './utils/entropy.ts'
 import { type VoteState, defaultVoteState, getUserVotes } from './vote.ts'
+import { MAX_POSTS_PER_PAGE } from '#app/constants.ts'
 
 // Post with score and the effect of its top reply
 export type ScoredPost = Post & FullScore & { nReplies: number }
-
-export const MAX_RESULTS = 100
 
 export type RankedPost = ScoredPost & {
 	parent: Post | null
@@ -186,7 +185,7 @@ export async function getRankedPosts(
 			eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'),
 		)
 		.orderBy('FullScore.score', 'desc')
-		.limit(MAX_RESULTS)
+		.limit(MAX_POSTS_PER_PAGE)
 
 	const scoredPosts = await query.execute()
 
@@ -218,7 +217,7 @@ export async function getChronologicalToplevelPosts(
 		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))
 		.orderBy('Post.createdAt', 'desc')
-		.limit(MAX_RESULTS)
+		.limit(MAX_POSTS_PER_PAGE)
 
 	const scoredPosts = await query.execute()
 
@@ -272,7 +271,7 @@ async function getRankedRepliesInternal(
 		)
 		// .orderBy('FullScore.score', 'desc')
 		// .where('ScoredPost.parentId', '=', parentId)
-		.limit(MAX_RESULTS)
+		.limit(MAX_POSTS_PER_PAGE)
 
 	// Sort by relative entropy (strength of effect on target) or in case of tie, on score
 	const immediateChildren = (await query.execute()).sort(
