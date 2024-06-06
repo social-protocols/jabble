@@ -1,5 +1,7 @@
 import { type ReplyTree } from '#app/ranking.ts'
+import { relativeEntropy } from '#app/utils/entropy.ts'
 import { PostDetails } from './post.tsx'
+import { CONVINCINGNESS_THRESHOLD } from '#app/components/ui/reply-thread.tsx'
 
 export function TreeReplies({
 	replyTree,
@@ -8,6 +10,9 @@ export function TreeReplies({
 	replyTree: ReplyTree
 	loggedIn: boolean
 }) {
+	const effectOnParentSize = relativeEntropy(replyTree.effect ? replyTree.effect.p : 0, replyTree.effect? replyTree.effect.q : 0)
+	const isConvincing = effectOnParentSize > CONVINCINGNESS_THRESHOLD
+
 	if (replyTree.replies.length === 0) {
 		return <></>
 	}
@@ -22,6 +27,7 @@ export function TreeReplies({
 							teaser={false}
 							voteState={tree.voteState}
 							loggedIn={loggedIn}
+							isConvincing={isConvincing}
 						/>
 						<div
 							key={`${tree.post.id}-threadline`}

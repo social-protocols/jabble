@@ -3,7 +3,7 @@ import { type ThreadPost } from '#app/conversations.ts'
 import { Direction, type VoteState } from '#app/vote.ts'
 import { DeletedPost } from './deleted-post.tsx'
 
-const CONVINCINGNESS_THRESHOLD = 0.1
+export const CONVINCINGNESS_THRESHOLD = 0.1
 
 export function ReplyThread({
 	posts,

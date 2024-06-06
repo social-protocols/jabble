@@ -19,6 +19,7 @@ export type RankedPost = ScoredPost & {
 export type ReplyTree = {
 	post: ScoredPost
 	voteState: VoteState
+	effect: Effect | null
 	replies: ReplyTree[]
 }
 
@@ -29,19 +30,23 @@ export async function getReplyTree(
 ): Promise<ReplyTree> {
 	const directReplyIds = await getReplyIds(trx, postId)
 	const post = await getScoredPost(trx, postId)
+	const effect: Effect | undefined = post.parentId == null
+		? undefined
+		: await getEffect(trx, post.parentId, postId)
 
 	const userVotesResult: VoteState[] | undefined =
 		userId !== null ? await getUserVotes(trx, userId, [postId]) : undefined
 
 	const voteState: VoteState =
 		userVotesResult !== undefined && userVotesResult.length > 0
-			? userVotesResult[0]
+			? userVotesResult[0]!
 			: defaultVoteState(postId)
 
 	if (directReplyIds.length === 0) {
 		return {
 			post: post,
 			voteState: voteState,
+			effect: effect ? effect : null,
 			replies: [],
 		}
 	}
@@ -93,18 +98,22 @@ export async function getReplyTree(
 	return {
 		post: post,
 		voteState: voteState,
+		effect: effect ? effect : null,
 		replies: replies,
 	}
 }
 
-export async function getScoredPost(
-	trx: Transaction<DB>,
-	postId: number,
-): Promise<ScoredPost> {
-	return getScoredPostInternal(trx, postId)
+export async function getEffect(trx: Transaction<DB>, postId: number, commentId: number): Promise<Effect | undefined> {
+	const effect: Effect | undefined = await trx
+		.selectFrom('Effect')
+		.where('postId', '=', postId)
+		.where('commentId', '=', commentId)
+		.selectAll()
+		.executeTakeFirst()
+	return effect
 }
 
-async function getScoredPostInternal(
+export async function getScoredPost(
 	trx: Transaction<DB>,
 	postId: number,
 ): Promise<ScoredPost> {
@@ -131,13 +140,6 @@ async function getScoredPostInternal(
 }
 
 export async function getEffects(
-	trx: Transaction<DB>,
-	postId: number,
-): Promise<Effect[]> {
-	return await getEffectsInternal(trx, postId)
-}
-
-async function getEffectsInternal(
 	trx: Transaction<DB>,
 	postId: number,
 ): Promise<Effect[]> {
@@ -180,7 +182,7 @@ export async function getRankedPosts(
 			return {
 				...post,
 				parent: post.parentId ? await getPost(trx, post.parentId) : null,
-				effects: await getEffectsInternal(trx, post.id),
+				effects: await getEffects(trx, post.id),
 				isCritical: false,
 			}
 		}),
@@ -212,7 +214,7 @@ export async function getChronologicalToplevelPosts(
 			return {
 				...post,
 				parent: post.parentId ? await getPost(trx, post.parentId) : null,
-				effects: await getEffectsInternal(trx, post.id),
+				effects: await getEffects(trx, post.id),
 			}
 		}),
 	)
@@ -270,7 +272,7 @@ async function getRankedRepliesInternal(
 
 	const results: RankedPost[][] = await Promise.all(
 		immediateChildren.map(async (post: ScoredPost) => {
-			const effects = await getEffectsInternal(trx, post.id)
+			const effects = await getEffects(trx, post.id)
 			const targetEffect: Effect | undefined = effects.find(
 				e => e.postId == postId,
 			)

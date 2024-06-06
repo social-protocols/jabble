@@ -149,12 +149,11 @@ export function PostActionBar({
 						🗨 Reply
 					</button>
 				)}
-				{isConvincing ||
-					(Math.random() > 0.5 && (
-						<span className="rounded bg-blue-100 px-1 italic text-blue-600">
-							Convincing
-						</span>
-					))}
+				{isConvincing && (
+					<span className="rounded bg-blue-100 px-1 italic text-blue-600">
+						Convincing
+					</span>
+				)}
 				{loggedIn && (
 					<Link className="ml-2" to={`/post/${post.id}`}>
 						<NeedsVote needsVote={needsVote} />
