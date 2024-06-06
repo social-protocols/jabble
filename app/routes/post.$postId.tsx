@@ -46,7 +46,7 @@ export default function Post() {
 			<div className={'mb-2 rounded-sm p-2 bg-post'}>
 				<PostDetails post={post} teaser={false} loggedIn={loggedIn} />
 			</div>
-			<div className={'border-left-solid border-l-4 border-gray-300 pl-3 ml-2'}>
+			<div className={'border-left-solid border-l-4 border-post pl-3 ml-2'}>
 				<TreeReplies replyTree={replyTree} loggedIn={loggedIn} />
 			</div>
 		</>
@@ -71,7 +71,7 @@ export function TreeReplies({
 						<PostDetails post={tree.post} teaser={false} loggedIn={loggedIn} />
 						<div
 							className={
-								'border-left-solid border-l-4 border-gray-300 pl-3 ml-2'
+								'border-left-solid border-l-4 border-post pl-3 ml-2'
 							}
 						>
 							<TreeReplies replyTree={tree} loggedIn={loggedIn} />

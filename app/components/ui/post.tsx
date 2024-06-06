@@ -68,9 +68,9 @@ export function PostDetails({
 
 	return (
 		<div
-			className={'flex w-full rounded-sm'}
+			className={'flex w-full'}
 		>
-			<div className={'mr-2'} style={{ visibility: loggedIn ? 'visible' : 'hidden' }}>
+			<div className={'mr-2'} style={{ display: loggedIn ? 'block' : 'none' }}>
 				<voteFetcher.Form
 					method="POST"
 					action="/vote"
@@ -79,7 +79,6 @@ export function PostDetails({
 					<VoteButtons
 						postId={post.id}
 						vote={visibleVoteState}
-						pCurrent={post.p}
 					/>
 				</voteFetcher.Form>
 			</div>
@@ -139,7 +138,7 @@ export function PostActionBar({
 	return (
 		<>
 			<div className="mb-3 flex w-full text-sm space-x-2">
-				{post.deletedAt == null && (
+				{post.deletedAt == null && loggedIn && (
 					<button
 						onClick={() => {
 							setShowReplyForm(!showReplyForm)
@@ -156,9 +155,11 @@ export function PostActionBar({
 						Convincing
 					</span>
 				)}
-				<Link className='ml-2' to={`/post/${post.id}`}>
-					<NeedsVote needsVote={needsVote} />
-				</Link>
+				{loggedIn && (
+					<Link className='ml-2' to={`/post/${post.id}`}>
+						<NeedsVote needsVote={needsVote} />
+					</Link>
+				)}
 				{post.deletedAt == null && isAdminUser && false && (
 					<Form id="delete-post-form" method="POST" action="/deletePost">
 						<input type="hidden" name="postId" value={post.id} />
@@ -255,11 +256,9 @@ function ReplyForm({
 export function VoteButtons({
 	postId,
 	vote,
-	pCurrent,
 }: {
 	postId: number
 	vote: VoteState
-	pCurrent: number
 }) {
 	const upClass = vote.vote == Direction.Up ? '' : 'opacity-30'
 	const downClass = vote.vote == Direction.Down ? '' : 'opacity-30'
@@ -273,11 +272,6 @@ export function VoteButtons({
 				<button name="direction" value="Up" className={upClass}>
 					▲
 				</button>
-				{/*
-				<Link to={`/stats/${postId}`} className="hyperlink">
-					<div className="text-xs">{pCurrentString}</div>
-				</Link>
-				*/}
 				<button name="direction" value="Down" className={downClass}>
 					▼
 				</button>
@@ -316,7 +310,7 @@ export function NeedsVote({
 
 	return (
 		<>
-			<div className='bg-yellow-100 px-1 rounded-sm text-yellow-900'>
+			<div className='bg-yellow-100 px-1 rounded-sm text-yellow-900 italic'>
 				Critical comment needs your vote
 			</div>
 		</>
