@@ -34,7 +34,7 @@ export function TreeReplies({
 						/>
 						<div
 							key={`${tree.post.id}-threadline`}
-							className={'border-left-solid ml-2 border-l-4 border-post pl-3'}
+							className={'border-left-solid ml-2 border-l-4 border-post pl-3 mb-2'}
 						>
 							<TreeReplies
 								key={`${tree.post.id}-children`}

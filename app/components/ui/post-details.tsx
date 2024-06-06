@@ -51,7 +51,7 @@ export function PostDetails({
 			</div>
 			<div
 				className={
-					'mb-3 flex min-w-0 flex-col space-y-1' + (teaser ? ' postteaser' : '')
+					'mb-3 flex min-w-0 w-full flex-col space-y-1' + (teaser ? ' postteaser' : '')
 				}
 			>
 				{post.deletedAt == null ? (
