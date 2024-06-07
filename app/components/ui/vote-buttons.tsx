@@ -3,13 +3,13 @@ import { Direction, type VoteState } from '#app/vote.ts'
 export function VoteButtons({
 	postId,
 	vote,
-	nVotes,
+	pCurrent,
 	voteHereIndicator,
 	needsVoteOnCriticalComment,
 }: {
 	postId: number
 	vote: VoteState
-	nVotes: number
+	pCurrent: number,
 	voteHereIndicator: boolean
 	needsVoteOnCriticalComment: boolean
 }) {
@@ -25,6 +25,8 @@ export function VoteButtons({
 		? 'outline-blue-500 dark:outline-[#7dcfff]'
 		: 'outline-transparent'
 
+	const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
+
 	return (
 		<>
 			<input type="hidden" name="postId" value={postId} />
@@ -39,7 +41,7 @@ export function VoteButtons({
 				<button name="direction" value="Up" className={upClass + ' my-[-5px]'}>
 					▲
 				</button>
-				<p className={'text-sm opacity-50'}>{nVotes}</p>
+				<p className={'text-xs opacity-50'}>{pCurrentString}</p>
 				<button
 					name="direction"
 					value="Down"

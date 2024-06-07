@@ -58,7 +58,7 @@ export function PostDetails({
 					<VoteButtons
 						postId={post.id}
 						vote={visibleVoteState}
-						nVotes={post.oSize}
+						pCurrent={post.p}
 						voteHereIndicator={voteHereIndicator}
 						needsVoteOnCriticalComment={needsVoteOnCriticalComment}
 					/>
