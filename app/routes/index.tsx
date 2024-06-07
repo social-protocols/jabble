@@ -97,21 +97,18 @@ export function TopLevelPost({
 	const ageString = moment(post.createdAt).fromNow()
 
 	return (
-		<div className={`flex w-full flex-row rounded-lg ${className || ''}`}>
-			<div className="postteaser flex w-full min-w-0 flex-col border-b-2 border-solid border-post pb-2">
-				<div className="mt-1 text-right text-sm opacity-50">{ageString}</div>
-				<PostContent
-					content={post.content}
-					maxLines={3}
-					deactivateLinks={false}
-					linkTo={`/post/${post.id}`}
-				/>
-				<div className="mt-2 flex w-full text-sm">
-					<Link to={`/post/${post.id}`} className="ml-2">
-						<CommentIcon needsVote={false} />
-					</Link>
-				</div>
-			</div>
+		<div
+			className={
+				'postteaser mb-6 flex w-full min-w-0 flex-col ' + (className || '')
+			}
+		>
+			<div className="mb-1 text-sm opacity-50">{ageString}</div>
+			<PostContent
+				content={post.content}
+				maxLines={3}
+				deactivateLinks={false}
+				linkTo={`/post/${post.id}`}
+			/>
 		</div>
 	)
 }
