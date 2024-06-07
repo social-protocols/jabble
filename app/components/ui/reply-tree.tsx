@@ -6,12 +6,12 @@ import { PostDetails } from './post-details.tsx'
 
 export function TreeReplies({
 	replyTree,
-	criticalCommentIds,
+	criticalCommentId,
 	targetHasVote,
 	loggedIn,
 }: {
 	replyTree: ReplyTree
-	criticalCommentIds: number[]
+	criticalCommentId: number | null
 	targetHasVote: boolean
 	loggedIn: boolean
 }) {
@@ -28,26 +28,26 @@ export function TreeReplies({
 		<>
 			{replyTree.replies.map(tree => {
 				const voteHereIndicator =
-					criticalCommentIds.includes(tree.post.id) &&
+					criticalCommentId == tree.post.id &&
 					targetHasVote &&
 					tree.voteState.vote == Direction.Neutral
-				const updCriticalCommentIds = criticalCommentIds.concat(
-					tree.post.criticalThreadId !== null
-						? [tree.post.criticalThreadId]
-						: [],
-				)
+				const indicatorTWClass = voteHereIndicator
+					? 'border-l-blue-500 border-solid border-l-4 pl-2'
+					: 'border-l-transparent border-solid border-l-4 pl-2'
 				return (
 					<>
-						<PostDetails
-							key={tree.post.id}
-							post={tree.post}
-							teaser={false}
-							voteState={tree.voteState}
-							loggedIn={loggedIn}
-							isConvincing={isConvincing}
-							voteHereIndicator={voteHereIndicator}
+						<div className={indicatorTWClass}>
+							<PostDetails
+								key={tree.post.id}
+								post={tree.post}
+								teaser={false}
+								voteState={tree.voteState}
+								loggedIn={loggedIn}
+								isConvincing={isConvincing}
+								voteHereIndicator={voteHereIndicator}
 							className="mt-3"
-						/>
+							/>
+						</div>
 						<div
 							key={`${tree.post.id}-threadline`}
 							className={
@@ -57,7 +57,7 @@ export function TreeReplies({
 							<TreeReplies
 								key={`${tree.post.id}-children`}
 								replyTree={tree}
-								criticalCommentIds={updCriticalCommentIds}
+								criticalCommentId={criticalCommentId}
 								targetHasVote={tree.voteState.vote !== Direction.Neutral}
 								loggedIn={loggedIn}
 							/>

@@ -69,9 +69,7 @@ export default function Post() {
 			>
 				<TreeReplies
 					replyTree={replyTree}
-					criticalCommentIds={
-						post.criticalThreadId !== null ? [post.criticalThreadId] : []
-					}
+					criticalCommentId={post.criticalThreadId}
 					targetHasVote={replyTree.voteState.vote !== Direction.Neutral}
 					loggedIn={loggedIn}
 				/>

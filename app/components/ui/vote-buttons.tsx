@@ -4,13 +4,11 @@ export function VoteButtons({
 	postId,
 	vote,
 	pCurrent,
-	voteHereIndicator,
 	needsVoteOnCriticalComment,
 }: {
 	postId: number
 	vote: VoteState
 	pCurrent: number,
-	voteHereIndicator: boolean
 	needsVoteOnCriticalComment: boolean
 }) {
 	const buttonColorClass = needsVoteOnCriticalComment
@@ -21,9 +19,6 @@ export function VoteButtons({
 	const downClass =
 		vote.vote == Direction.Down ? buttonColorClass : 'opacity-30'
 
-	const borderClass = voteHereIndicator
-		? 'outline-blue-500 dark:outline-[#7dcfff]'
-		: 'outline-transparent'
 
 	const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
 
@@ -33,10 +28,7 @@ export function VoteButtons({
 			<input type="hidden" name="state" value={Direction[vote.vote]} />
 
 			<div
-				className={
-					'flex flex-col items-center rounded-sm text-xl outline outline-2 outline-offset-2 ' +
-					borderClass
-				}
+				className={'flex flex-col items-centertext-xl'}
 			>
 				<button name="direction" value="Up" className={upClass + ' my-[-5px]'}>
 					▲

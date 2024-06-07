@@ -59,7 +59,6 @@ export function PostDetails({
 						postId={post.id}
 						vote={visibleVoteState}
 						pCurrent={post.p}
-						voteHereIndicator={voteHereIndicator}
 						needsVoteOnCriticalComment={needsVoteOnCriticalComment}
 					/>
 				</voteFetcher.Form>
@@ -73,7 +72,6 @@ export function PostDetails({
 				<PostInfoBar
 					post={post}
 					isConvincing={isConvincing || false}
-					needsVoteOnCriticalComment={needsVoteOnCriticalComment}
 					voteHereIndicator={voteHereIndicator}
 				/>
 				{post.deletedAt == null ? (
