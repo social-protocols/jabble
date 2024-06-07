@@ -2,12 +2,14 @@ import { type Transaction, sql } from 'kysely'
 import { MAX_POSTS_PER_PAGE } from '#app/constants.ts'
 import { type Effect, type Post, type FullScore } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { type DB } from './db/kysely-types.ts'
-import { getPost, getReplyIds } from './post.ts'
+import { getDescendantCount, getPost, getReplyIds } from './post.ts'
 import { relativeEntropy } from './utils/entropy.ts'
 import { type VoteState, defaultVoteState, getUserVotes } from './vote.ts'
 
 // Post with score and the effect of its top reply
-export type ScoredPost = Post & FullScore & { nReplies: number }
+export type ScoredPost = Post & FullScore & { nReplies: number } // TODO: nReplies not needed anymore -> remove
+
+export type FrontPagePost = ScoredPost & { nTransitiveComments: number }
 
 export type RankedPost = ScoredPost & {
 	parent: Post | null
@@ -204,7 +206,7 @@ export async function getRankedPosts(
 
 export async function getChronologicalToplevelPosts(
 	trx: Transaction<DB>,
-): Promise<ScoredPost[]> {
+): Promise<FrontPagePost[]> {
 	let query = trx
 		.selectFrom('Post')
 		.where('Post.parentId', 'is', null)
@@ -227,6 +229,7 @@ export async function getChronologicalToplevelPosts(
 				...post,
 				parent: post.parentId ? await getPost(trx, post.parentId) : null,
 				effects: await getEffects(trx, post.id),
+				nTransitiveComments: await getDescendantCount(trx, post.id)
 			}
 		}),
 	)

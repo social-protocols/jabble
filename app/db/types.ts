@@ -14,6 +14,7 @@ export type PostStats = Selectable<schema.PostStats>
 export type Verification = Selectable<schema.Verification>
 export type Score = Selectable<schema.Score>
 export type FullScore = Selectable<schema.FullScore>
+export type Lineage = Selectable<schema.Lineage>
 export type Effect = Selectable<schema.Effect>
 export type InsertableScore = Insertable<schema.Score>
 export type VoteEvent = Selectable<schema.VoteEvent>

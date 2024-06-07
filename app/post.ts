@@ -201,3 +201,13 @@ export async function getTransitiveParents(
 	let resultReversed = result.slice(1).reverse()
 	return resultReversed
 }
+
+export async function getDescendantCount(trx: Transaction<DB>, postId: number): Promise<number> {
+	const result = await trx
+		.selectFrom('Lineage')
+		.where('ancestorId', '=', postId)
+		.select((eb) => eb.fn.count<number>('descendantId').as('count'))
+		.executeTakeFirstOrThrow()
+
+	return result.count
+}

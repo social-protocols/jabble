@@ -4,12 +4,12 @@ import moment from 'moment'
 import { useState } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Button } from '#app/components/ui/button.tsx'
-import { CommentIcon } from '#app/components/ui/comment-icon.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
 import { PostForm } from '#app/components/ui/post-form.tsx'
 import { db } from '#app/db.ts'
 import * as rankingTs from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
+import { getDescendantCount } from '#app/post.js'
 
 export default function Index() {
 	// due to the loader, this component will never be rendered, but we'll return
@@ -23,7 +23,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	const userId: string | null = await getUserId(request)
 	const loggedIn = userId !== null
 	const feed = await db.transaction().execute(async trx => {
-		return rankingTs.getChronologicalToplevelPosts(trx)
+		return await rankingTs.getChronologicalToplevelPosts(trx)
 	})
 	return { loggedIn, feed }
 }
@@ -32,7 +32,7 @@ export function FrontpageFeed({
 	feed,
 	loggedIn,
 }: {
-	feed: rankingTs.ScoredPost[]
+	feed: rankingTs.FrontPagePost[]
 	loggedIn: boolean
 }) {
 	const [showNewDiscussionForm, setShowNewDiscussionForm] = useState(false)
@@ -80,7 +80,7 @@ Read [how Jabble makes conversations better](https://github.com/social-protocols
 	}
 }
 
-function PostList({ feed }: { feed: rankingTs.ScoredPost[] }) {
+function PostList({ feed }: { feed: rankingTs.FrontPagePost[] }) {
 	const filteredFeed = feed.filter(post => !post.isPrivate)
 	return filteredFeed.map(post => {
 		return <TopLevelPost key={post.id} post={post} className="flex-1" />
@@ -91,10 +91,13 @@ export function TopLevelPost({
 	post,
 	className,
 }: {
-	post: rankingTs.ScoredPost
+	post: rankingTs.FrontPagePost
 	className?: string
 }) {
 	const ageString = moment(post.createdAt).fromNow()
+	const commentString = post.nTransitiveComments == 1 ? 'comment' : 'comments'
+	const voteString = post.oSize == 1 ? 'vote' : 'votes'
+
 
 	return (
 		<div
@@ -102,13 +105,14 @@ export function TopLevelPost({
 				'postteaser mb-6 flex w-full min-w-0 flex-col ' + (className || '')
 			}
 		>
-			<div className="mb-1 text-sm opacity-50">{ageString}</div>
+			<div className="mb-2 text-sm opacity-50">{ageString}</div>
 			<PostContent
 				content={post.content}
 				maxLines={3}
 				deactivateLinks={false}
 				linkTo={`/post/${post.id}`}
 			/>
+			<div className="mb-2 text-sm opacity-50">{post.nTransitiveComments} {commentString} - {post.oSize} {voteString}</div>
 		</div>
 	)
 }

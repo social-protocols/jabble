@@ -141,6 +141,12 @@ export type FullScore = {
 	score: number
 }
 
+export type Lineage = {
+	ancestorId: number
+	descendantId: number
+	separation: number
+}
+
 export type DB = {
 	Vote: Vote
 	Password: Password
@@ -157,4 +163,5 @@ export type DB = {
 	EffectWithDefault: EffectWithDefault
 	EffectEvent: EffectEvent
 	FullScore: FullScore
+	Lineage: Lineage
 }
