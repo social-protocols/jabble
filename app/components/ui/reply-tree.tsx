@@ -46,6 +46,7 @@ export function TreeReplies({
 							loggedIn={loggedIn}
 							isConvincing={isConvincing}
 							voteHereIndicator={voteHereIndicator}
+							className="mt-3"
 						/>
 						<div
 							key={`${tree.post.id}-threadline`}

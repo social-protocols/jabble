@@ -55,14 +55,13 @@ export default function Post() {
 	return (
 		<>
 			<ParentThread transitiveParents={transitiveParents} />
-			<div className={'mb-2 rounded-sm bg-post p-2'}>
-				<PostDetails
-					post={post}
-					teaser={false}
-					voteState={replyTree.voteState}
-					loggedIn={loggedIn}
-				/>
-			</div>
+			<PostDetails
+				post={post}
+				teaser={false}
+				voteState={replyTree.voteState}
+				loggedIn={loggedIn}
+				className={'mb-2 rounded-sm bg-post p-2'}
+			/>
 			<div
 				className={
 					'border-left-solid ml-2 border-l-4 border-post border-transparent pl-3'

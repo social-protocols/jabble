@@ -20,6 +20,7 @@ export function PostDetails({
 	onVote,
 	isConvincing,
 	voteHereIndicator,
+	className,
 }: {
 	post: ScoredPost
 	teaser: boolean
@@ -28,6 +29,7 @@ export function PostDetails({
 	onVote?: Function
 	isConvincing?: boolean
 	voteHereIndicator?: boolean
+	className?: string
 }) {
 	voteHereIndicator = voteHereIndicator || false
 
@@ -46,7 +48,7 @@ export function PostDetails({
 	const navigate = useNavigate()
 
 	return (
-		<div className={'flex w-full'}>
+		<div className={'flex w-full ' + (className ? className : '')}>
 			<div style={{ display: loggedIn ? 'block' : 'none' }}>
 				<voteFetcher.Form
 					method="POST"
@@ -64,7 +66,7 @@ export function PostDetails({
 			</div>
 			<div
 				className={
-					'mb-3 ml-2 flex w-full min-w-0 flex-col space-y-1' +
+					'ml-2 flex w-full min-w-0 flex-col space-y-1' +
 					(teaser ? ' postteaser' : '')
 				}
 			>
