@@ -32,8 +32,7 @@ export function VoteButtons({
 
 			<div
 				className={
-					'flex flex-col items-center rounded-sm text-xl outline outline-2 outline-offset-2' +
-					' ' +
+					'flex flex-col items-center rounded-sm text-xl outline outline-2 outline-offset-2 ' +
 					borderClass
 				}
 			>
