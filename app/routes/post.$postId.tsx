@@ -37,15 +37,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		.transaction()
 		.execute(async trx => getTransitiveParents(trx, post.id))
 
-	const allPostIds = getAllPostIdsInTree(replyTree)
-	const voteStates: VoteState[] =
-		userId === null
-			? []
-			: await db.transaction().execute(async trx => {
-					return getUserVotes(trx, userId, allPostIds)
-				})
-	console.log('voteStates', voteStates)
-
 	return json({ post, replyTree, transitiveParents, loggedIn })
 }
 
