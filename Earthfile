@@ -47,7 +47,7 @@ nix-packages:
 
 globalbrain-node-package:
   FROM scratch
-  ARG GLOBALBRAIN_REF=13c723f42d123c431a64bfece1b27608a091637e
+  ARG GLOBALBRAIN_REF=f45875c02ad0f44484457a34b9d01b69beaea08e # perf improvements, fix another negative tallies bug 
   COPY github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_REF+node-ext/artifact /artifact
   # COPY ../GlobalBrain.jl+node-ext/artifact /artifact
   SAVE ARTIFACT /artifact
