@@ -37,14 +37,14 @@ export function VoteButtons({
 					borderClass
 				}
 			>
-				<button name="direction" value="Up" className={upClass + ' my-[-6px]'}>
+				<button name="direction" value="Up" className={upClass + ' my-[-5px]'}>
 					▲
 				</button>
 				<p className={'text-sm opacity-50'}>{nVotes}</p>
 				<button
 					name="direction"
 					value="Down"
-					className={downClass + ' my-[-6px]'}
+					className={downClass + ' my-[-5px]'}
 				>
 					▼
 				</button>
