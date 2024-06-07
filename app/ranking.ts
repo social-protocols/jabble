@@ -1,13 +1,15 @@
 import { type Transaction, sql } from 'kysely'
+import { MAX_POSTS_PER_PAGE } from '#app/constants.ts'
 import { type Effect, type Post, type FullScore } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { type DB } from './db/kysely-types.ts'
-import { getPost } from './post.ts'
+import { getDescendantCount, getPost, getReplyIds } from './post.ts'
 import { relativeEntropy } from './utils/entropy.ts'
+import { type VoteState, defaultVoteState, getUserVotes } from './vote.ts'
 
 // Post with score and the effect of its top reply
-export type ScoredPost = Post & FullScore & { nReplies: number }
+export type ScoredPost = Post & FullScore & { nReplies: number } // TODO: nReplies not needed anymore -> remove
 
-export const MAX_RESULTS = 100
+export type FrontPagePost = ScoredPost & { nTransitiveComments: number }
 
 export type RankedPost = ScoredPost & {
 	parent: Post | null
@@ -15,14 +17,117 @@ export type RankedPost = ScoredPost & {
 	isCritical: boolean
 }
 
-export async function getScoredPost(
-	trx: Transaction<DB>,
-	postId: number,
-): Promise<ScoredPost> {
-	return getScoredPostInternal(trx, postId)
+export type ReplyTree = {
+	post: ScoredPost
+	voteState: VoteState
+	effect: Effect | null
+	replies: ReplyTree[]
 }
 
-async function getScoredPostInternal(
+export function getAllPostIdsInTree(tree: ReplyTree): number[] {
+	if (tree.replies.length === 0) {
+		return [tree.post.id]
+	}
+	return [tree.post.id].concat(tree.replies.flatMap(getAllPostIdsInTree))
+}
+
+export async function getReplyTree(
+	trx: Transaction<DB>,
+	postId: number,
+	userId: string | null,
+): Promise<ReplyTree> {
+	const directReplyIds = await getReplyIds(trx, postId)
+	const post = await getScoredPost(trx, postId)
+	const effect: Effect | undefined =
+		post.parentId == null
+			? undefined
+			: await getEffect(trx, post.parentId, postId)
+
+	const userVotesResult: VoteState[] | undefined =
+		userId !== null ? await getUserVotes(trx, userId, [postId]) : undefined
+
+	const voteState: VoteState =
+		userVotesResult !== undefined && userVotesResult.length > 0
+			? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				userVotesResult[0]!
+			: defaultVoteState(postId)
+
+	if (directReplyIds.length === 0) {
+		return {
+			post: post,
+			voteState: voteState,
+			effect: effect ? effect : null,
+			replies: [],
+		}
+	}
+	const effectsOnParent: Effect[] = await getEffects(trx, postId)
+	let effectLookup: Map<number, Effect> = new Map<number, Effect>()
+	for (const e of effectsOnParent) {
+		if (e.commentId == null) {
+			continue
+		}
+		effectLookup.set(e.commentId, e)
+	}
+	const scoredReplies: ScoredPost[] = await Promise.all(
+		directReplyIds.map(async replyId => await getScoredPost(trx, replyId)),
+	)
+	let scoredRepliesLookup: Map<number, ScoredPost> = new Map<
+		number,
+		ScoredPost
+	>()
+	for (const r of scoredReplies) {
+		scoredRepliesLookup.set(r.id, r)
+	}
+	const directReplyIdsSorted = directReplyIds.sort((a, b) => {
+		const effectA = effectLookup.get(a)
+		const targetPA = effectA ? effectA.p : 0
+		const targetQA = effectA ? effectA.q : 0
+		const targetPSizeA = effectA ? effectA.pSize : 0
+
+		const effectB = effectLookup.get(b)
+		const targetPB = effectB ? effectB.p : 0
+		const targetQB = effectB ? effectB.q : 0
+		const targetPSizeB = effectB ? effectB.pSize : 0
+
+		const scoredPostA = scoredRepliesLookup.get(a)
+		const scoredPostB = scoredRepliesLookup.get(b)
+		const scoreA = scoredPostA ? scoredPostA.score : 0
+		const scoreB = scoredPostB ? scoredPostB.score : 0
+
+		return (
+			relativeEntropy(targetPB, targetQB) * targetPSizeB -
+				relativeEntropy(targetPA, targetQA) * targetPSizeA || scoreB - scoreA
+		)
+	})
+
+	const replies: ReplyTree[] = await Promise.all(
+		directReplyIdsSorted.map(
+			async replyId => await getReplyTree(trx, replyId, userId),
+		),
+	)
+	return {
+		post: post,
+		voteState: voteState,
+		effect: effect ? effect : null,
+		replies: replies,
+	}
+}
+
+export async function getEffect(
+	trx: Transaction<DB>,
+	postId: number,
+	commentId: number,
+): Promise<Effect | undefined> {
+	const effect: Effect | undefined = await trx
+		.selectFrom('Effect')
+		.where('postId', '=', postId)
+		.where('commentId', '=', commentId)
+		.selectAll()
+		.executeTakeFirst()
+	return effect
+}
+
+export async function getScoredPost(
 	trx: Transaction<DB>,
 	postId: number,
 ): Promise<ScoredPost> {
@@ -49,13 +154,6 @@ async function getScoredPostInternal(
 }
 
 export async function getEffects(
-	trx: Transaction<DB>,
-	postId: number,
-): Promise<Effect[]> {
-	return await getEffectsInternal(trx, postId)
-}
-
-async function getEffectsInternal(
 	trx: Transaction<DB>,
 	postId: number,
 ): Promise<Effect[]> {
@@ -89,7 +187,7 @@ export async function getRankedPosts(
 			eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'),
 		)
 		.orderBy('FullScore.score', 'desc')
-		.limit(MAX_RESULTS)
+		.limit(MAX_POSTS_PER_PAGE)
 
 	const scoredPosts = await query.execute()
 
@@ -98,7 +196,7 @@ export async function getRankedPosts(
 			return {
 				...post,
 				parent: post.parentId ? await getPost(trx, post.parentId) : null,
-				effects: await getEffectsInternal(trx, post.id),
+				effects: await getEffects(trx, post.id),
 				isCritical: false,
 			}
 		}),
@@ -108,7 +206,7 @@ export async function getRankedPosts(
 
 export async function getChronologicalToplevelPosts(
 	trx: Transaction<DB>,
-): Promise<ScoredPost[]> {
+): Promise<FrontPagePost[]> {
 	let query = trx
 		.selectFrom('Post')
 		.where('Post.parentId', 'is', null)
@@ -121,7 +219,7 @@ export async function getChronologicalToplevelPosts(
 		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))
 		.orderBy('Post.createdAt', 'desc')
-		.limit(MAX_RESULTS)
+		.limit(MAX_POSTS_PER_PAGE)
 
 	const scoredPosts = await query.execute()
 
@@ -130,7 +228,8 @@ export async function getChronologicalToplevelPosts(
 			return {
 				...post,
 				parent: post.parentId ? await getPost(trx, post.parentId) : null,
-				effects: await getEffectsInternal(trx, post.id),
+				effects: await getEffects(trx, post.id),
+				nTransitiveComments: await getDescendantCount(trx, post.id),
 			}
 		}),
 	)
@@ -175,7 +274,7 @@ async function getRankedRepliesInternal(
 		)
 		// .orderBy('FullScore.score', 'desc')
 		// .where('ScoredPost.parentId', '=', parentId)
-		.limit(MAX_RESULTS)
+		.limit(MAX_POSTS_PER_PAGE)
 
 	// Sort by relative entropy (strength of effect on target) or in case of tie, on score
 	const immediateChildren = (await query.execute()).sort(
@@ -188,7 +287,7 @@ async function getRankedRepliesInternal(
 
 	const results: RankedPost[][] = await Promise.all(
 		immediateChildren.map(async (post: ScoredPost) => {
-			const effects = await getEffectsInternal(trx, post.id)
+			const effects = await getEffects(trx, post.id)
 			const targetEffect: Effect | undefined = effects.find(
 				e => e.postId == postId,
 			)

@@ -1,11 +1,11 @@
 import { type LoaderFunctionArgs } from '@remix-run/node'
-import { Link, useLoaderData } from '@remix-run/react'
+import { useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { useState } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Button } from '#app/components/ui/button.tsx'
+import { PostContent } from '#app/components/ui/post-content.tsx'
 import { PostForm } from '#app/components/ui/post-form.tsx'
-import { PostContent, CommentIcon } from '#app/components/ui/post.tsx'
 import { db } from '#app/db.ts'
 import * as rankingTs from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
@@ -22,7 +22,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	const userId: string | null = await getUserId(request)
 	const loggedIn = userId !== null
 	const feed = await db.transaction().execute(async trx => {
-		return rankingTs.getChronologicalToplevelPosts(trx)
+		return await rankingTs.getChronologicalToplevelPosts(trx)
 	})
 	return { loggedIn, feed }
 }
@@ -31,7 +31,7 @@ export function FrontpageFeed({
 	feed,
 	loggedIn,
 }: {
-	feed: rankingTs.ScoredPost[]
+	feed: rankingTs.FrontPagePost[]
 	loggedIn: boolean
 }) {
 	const [showNewDiscussionForm, setShowNewDiscussionForm] = useState(false)
@@ -79,7 +79,7 @@ Read [how Jabble makes conversations better](https://github.com/social-protocols
 	}
 }
 
-function PostList({ feed }: { feed: rankingTs.ScoredPost[] }) {
+function PostList({ feed }: { feed: rankingTs.FrontPagePost[] }) {
 	const filteredFeed = feed.filter(post => !post.isPrivate)
 	return filteredFeed.map(post => {
 		return <TopLevelPost key={post.id} post={post} className="flex-1" />
@@ -90,30 +90,28 @@ export function TopLevelPost({
 	post,
 	className,
 }: {
-	post: rankingTs.ScoredPost
+	post: rankingTs.FrontPagePost
 	className?: string
 }) {
 	const ageString = moment(post.createdAt).fromNow()
+	const commentString = post.nTransitiveComments == 1 ? 'comment' : 'comments'
+	const voteString = post.oSize == 1 ? 'vote' : 'votes'
 
 	return (
 		<div
-			className={`mb-5 flex w-full flex-row space-x-4 rounded-lg bg-post px-5 pb-5 ${
-				className || ''
-			}`}
+			className={
+				'postteaser mb-6 flex w-full min-w-0 flex-col ' + (className || '')
+			}
 		>
-			<div className="postteaser flex w-full min-w-0 flex-col">
-				<div className="mt-1 text-right text-sm opacity-50">{ageString}</div>
-				<PostContent
-					content={post.content}
-					maxLines={3}
-					deactivateLinks={false}
-					linkTo={`/post/${post.id}`}
-				/>
-				<div className="mt-2 flex w-full text-sm">
-					<Link to={`/post/${post.id}`} className="ml-2">
-						<CommentIcon needsVote={false} nReplies={post.nReplies} />
-					</Link>
-				</div>
+			<div className="mb-2 text-sm opacity-50">{ageString}</div>
+			<PostContent
+				content={post.content}
+				maxLines={3}
+				deactivateLinks={false}
+				linkTo={`/post/${post.id}`}
+			/>
+			<div className="mb-2 text-sm opacity-50">
+				{post.nTransitiveComments} {commentString} - {post.oSize} {voteString}
 			</div>
 		</div>
 	)
