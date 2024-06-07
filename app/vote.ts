@@ -13,7 +13,7 @@ export enum Direction {
 export type VoteState = {
 	postId: number
 	vote: Direction
-	isInformed: Boolean
+	isInformed: boolean
 }
 
 export function defaultVoteState(postId: number): VoteState {

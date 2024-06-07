@@ -1,22 +1,22 @@
-import { Link, Form } from '@remix-run/react'
+import { Form } from '@remix-run/react'
 import moment from 'moment'
 import { useState } from 'react'
 import { type ScoredPost } from '#app/ranking.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
-import { Direction, type VoteState } from '#app/vote.ts'
-import { CommentIcon } from './comment-icon.tsx'
 import { ReplyForm } from './reply-form.tsx'
 
 export function PostActionBar({
 	post,
-	visibleVoteState,
 	loggedIn,
 	isConvincing,
+	needsVoteOnCriticalComment,
+	voteHereIndicator,
 }: {
 	post: ScoredPost
-	visibleVoteState: VoteState
 	loggedIn: boolean
 	isConvincing: boolean
+	needsVoteOnCriticalComment: boolean
+	voteHereIndicator: boolean
 }) {
 	const user = useOptionalUser()
 	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
@@ -29,9 +29,6 @@ export function PostActionBar({
 		setShowReplyForm(false)
 	}
 
-	const needsVote: boolean =
-		!visibleVoteState.isInformed && visibleVoteState.vote !== Direction.Neutral
-
 	return (
 		<>
 			<div className="mb-3 flex w-full text-sm">
@@ -41,21 +38,26 @@ export function PostActionBar({
 							setShowReplyForm(!showReplyForm)
 							return false
 						}}
-						className='mr-2'
+						className="mr-2"
 						style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
 					>
-						Reply
+						🗨 Reply
 					</button>
 				)}
 				{isConvincing && (
-					<span className="rounded bg-blue-100 px-1 italic text-blue-600 mr-2">
+					<span className="mr-2 rounded bg-blue-100 px-1 italic text-blue-600">
 						Convincing
 					</span>
 				)}
-				{loggedIn && (
-					<Link className="mr-2" to={`/post/${post.id}`}>
-						<CommentIcon needsVote={needsVote} />
-					</Link>
+				{needsVoteOnCriticalComment && (
+					<span className="mr-2 rounded bg-yellow-100 px-1 italic text-yellow-600">
+						Your vote is uninformed
+					</span>
+				)}
+				{voteHereIndicator && (
+					<span className="mr-2 rounded bg-blue-100 px-1 italic text-blue-600">
+						Vote here
+					</span>
 				)}
 				{post.deletedAt == null && isAdminUser && false && (
 					<Form id="delete-post-form" method="POST" action="/deletePost">

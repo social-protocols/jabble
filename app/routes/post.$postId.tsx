@@ -16,7 +16,7 @@ import {
 	getScoredPost,
 } from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
-import { type VoteState, getUserVotes } from '#app/vote.ts'
+import { type VoteState, getUserVotes, Direction } from '#app/vote.ts'
 
 const postIdSchema = z.coerce.number()
 
@@ -64,7 +64,14 @@ export default function Post() {
 				/>
 			</div>
 			<div className={'border-left-solid ml-2 border-l-4 border-post pl-3'}>
-				<TreeReplies replyTree={replyTree} loggedIn={loggedIn} />
+				<TreeReplies
+					replyTree={replyTree}
+					criticalCommentIds={
+						post.criticalThreadId !== null ? [post.criticalThreadId] : []
+					}
+					targetHasVote={replyTree.voteState.vote !== Direction.Neutral}
+					loggedIn={loggedIn}
+				/>
 			</div>
 		</>
 	)

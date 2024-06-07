@@ -1,7 +1,7 @@
 import { useFetcher, useNavigate } from '@remix-run/react'
 import { type FormEvent } from 'react'
 import { type ScoredPost } from '#app/ranking.ts'
-import { type VoteState, defaultVoteState } from '#app/vote.ts'
+import { type VoteState, defaultVoteState, Direction } from '#app/vote.ts'
 import { PostActionBar } from './post-action-bar.tsx'
 import { PostContent } from './post-content.tsx'
 import { VoteButtons } from './vote-buttons.tsx'
@@ -18,6 +18,7 @@ export function PostDetails({
 	loggedIn,
 	onVote,
 	isConvincing,
+	voteHereIndicator,
 }: {
 	post: ScoredPost
 	teaser: boolean
@@ -25,11 +26,16 @@ export function PostDetails({
 	loggedIn: boolean
 	onVote?: Function
 	isConvincing?: boolean
+	voteHereIndicator?: boolean
 }) {
+	voteHereIndicator = voteHereIndicator || false
+
 	// So we need to get the current state of the user's vote on this post from the fetcher
 	const voteFetcher = useFetcher<{ voteState: VoteState; postId: number }>()
 
 	const visibleVoteState = voteState || defaultVoteState(post.id)
+	const needsVoteOnCriticalComment: boolean =
+		visibleVoteState.vote !== Direction.Neutral && !visibleVoteState.isInformed
 
 	const handleVoteSubmit = function (event: FormEvent<HTMLFormElement>) {
 		onVote && onVote()
@@ -46,12 +52,19 @@ export function PostDetails({
 					action="/vote"
 					onSubmit={handleVoteSubmit}
 				>
-					<VoteButtons postId={post.id} vote={visibleVoteState} />
+					<VoteButtons
+						postId={post.id}
+						vote={visibleVoteState}
+						nVotes={post.oSize}
+						voteHereIndicator={voteHereIndicator}
+						needsVoteOnCriticalComment={needsVoteOnCriticalComment}
+					/>
 				</voteFetcher.Form>
 			</div>
 			<div
 				className={
-					'mb-3 flex min-w-0 w-full flex-col space-y-1' + (teaser ? ' postteaser' : '')
+					'mb-3 flex w-full min-w-0 flex-col space-y-1' +
+					(teaser ? ' postteaser' : '')
 				}
 			>
 				{post.deletedAt == null ? (
@@ -72,9 +85,10 @@ export function PostDetails({
 				)}
 				<PostActionBar
 					post={post}
-					visibleVoteState={visibleVoteState}
 					isConvincing={isConvincing || false}
 					loggedIn={loggedIn}
+					needsVoteOnCriticalComment={needsVoteOnCriticalComment}
+					voteHereIndicator={voteHereIndicator}
 				/>
 			</div>
 		</div>
