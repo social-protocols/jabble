@@ -20,8 +20,8 @@ export function VoteButtons({
 		? 'text-yellow-500 dark:text-[#ff9e64]'
 		: ''
 	const borderClass = voteHereIndicator
-		? 'border-blue-500 dark:border-[#7dcfff]'
-		: 'border-transparent'
+		? 'outline-blue-500 dark:outline-[#7dcfff]'
+		: 'outline-transparent'
 
 	return (
 		<>
@@ -30,7 +30,7 @@ export function VoteButtons({
 
 			<div
 				className={
-					'flex flex-col items-center rounded-sm border-2 border-solid text-xl' +
+					'flex flex-col items-center rounded-sm text-xl outline outline-2 outline-offset-2' +
 					' ' +
 					borderClass
 				}
