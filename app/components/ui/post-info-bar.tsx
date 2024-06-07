@@ -24,12 +24,15 @@ export function PostInfoBar({
 				)}
 				<span className="opacity-50">{ageString}</span>
 				{needsVoteOnCriticalComment && (
-					<span className="rounded bg-yellow-100 px-1 italic text-yellow-600 dark:bg-[#4a3c3c] dark:text-[#ff9e64]">
+					<span
+						title="Your vote will count as informed, once you voted on the most convincing comments."
+						className="rounded bg-yellow-100 px-1 italic text-yellow-600 dark:bg-[#4a3c3c] dark:text-[#ff9e64]"
+					>
 						Your vote is uninformed
 					</span>
 				)}
 				{voteHereIndicator && (
-					<span className="rounded bg-blue-100 px-1 italic text-blue-600">
+					<span className="rounded bg-blue-100 px-1 italic text-blue-600 dark:bg-[#2c333e] dark:text-[#7dcfff]">
 						Vote here
 					</span>
 				)}
