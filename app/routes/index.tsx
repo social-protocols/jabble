@@ -97,10 +97,8 @@ export function TopLevelPost({
 	const ageString = moment(post.createdAt).fromNow()
 
 	return (
-		<div
-			className={`flex w-full flex-row rounded-lg ${className || ''}`}
-		>
-			<div className="postteaser flex w-full min-w-0 flex-col pb-2 border-b-2 border-solid border-post">
+		<div className={`flex w-full flex-row rounded-lg ${className || ''}`}>
+			<div className="postteaser flex w-full min-w-0 flex-col border-b-2 border-solid border-post pb-2">
 				<div className="mt-1 text-right text-sm opacity-50">{ageString}</div>
 				<PostContent
 					content={post.content}
