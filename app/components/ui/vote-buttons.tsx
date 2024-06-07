@@ -36,7 +36,7 @@ export function VoteButtons({
 				<button
 					name="direction"
 					value="Up"
-					className={upClass + ' ' + textColorClass}
+					className={upClass + ' ' + textColorClass + ' ' + 'my-[-6px]'}
 				>
 					▲
 				</button>
@@ -44,7 +44,7 @@ export function VoteButtons({
 				<button
 					name="direction"
 					value="Down"
-					className={downClass + ' ' + textColorClass}
+					className={downClass + ' ' + textColorClass + ' ' + 'my-[-6px]'}
 				>
 					▼
 				</button>

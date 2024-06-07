@@ -50,7 +50,7 @@ export function TreeReplies({
 						<div
 							key={`${tree.post.id}-threadline`}
 							className={
-								'border-left-solid mb-2 ml-2 border-l-4 border-post pl-3'
+								'border-left-solid mb-2 ml-2 border-l-4 border-post border-transparent pl-3'
 							}
 						>
 							<TreeReplies

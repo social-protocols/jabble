@@ -58,7 +58,7 @@
 
 		--post: #f3f4f6; /* gray-100 */
 		--postparent-foreground: #434343;
-		--postparent-threadline: #bcbfc2;
+		--postparent-threadline: #d1d5db;
 		--note: #f1f5f9;
 		--note-foreground: #434343;
 
@@ -70,8 +70,10 @@
 	}
 
 	.dark {
-		--background: #1e293b;
-		--foreground: white;
+		/* --background: #1e293b; */
+		--background: #1a1b26;
+		/* --foreground: white; */
+		--foreground: #a9b1d6;
 
 		/* prefixed with foreground because it should look good on the background */
 		--foreground-destructive: -4 84% 60%;
@@ -103,7 +105,8 @@
 
 		--ring: 217.2 32.6% 60%;
 
-		--post: #334155;
+		/* --post: #334155; */
+		--post: #32344a;
 		--postparent-foreground: #d5e2f3;
 		--postparent-threadline: #506585;
 		--note: #506585;

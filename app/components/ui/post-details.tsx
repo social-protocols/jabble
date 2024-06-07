@@ -4,6 +4,7 @@ import { type ScoredPost } from '#app/ranking.ts'
 import { type VoteState, defaultVoteState, Direction } from '#app/vote.ts'
 import { PostActionBar } from './post-action-bar.tsx'
 import { PostContent } from './post-content.tsx'
+import { PostInfoBar } from './post-info-bar.tsx'
 import { VoteButtons } from './vote-buttons.tsx'
 
 /* Keep this relatively high, so people don't often have to click "read more"
@@ -67,6 +68,12 @@ export function PostDetails({
 					(teaser ? ' postteaser' : '')
 				}
 			>
+				<PostInfoBar
+					post={post}
+					isConvincing={isConvincing || false}
+					needsVoteOnCriticalComment={needsVoteOnCriticalComment}
+					voteHereIndicator={voteHereIndicator}
+				/>
 				{post.deletedAt == null ? (
 					<PostContent
 						content={post.content}

@@ -63,7 +63,11 @@ export default function Post() {
 					loggedIn={loggedIn}
 				/>
 			</div>
-			<div className={'border-left-solid ml-2 border-l-4 border-post pl-3'}>
+			<div
+				className={
+					'border-left-solid ml-2 border-l-4 border-post border-transparent pl-3'
+				}
+			>
 				<TreeReplies
 					replyTree={replyTree}
 					criticalCommentIds={

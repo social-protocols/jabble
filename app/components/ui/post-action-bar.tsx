@@ -44,21 +44,6 @@ export function PostActionBar({
 						🗨 Reply
 					</button>
 				)}
-				{isConvincing && (
-					<span className="mr-2 rounded bg-blue-100 px-1 italic text-blue-600">
-						Convincing
-					</span>
-				)}
-				{needsVoteOnCriticalComment && (
-					<span className="mr-2 rounded bg-yellow-100 px-1 italic text-yellow-600">
-						Your vote is uninformed
-					</span>
-				)}
-				{voteHereIndicator && (
-					<span className="mr-2 rounded bg-blue-100 px-1 italic text-blue-600">
-						Vote here
-					</span>
-				)}
 				{post.deletedAt == null && isAdminUser && false && (
 					<Form id="delete-post-form" method="POST" action="/deletePost">
 						<input type="hidden" name="postId" value={post.id} />
@@ -68,7 +53,6 @@ export function PostActionBar({
 						</button>
 					</Form>
 				)}
-				<span className="opacity-50">{ageString}</span>
 				{showReplyForm && (
 					<button
 						className="ml-auto pr-2"
