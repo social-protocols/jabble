@@ -12,7 +12,7 @@ export function VoteButtons({
 	needsVoteOnCriticalComment: boolean
 }) {
 	const buttonColorClass = needsVoteOnCriticalComment
-		? 'text-yellow-500 dark:text-[#ff9e64]'
+		? 'text-yellow-500 dark:text-[#7dcfff]'
 		: ''
 
 	const upClass = vote.vote == Direction.Up ? buttonColorClass : 'opacity-30'
