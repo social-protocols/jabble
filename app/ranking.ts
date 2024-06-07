@@ -229,7 +229,7 @@ export async function getChronologicalToplevelPosts(
 				...post,
 				parent: post.parentId ? await getPost(trx, post.parentId) : null,
 				effects: await getEffects(trx, post.id),
-				nTransitiveComments: await getDescendantCount(trx, post.id)
+				nTransitiveComments: await getDescendantCount(trx, post.id),
 			}
 		}),
 	)

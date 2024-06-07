@@ -1,5 +1,5 @@
 import { type LoaderFunctionArgs } from '@remix-run/node'
-import { Link, useLoaderData } from '@remix-run/react'
+import { useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { useState } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
@@ -9,7 +9,6 @@ import { PostForm } from '#app/components/ui/post-form.tsx'
 import { db } from '#app/db.ts'
 import * as rankingTs from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
-import { getDescendantCount } from '#app/post.js'
 
 export default function Index() {
 	// due to the loader, this component will never be rendered, but we'll return
@@ -98,7 +97,6 @@ export function TopLevelPost({
 	const commentString = post.nTransitiveComments == 1 ? 'comment' : 'comments'
 	const voteString = post.oSize == 1 ? 'vote' : 'votes'
 
-
 	return (
 		<div
 			className={
@@ -112,7 +110,9 @@ export function TopLevelPost({
 				deactivateLinks={false}
 				linkTo={`/post/${post.id}`}
 			/>
-			<div className="mb-2 text-sm opacity-50">{post.nTransitiveComments} {commentString} - {post.oSize} {voteString}</div>
+			<div className="mb-2 text-sm opacity-50">
+				{post.nTransitiveComments} {commentString} - {post.oSize} {voteString}
+			</div>
 		</div>
 	)
 }

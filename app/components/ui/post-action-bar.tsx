@@ -1,5 +1,4 @@
 import { Form } from '@remix-run/react'
-import moment from 'moment'
 import { useState } from 'react'
 import { type ScoredPost } from '#app/ranking.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
@@ -8,22 +7,14 @@ import { ReplyForm } from './reply-form.tsx'
 export function PostActionBar({
 	post,
 	loggedIn,
-	isConvincing,
-	needsVoteOnCriticalComment,
-	voteHereIndicator,
 }: {
 	post: ScoredPost
 	loggedIn: boolean
-	isConvincing: boolean
-	needsVoteOnCriticalComment: boolean
-	voteHereIndicator: boolean
 }) {
 	const user = useOptionalUser()
 	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
-
-	const ageString = moment(post.createdAt).fromNow()
 
 	const handleReplySubmit = function () {
 		setShowReplyForm(false)

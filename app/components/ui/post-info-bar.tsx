@@ -25,7 +25,7 @@ export function PostInfoBar({
 				<span className="opacity-50">{post.oSize} votes</span>
 				{voteHereIndicator && (
 					<span
-						title='Take a position here to give your vote above more weight'
+						title="Take a position here to give your vote above more weight"
 						className="rounded bg-blue-100 px-1 text-blue-500 dark:bg-[#2c333e] dark:text-[#7dcfff]"
 					>
 						Vote here

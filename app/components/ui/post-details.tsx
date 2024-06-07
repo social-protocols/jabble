@@ -90,13 +90,7 @@ export function PostDetails({
 						This post was deleted.
 					</div>
 				)}
-				<PostActionBar
-					post={post}
-					isConvincing={isConvincing || false}
-					loggedIn={loggedIn}
-					needsVoteOnCriticalComment={needsVoteOnCriticalComment}
-					voteHereIndicator={voteHereIndicator}
-				/>
+				<PostActionBar post={post} loggedIn={loggedIn} />
 			</div>
 		</div>
 	)

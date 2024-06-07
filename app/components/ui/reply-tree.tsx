@@ -1,8 +1,8 @@
+import { Fragment } from 'react/jsx-runtime'
 import { CONVINCINGNESS_THRESHOLD } from '#app/constants.ts'
 import { type ReplyTree } from '#app/ranking.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
 import { Direction } from '#app/vote.ts'
-import { Fragment } from 'react/jsx-runtime'
 import { PostDetails } from './post-details.tsx'
 
 export function TreeReplies({
@@ -45,7 +45,7 @@ export function TreeReplies({
 								loggedIn={loggedIn}
 								isConvincing={isConvincing}
 								voteHereIndicator={voteHereIndicator}
-							className="mt-3"
+								className="mt-3"
 							/>
 						</div>
 						<div
