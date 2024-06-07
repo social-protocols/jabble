@@ -13,12 +13,14 @@ export function VoteButtons({
 	voteHereIndicator: boolean
 	needsVoteOnCriticalComment: boolean
 }) {
-	const upClass = vote.vote == Direction.Up ? '' : 'opacity-30'
-	const downClass = vote.vote == Direction.Down ? '' : 'opacity-30'
-
-	const textColorClass = needsVoteOnCriticalComment
+	const buttonColorClass = needsVoteOnCriticalComment
 		? 'text-yellow-500 dark:text-[#ff9e64]'
 		: ''
+
+	const upClass = vote.vote == Direction.Up ? buttonColorClass : 'opacity-30'
+	const downClass =
+		vote.vote == Direction.Down ? buttonColorClass : 'opacity-30'
+
 	const borderClass = voteHereIndicator
 		? 'outline-blue-500 dark:outline-[#7dcfff]'
 		: 'outline-transparent'
@@ -35,18 +37,14 @@ export function VoteButtons({
 					borderClass
 				}
 			>
-				<button
-					name="direction"
-					value="Up"
-					className={upClass + ' ' + textColorClass + ' ' + 'my-[-6px]'}
-				>
+				<button name="direction" value="Up" className={upClass + ' my-[-6px]'}>
 					▲
 				</button>
 				<p className={'text-sm opacity-50'}>{nVotes}</p>
 				<button
 					name="direction"
 					value="Down"
-					className={downClass + ' ' + textColorClass + ' ' + 'my-[-6px]'}
+					className={downClass + ' my-[-6px]'}
 				>
 					▼
 				</button>
