@@ -11,12 +11,11 @@ import { getTransitiveParents } from '#app/post.ts'
 import {
 	type ReplyTree,
 	type ScoredPost,
-	getAllPostIdsInTree,
 	getReplyTree,
 	getScoredPost,
 } from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
-import { type VoteState, getUserVotes, Direction } from '#app/vote.ts'
+import { Direction } from '#app/vote.ts'
 
 const postIdSchema = z.coerce.number()
 
