@@ -33,7 +33,7 @@ export function TreeReplies({
 					targetHasVote &&
 					tree.voteState.vote == Direction.Neutral
 				const indicatorTWClass = voteHereIndicator
-					? 'border-l-[#7dcfff] border-solid border-l-4 pl-2'
+					? 'border-l-blue-500 border-solid border-l-4 pl-2 dark:border-l-[#7dcfff]'
 					: 'border-l-transparent border-solid border-l-4 pl-2'
 				return (
 					<Fragment key={tree.post.id}>
