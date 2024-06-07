@@ -16,9 +16,11 @@ export function VoteButtons({
 	const upClass = vote.vote == Direction.Up ? '' : 'opacity-30'
 	const downClass = vote.vote == Direction.Down ? '' : 'opacity-30'
 
-	const textColorClass = needsVoteOnCriticalComment ? 'text-yellow-600' : ''
+	const textColorClass = needsVoteOnCriticalComment
+		? 'text-yellow-500 dark:text-[#ff9e64]'
+		: ''
 	const borderClass = voteHereIndicator
-		? 'border-blue-500'
+		? 'border-blue-500 dark:border-[#7dcfff]'
 		: 'border-transparent'
 
 	return (

@@ -32,7 +32,7 @@ export function PostInfoBar({
 					</span>
 				)}
 				{voteHereIndicator && (
-					<span className="rounded bg-blue-100 px-1 italic text-blue-600 dark:bg-[#2c333e] dark:text-[#7dcfff]">
+					<span className="rounded bg-blue-100 px-1 italic text-blue-500 dark:bg-[#2c333e] dark:text-[#7dcfff]">
 						Vote here
 					</span>
 				)}
