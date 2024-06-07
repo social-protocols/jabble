@@ -47,7 +47,7 @@ export function PostDetails({
 
 	return (
 		<div className={'flex w-full'}>
-			<div className={'mr-2'} style={{ display: loggedIn ? 'block' : 'none' }}>
+			<div style={{ display: loggedIn ? 'block' : 'none' }}>
 				<voteFetcher.Form
 					method="POST"
 					action="/vote"
@@ -64,7 +64,7 @@ export function PostDetails({
 			</div>
 			<div
 				className={
-					'mb-3 flex w-full min-w-0 flex-col space-y-1' +
+					'mb-3 ml-2 flex w-full min-w-0 flex-col space-y-1' +
 					(teaser ? ' postteaser' : '')
 				}
 			>
