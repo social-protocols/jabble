@@ -3,11 +3,13 @@ import { Direction, type VoteState } from '#app/vote.ts'
 
 export function VoteButtons({
 	postId,
+	focussedPostId,
 	vote,
 	pCurrent,
 	needsVoteOnCriticalComment,
 }: {
 	postId: number
+	focussedPostId: number
 	vote: VoteState
 	pCurrent: number
 	needsVoteOnCriticalComment: boolean
@@ -25,6 +27,7 @@ export function VoteButtons({
 	return (
 		<>
 			<input type="hidden" name="postId" value={postId} />
+			<input type="hidden" name="focussedPostId" value={focussedPostId} />
 			<input type="hidden" name="state" value={Direction[vote.vote]} />
 
 			<div className={'items-centertext-xl flex flex-col'}>

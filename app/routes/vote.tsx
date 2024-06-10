@@ -2,11 +2,11 @@ import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { zfd } from 'zod-form-data'
 import { db } from '#app/db.ts'
+import { getCommentTreeState } from '#app/ranking.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
-import { Direction, getUserVotes, vote, type VoteState } from '#app/vote.ts'
+import { Direction, vote } from '#app/vote.ts'
 
 const postIdSchema = z.coerce.number()
-const tagSchema = z.coerce.string()
 
 // little hack described here: https://stackoverflow.com/questions/76797356/zod-nativeenum-type-checks-enums-value
 const directionKeys = Object.keys(Direction) as [keyof typeof Direction]
@@ -31,7 +31,7 @@ function parseDirection(
 const oneBasedRankSchema = z.coerce.number().optional()
 const voteSchema = zfd.formData({
 	postId: postIdSchema,
-	tag: tagSchema,
+	focussedPostId: postIdSchema,
 	direction: directionSchema,
 	state: directionSchema,
 	oneBasedRank: oneBasedRankSchema,
@@ -46,19 +46,21 @@ export const action = async (args: ActionFunctionArgs) => {
 	const state: Direction = parseDirection(parsedData.state)
 
 	// First, interpret the user intent based on the button pressed **and** the current state.
+	// Example: state is Up and we receive another Up means that we clear the vote.
 	const newState = direction == state ? Direction.Neutral : direction
 
 	const userId: string = await requireUserId(request)
 
 	const postId = parsedData.postId
+	const focussedPostId = parsedData.focussedPostId
 
-	const v = await db
+	await db
 		.transaction()
 		.execute(async trx => vote(trx, userId, postId, newState))
 
-	const voteState: VoteState[] = await db
+	const commentTreeState = await db
 		.transaction()
-		.execute(async trx => getUserVotes(trx, v.userId, [v.postId]))
+		.execute(async trx => getCommentTreeState(trx, focussedPostId))
 
-	return { voteState: voteState[0], postId: postId }
+	return commentTreeState
 }
