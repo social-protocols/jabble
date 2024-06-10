@@ -35,15 +35,24 @@ export function PostActionBar({
 						🗨 Reply
 					</button>
 				)}
-				{post.deletedAt == null && isAdminUser && false && (
-					<Form id="delete-post-form" method="POST" action="/deletePost">
-						<input type="hidden" name="postId" value={post.id} />
-						<input type="hidden" name="userId" value={user?.id} />
-						<button className="rounded bg-red-400 px-1 text-white">
-							delete
-						</button>
-					</Form>
-				)}
+				{isAdminUser &&
+					(post.deletedAt == null ? (
+						<Form id="delete-post-form" method="POST" action="/deletePost">
+							<input type="hidden" name="postId" value={post.id} />
+							<input type="hidden" name="userId" value={user?.id} />
+							<button className="rounded bg-red-400 px-1 text-white">
+								delete
+							</button>
+						</Form>
+					) : (
+						<Form id="restore-post-form" method="POST" action="/restorePost">
+							<input type="hidden" name="postId" value={post.id} />
+							<input type="hidden" name="userId" value={user?.id} />
+							<button className="rounded bg-green-500 px-1 text-white">
+								restore
+							</button>
+						</Form>
+					))}
 				{showReplyForm && (
 					<button
 						className="ml-auto pr-2"
