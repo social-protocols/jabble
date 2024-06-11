@@ -4,7 +4,7 @@ import { Fragment } from 'react/jsx-runtime'
 import { CONVINCINGNESS_THRESHOLD } from '#app/constants.ts'
 import { type CommentTreeState, type ReplyTree } from '#app/ranking.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
-import { Direction } from '#app/vote.ts'
+import { Direction, defaultVoteState } from '#app/vote.ts'
 import { PostDetails } from './post-details.tsx'
 
 export function TreeReplies({
@@ -40,10 +40,13 @@ export function TreeReplies({
 	return (
 		<>
 			{replyTree.replies.map(tree => {
+				const currentVoteState =
+					postDataState[tree.post.id]?.voteState ||
+					defaultVoteState(tree.post.id)
 				const voteHereIndicator =
 					criticalCommentId == tree.post.id &&
 					targetHasVote &&
-					tree.voteState.vote == Direction.Neutral
+					currentVoteState.vote == Direction.Neutral
 				const indicatorTWClass = voteHereIndicator
 					? 'border-l-blue-500 border-solid border-l-4 pl-2 dark:border-l-[#7dcfff]'
 					: 'border-l-transparent border-solid border-l-4 pl-2'
@@ -53,7 +56,6 @@ export function TreeReplies({
 							<PostDetails
 								post={tree.post}
 								teaser={false}
-								voteState={tree.voteState}
 								loggedIn={loggedIn}
 								isConvincing={isConvincing}
 								voteHereIndicator={voteHereIndicator}

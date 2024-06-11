@@ -30,12 +30,16 @@ export type ReplyTree = {
 }
 
 export type CommentTreeState = {
-	[key: number]: { p: number }
+	[key: number]: {
+		p: number
+		voteState: VoteState
+	}
 }
 
 export async function getCommentTreeState(
 	trx: Transaction<DB>,
 	rootId: number,
+	userId: string | null,
 ): Promise<CommentTreeState> {
 	const descendantIds = await getDescendants(trx, rootId)
 	const pArray = await trx
@@ -43,9 +47,19 @@ export async function getCommentTreeState(
 		.where('postId', 'in', descendantIds.concat([rootId]))
 		.select(['postId', 'p'])
 		.execute()
+
+	const userVotes: VoteState[] | undefined = userId
+		? await getUserVotes(trx, userId, descendantIds.concat([rootId]))
+		: undefined
+
 	let commentTreeState: CommentTreeState = {}
 	for (const p of pArray) {
-		commentTreeState[p.postId] = { p: p.p }
+		commentTreeState[p.postId] = {
+			p: p.p,
+			voteState:
+				userVotes?.find(voteState => voteState.postId == p.postId) ||
+				defaultVoteState(p.postId),
+		}
 	}
 	return commentTreeState
 }

@@ -20,7 +20,7 @@ import {
 	getAllPostIdsInTree,
 } from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
-import { Direction } from '#app/vote.ts'
+import { Direction, defaultVoteState } from '#app/vote.ts'
 
 const postIdSchema = z.coerce.number()
 
@@ -43,7 +43,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 	const postData: CommentTreeState = await db
 		.transaction()
-		.execute(async trx => await getCommentTreeState(trx, postId))
+		.execute(async trx => await getCommentTreeState(trx, postId, userId))
 
 	return json({ post, replyTree, transitiveParents, postData, loggedIn })
 }
@@ -53,6 +53,9 @@ export default function Post() {
 		useLoaderData<typeof loader>()
 
 	const [postDataState, setPostDataState] = useState<CommentTreeState>(postData)
+
+	const currentVoteState =
+		postDataState[post.id]?.voteState || defaultVoteState(post.id)
 
 	let initialIsCollapsedState = Map<number, boolean>()
 	const allIds = getAllPostIdsInTree(replyTree)
@@ -71,7 +74,6 @@ export default function Post() {
 			<PostDetails
 				post={post}
 				teaser={false}
-				voteState={replyTree.voteState}
 				loggedIn={loggedIn}
 				className={'mb-2 rounded-sm bg-post p-2'}
 				focussedPostId={post.id}
@@ -86,7 +88,7 @@ export default function Post() {
 				<TreeReplies
 					replyTree={replyTree}
 					criticalCommentId={post.criticalThreadId}
-					targetHasVote={replyTree.voteState.vote !== Direction.Neutral}
+					targetHasVote={currentVoteState.vote !== Direction.Neutral}
 					loggedIn={loggedIn}
 					focussedPostId={post.id}
 					postDataState={postDataState}
