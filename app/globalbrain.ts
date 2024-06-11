@@ -74,7 +74,7 @@ export async function processScoreEvents(
 	console.log(
 		'Successfully processed',
 		lines.length,
-		'events for vote event',
+		'score/effect events for vote event',
 		voteEvent.voteEventId,
 	)
 }
