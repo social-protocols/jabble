@@ -1,4 +1,5 @@
 import { useFetcher, useNavigate } from '@remix-run/react'
+import { type Map } from 'immutable'
 import {
 	type Dispatch,
 	type SetStateAction,
@@ -28,6 +29,8 @@ export function PostDetails({
 	focussedPostId,
 	postDataState,
 	setPostDataState,
+	isCollapsedState,
+	setIsCollapsedState,
 }: {
 	post: ScoredPost
 	teaser: boolean
@@ -39,6 +42,8 @@ export function PostDetails({
 	focussedPostId: number
 	postDataState: CommentTreeState
 	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
+	isCollapsedState?: Immutable.Map<number, boolean>
+	setIsCollapsedState?: Dispatch<SetStateAction<Map<number, boolean>>>
 }) {
 	voteHereIndicator = voteHereIndicator || false
 
@@ -56,6 +61,8 @@ export function PostDetails({
 		}
 	}, [voteFetcher.data, setPostDataState])
 
+	const isCollapsed = isCollapsedState?.get(post.id) || false
+
 	const handleVoteSubmit = async function (event: FormEvent<HTMLFormElement>) {
 		voteFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
 	}
@@ -64,50 +71,68 @@ export function PostDetails({
 
 	return (
 		<div className={'flex w-full ' + (className ? className : '')}>
-			<div style={{ display: loggedIn ? 'block' : 'none' }}>
-				<voteFetcher.Form
-					method="POST"
-					action="/vote"
-					onSubmit={handleVoteSubmit}
-				>
-					<VoteButtons
-						postId={post.id}
-						focussedPostId={focussedPostId}
-						vote={visibleVoteState}
-						pCurrent={postDataState[post.id]?.p || NaN}
-						needsVoteOnCriticalComment={needsVoteOnCriticalComment}
+			{isCollapsed ? (
+				<div className="ml-[42px] flex">
+					<PostInfoBar
+						post={post}
+						isConvincing={isConvincing || false}
+						voteHereIndicator={voteHereIndicator}
+						isCollapsedState={isCollapsedState}
+						setIsCollapsedState={setIsCollapsedState}
 					/>
-				</voteFetcher.Form>
-			</div>
-			<div
-				className={
-					'ml-2 flex w-full min-w-0 flex-col space-y-1' +
-					(teaser ? ' postteaser' : '')
-				}
-			>
-				<PostInfoBar
-					post={post}
-					isConvincing={isConvincing || false}
-					voteHereIndicator={voteHereIndicator}
-				/>
-				{post.deletedAt == null ? (
-					<PostContent
-						content={post.content}
-						maxLines={teaser ? postTeaserMaxLines : undefined}
-						deactivateLinks={false}
-						linkTo={`/post/${post.id}`}
-					/>
-				) : (
-					<div
-						style={{ cursor: 'pointer' }}
-						className={'italic text-gray-400'}
-						onClick={() => `/post/${post.id}` && navigate(`/post/${post.id}`)}
-					>
-						This post was deleted.
+				</div>
+			) : (
+				<>
+					<div style={{ display: loggedIn ? 'block' : 'none' }}>
+						<voteFetcher.Form
+							method="POST"
+							action="/vote"
+							onSubmit={handleVoteSubmit}
+						>
+							<VoteButtons
+								postId={post.id}
+								focussedPostId={focussedPostId}
+								vote={visibleVoteState}
+								pCurrent={postDataState[post.id]?.p || NaN}
+								needsVoteOnCriticalComment={needsVoteOnCriticalComment}
+							/>
+						</voteFetcher.Form>
 					</div>
-				)}
-				<PostActionBar post={post} loggedIn={loggedIn} />
-			</div>
+					<div
+						className={
+							'ml-2 flex w-full min-w-0 flex-col space-y-1' +
+							(teaser ? ' postteaser' : '')
+						}
+					>
+						<PostInfoBar
+							post={post}
+							isConvincing={isConvincing || false}
+							voteHereIndicator={voteHereIndicator}
+							isCollapsedState={isCollapsedState}
+							setIsCollapsedState={setIsCollapsedState}
+						/>
+						{post.deletedAt == null ? (
+							<PostContent
+								content={post.content}
+								maxLines={teaser ? postTeaserMaxLines : undefined}
+								deactivateLinks={false}
+								linkTo={`/post/${post.id}`}
+							/>
+						) : (
+							<div
+								style={{ cursor: 'pointer' }}
+								className={'italic text-gray-400'}
+								onClick={() =>
+									`/post/${post.id}` && navigate(`/post/${post.id}`)
+								}
+							>
+								This post was deleted.
+							</div>
+						)}
+						<PostActionBar post={post} loggedIn={loggedIn} />
+					</div>
+				</>
+			)}
 		</div>
 	)
 }

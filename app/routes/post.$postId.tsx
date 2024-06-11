@@ -1,5 +1,6 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
+import { Map } from 'immutable'
 import { useState } from 'react'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
@@ -16,6 +17,7 @@ import {
 	getScoredPost,
 	getCommentTreeState,
 	type CommentTreeState,
+	getAllPostIdsInTree,
 } from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { Direction } from '#app/vote.ts'
@@ -52,6 +54,17 @@ export default function Post() {
 
 	const [postDataState, setPostDataState] = useState<CommentTreeState>(postData)
 
+	let initialIsCollapsedState = Map<number, boolean>()
+	const allIds = getAllPostIdsInTree(replyTree)
+	allIds.forEach(id => {
+		if (!(id == post.id)) {
+			initialIsCollapsedState = initialIsCollapsedState.set(id, false)
+		}
+	})
+	const [isCollapsedState, setIsCollapsedState] = useState<
+		Map<number, boolean>
+	>(initialIsCollapsedState)
+
 	return (
 		<>
 			<ParentThread transitiveParents={transitiveParents} />
@@ -78,6 +91,8 @@ export default function Post() {
 					focussedPostId={post.id}
 					postDataState={postDataState}
 					setPostDataState={setPostDataState}
+					isCollapsedState={isCollapsedState}
+					setIsCollapsedState={setIsCollapsedState}
 				/>
 			</div>
 		</>
