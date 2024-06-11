@@ -2,7 +2,12 @@ import { type Transaction, sql } from 'kysely'
 import { MAX_POSTS_PER_PAGE } from '#app/constants.ts'
 import { type Effect, type Post, type FullScore } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { type DB } from './db/kysely-types.ts'
-import { getDescendantCount, getPost, getReplyIds } from './post.ts'
+import {
+	getDescendantCount,
+	getDescendants,
+	getPost,
+	getReplyIds,
+} from './post.ts'
 import { relativeEntropy } from './utils/entropy.ts'
 import { type VoteState, defaultVoteState, getUserVotes } from './vote.ts'
 
@@ -22,6 +27,27 @@ export type ReplyTree = {
 	voteState: VoteState
 	effect: Effect | null
 	replies: ReplyTree[]
+}
+
+export type CommentTreeState = {
+	[key: number]: { p: number }
+}
+
+export async function getCommentTreeState(
+	trx: Transaction<DB>,
+	rootId: number,
+): Promise<CommentTreeState> {
+	const descendantIds = await getDescendants(trx, rootId)
+	const pArray = await trx
+		.selectFrom('Score')
+		.where('postId', 'in', descendantIds.concat([rootId]))
+		.select(['postId', 'p'])
+		.execute()
+	let commentTreeState: CommentTreeState = {}
+	for (const p of pArray) {
+		commentTreeState[p.postId] = { p: p.p }
+	}
+	return commentTreeState
 }
 
 export function getAllPostIdsInTree(tree: ReplyTree): number[] {

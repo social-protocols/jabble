@@ -214,3 +214,16 @@ export async function getDescendantCount(
 
 	return result.count
 }
+
+export async function getDescendants(
+	trx: Transaction<DB>,
+	postId: number,
+): Promise<number[]> {
+	const result = await trx
+		.selectFrom('Lineage')
+		.where('ancestorId', '=', postId)
+		.select('descendantId')
+		.execute()
+
+	return result.map(row => row.descendantId)
+}

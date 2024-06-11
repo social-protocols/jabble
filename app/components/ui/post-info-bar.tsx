@@ -1,5 +1,5 @@
 import moment from 'moment'
-import { type ScoredPost } from '#app/ranking.js'
+import { type ScoredPost } from '#app/ranking.ts'
 
 export function PostInfoBar({
 	post,

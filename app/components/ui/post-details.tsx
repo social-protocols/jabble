@@ -1,6 +1,11 @@
 import { useFetcher, useNavigate } from '@remix-run/react'
-import { type FormEvent } from 'react'
-import { type ScoredPost } from '#app/ranking.ts'
+import {
+	type Dispatch,
+	type SetStateAction,
+	useEffect,
+	type FormEvent,
+} from 'react'
+import { type CommentTreeState, type ScoredPost } from '#app/ranking.ts'
 import { type VoteState, defaultVoteState, Direction } from '#app/vote.ts'
 import { PostActionBar } from './post-action-bar.tsx'
 import { PostContent } from './post-content.tsx'
@@ -17,19 +22,23 @@ export function PostDetails({
 	teaser,
 	voteState,
 	loggedIn,
-	onVote,
 	isConvincing,
 	voteHereIndicator,
 	className,
+	focussedPostId,
+	postDataState,
+	setPostDataState,
 }: {
 	post: ScoredPost
 	teaser: boolean
 	voteState?: VoteState
 	loggedIn: boolean
-	onVote?: Function
 	isConvincing?: boolean
 	voteHereIndicator?: boolean
 	className?: string
+	focussedPostId: number
+	postDataState: CommentTreeState
+	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
 }) {
 	voteHereIndicator = voteHereIndicator || false
 
@@ -40,8 +49,14 @@ export function PostDetails({
 	const needsVoteOnCriticalComment: boolean =
 		visibleVoteState.vote !== Direction.Neutral && !visibleVoteState.isInformed
 
-	const handleVoteSubmit = function (event: FormEvent<HTMLFormElement>) {
-		onVote && onVote()
+	// Mimic an event handler effect for fetcher state changes
+	useEffect(() => {
+		if (voteFetcher.data) {
+			setPostDataState(voteFetcher.data)
+		}
+	}, [voteFetcher.data, setPostDataState])
+
+	const handleVoteSubmit = async function (event: FormEvent<HTMLFormElement>) {
 		voteFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
 	}
 
@@ -57,8 +72,9 @@ export function PostDetails({
 				>
 					<VoteButtons
 						postId={post.id}
+						focussedPostId={focussedPostId}
 						vote={visibleVoteState}
-						pCurrent={post.p}
+						pCurrent={postDataState[post.id]?.p || NaN}
 						needsVoteOnCriticalComment={needsVoteOnCriticalComment}
 					/>
 				</voteFetcher.Form>
