@@ -30,7 +30,7 @@ export function VoteButtons({
 			<input type="hidden" name="focussedPostId" value={focussedPostId} />
 			<input type="hidden" name="state" value={Direction[vote.vote]} />
 
-			<div className={'items-centertext-xl flex flex-col'}>
+			<div className={'items-centertext-xl flex w-[32px] flex-col'}>
 				<button name="direction" value="Up" className={upClass + ' my-[-5px]'}>
 					▲
 				</button>

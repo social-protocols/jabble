@@ -1,16 +1,31 @@
 import moment from 'moment'
+import { type Dispatch, type SetStateAction } from 'react'
 import { type ScoredPost } from '#app/ranking.ts'
 
 export function PostInfoBar({
 	post,
 	isConvincing,
 	voteHereIndicator,
+	isCollapsedState,
+	setIsCollapsedState,
 }: {
 	post: ScoredPost
 	isConvincing: boolean
 	voteHereIndicator: boolean
+	isCollapsedState?: Immutable.Map<number, boolean>
+	setIsCollapsedState?: Dispatch<SetStateAction<Immutable.Map<number, boolean>>>
 }) {
 	const ageString = moment(post.createdAt).fromNow()
+
+	const isCollapsed = isCollapsedState?.get(post.id) || false
+
+	async function handleClick() {
+		if (isCollapsedState && setIsCollapsedState) {
+			console.log(isCollapsed)
+			let newisCollapsedState = isCollapsedState.set(post.id, !isCollapsed)
+			setIsCollapsedState(newisCollapsedState)
+		}
+	}
 
 	return (
 		<>
@@ -30,6 +45,11 @@ export function PostInfoBar({
 					>
 						Vote here
 					</span>
+				)}
+				{isCollapsedState && (
+					<button className="text-gray ml-2 text-sm" onClick={handleClick}>
+						{isCollapsed ? '[+]' : '[-]'}
+					</button>
 				)}
 			</div>
 		</>

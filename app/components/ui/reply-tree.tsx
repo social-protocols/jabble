@@ -1,3 +1,4 @@
+import { type Map } from 'immutable'
 import { type Dispatch, type SetStateAction } from 'react'
 import { Fragment } from 'react/jsx-runtime'
 import { CONVINCINGNESS_THRESHOLD } from '#app/constants.ts'
@@ -14,6 +15,8 @@ export function TreeReplies({
 	focussedPostId,
 	postDataState,
 	setPostDataState,
+	isCollapsedState,
+	setIsCollapsedState,
 }: {
 	replyTree: ReplyTree
 	criticalCommentId: number | null
@@ -22,6 +25,8 @@ export function TreeReplies({
 	focussedPostId: number
 	postDataState: CommentTreeState
 	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
+	isCollapsedState: Immutable.Map<number, boolean>
+	setIsCollapsedState: Dispatch<SetStateAction<Map<number, boolean>>>
 }) {
 	const effectOnParentSize = relativeEntropy(
 		replyTree.effect ? replyTree.effect.p : 0,
@@ -56,6 +61,8 @@ export function TreeReplies({
 								focussedPostId={focussedPostId}
 								postDataState={postDataState}
 								setPostDataState={setPostDataState}
+								isCollapsedState={isCollapsedState}
+								setIsCollapsedState={setIsCollapsedState}
 							/>
 						</div>
 						<div
@@ -71,6 +78,8 @@ export function TreeReplies({
 								focussedPostId={focussedPostId}
 								postDataState={postDataState}
 								setPostDataState={setPostDataState}
+								isCollapsedState={isCollapsedState}
+								setIsCollapsedState={setIsCollapsedState}
 							/>
 						</div>
 					</Fragment>

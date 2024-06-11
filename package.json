@@ -80,6 +80,7 @@
     "get-port": "^7.0.0",
     "glob": "^10.3.7",
     "helmet": "^7.0.0",
+    "immutable": "^4.3.6",
     "intl-parse-accept-language": "^1.0.0",
     "isbot": "^3.7.0",
     "jstat": "^1.9.6",
