@@ -1,19 +1,24 @@
+import * as Immutable from 'immutable'
 import moment from 'moment'
 import { type Dispatch, type SetStateAction } from 'react'
 import { type ScoredPost } from '#app/ranking.ts'
 
 export function PostInfoBar({
 	post,
+	pathFromFocussedPost,
 	isConvincing,
 	voteHereIndicator,
 	isCollapsedState,
 	setIsCollapsedState,
+	onCollapseParentSiblings,
 }: {
 	post: ScoredPost
+	pathFromFocussedPost: Immutable.List<number>
 	isConvincing: boolean
 	voteHereIndicator: boolean
 	isCollapsedState?: Immutable.Map<number, boolean>
 	setIsCollapsedState?: Dispatch<SetStateAction<Immutable.Map<number, boolean>>>
+	onCollapseParentSiblings: (pathFromFocussedPost: Immutable.List<number>) => void
 }) {
 	const ageString = moment(post.createdAt).fromNow()
 
@@ -51,6 +56,9 @@ export function PostInfoBar({
 						{isCollapsed ? '[+]' : '[-]'}
 					</button>
 				)}
+				<button onClick={() => onCollapseParentSiblings(pathFromFocussedPost)}>
+					◎
+				</button>
 			</div>
 		</>
 	)

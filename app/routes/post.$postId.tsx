@@ -1,3 +1,4 @@
+import * as Immutable from 'immutable'
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { Map } from 'immutable'
@@ -18,6 +19,7 @@ import {
 	type CommentTreeState,
 	getAllPostIdsInTree,
 	toImmutableReplyTree,
+    ImmutableReplyTree,
 } from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { Direction, defaultVoteState } from '#app/vote.ts'
@@ -80,13 +82,40 @@ export default function Post() {
 				targetHasVote={currentVoteState.vote !== Direction.Neutral}
 				loggedIn={loggedIn}
 				focussedPostId={post.id}
+				pathFromFocussedPost={Immutable.List()}
 				postDataState={postDataState}
 				setPostDataState={setPostDataState}
 				isCollapsedState={isCollapsedState}
 				setIsCollapsedState={setIsCollapsedState}
+				onCollapseParentSiblings={(pathFromFocussedPost) => setIsCollapsedState(collapseParentSiblings(pathFromFocussedPost, isCollapsedState, replyTree))}
 			/>
 		</>
 	)
+}
+
+function collapseParentSiblings(
+	pathFromFocussedPost: Immutable.List<number>,
+	collapseState: Immutable.Map<number, boolean>,
+	replyTree: ImmutableReplyTree
+): Immutable.Map<number, boolean> {
+	console.log("path", pathFromFocussedPost)
+	console.log(collapseState.toJS())
+	console.log(replyTree)
+	let newCollapseState = collapseState
+	let currentSubTree = replyTree
+	pathFromFocussedPost.forEach(postId => {
+		console.log("postId", postId)
+		currentSubTree.replies.forEach((reply) => {
+			if (reply.post.id == postId) {
+				console.log("Entering", reply.post.id)
+				currentSubTree = reply
+			} else {
+				newCollapseState = newCollapseState.set(postId, true)
+			}
+		})
+	})
+	console.log(newCollapseState.toJS())
+	return newCollapseState
 }
 
 export function ErrorBoundary() {
