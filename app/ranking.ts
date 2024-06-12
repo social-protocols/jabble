@@ -1,3 +1,4 @@
+import * as Immutable from 'immutable'
 import { type Transaction, sql } from 'kysely'
 import { MAX_POSTS_PER_PAGE } from '#app/constants.ts'
 import { type Effect, type Post, type FullScore } from '#app/db/types.ts' // this is the Database interface we defined earlier
@@ -27,6 +28,36 @@ export type ReplyTree = {
 	voteState: VoteState
 	effect: Effect | null
 	replies: ReplyTree[]
+}
+
+export type ImmutableReplyTree = {
+	post: ScoredPost
+	voteState: VoteState
+	effect: Effect | null
+	replies: Immutable.List<ImmutableReplyTree>
+}
+
+export function toImmutableReplyTree(replyTree: ReplyTree): ImmutableReplyTree {
+	return {
+		...replyTree,
+		replies: Immutable.List(replyTree.replies.map(toImmutableReplyTree)),
+	}
+}
+
+export function addReplyToReplyTree(
+	tree: ImmutableReplyTree,
+	reply: ImmutableReplyTree,
+): ImmutableReplyTree {
+	if (reply.post.parentId == tree.post.id) {
+		return {
+			...tree,
+			replies: tree.replies.insert(0, reply),
+		}
+	}
+	return {
+		...tree,
+		replies: tree.replies.map(child => addReplyToReplyTree(child, reply)),
+	}
 }
 
 export type CommentTreeState = {
@@ -64,11 +95,16 @@ export async function getCommentTreeState(
 	return commentTreeState
 }
 
-export function getAllPostIdsInTree(tree: ReplyTree): number[] {
-	if (tree.replies.length === 0) {
-		return [tree.post.id]
+export function getAllPostIdsInTree(
+	tree: ImmutableReplyTree,
+): Immutable.List<number> {
+	if (tree.replies.size === 0) {
+		return Immutable.List([tree.post.id])
 	}
-	return [tree.post.id].concat(tree.replies.flatMap(getAllPostIdsInTree))
+	return Immutable.List(tree.replies.flatMap(getAllPostIdsInTree)).insert(
+		0,
+		tree.post.id,
+	)
 }
 
 export async function getReplyTree(
@@ -92,6 +128,7 @@ export async function getReplyTree(
 				userVotesResult[0]!
 			: defaultVoteState(postId)
 
+	// TODO: not necessary because iterating over empty list is trivial
 	if (directReplyIds.length === 0) {
 		return {
 			post: post,

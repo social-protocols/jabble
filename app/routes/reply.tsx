@@ -2,7 +2,7 @@ import { type ActionFunctionArgs } from '@remix-run/node'
 import invariant from 'tiny-invariant'
 import { db } from '#app/db.ts'
 import { createPost } from '#app/post.ts'
-import { getCommentTreeState } from '#app/ranking.ts'
+import { getCommentTreeState, getReplyTree } from '#app/ranking.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
 type ReplyData = {
@@ -26,7 +26,7 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	invariant(content, 'content !== undefined')
 
-	await db.transaction().execute(
+	const postId = await db.transaction().execute(
 		async trx =>
 			await createPost(trx, parentId, content, userId, {
 				isPrivate: isPrivate,
@@ -35,10 +35,16 @@ export const action = async (args: ActionFunctionArgs) => {
 	)
 
 	if (focussedPostId) {
+		const newReplyTree = await db
+			.transaction()
+			.execute(async trx => getReplyTree(trx, postId, userId))
 		const commentTreeState = await db
 			.transaction()
 			.execute(async trx => getCommentTreeState(trx, focussedPostId, userId))
-		return commentTreeState
+		return {
+			commentTreeState,
+			newReplyTree,
+		}
 	}
 
 	return {}

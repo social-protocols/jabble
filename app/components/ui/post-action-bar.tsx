@@ -1,7 +1,13 @@
 import { Form } from '@remix-run/react'
 import { type Dispatch, type SetStateAction, useState } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
-import { type CommentTreeState, type ScoredPost } from '#app/ranking.ts'
+import {
+	type ImmutableReplyTree,
+	type ReplyTree,
+	toImmutableReplyTree,
+	type CommentTreeState,
+	type ScoredPost,
+} from '#app/ranking.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 
 export function PostActionBar({
@@ -9,11 +15,13 @@ export function PostActionBar({
 	focussedPostId,
 	loggedIn,
 	setPostDataState,
+	onReplySubmit,
 }: {
 	post: ScoredPost
 	focussedPostId: number
 	loggedIn: boolean
 	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
+	onReplySubmit: (reply: ImmutableReplyTree) => void
 }) {
 	const user = useOptionalUser()
 	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
@@ -37,8 +45,12 @@ export function PostActionBar({
 				'Content-Type': 'application/json',
 			},
 		})
-		const newPostDataState = (await response.json()) as CommentTreeState
-		setPostDataState(newPostDataState)
+		const responseDecoded = (await response.json()) as {
+			commentTreeState: CommentTreeState
+			newReplyTree: ReplyTree
+		}
+		setPostDataState(responseDecoded.commentTreeState)
+		onReplySubmit(toImmutableReplyTree(responseDecoded.newReplyTree))
 	}
 
 	return (

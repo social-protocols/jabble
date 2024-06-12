@@ -1,7 +1,11 @@
 import { useNavigate } from '@remix-run/react'
 import { type Map } from 'immutable'
 import { type Dispatch, type SetStateAction } from 'react'
-import { type CommentTreeState, type ScoredPost } from '#app/ranking.ts'
+import {
+	type ImmutableReplyTree,
+	type CommentTreeState,
+	type ScoredPost,
+} from '#app/ranking.ts'
 import { defaultVoteState, Direction } from '#app/vote.ts'
 import { PostActionBar } from './post-action-bar.tsx'
 import { PostContent } from './post-content.tsx'
@@ -25,6 +29,7 @@ export function PostDetails({
 	setPostDataState,
 	isCollapsedState,
 	setIsCollapsedState,
+	onReplySubmit,
 }: {
 	post: ScoredPost
 	teaser: boolean
@@ -37,6 +42,7 @@ export function PostDetails({
 	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
 	isCollapsedState?: Immutable.Map<number, boolean>
 	setIsCollapsedState?: Dispatch<SetStateAction<Map<number, boolean>>>
+	onReplySubmit: (reply: ImmutableReplyTree) => void
 }) {
 	voteHereIndicator = voteHereIndicator || false
 
@@ -108,6 +114,7 @@ export function PostDetails({
 							focussedPostId={focussedPostId}
 							loggedIn={loggedIn}
 							setPostDataState={setPostDataState}
+							onReplySubmit={onReplySubmit}
 						/>
 					</div>
 				</>
