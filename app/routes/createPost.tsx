@@ -1,10 +1,10 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { redirect } from '@remix-run/server-runtime'
+import { z } from 'zod'
+import { zfd } from 'zod-form-data'
 import { db } from '#app/db.ts'
 import { createPost } from '#app/post.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
-import { z } from 'zod'
-import { zfd } from 'zod-form-data'
 
 const postDataSchema = zfd.formData({
 	content: z.coerce.string(),
@@ -28,4 +28,3 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	return redirect(`/post/${postId}`)
 }
-

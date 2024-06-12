@@ -119,7 +119,8 @@ function ReplyForm({
 			newReplyTree: ReplyTree
 		}
 		setPostDataState && setPostDataState(responseDecoded.commentTreeState)
-		onReplySubmit && onReplySubmit(toImmutableReplyTree(responseDecoded.newReplyTree))
+		onReplySubmit &&
+			onReplySubmit(toImmutableReplyTree(responseDecoded.newReplyTree))
 	}
 
 	return (

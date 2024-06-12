@@ -1,6 +1,5 @@
 import { type Map } from 'immutable'
 import { useState, type Dispatch, type SetStateAction } from 'react'
-import { Fragment } from 'react/jsx-runtime'
 import { CONVINCINGNESS_THRESHOLD } from '#app/constants.ts'
 import {
 	type ImmutableReplyTree,
@@ -10,49 +9,6 @@ import {
 import { relativeEntropy } from '#app/utils/entropy.ts'
 import { Direction, defaultVoteState } from '#app/vote.ts'
 import { PostDetails } from './post-details.tsx'
-
-export function TreeReplies({
-	initialReplyTree,
-	criticalCommentId,
-	targetHasVote,
-	loggedIn,
-	focussedPostId,
-	postDataState,
-	setPostDataState,
-	isCollapsedState,
-	setIsCollapsedState,
-}: {
-	initialReplyTree: ImmutableReplyTree
-	criticalCommentId: number | null
-	targetHasVote: boolean
-	loggedIn: boolean
-	focussedPostId: number
-	postDataState: CommentTreeState
-	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
-	isCollapsedState: Immutable.Map<number, boolean>
-	setIsCollapsedState: Dispatch<SetStateAction<Map<number, boolean>>>
-}) {
-	return (
-		<>
-			{initialReplyTree.replies.map((tree: ImmutableReplyTree) => {
-				return (
-					<PostWithReplies
-						key={`${focussedPostId}-${tree.post.id}`}
-						initialReplyTree={tree}
-						criticalCommentId={criticalCommentId}
-						targetHasVote={targetHasVote}
-						focussedPostId={focussedPostId}
-						loggedIn={loggedIn}
-						postDataState={postDataState}
-						setPostDataState={setPostDataState}
-						isCollapsedState={isCollapsedState}
-						setIsCollapsedState={setIsCollapsedState}
-					/>
-				)
-			})}
-		</>
-	)
-}
 
 export function PostWithReplies({
 	initialReplyTree,
@@ -93,13 +49,18 @@ export function PostWithReplies({
 	const currentVoteState =
 		postDataState[replyTreeState.post.id]?.voteState ||
 		defaultVoteState(replyTreeState.post.id)
+
 	const voteHereIndicator =
 		criticalCommentId == replyTreeState.post.id &&
 		targetHasVote &&
 		currentVoteState.vote == Direction.Neutral
+
 	const indicatorTWClass = voteHereIndicator
 		? 'border-l-blue-500 border-solid border-l-4 pl-2 dark:border-l-[#7dcfff]'
 		: 'border-l-transparent border-solid border-l-4 pl-2'
+
+	const isCollapsed = isCollapsedState.get(replyTreeState.post.id) || false
+
 	return (
 		<>
 			<div className={indicatorTWClass}>
@@ -118,23 +79,70 @@ export function PostWithReplies({
 					onReplySubmit={onReplySubmit}
 				/>
 			</div>
-			<div
-				className={
-					'border-left-solid mb-2 ml-2 border-l-4 border-post border-transparent pl-3'
-				}
-			>
-				<TreeReplies
-					initialReplyTree={replyTreeState}
-					criticalCommentId={criticalCommentId}
-					targetHasVote={replyTreeState.voteState.vote !== Direction.Neutral}
-					loggedIn={loggedIn}
-					focussedPostId={focussedPostId}
-					postDataState={postDataState}
-					setPostDataState={setPostDataState}
-					isCollapsedState={isCollapsedState}
-					setIsCollapsedState={setIsCollapsedState}
-				/>
-			</div>
+			{!isCollapsed && (
+				<div
+					className={
+						'border-left-solid mb-2 ml-2 border-l-4 border-post border-transparent pl-3'
+					}
+				>
+					<TreeReplies
+						initialReplyTree={replyTreeState}
+						criticalCommentId={criticalCommentId}
+						targetHasVote={replyTreeState.voteState.vote !== Direction.Neutral}
+						loggedIn={loggedIn}
+						focussedPostId={focussedPostId}
+						postDataState={postDataState}
+						setPostDataState={setPostDataState}
+						isCollapsedState={isCollapsedState}
+						setIsCollapsedState={setIsCollapsedState}
+					/>
+				</div>
+			)}
+		</>
+	)
+}
+
+function TreeReplies({
+	initialReplyTree,
+	criticalCommentId,
+	targetHasVote,
+	loggedIn,
+	focussedPostId,
+	postDataState,
+	setPostDataState,
+	isCollapsedState,
+	setIsCollapsedState,
+}: {
+	initialReplyTree: ImmutableReplyTree
+	criticalCommentId: number | null
+	targetHasVote: boolean
+	loggedIn: boolean
+	focussedPostId: number
+	postDataState: CommentTreeState
+	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
+	isCollapsedState: Immutable.Map<number, boolean>
+	setIsCollapsedState: Dispatch<SetStateAction<Map<number, boolean>>>
+}) {
+	// The purpose of this component is to be able to give state to its children
+	// so that each one can maintain and update its own children state.
+	return (
+		<>
+			{initialReplyTree.replies.map((tree: ImmutableReplyTree) => {
+				return (
+					<PostWithReplies
+						key={`${focussedPostId}-${tree.post.id}`}
+						initialReplyTree={tree}
+						criticalCommentId={criticalCommentId}
+						targetHasVote={targetHasVote}
+						focussedPostId={focussedPostId}
+						loggedIn={loggedIn}
+						postDataState={postDataState}
+						setPostDataState={setPostDataState}
+						isCollapsedState={isCollapsedState}
+						setIsCollapsedState={setIsCollapsedState}
+					/>
+				)
+			})}
 		</>
 	)
 }

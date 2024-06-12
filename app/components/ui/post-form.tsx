@@ -2,11 +2,7 @@ import { useFetcher } from '@remix-run/react'
 import { type ChangeEvent, useState, type FormEvent } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 
-export function PostForm({
-	className,
-}: {
-	className?: string
-}) {
+export function PostForm({ className }: { className?: string }) {
 	const [textAreaValue, setTextAreaValue] = useState<string>('')
 
 	const [isPrivate, setIsPrivate] = useState<number>(0)
