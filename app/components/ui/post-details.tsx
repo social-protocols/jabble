@@ -1,13 +1,12 @@
-import { useFetcher, useNavigate } from '@remix-run/react'
+import { useNavigate } from '@remix-run/react'
 import { type Map } from 'immutable'
+import { type Dispatch, type SetStateAction } from 'react'
 import {
-	type Dispatch,
-	type SetStateAction,
-	useEffect,
-	type FormEvent,
-} from 'react'
-import { type CommentTreeState, type ScoredPost } from '#app/ranking.ts'
-import { type VoteState, defaultVoteState, Direction } from '#app/vote.ts'
+	type ImmutableReplyTree,
+	type CommentTreeState,
+	type ScoredPost,
+} from '#app/ranking.ts'
+import { defaultVoteState, Direction } from '#app/vote.ts'
 import { PostActionBar } from './post-action-bar.tsx'
 import { PostContent } from './post-content.tsx'
 import { PostInfoBar } from './post-info-bar.tsx'
@@ -21,7 +20,6 @@ const postTeaserMaxLines = 20
 export function PostDetails({
 	post,
 	teaser,
-	voteState,
 	loggedIn,
 	isConvincing,
 	voteHereIndicator,
@@ -31,10 +29,10 @@ export function PostDetails({
 	setPostDataState,
 	isCollapsedState,
 	setIsCollapsedState,
+	onReplySubmit,
 }: {
 	post: ScoredPost
 	teaser: boolean
-	voteState?: VoteState
 	loggedIn: boolean
 	isConvincing?: boolean
 	voteHereIndicator?: boolean
@@ -44,28 +42,16 @@ export function PostDetails({
 	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
 	isCollapsedState?: Immutable.Map<number, boolean>
 	setIsCollapsedState?: Dispatch<SetStateAction<Map<number, boolean>>>
+	onReplySubmit: (reply: ImmutableReplyTree) => void
 }) {
 	voteHereIndicator = voteHereIndicator || false
 
-	// So we need to get the current state of the user's vote on this post from the fetcher
-	const voteFetcher = useFetcher<{ voteState: VoteState; postId: number }>()
-
-	const visibleVoteState = voteState || defaultVoteState(post.id)
+	const currentVoteState =
+		postDataState[post.id]?.voteState || defaultVoteState(post.id)
 	const needsVoteOnCriticalComment: boolean =
-		visibleVoteState.vote !== Direction.Neutral && !visibleVoteState.isInformed
-
-	// Mimic an event handler effect for fetcher state changes
-	useEffect(() => {
-		if (voteFetcher.data) {
-			setPostDataState(voteFetcher.data)
-		}
-	}, [voteFetcher.data, setPostDataState])
+		currentVoteState.vote !== Direction.Neutral && !currentVoteState.isInformed
 
 	const isCollapsed = isCollapsedState?.get(post.id) || false
-
-	const handleVoteSubmit = async function (event: FormEvent<HTMLFormElement>) {
-		voteFetcher.submit(event.currentTarget) // this will work as the normal Form submit but you trigger it
-	}
 
 	const navigate = useNavigate()
 
@@ -84,19 +70,13 @@ export function PostDetails({
 			) : (
 				<>
 					<div style={{ display: loggedIn ? 'block' : 'none' }}>
-						<voteFetcher.Form
-							method="POST"
-							action="/vote"
-							onSubmit={handleVoteSubmit}
-						>
-							<VoteButtons
-								postId={post.id}
-								focussedPostId={focussedPostId}
-								vote={visibleVoteState}
-								pCurrent={postDataState[post.id]?.p || NaN}
-								needsVoteOnCriticalComment={needsVoteOnCriticalComment}
-							/>
-						</voteFetcher.Form>
+						<VoteButtons
+							postId={post.id}
+							focussedPostId={focussedPostId}
+							needsVoteOnCriticalComment={needsVoteOnCriticalComment}
+							postDataState={postDataState}
+							setPostDataState={setPostDataState}
+						/>
 					</div>
 					<div
 						className={
@@ -129,7 +109,13 @@ export function PostDetails({
 								This post was deleted.
 							</div>
 						)}
-						<PostActionBar post={post} loggedIn={loggedIn} />
+						<PostActionBar
+							post={post}
+							focussedPostId={focussedPostId}
+							loggedIn={loggedIn}
+							setPostDataState={setPostDataState}
+							onReplySubmit={onReplySubmit}
+						/>
 					</div>
 				</>
 			)}

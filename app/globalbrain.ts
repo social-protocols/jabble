@@ -27,7 +27,7 @@ export async function sendVoteEvent(
 		json,
 	)
 
-	return processScoreEvents(trx, result, voteEvent)
+	await processScoreEvents(trx, result, voteEvent)
 }
 
 export async function processScoreEvents(

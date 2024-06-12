@@ -1,14 +1,109 @@
 import { type Map } from 'immutable'
-import { type Dispatch, type SetStateAction } from 'react'
-import { Fragment } from 'react/jsx-runtime'
+import { useState, type Dispatch, type SetStateAction } from 'react'
 import { CONVINCINGNESS_THRESHOLD } from '#app/constants.ts'
-import { type CommentTreeState, type ReplyTree } from '#app/ranking.ts'
+import {
+	type ImmutableReplyTree,
+	addReplyToReplyTree,
+	type CommentTreeState,
+} from '#app/ranking.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
-import { Direction } from '#app/vote.ts'
+import { Direction, defaultVoteState } from '#app/vote.ts'
 import { PostDetails } from './post-details.tsx'
 
-export function TreeReplies({
-	replyTree,
+export function PostWithReplies({
+	initialReplyTree,
+	criticalCommentId,
+	targetHasVote,
+	focussedPostId,
+	loggedIn,
+	postDataState,
+	setPostDataState,
+	isCollapsedState,
+	setIsCollapsedState,
+	className,
+}: {
+	initialReplyTree: ImmutableReplyTree
+	criticalCommentId: number | null
+	targetHasVote: boolean
+	focussedPostId: number
+	loggedIn: boolean
+	postDataState: CommentTreeState
+	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
+	isCollapsedState: Immutable.Map<number, boolean>
+	setIsCollapsedState: Dispatch<SetStateAction<Map<number, boolean>>>
+	className?: string
+}) {
+	const effectOnParentSize = relativeEntropy(
+		initialReplyTree.effect ? initialReplyTree.effect.p : 0,
+		initialReplyTree.effect ? initialReplyTree.effect.q : 0,
+	)
+	const isConvincing = effectOnParentSize > CONVINCINGNESS_THRESHOLD
+
+	const [replyTreeState, setReplyTreeState] = useState(initialReplyTree)
+	function onReplySubmit(reply: ImmutableReplyTree) {
+		const newReplyTreeState = addReplyToReplyTree(replyTreeState, reply)
+		console.log('updated', newReplyTreeState)
+		setReplyTreeState(newReplyTreeState)
+	}
+
+	const currentVoteState =
+		postDataState[replyTreeState.post.id]?.voteState ||
+		defaultVoteState(replyTreeState.post.id)
+
+	const voteHereIndicator =
+		criticalCommentId == replyTreeState.post.id &&
+		targetHasVote &&
+		currentVoteState.vote == Direction.Neutral
+
+	const indicatorTWClass = voteHereIndicator
+		? 'border-l-blue-500 border-solid border-l-4 pl-2 dark:border-l-[#7dcfff]'
+		: 'border-l-transparent border-solid border-l-4 pl-2'
+
+	const isCollapsed = isCollapsedState.get(replyTreeState.post.id) || false
+
+	return (
+		<>
+			<div className={indicatorTWClass}>
+				<PostDetails
+					post={replyTreeState.post}
+					teaser={false}
+					loggedIn={loggedIn}
+					isConvincing={isConvincing}
+					voteHereIndicator={voteHereIndicator}
+					className={'mt-3 ' + (className || '')}
+					focussedPostId={focussedPostId}
+					postDataState={postDataState}
+					setPostDataState={setPostDataState}
+					isCollapsedState={isCollapsedState}
+					setIsCollapsedState={setIsCollapsedState}
+					onReplySubmit={onReplySubmit}
+				/>
+			</div>
+			{!isCollapsed && (
+				<div
+					className={
+						'border-left-solid mb-2 ml-2 border-l-4 border-post border-transparent pl-3'
+					}
+				>
+					<TreeReplies
+						initialReplyTree={replyTreeState}
+						criticalCommentId={criticalCommentId}
+						targetHasVote={replyTreeState.voteState.vote !== Direction.Neutral}
+						loggedIn={loggedIn}
+						focussedPostId={focussedPostId}
+						postDataState={postDataState}
+						setPostDataState={setPostDataState}
+						isCollapsedState={isCollapsedState}
+						setIsCollapsedState={setIsCollapsedState}
+					/>
+				</div>
+			)}
+		</>
+	)
+}
+
+function TreeReplies({
+	initialReplyTree,
 	criticalCommentId,
 	targetHasVote,
 	loggedIn,
@@ -18,7 +113,7 @@ export function TreeReplies({
 	isCollapsedState,
 	setIsCollapsedState,
 }: {
-	replyTree: ReplyTree
+	initialReplyTree: ImmutableReplyTree
 	criticalCommentId: number | null
 	targetHasVote: boolean
 	loggedIn: boolean
@@ -28,61 +123,24 @@ export function TreeReplies({
 	isCollapsedState: Immutable.Map<number, boolean>
 	setIsCollapsedState: Dispatch<SetStateAction<Map<number, boolean>>>
 }) {
-	const effectOnParentSize = relativeEntropy(
-		replyTree.effect ? replyTree.effect.p : 0,
-		replyTree.effect ? replyTree.effect.q : 0,
-	)
-	const isConvincing = effectOnParentSize > CONVINCINGNESS_THRESHOLD
-
-	if (replyTree.replies.length === 0) {
-		return <></>
-	}
+	// The purpose of this component is to be able to give state to its children
+	// so that each one can maintain and update its own children state.
 	return (
 		<>
-			{replyTree.replies.map(tree => {
-				const voteHereIndicator =
-					criticalCommentId == tree.post.id &&
-					targetHasVote &&
-					tree.voteState.vote == Direction.Neutral
-				const indicatorTWClass = voteHereIndicator
-					? 'border-l-blue-500 border-solid border-l-4 pl-2 dark:border-l-[#7dcfff]'
-					: 'border-l-transparent border-solid border-l-4 pl-2'
+			{initialReplyTree.replies.map((tree: ImmutableReplyTree) => {
 				return (
-					<Fragment key={tree.post.id}>
-						<div className={indicatorTWClass}>
-							<PostDetails
-								post={tree.post}
-								teaser={false}
-								voteState={tree.voteState}
-								loggedIn={loggedIn}
-								isConvincing={isConvincing}
-								voteHereIndicator={voteHereIndicator}
-								className="mt-3"
-								focussedPostId={focussedPostId}
-								postDataState={postDataState}
-								setPostDataState={setPostDataState}
-								isCollapsedState={isCollapsedState}
-								setIsCollapsedState={setIsCollapsedState}
-							/>
-						</div>
-						<div
-							className={
-								'border-left-solid mb-2 ml-2 border-l-4 border-post border-transparent pl-3'
-							}
-						>
-							<TreeReplies
-								replyTree={tree}
-								criticalCommentId={criticalCommentId}
-								targetHasVote={tree.voteState.vote !== Direction.Neutral}
-								loggedIn={loggedIn}
-								focussedPostId={focussedPostId}
-								postDataState={postDataState}
-								setPostDataState={setPostDataState}
-								isCollapsedState={isCollapsedState}
-								setIsCollapsedState={setIsCollapsedState}
-							/>
-						</div>
-					</Fragment>
+					<PostWithReplies
+						key={`${focussedPostId}-${tree.post.id}`}
+						initialReplyTree={tree}
+						criticalCommentId={criticalCommentId}
+						targetHasVote={targetHasVote}
+						focussedPostId={focussedPostId}
+						loggedIn={loggedIn}
+						postDataState={postDataState}
+						setPostDataState={setPostDataState}
+						isCollapsedState={isCollapsedState}
+						setIsCollapsedState={setIsCollapsedState}
+					/>
 				)
 			})}
 		</>
