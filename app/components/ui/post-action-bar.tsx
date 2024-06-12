@@ -26,32 +26,7 @@ export function PostActionBar({
 	const user = useOptionalUser()
 	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
 
-	const [contentState, setContentState] = useState<string>('')
-
 	const [showReplyForm, setShowReplyForm] = useState(false)
-
-	const handleReplySubmit = async function () {
-		setShowReplyForm(false)
-		const payload = {
-			parentId: post.id,
-			focussedPostId: focussedPostId,
-			content: contentState,
-			isPrivate: post.isPrivate,
-		}
-		const response = await fetch('/reply', {
-			method: 'POST',
-			body: JSON.stringify(payload),
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		})
-		const responseDecoded = (await response.json()) as {
-			commentTreeState: CommentTreeState
-			newReplyTree: ReplyTree
-		}
-		setPostDataState(responseDecoded.commentTreeState)
-		onReplySubmit(toImmutableReplyTree(responseDecoded.newReplyTree))
-	}
 
 	return (
 		<>
@@ -97,25 +72,74 @@ export function PostActionBar({
 			</div>
 
 			{showReplyForm && (
-				<div className="flex flex-col items-end">
-					<Textarea
-						name="content"
-						className="mb-2 w-full"
-						style={{
-							resize: 'vertical',
-						}}
-						autoFocus={true}
-						placeholder="Enter your reply"
-						onChange={event => setContentState(event.currentTarget.value)}
-					/>
-					<button
-						className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700"
-						onClick={handleReplySubmit}
-					>
-						Reply
-					</button>
-				</div>
+				<ReplyForm
+					post={post}
+					setShowReplyForm={setShowReplyForm}
+					focussedPostId={focussedPostId}
+					setPostDataState={setPostDataState}
+					onReplySubmit={onReplySubmit}
+				/>
 			)}
 		</>
+	)
+}
+
+function ReplyForm({
+	post,
+	setShowReplyForm,
+	focussedPostId,
+	setPostDataState,
+	onReplySubmit,
+}: {
+	post: ScoredPost
+	setShowReplyForm: Dispatch<SetStateAction<boolean>>
+	focussedPostId: number
+	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
+	onReplySubmit: (reply: ImmutableReplyTree) => void
+}) {
+	const [contentState, setContentState] = useState<string>('')
+
+	const handleReplySubmit = async function () {
+		setShowReplyForm(false)
+		const payload = {
+			parentId: post.id,
+			focussedPostId: focussedPostId,
+			content: contentState,
+			isPrivate: post.isPrivate,
+		}
+		const response = await fetch('/reply', {
+			method: 'POST',
+			body: JSON.stringify(payload),
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		})
+		const responseDecoded = (await response.json()) as {
+			commentTreeState: CommentTreeState
+			newReplyTree: ReplyTree
+		}
+		setPostDataState && setPostDataState(responseDecoded.commentTreeState)
+		onReplySubmit && onReplySubmit(toImmutableReplyTree(responseDecoded.newReplyTree))
+	}
+
+	return (
+		<div className="flex flex-col items-end">
+			<Textarea
+				name="content"
+				className="mb-2 w-full"
+				style={{
+					resize: 'vertical',
+				}}
+				autoFocus={true}
+				placeholder="Enter your reply"
+				onChange={event => setContentState(event.currentTarget.value)}
+			/>
+			<button
+				className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700"
+				onClick={handleReplySubmit}
+			>
+				Reply
+			</button>
+		</div>
 	)
 }
