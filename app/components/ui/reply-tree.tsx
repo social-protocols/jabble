@@ -51,7 +51,7 @@ export function TreeReplies({
 					? 'border-l-blue-500 border-solid border-l-4 pl-2 dark:border-l-[#7dcfff]'
 					: 'border-l-transparent border-solid border-l-4 pl-2'
 				return (
-					<Fragment key={tree.post.id}>
+					<Fragment key={`${focussedPostId}-${tree.post.id}`}>
 						<div className={indicatorTWClass}>
 							<PostDetails
 								post={tree.post}

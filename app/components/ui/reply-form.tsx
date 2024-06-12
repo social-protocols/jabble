@@ -25,11 +25,9 @@ export function ReplyForm({
 				placeholder="Enter your reply"
 			/>
 
-			<div>
-				<button className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700">
-					Reply
-				</button>
-			</div>
+			<button className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700">
+				Reply
+			</button>
 		</div>
 	)
 }

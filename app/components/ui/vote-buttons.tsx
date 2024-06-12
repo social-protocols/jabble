@@ -6,14 +6,12 @@ import { Direction, defaultVoteState } from '#app/vote.ts'
 export function VoteButtons({
 	postId,
 	focussedPostId,
-	pCurrent,
 	needsVoteOnCriticalComment,
 	postDataState,
 	setPostDataState,
 }: {
 	postId: number
 	focussedPostId: number
-	pCurrent: number
 	needsVoteOnCriticalComment: boolean
 	postDataState: CommentTreeState
 	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
@@ -30,6 +28,7 @@ export function VoteButtons({
 	const downClass =
 		currentVoteState.vote == Direction.Down ? buttonColorClass : 'opacity-30'
 
+	const pCurrent: number = postDataState[postId]?.p || NaN
 	const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
 
 	const submitVote = async function (direction: Direction) {
@@ -52,10 +51,10 @@ export function VoteButtons({
 
 	return (
 		<>
-			<div className={'items-centertext-xl flex w-[32px] flex-col'}>
+			<div key={`vote-buttons-${focussedPostId}-${postId}`} className={'items-centertext-xl flex w-[32px] flex-col'}>
 				<button
 					className={upClass + ' my-[-5px]'}
-					onClick={() => submitVote(Direction.Up)}
+					onClick={async () => await submitVote(Direction.Up)}
 				>
 					▲
 				</button>
@@ -64,7 +63,7 @@ export function VoteButtons({
 				</Link>
 				<button
 					className={downClass + ' my-[-5px]'}
-					onClick={() => submitVote(Direction.Down)}
+					onClick={async () => await submitVote(Direction.Down)}
 				>
 					▼
 				</button>

@@ -67,7 +67,6 @@ export function PostDetails({
 						<VoteButtons
 							postId={post.id}
 							focussedPostId={focussedPostId}
-							pCurrent={postDataState[post.id]?.p || NaN}
 							needsVoteOnCriticalComment={needsVoteOnCriticalComment}
 							postDataState={postDataState}
 							setPostDataState={setPostDataState}
