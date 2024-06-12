@@ -25,15 +25,13 @@ export type RankedPost = ScoredPost & {
 
 export type ReplyTree = {
 	post: ScoredPost
-	voteState: VoteState
-	effect: Effect | null
+	effect: Effect | null // TODO: move to CommentTreeState
 	replies: ReplyTree[]
 }
 
 export type ImmutableReplyTree = {
 	post: ScoredPost
-	voteState: VoteState
-	effect: Effect | null
+	effect: Effect | null // TODO: move to CommentTreeState
 	replies: Immutable.List<ImmutableReplyTree>
 }
 
@@ -119,20 +117,10 @@ export async function getReplyTree(
 			? undefined
 			: await getEffect(trx, post.parentId, postId)
 
-	const userVotesResult: VoteState[] | undefined =
-		userId !== null ? await getUserVotes(trx, userId, [postId]) : undefined
-
-	const voteState: VoteState =
-		userVotesResult !== undefined && userVotesResult.length > 0
-			? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-				userVotesResult[0]!
-			: defaultVoteState(postId)
-
 	// TODO: not necessary because iterating over empty list is trivial
 	if (directReplyIds.length === 0) {
 		return {
 			post: post,
-			voteState: voteState,
 			effect: effect ? effect : null,
 			replies: [],
 		}
@@ -184,7 +172,6 @@ export async function getReplyTree(
 	)
 	return {
 		post: post,
-		voteState: voteState,
 		effect: effect ? effect : null,
 		replies: replies,
 	}
