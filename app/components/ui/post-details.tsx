@@ -103,7 +103,12 @@ export function PostDetails({
 								This post was deleted.
 							</div>
 						)}
-						<PostActionBar post={post} loggedIn={loggedIn} />
+						<PostActionBar
+							post={post}
+							focussedPostId={focussedPostId}
+							loggedIn={loggedIn}
+							setPostDataState={setPostDataState}
+						/>
 					</div>
 				</>
 			)}

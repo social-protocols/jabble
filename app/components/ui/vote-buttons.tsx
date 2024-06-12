@@ -51,7 +51,10 @@ export function VoteButtons({
 
 	return (
 		<>
-			<div key={`vote-buttons-${focussedPostId}-${postId}`} className={'items-centertext-xl flex w-[32px] flex-col'}>
+			<div
+				key={`vote-buttons-${focussedPostId}-${postId}`}
+				className={'items-centertext-xl flex w-[32px] flex-col'}
+			>
 				<button
 					className={upClass + ' my-[-5px]'}
 					onClick={async () => await submitVote(Direction.Up)}

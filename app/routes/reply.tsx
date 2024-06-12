@@ -1,37 +1,45 @@
-import { type ActionFunctionArgs, redirect } from '@remix-run/node'
+import { type ActionFunctionArgs } from '@remix-run/node'
 import invariant from 'tiny-invariant'
-import { z } from 'zod'
-import { zfd } from 'zod-form-data'
 import { db } from '#app/db.ts'
 import { createPost } from '#app/post.ts'
+import { getCommentTreeState } from '#app/ranking.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
-const replySchema = zfd.formData({
-	parentId: z.coerce.number().optional(),
-	content: z.coerce.string(),
-	isPrivate: z.coerce.number(),
-})
+type ReplyData = {
+	parentId: number | null
+	focussedPostId: number | null
+	content: string
+	isPrivate: number
+}
 
 export const action = async (args: ActionFunctionArgs) => {
 	let request = args.request
-	const formData = await request.formData()
+
+	const dataParsed = (await request.json()) as ReplyData
 
 	const userId: string = await requireUserId(request)
 
-	const parsedData = replySchema.parse(formData)
-
-	const content = parsedData.content
-	const parentId = parsedData.parentId || null
-	const isPrivate = Boolean(parsedData.isPrivate)
+	const content = dataParsed.content
+	const parentId = dataParsed.parentId || null
+	const isPrivate = Boolean(dataParsed.isPrivate)
+	const focussedPostId = dataParsed.focussedPostId
 
 	invariant(content, 'content !== undefined')
 
-	let postId = await db.transaction().execute(async trx =>
-		await createPost(trx, parentId, content, userId, {
-			isPrivate: isPrivate,
-			withUpvote: true,
-		}),
+	await db.transaction().execute(
+		async trx =>
+			await createPost(trx, parentId, content, userId, {
+				isPrivate: isPrivate,
+				withUpvote: true,
+			}),
 	)
 
-	return redirect(`/post/${postId}`)
+	if (focussedPostId) {
+		const commentTreeState = await db
+			.transaction()
+			.execute(async trx => getCommentTreeState(trx, focussedPostId, userId))
+		return commentTreeState
+	}
+
+	return {}
 }

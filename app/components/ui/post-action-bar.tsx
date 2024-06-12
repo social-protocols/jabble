@@ -1,23 +1,44 @@
 import { Form } from '@remix-run/react'
-import { useState } from 'react'
-import { type ScoredPost } from '#app/ranking.ts'
+import { type Dispatch, type SetStateAction, useState } from 'react'
+import { Textarea } from '#app/components/ui/textarea.tsx'
+import { type CommentTreeState, type ScoredPost } from '#app/ranking.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
-import { ReplyForm } from './reply-form.tsx'
 
 export function PostActionBar({
 	post,
+	focussedPostId,
 	loggedIn,
+	setPostDataState,
 }: {
 	post: ScoredPost
+	focussedPostId: number
 	loggedIn: boolean
+	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
 }) {
 	const user = useOptionalUser()
 	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
 
+	const [contentState, setContentState] = useState<string>('')
+
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
-	const handleReplySubmit = function () {
+	const handleReplySubmit = async function () {
 		setShowReplyForm(false)
+		const payload = {
+			parentId: post.id,
+			focussedPostId: focussedPostId,
+			content: contentState,
+			isPrivate: post.isPrivate,
+		}
+		const response = await fetch('/reply', {
+			method: 'POST',
+			body: JSON.stringify(payload),
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		})
+		const newPostDataState = (await response.json()) as CommentTreeState
+		setPostDataState(newPostDataState)
 	}
 
 	return (
@@ -62,19 +83,26 @@ export function PostActionBar({
 					</button>
 				)}
 			</div>
+
 			{showReplyForm && (
-				<Form
-					id="reply-form"
-					method="POST"
-					action="/reply"
-					onSubmit={handleReplySubmit}
-				>
-					<ReplyForm
-						post={post}
-						isPrivate={Boolean(post.isPrivate)}
-						className="mt-2"
+				<div className="flex flex-col items-end">
+					<Textarea
+						name="content"
+						className="mb-2 w-full"
+						style={{
+							resize: 'vertical',
+						}}
+						autoFocus={true}
+						placeholder="Enter your reply"
+						onChange={event => setContentState(event.currentTarget.value)}
 					/>
-				</Form>
+					<button
+						className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700"
+						onClick={handleReplySubmit}
+					>
+						Reply
+					</button>
+				</div>
 			)}
 		</>
 	)
