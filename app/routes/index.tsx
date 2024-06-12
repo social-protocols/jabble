@@ -51,7 +51,7 @@ Read [how Jabble makes conversations better](https://github.com/social-protocols
 			</div>
 
 			{showNewDiscussionForm ? (
-				<PostForm showPrivateFlag={true} className="mb-4" />
+				<PostForm className="mb-4" />
 			) : (
 				loggedIn && (
 					<div className="mb-4 flex justify-end">{newDiscussionButton()}</div>
