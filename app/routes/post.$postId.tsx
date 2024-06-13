@@ -1,5 +1,6 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
+import * as Immutable from 'immutable'
 import { Map } from 'immutable'
 import { useState } from 'react'
 import { z } from 'zod'
@@ -18,6 +19,7 @@ import {
 	type CommentTreeState,
 	getAllPostIdsInTree,
 	toImmutableReplyTree,
+	type ImmutableReplyTree,
 } from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { Direction, defaultVoteState } from '#app/vote.ts'
@@ -80,13 +82,53 @@ export default function Post() {
 				targetHasVote={currentVoteState.vote !== Direction.Neutral}
 				loggedIn={loggedIn}
 				focussedPostId={post.id}
+				pathFromFocussedPost={Immutable.List()}
 				postDataState={postDataState}
 				setPostDataState={setPostDataState}
 				isCollapsedState={isCollapsedState}
 				setIsCollapsedState={setIsCollapsedState}
+				onCollapseParentSiblings={pathFromFocussedPost =>
+					setIsCollapsedState(
+						collapseParentSiblingsAndIndirectChildren(
+							pathFromFocussedPost,
+							isCollapsedState,
+							replyTree,
+						),
+					)
+				}
 			/>
 		</>
 	)
+}
+
+function collapseParentSiblingsAndIndirectChildren(
+	pathFromFocussedPost: Immutable.List<number>,
+	collapseState: Immutable.Map<number, boolean>,
+	replyTree: ImmutableReplyTree,
+): Immutable.Map<number, boolean> {
+	// go down the tree along the path
+	// and collapse all siblings on the way.
+	let newCollapseState = collapseState
+	let currentSubTree = replyTree
+	pathFromFocussedPost.forEach(postId => {
+		// postId must be among currentSubTree.replies
+		currentSubTree.replies.forEach(reply => {
+			if (reply.post.id == postId) {
+				newCollapseState = newCollapseState.set(reply.post.id, false)
+				currentSubTree = reply
+			} else {
+				newCollapseState = newCollapseState.set(reply.post.id, true)
+			}
+		})
+	})
+	// collapse all children of direct children of clicked post
+	currentSubTree.replies.forEach(directChild => {
+		newCollapseState = newCollapseState.set(directChild.post.id, false)
+		directChild.replies.forEach(reply => {
+			newCollapseState = newCollapseState.set(reply.post.id, true)
+		})
+	})
+	return newCollapseState
 }
 
 export function ErrorBoundary() {

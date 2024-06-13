@@ -1,4 +1,5 @@
 import { useNavigate } from '@remix-run/react'
+import type * as Immutable from 'immutable'
 import { type Map } from 'immutable'
 import { type Dispatch, type SetStateAction } from 'react'
 import {
@@ -25,11 +26,13 @@ export function PostDetails({
 	voteHereIndicator,
 	className,
 	focussedPostId,
+	pathFromFocussedPost,
 	postDataState,
 	setPostDataState,
 	isCollapsedState,
 	setIsCollapsedState,
 	onReplySubmit,
+	onCollapseParentSiblings,
 }: {
 	post: ScoredPost
 	teaser: boolean
@@ -38,11 +41,15 @@ export function PostDetails({
 	voteHereIndicator?: boolean
 	className?: string
 	focussedPostId: number
+	pathFromFocussedPost: Immutable.List<number>
 	postDataState: CommentTreeState
 	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
 	isCollapsedState?: Immutable.Map<number, boolean>
 	setIsCollapsedState?: Dispatch<SetStateAction<Map<number, boolean>>>
 	onReplySubmit: (reply: ImmutableReplyTree) => void
+	onCollapseParentSiblings: (
+		pathFromFocussedPost: Immutable.List<number>,
+	) => void
 }) {
 	voteHereIndicator = voteHereIndicator || false
 
@@ -55,16 +62,20 @@ export function PostDetails({
 
 	const navigate = useNavigate()
 
+	const marginLeft = loggedIn ? 'ml-[40px]' : 'ml-2'
+
 	return (
 		<div className={'flex w-full ' + (className ? className : '')}>
 			{isCollapsed ? (
-				<div className="ml-[42px] flex">
+				<div className={'flex ' + marginLeft}>
 					<PostInfoBar
 						post={post}
+						pathFromFocussedPost={pathFromFocussedPost}
 						isConvincing={isConvincing || false}
 						voteHereIndicator={voteHereIndicator}
 						isCollapsedState={isCollapsedState}
 						setIsCollapsedState={setIsCollapsedState}
+						onCollapseParentSiblings={onCollapseParentSiblings}
 					/>
 				</div>
 			) : (
@@ -86,10 +97,12 @@ export function PostDetails({
 					>
 						<PostInfoBar
 							post={post}
+							pathFromFocussedPost={pathFromFocussedPost}
 							isConvincing={isConvincing || false}
 							voteHereIndicator={voteHereIndicator}
 							isCollapsedState={isCollapsedState}
 							setIsCollapsedState={setIsCollapsedState}
+							onCollapseParentSiblings={onCollapseParentSiblings}
 						/>
 						{post.deletedAt == null ? (
 							<PostContent

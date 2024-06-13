@@ -15,22 +15,28 @@ export function PostWithReplies({
 	criticalCommentId,
 	targetHasVote,
 	focussedPostId,
+	pathFromFocussedPost,
 	loggedIn,
 	postDataState,
 	setPostDataState,
 	isCollapsedState,
 	setIsCollapsedState,
+	onCollapseParentSiblings,
 	className,
 }: {
 	initialReplyTree: ImmutableReplyTree
 	criticalCommentId: number | null
 	targetHasVote: boolean
 	focussedPostId: number
+	pathFromFocussedPost: Immutable.List<number>
 	loggedIn: boolean
 	postDataState: CommentTreeState
 	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
 	isCollapsedState: Immutable.Map<number, boolean>
 	setIsCollapsedState: Dispatch<SetStateAction<Map<number, boolean>>>
+	onCollapseParentSiblings: (
+		pathFromFocussedPost: Immutable.List<number>,
+	) => void
 	className?: string
 }) {
 	const effectOnParentSize = relativeEntropy(
@@ -72,11 +78,13 @@ export function PostWithReplies({
 					voteHereIndicator={voteHereIndicator}
 					className={'mt-3 ' + (className || '')}
 					focussedPostId={focussedPostId}
+					pathFromFocussedPost={pathFromFocussedPost}
 					postDataState={postDataState}
 					setPostDataState={setPostDataState}
 					isCollapsedState={isCollapsedState}
 					setIsCollapsedState={setIsCollapsedState}
 					onReplySubmit={onReplySubmit}
+					onCollapseParentSiblings={onCollapseParentSiblings}
 				/>
 			</div>
 			{!isCollapsed && (
@@ -91,10 +99,12 @@ export function PostWithReplies({
 						targetHasVote={currentVoteState.vote !== Direction.Neutral}
 						loggedIn={loggedIn}
 						focussedPostId={focussedPostId}
+						pathFromFocussedPost={pathFromFocussedPost}
 						postDataState={postDataState}
 						setPostDataState={setPostDataState}
 						isCollapsedState={isCollapsedState}
 						setIsCollapsedState={setIsCollapsedState}
+						onCollapseParentSiblings={onCollapseParentSiblings}
 					/>
 				</div>
 			)}
@@ -108,20 +118,26 @@ function TreeReplies({
 	targetHasVote,
 	loggedIn,
 	focussedPostId,
+	pathFromFocussedPost,
 	postDataState,
 	setPostDataState,
 	isCollapsedState,
 	setIsCollapsedState,
+	onCollapseParentSiblings,
 }: {
 	initialReplyTree: ImmutableReplyTree
 	criticalCommentId: number | null
 	targetHasVote: boolean
 	loggedIn: boolean
 	focussedPostId: number
+	pathFromFocussedPost: Immutable.List<number>
 	postDataState: CommentTreeState
 	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
 	isCollapsedState: Immutable.Map<number, boolean>
 	setIsCollapsedState: Dispatch<SetStateAction<Map<number, boolean>>>
+	onCollapseParentSiblings: (
+		pathFromFocussedPost: Immutable.List<number>,
+	) => void
 }) {
 	// The purpose of this component is to be able to give state to its children
 	// so that each one can maintain and update its own children state.
@@ -135,11 +151,13 @@ function TreeReplies({
 						criticalCommentId={criticalCommentId}
 						targetHasVote={targetHasVote}
 						focussedPostId={focussedPostId}
+						pathFromFocussedPost={pathFromFocussedPost.push(tree.post.id)}
 						loggedIn={loggedIn}
 						postDataState={postDataState}
 						setPostDataState={setPostDataState}
 						isCollapsedState={isCollapsedState}
 						setIsCollapsedState={setIsCollapsedState}
+						onCollapseParentSiblings={onCollapseParentSiblings}
 					/>
 				)
 			})}
