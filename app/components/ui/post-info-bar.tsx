@@ -28,7 +28,6 @@ export function PostInfoBar({
 
 	async function handleClick() {
 		if (isCollapsedState && setIsCollapsedState) {
-			console.log(isCollapsed)
 			let newisCollapsedState = isCollapsedState.set(post.id, !isCollapsed)
 			setIsCollapsedState(newisCollapsedState)
 		}
