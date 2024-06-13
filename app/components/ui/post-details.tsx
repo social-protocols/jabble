@@ -62,10 +62,12 @@ export function PostDetails({
 
 	const navigate = useNavigate()
 
+	const marginLeft = loggedIn ? 'ml-[40px]' : 'ml-2'
+
 	return (
 		<div className={'flex w-full ' + (className ? className : '')}>
 			{isCollapsed ? (
-				<div className="ml-[40px] flex">
+				<div className={'flex ' + marginLeft}>
 					<PostInfoBar
 						post={post}
 						pathFromFocussedPost={pathFromFocussedPost}
