@@ -49,26 +49,28 @@ export function VoteButtons({
 		setPostDataState(newPostDataState)
 	}
 
+	const negMargin = 'my-[-1px]'
+
 	return (
 		<>
 			<div
 				key={`vote-buttons-${focussedPostId}-${postId}`}
-				className={'flex w-[32px] flex-col items-center text-xl'}
+				className={'flex w-[32px] flex-col items-center'}
 			>
 				<button
-					className={upClass + ' my-[-5px]'}
+					className={upClass + ' ' + negMargin}
 					onClick={async () => await submitVote(Direction.Up)}
 				>
-					▲
+					🡅
 				</button>
 				<Link to={`/stats/${postId}`} className={'text-xs opacity-50'}>
 					{pCurrentString}
 				</Link>
 				<button
-					className={downClass + ' my-[-5px]'}
+					className={downClass + ' ' + negMargin}
 					onClick={async () => await submitVote(Direction.Down)}
 				>
-					▼
+					🡇
 				</button>
 			</div>
 		</>
