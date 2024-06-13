@@ -89,7 +89,7 @@ export default function Post() {
 				setIsCollapsedState={setIsCollapsedState}
 				onCollapseParentSiblings={pathFromFocussedPost =>
 					setIsCollapsedState(
-						collapseParentSiblings(
+						collapseParentSiblingsAndIndirectChildren(
 							pathFromFocussedPost,
 							isCollapsedState,
 							replyTree,
@@ -101,38 +101,33 @@ export default function Post() {
 	)
 }
 
-function collapseParentSiblings(
+function collapseParentSiblingsAndIndirectChildren(
 	pathFromFocussedPost: Immutable.List<number>,
 	collapseState: Immutable.Map<number, boolean>,
 	replyTree: ImmutableReplyTree,
 ): Immutable.Map<number, boolean> {
-	// console.log('path', pathFromFocussedPost.toJS())
-	// console.log(collapseState.toJS())
-	// console.log('tree postid', replyTree.post.id)
+	// go down the tree along the path
+	// and collapse all siblings on the way.
 	let newCollapseState = collapseState
 	let currentSubTree = replyTree
 	pathFromFocussedPost.forEach(postId => {
 		// postId must be among currentSubTree.replies
-		// console.log(
-		// 	'path postId',
-		// 	postId,
-		// 	'subtree postId',
-		// 	currentSubTree.post.id,
-		// 	'replies',
-		// 	currentSubTree.replies.map(x => x.post.id).toJS(),
-		// )
 		currentSubTree.replies.forEach(reply => {
 			if (reply.post.id == postId) {
-				// console.log('  Entering', reply.post.id)
 				newCollapseState = newCollapseState.set(reply.post.id, false)
 				currentSubTree = reply
 			} else {
-				// console.log('  Collapsing', reply.post.id)
 				newCollapseState = newCollapseState.set(reply.post.id, true)
 			}
 		})
 	})
-	// console.log(newCollapseState.toJS())
+	// collapse all children of direct children of clicked post
+	currentSubTree.replies.forEach(directChild => {
+		newCollapseState = newCollapseState.set(directChild.post.id, false)
+		directChild.replies.forEach(reply => {
+			newCollapseState = newCollapseState.set(reply.post.id, true)
+		})
+	})
 	return newCollapseState
 }
 
