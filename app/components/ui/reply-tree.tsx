@@ -65,15 +65,17 @@ export function PostWithReplies({
 
 	const isRootPost = replyTreeState.post.id == focussedPostId
 
-	const lineClass = isRootPost ? '' : 'border-l-4 border-solid pl-2'
-
 	const lineColor = voteHereIndicator
 		? 'border-l-blue-500 dark:border-l-[#7dcfff]'
 		: 'border-l-transparent'
 
+	const lineClass = isRootPost
+		? ''
+		: 'border-l-4 border-solid pl-2 ' + lineColor
+
 	return (
 		<>
-			<div className={lineClass + ' ' + lineColor}>
+			<div className={lineClass}>
 				<PostDetails
 					post={replyTreeState.post}
 					teaser={false}
