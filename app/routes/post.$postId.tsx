@@ -1,5 +1,5 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
+import { useLoaderData, useParams } from '@remix-run/react'
 import * as Immutable from 'immutable'
 import { Map } from 'immutable'
 import { useState } from 'react'
@@ -33,15 +33,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	const postId = postIdSchema.parse(params.postId)
 	const post: ScoredPost = await db
 		.transaction()
-		.execute(async trx => getScoredPost(trx, postId))
+		.execute(async trx => await getScoredPost(trx, postId))
 
 	const mutableReplyTree: ReplyTree = await db
 		.transaction()
-		.execute(async trx => getReplyTree(trx, postId, userId))
+		.execute(async trx => await getReplyTree(trx, postId, userId))
 
-	const transitiveParents = await db
+	const transitiveParents: Post[] = await db
 		.transaction()
-		.execute(async trx => getTransitiveParents(trx, post.id))
+		.execute(async trx => await getTransitiveParents(trx, post.id))
 
 	const postData: CommentTreeState = await db
 		.transaction()
@@ -50,10 +50,38 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	return json({ post, mutableReplyTree, transitiveParents, postData, loggedIn })
 }
 
-export default function Post() {
+export default function PostPage() {
 	const { post, mutableReplyTree, transitiveParents, postData, loggedIn } =
 		useLoaderData<typeof loader>()
 
+	const params = useParams()
+
+	// subcomponent and key needed for react to not preserve state on page changes
+	return (
+		<Post
+			key={params['postId']}
+			post={post}
+			mutableReplyTree={mutableReplyTree}
+			transitiveParents={transitiveParents}
+			postData={postData}
+			loggedIn={loggedIn}
+		/>
+	)
+}
+
+function Post({
+	post,
+	mutableReplyTree,
+	transitiveParents,
+	postData,
+	loggedIn,
+}: {
+	post: ScoredPost
+	mutableReplyTree: ReplyTree
+	transitiveParents: Post[]
+	postData: CommentTreeState
+	loggedIn: boolean
+}) {
 	const replyTree = toImmutableReplyTree(mutableReplyTree)
 
 	const [postDataState, setPostDataState] = useState<CommentTreeState>(postData)
