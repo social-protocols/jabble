@@ -34,7 +34,9 @@ export function PostWithReplies({
 	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
 	isCollapsedState: Immutable.Map<number, boolean>
 	setIsCollapsedState: Dispatch<SetStateAction<Map<number, boolean>>>
-	onCollapseParentSiblings: (pathFromFocussedPost: Immutable.List<number>) => void
+	onCollapseParentSiblings: (
+		pathFromFocussedPost: Immutable.List<number>,
+	) => void
 	className?: string
 }) {
 	const effectOnParentSize = relativeEntropy(
@@ -133,7 +135,9 @@ function TreeReplies({
 	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
 	isCollapsedState: Immutable.Map<number, boolean>
 	setIsCollapsedState: Dispatch<SetStateAction<Map<number, boolean>>>
-	onCollapseParentSiblings: (pathFromFocussedPost: Immutable.List<number>) => void
+	onCollapseParentSiblings: (
+		pathFromFocussedPost: Immutable.List<number>,
+	) => void
 }) {
 	// The purpose of this component is to be able to give state to its children
 	// so that each one can maintain and update its own children state.

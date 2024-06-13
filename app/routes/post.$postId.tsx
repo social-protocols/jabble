@@ -1,6 +1,6 @@
-import * as Immutable from 'immutable'
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
+import * as Immutable from 'immutable'
 import { Map } from 'immutable'
 import { useState } from 'react'
 import { z } from 'zod'
@@ -19,7 +19,7 @@ import {
 	type CommentTreeState,
 	getAllPostIdsInTree,
 	toImmutableReplyTree,
-    ImmutableReplyTree,
+	type ImmutableReplyTree,
 } from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { Direction, defaultVoteState } from '#app/vote.ts'
@@ -87,7 +87,15 @@ export default function Post() {
 				setPostDataState={setPostDataState}
 				isCollapsedState={isCollapsedState}
 				setIsCollapsedState={setIsCollapsedState}
-				onCollapseParentSiblings={(pathFromFocussedPost) => setIsCollapsedState(collapseParentSiblings(pathFromFocussedPost, isCollapsedState, replyTree))}
+				onCollapseParentSiblings={pathFromFocussedPost =>
+					setIsCollapsedState(
+						collapseParentSiblings(
+							pathFromFocussedPost,
+							isCollapsedState,
+							replyTree,
+						),
+					)
+				}
 			/>
 		</>
 	)
@@ -96,25 +104,35 @@ export default function Post() {
 function collapseParentSiblings(
 	pathFromFocussedPost: Immutable.List<number>,
 	collapseState: Immutable.Map<number, boolean>,
-	replyTree: ImmutableReplyTree
+	replyTree: ImmutableReplyTree,
 ): Immutable.Map<number, boolean> {
-	console.log("path", pathFromFocussedPost)
-	console.log(collapseState.toJS())
-	console.log(replyTree)
+	// console.log('path', pathFromFocussedPost.toJS())
+	// console.log(collapseState.toJS())
+	// console.log('tree postid', replyTree.post.id)
 	let newCollapseState = collapseState
 	let currentSubTree = replyTree
 	pathFromFocussedPost.forEach(postId => {
-		console.log("postId", postId)
-		currentSubTree.replies.forEach((reply) => {
+		// postId must be among currentSubTree.replies
+		// console.log(
+		// 	'path postId',
+		// 	postId,
+		// 	'subtree postId',
+		// 	currentSubTree.post.id,
+		// 	'replies',
+		// 	currentSubTree.replies.map(x => x.post.id).toJS(),
+		// )
+		currentSubTree.replies.forEach(reply => {
 			if (reply.post.id == postId) {
-				console.log("Entering", reply.post.id)
+				// console.log('  Entering', reply.post.id)
+				newCollapseState = newCollapseState.set(reply.post.id, false)
 				currentSubTree = reply
 			} else {
-				newCollapseState = newCollapseState.set(postId, true)
+				// console.log('  Collapsing', reply.post.id)
+				newCollapseState = newCollapseState.set(reply.post.id, true)
 			}
 		})
 	})
-	console.log(newCollapseState.toJS())
+	// console.log(newCollapseState.toJS())
 	return newCollapseState
 }
 

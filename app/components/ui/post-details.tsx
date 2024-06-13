@@ -1,5 +1,5 @@
-import * as Immutable from 'immutable'
 import { useNavigate } from '@remix-run/react'
+import type * as Immutable from 'immutable'
 import { type Map } from 'immutable'
 import { type Dispatch, type SetStateAction } from 'react'
 import {
@@ -47,7 +47,9 @@ export function PostDetails({
 	isCollapsedState?: Immutable.Map<number, boolean>
 	setIsCollapsedState?: Dispatch<SetStateAction<Map<number, boolean>>>
 	onReplySubmit: (reply: ImmutableReplyTree) => void
-	onCollapseParentSiblings: (pathFromFocussedPost: Immutable.List<number>) => void
+	onCollapseParentSiblings: (
+		pathFromFocussedPost: Immutable.List<number>,
+	) => void
 }) {
 	voteHereIndicator = voteHereIndicator || false
 
@@ -63,7 +65,7 @@ export function PostDetails({
 	return (
 		<div className={'flex w-full ' + (className ? className : '')}>
 			{isCollapsed ? (
-				<div className="ml-[42px] flex">
+				<div className="ml-[40px] flex">
 					<PostInfoBar
 						post={post}
 						pathFromFocussedPost={pathFromFocussedPost}

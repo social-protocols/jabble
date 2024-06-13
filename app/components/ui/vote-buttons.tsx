@@ -53,7 +53,7 @@ export function VoteButtons({
 		<>
 			<div
 				key={`vote-buttons-${focussedPostId}-${postId}`}
-				className={'items-centertext-xl flex w-[32px] flex-col'}
+				className={'flex w-[32px] flex-col items-center text-xl'}
 			>
 				<button
 					className={upClass + ' my-[-5px]'}
