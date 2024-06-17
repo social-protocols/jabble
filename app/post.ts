@@ -4,6 +4,7 @@ import { type Post } from '#app/db/types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { Direction, vote } from '#app/vote.ts'
 import { type DB } from './db/kysely-types.ts'
+import { checkIsAdminOrThrow } from './utils/auth.server.ts'
 
 export async function createPost(
 	trx: Transaction<DB>,
@@ -90,17 +91,7 @@ export async function deletePost(
 	id: number,
 	byUserId: string,
 ) {
-	const user = await trx
-		.selectFrom('User')
-		.where('id', '=', byUserId)
-		.selectAll()
-		.executeTakeFirst()
-
-	invariant(user, `Cannot delete post: User ${byUserId} not found`)
-	invariant(
-		user.isAdmin,
-		`Cannot delete post: User ${byUserId} doesn't have permission`,
-	)
+	checkIsAdminOrThrow(byUserId)
 
 	const existingPost = await trx
 		.selectFrom('Post')
@@ -127,17 +118,7 @@ export async function restoreDeletedPost(
 	id: number,
 	byUserId: string,
 ) {
-	const user = await trx
-		.selectFrom('User')
-		.where('id', '=', byUserId)
-		.selectAll()
-		.executeTakeFirst()
-
-	invariant(user, `Cannot restore post: User ${byUserId} not found`)
-	invariant(
-		user.isAdmin,
-		`Cannot restore post: User ${byUserId} doesn't have permission`,
-	)
+	checkIsAdminOrThrow(byUserId)
 
 	const existingPost = await trx
 		.selectFrom('Post')
@@ -145,7 +126,7 @@ export async function restoreDeletedPost(
 		.selectAll()
 		.executeTakeFirst()
 
-	invariant(existingPost, `Cannot delete post: Post ${id} not found`)
+	invariant(existingPost, `Cannot restore post: Post ${id} not found`)
 
 	if (existingPost.deletedAt == null) {
 		console.warn(`Cannot restore non-deleted post ${id}`)
