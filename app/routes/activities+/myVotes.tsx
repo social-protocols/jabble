@@ -1,29 +1,33 @@
-import { Markdown } from "#app/components/markdown.tsx"
-import { PostContent } from "#app/components/ui/post-content.tsx"
-import { db } from "#app/db.ts"
-import { ScoredPost, getScoredPost } from "#app/ranking.ts"
-import { requireUserId } from "#app/utils/auth.server.ts"
-import { VoteState, getAllCurrentVotes } from "#app/vote.ts"
-import { LoaderFunctionArgs, json } from "@remix-run/node"
-import { Link, useLoaderData } from "@remix-run/react"
-import { useState } from "react"
+import { type LoaderFunctionArgs, json } from '@remix-run/node'
+import { Link, useLoaderData } from '@remix-run/react'
+import { useState } from 'react'
+import { Markdown } from '#app/components/markdown.tsx'
+import { PostContent } from '#app/components/ui/post-content.tsx'
+import { db } from '#app/db.ts'
+import { type ScoredPost, getScoredPost } from '#app/ranking.ts'
+import { requireUserId } from '#app/utils/auth.server.ts'
+import { type VoteState, getAllCurrentVotes } from '#app/vote.ts'
 
 type PostWithVote = ScoredPost & VoteState
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
 
-	const userVotesWithNeutrals: VoteState[] = await db.transaction().execute(async trx => getAllCurrentVotes(trx, userId))
+	const userVotesWithNeutrals: VoteState[] = await db
+		.transaction()
+		.execute(async trx => getAllCurrentVotes(trx, userId))
 	const userVotes = userVotesWithNeutrals.filter(vote => vote.vote !== 0)
 
-	const postsWithVotes: PostWithVote[] = await db.transaction().execute(async trx => {
-		return Promise.all(
-			userVotes.map(async vote => {
-				const post = await getScoredPost(trx, vote.postId)
-				return { ...post, ...vote }
-			})
-		)
-	})
+	const postsWithVotes: PostWithVote[] = await db
+		.transaction()
+		.execute(async trx => {
+			return Promise.all(
+				userVotes.map(async vote => {
+					const post = await getScoredPost(trx, vote.postId)
+					return { ...post, ...vote }
+				}),
+			)
+		})
 
 	return json({ postsWithVotes })
 }
@@ -42,15 +46,18 @@ If one of your votes turned blue, it means there is a new comment that might inf
 
 	const [onlyUninformedVotes, setOnlyUninformedVotes] = useState(false)
 
-	const onlyUninformedButtonClass = onlyUninformedVotes ? 'bg-blue-600 text-white' : 'bg-gray-200 text-black'
+	const onlyUninformedButtonClass = onlyUninformedVotes
+		? 'bg-blue-600 text-white'
+		: 'bg-gray-200 text-black'
 
 	return (
 		<>
 			<div className="mb-8 space-y-4">
 				<Markdown deactivateLinks={false}>{introMarkdown}</Markdown>
 				<button
-					className={"rounded px-1 " + onlyUninformedButtonClass}
-					onClick={() => setOnlyUninformedVotes(!onlyUninformedVotes)}>
+					className={'rounded px-1 ' + onlyUninformedButtonClass}
+					onClick={() => setOnlyUninformedVotes(!onlyUninformedVotes)}
+				>
 					only uninformed votes
 				</button>
 			</div>
@@ -87,17 +94,19 @@ function CurrentVoteListItem({
 
 	return (
 		<>
-			<div className="flex flex-col w-full">
-				<PostContent
-					content={postWithVote.content}
-					deactivateLinks={false}
-				/>
+			<div className="flex w-full flex-col">
+				<PostContent content={postWithVote.content} deactivateLinks={false} />
 				<div className="flex w-full">
-					<div className="space-x-2 items-end">
+					<div className="items-end space-x-2">
 						<span className="italic text-gray-500">You voted:</span>
 						<span className={voteIconColor}>{currentVoteString}</span>
-						<Link to={`/post/${postWithVote.id}`} className="bg-green-500 rounded px-1 text-white">review</Link>
-						</div>
+						<Link
+							to={`/post/${postWithVote.id}`}
+							className="rounded bg-green-500 px-1 text-white"
+						>
+							review
+						</Link>
+					</div>
 				</div>
 			</div>
 		</>
