@@ -62,6 +62,7 @@ export type CommentTreeState = {
 	[key: number]: {
 		p: number
 		voteState: VoteState
+		isDeleted: boolean
 	}
 }
 
@@ -71,10 +72,19 @@ export async function getCommentTreeState(
 	userId: string | null,
 ): Promise<CommentTreeState> {
 	const descendantIds = await getDescendants(trx, rootId)
-	const pArray = await trx
-		.selectFrom('Score')
-		.where('postId', 'in', descendantIds.concat([rootId]))
-		.select(['postId', 'p'])
+
+	const results = await trx
+		.selectFrom('Post')
+		.leftJoin('FullScore', join =>
+			join.onRef('FullScore.postId', '=', 'Post.id'),
+		)
+		.select([
+			'Post.id as postId',
+			'FullScore.p as p',
+			'Post.deletedAt as deletedAt',
+		])
+		.where('Post.id', 'in', descendantIds.concat([rootId]))
+		.where('p', 'is not', null)
 		.execute()
 
 	const userVotes: VoteState[] | undefined = userId
@@ -82,14 +92,21 @@ export async function getCommentTreeState(
 		: undefined
 
 	let commentTreeState: CommentTreeState = {}
-	for (const p of pArray) {
-		commentTreeState[p.postId] = {
-			p: p.p,
+	results.forEach(result => {
+		commentTreeState[result.postId] = {
+			// We have to use the non-null assertion here because kysely doesn't
+			// return values as non-null type even if we filter nulls with a where
+			// condition. We can, however, be sure that the values are never null.
+			// See: https://kysely.dev/docs/examples/SELECT/not-null
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			p: result.p!,
 			voteState:
-				userVotes?.find(voteState => voteState.postId == p.postId) ||
-				defaultVoteState(p.postId),
+				userVotes?.find(voteState => voteState.postId == result.postId) ||
+				defaultVoteState(result.postId),
+			isDeleted: result.deletedAt != null,
 		}
-	}
+	})
+
 	return commentTreeState
 }
 

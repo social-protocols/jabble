@@ -1,4 +1,3 @@
-import { Form } from '@remix-run/react'
 import { type Dispatch, type SetStateAction, useState } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import {
@@ -14,12 +13,14 @@ export function PostActionBar({
 	post,
 	focussedPostId,
 	loggedIn,
+	postDataState,
 	setPostDataState,
 	onReplySubmit,
 }: {
 	post: ScoredPost
 	focussedPostId: number
 	loggedIn: boolean
+	postDataState: CommentTreeState
 	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
 	onReplySubmit: (reply: ImmutableReplyTree) => void
 }) {
@@ -28,10 +29,47 @@ export function PostActionBar({
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
+	// TODO: Is this a sane default?
+	const isDeleted = postDataState[post.id]?.isDeleted || false
+
+	// TODO: maybe this handlers could be one function and the delete/restore
+	// feature could be one route
+	async function handleDelete() {
+		const payload = {
+			postId: post.id,
+			focussedPostId: focussedPostId,
+		}
+		const response = await fetch('/deletePost', {
+			method: 'POST',
+			body: JSON.stringify(payload),
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		})
+		const newPostDataState = (await response.json()) as CommentTreeState
+		setPostDataState(newPostDataState)
+	}
+
+	async function handleRestore() {
+		const payload = {
+			postId: post.id,
+			focussedPostId: focussedPostId,
+		}
+		const response = await fetch('/restorePost', {
+			method: 'POST',
+			body: JSON.stringify(payload),
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		})
+		const newPostDataState = (await response.json()) as CommentTreeState
+		setPostDataState(newPostDataState)
+	}
+
 	return (
 		<>
 			<div className="mb-3 flex w-full text-sm">
-				{post.deletedAt == null && loggedIn && (
+				{!isDeleted && loggedIn && (
 					<button
 						onClick={() => {
 							setShowReplyForm(!showReplyForm)
@@ -44,22 +82,20 @@ export function PostActionBar({
 					</button>
 				)}
 				{isAdminUser &&
-					(post.deletedAt == null ? (
-						<Form id="delete-post-form" method="POST" action="/deletePost">
-							<input type="hidden" name="postId" value={post.id} />
-							<input type="hidden" name="userId" value={user?.id} />
-							<button className="rounded bg-red-400 px-1 text-white">
-								delete
-							</button>
-						</Form>
+					(!isDeleted ? (
+						<button
+							className="rounded bg-red-400 px-1 text-white"
+							onClick={handleDelete}
+						>
+							delete
+						</button>
 					) : (
-						<Form id="restore-post-form" method="POST" action="/restorePost">
-							<input type="hidden" name="postId" value={post.id} />
-							<input type="hidden" name="userId" value={user?.id} />
-							<button className="rounded bg-green-500 px-1 text-white">
-								restore
-							</button>
-						</Form>
+						<button
+							className="rounded bg-green-500 px-1 text-white"
+							onClick={handleRestore}
+						>
+							restore
+						</button>
 					))}
 				{showReplyForm && (
 					<button
