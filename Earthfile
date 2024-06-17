@@ -47,7 +47,7 @@ nix-packages:
 
 globalbrain-node-package:
   FROM scratch
-  ARG GLOBALBRAIN_REF=55fc3a287d70cd68d9796b57d070b3eaa9c0aa1a # Fix bug where no score event was output if parent has not yet been seen
+  ARG GLOBALBRAIN_REF=954ab21561da0f89adaef0f99de2dddbc23af78d # Use weighted average scoring instead of top-thread based scoring. Fixes one broken test
   COPY github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_REF+node-ext/artifact /artifact
   # COPY ../GlobalBrain.jl+node-ext/artifact /artifact
   SAVE ARTIFACT /artifact

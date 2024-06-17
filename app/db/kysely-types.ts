@@ -92,10 +92,7 @@ export type VoteEvent = {
 export type Score = {
 	voteEventId: number
 	voteEventTime: number
-	parentId: number | null
 	postId: number
-	topCommentId: number | null
-	criticalThreadId: number | null
 	o: number
 	oCount: number
 	oSize: number
@@ -106,7 +103,6 @@ export type Score = {
 export type Effect = {
 	postId: number
 	commentId: number | null
-	topCommentId: number | null
 	p: number
 	pCount: number
 	pSize: number
@@ -114,6 +110,7 @@ export type Effect = {
 	qCount: number
 	qSize: number
 	r: number
+	weight: number
 }
 
 export type EffectWithDefault = Effect
@@ -123,23 +120,10 @@ export type EffectEvent = Effect & {
 	voteEventTime: number
 }
 
-export type FullScore = {
-	voteEventId: number
-	postId: number
-	topCommentId: number | null
-	criticalThreadId: number | null
-	p: number
-	pCount: number
-	pSize: number
-	q: number
-	qCount: number
-	qSize: number
-	r: number
-	o: number
-	oCount: number
-	oSize: number
-	score: number
-}
+export type FullScore = Score &
+	Effect & {
+		criticalThreadId: number | null
+	}
 
 export type Lineage = {
 	ancestorId: number

@@ -11,17 +11,10 @@ import {
 } from './post.ts'
 import { relativeEntropy } from './utils/entropy.ts'
 import { type VoteState, defaultVoteState, getUserVotes } from './vote.ts'
-
 // Post with score and the effect of its top reply
 export type ScoredPost = Post & FullScore & { nReplies: number } // TODO: nReplies not needed anymore -> remove
 
 export type FrontPagePost = ScoredPost & { nTransitiveComments: number }
-
-export type RankedPost = ScoredPost & {
-	parent: Post | null
-	effects: Effect[]
-	isCritical: boolean
-}
 
 export type ReplyTree = {
 	post: ScoredPost
@@ -252,39 +245,6 @@ export async function getEffects(
 	return effects
 }
 
-export async function getRankedPosts(
-	trx: Transaction<DB>,
-): Promise<RankedPost[]> {
-	let query = trx
-		.selectFrom('Post')
-		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
-		.leftJoin('PostStats', join =>
-			join.onRef('PostStats.postId', '=', 'Post.id'),
-		)
-		.where('Post.deletedAt', 'is', null)
-		.selectAll('Post')
-		.selectAll('FullScore')
-		.select(eb =>
-			eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'),
-		)
-		.orderBy('FullScore.score', 'desc')
-		.limit(MAX_POSTS_PER_PAGE)
-
-	const scoredPosts = await query.execute()
-
-	const rankedPosts: RankedPost[] = await Promise.all(
-		scoredPosts.map(async post => {
-			return {
-				...post,
-				parent: post.parentId ? await getPost(trx, post.parentId) : null,
-				effects: await getEffects(trx, post.id),
-				isCritical: false,
-			}
-		}),
-	)
-	return rankedPosts
-}
-
 export async function getChronologicalToplevelPosts(
 	trx: Transaction<DB>,
 ): Promise<FrontPagePost[]> {
@@ -316,117 +276,4 @@ export async function getChronologicalToplevelPosts(
 	)
 
 	return res
-}
-
-export async function getRankedReplies(
-	trx: Transaction<DB>,
-	parentId: number,
-): Promise<RankedPost[]> {
-	const tree = await getRankedRepliesInternal(trx, parentId, parentId)
-	return tree
-}
-
-async function getRankedRepliesInternal(
-	trx: Transaction<DB>,
-	postId: number,
-	parentId: number,
-): Promise<RankedPost[]> {
-	let query = trx
-		.selectFrom('Post')
-		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
-		.where('parentId', '=', parentId)
-		.leftJoin('PostStats', join =>
-			join.onRef('PostStats.postId', '=', 'Post.id'),
-		)
-		.innerJoin('EffectWithDefault as Effect', join =>
-			join
-				.on('Effect.postId', '=', postId)
-				.onRef('Effect.commentId', '=', 'Post.id'),
-		)
-		.select(sql<number>`Effect.p`.as(`targetP`))
-		.select(sql<number>`Effect.q`.as(`targetQ`))
-		.select(sql<number>`Effect.r`.as(`targetR`))
-		.select(sql<number>`Effect.pCount`.as(`targetPCount`))
-		.select(sql<number>`Effect.pCount`.as(`targetPSize`))
-		.selectAll('Post')
-		.selectAll('FullScore')
-		.select(eb =>
-			eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'),
-		)
-		// .orderBy('FullScore.score', 'desc')
-		// .where('ScoredPost.parentId', '=', parentId)
-		.limit(MAX_POSTS_PER_PAGE)
-
-	// Sort by relative entropy (strength of effect on target) or in case of tie, on score
-	const immediateChildren = (await query.execute()).sort(
-		(a, b) =>
-			// This is the same as the thread_score in score.jl
-			relativeEntropy(a.targetP, a.targetQ) * a.targetPSize -
-				relativeEntropy(b.targetP, b.targetQ) * b.targetPSize ||
-			a.score - b.score,
-	)
-
-	const results: RankedPost[][] = await Promise.all(
-		immediateChildren.map(async (post: ScoredPost) => {
-			const effects = await getEffects(trx, post.id)
-			const targetEffect: Effect | undefined = effects.find(
-				e => e.postId == postId,
-			)
-
-			const isCritical = targetEffect
-				? targetEffect.topCommentId === targetEffect.commentId
-				: false
-			return [
-				{
-					...post,
-					parent: post.parentId ? await getPost(trx, post.parentId) : null,
-					effects: effects,
-					isCritical: isCritical,
-				},
-				...(await getRankedRepliesInternal(trx, postId, post.id)),
-			]
-		}),
-	)
-
-	return results.flat()
-}
-
-export async function getRankedDirectReplies(
-	trx: Transaction<DB>,
-	postId: number,
-) {
-	console.log('Direct replies')
-	const query = trx
-		.selectFrom('Post')
-		.innerJoin('EffectWithDefault as Effect', 'Effect.commentId', 'Post.id')
-		.innerJoin('ScoreWithDefault as Score', 'Score.postId', 'Effect.commentId')
-		.where('Post.parentId', '=', postId)
-		.where('Effect.postId', '=', postId)
-		.where('Effect.commentId', 'is not', null)
-		.select('Effect.commentId as postId')
-		.select('Effect.p as targetP')
-		.select('Effect.pSize as targetPSize')
-		.select('Effect.q as targetQ')
-		.select('Effect.qSize as targetQSize')
-		.select('Score.score')
-
-	const result = await query.execute()
-
-	const resultSorted = result
-		.sort(
-			(a, b) =>
-				// This is the same as the thread_score in score.jl
-				relativeEntropy(a.targetP, a.targetQ === null ? a.targetP : a.targetQ) *
-					a.targetPSize -
-					relativeEntropy(b.targetP, b.targetQ ? a.targetP : a.targetQ) *
-						b.targetPSize || a.score - b.score,
-		)
-		// reversed because we sort ascending
-		.reverse()
-
-	const scoredPosts = await Promise.all(
-		resultSorted.map(item => getScoredPost(trx, item.postId as number)),
-	)
-
-	return scoredPosts
 }

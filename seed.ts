@@ -1,8 +1,6 @@
 import bcrypt from 'bcryptjs'
 import { db } from '#app/db.ts'
 import { createPost } from '#app/post.ts'
-import { getRankedPosts } from '#app/ranking.ts'
-
 import { getPasswordHash } from '#app/utils/auth.server.ts'
 import { Direction, vote } from '#app/vote.ts'
 
@@ -66,9 +64,6 @@ export async function seed() {
 		)
 	})
 
-	// Then, bob views the page
-	await db.transaction().execute(async trx => await getRankedPosts(trx))
-
 	// Then bob posts a response to alice's post
 	let post2 = await db.transaction().execute(async trx => {
 		return createPost(
@@ -84,9 +79,6 @@ export async function seed() {
 	db.transaction().execute(
 		async trx => await vote(trx, bob, post1, Direction.Down),
 	)
-
-	// bob views home page
-	db.transaction().execute(async trx => await getRankedPosts(trx))
 
 	// And responds to bob's response
 	await db.transaction().execute(async trx => {
@@ -110,9 +102,6 @@ export async function seed() {
 		)
 	})
 
-	// Bob then views the page again
-	await db.transaction().execute(async trx => getRankedPosts(trx))
-
 	// And respond's to Alices's latest post
 	await db.transaction().execute(async trx => {
 		return createPost(
@@ -134,10 +123,6 @@ export async function seed() {
 			{ isPrivate: false, withUpvote: true },
 		)
 	})
-
-	// Bob then views the page once again
-	await db.transaction().execute(async trx => getRankedPosts(trx))
-	// console.log("Ranked posts", posts)
 
 	// And respond's to Alice's third post
 	await db.transaction().execute(async trx => {
