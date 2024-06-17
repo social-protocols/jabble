@@ -61,15 +61,21 @@ export function PostWithReplies({
 		targetHasVote &&
 		currentVoteState.vote == Direction.Neutral
 
-	const indicatorTWClass = voteHereIndicator
-		? 'border-l-blue-500 border-solid border-l-4 pl-2 dark:border-l-[#7dcfff]'
-		: 'border-l-transparent border-solid border-l-4 pl-2'
-
 	const isCollapsed = isCollapsedState.get(replyTreeState.post.id) || false
+
+	const isRootPost = replyTreeState.post.id == focussedPostId
+
+	const lineColor = voteHereIndicator
+		? 'border-l-blue-500 dark:border-l-[#7dcfff]'
+		: 'border-l-transparent'
+
+	const lineClass = isRootPost
+		? ''
+		: 'border-l-4 border-solid pl-2 ' + lineColor
 
 	return (
 		<>
-			<div className={indicatorTWClass}>
+			<div className={lineClass}>
 				<PostDetails
 					post={replyTreeState.post}
 					teaser={false}
