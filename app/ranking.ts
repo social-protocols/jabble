@@ -60,7 +60,7 @@ export function addReplyToReplyTree(
 
 export type CommentTreeState = {
 	[key: number]: {
-		p: number
+		p: number | null
 		voteState: VoteState
 	}
 }
@@ -72,9 +72,10 @@ export async function getCommentTreeState(
 ): Promise<CommentTreeState> {
 	const descendantIds = await getDescendants(trx, rootId)
 	const pArray = await trx
-		.selectFrom('Score')
-		.where('postId', 'in', descendantIds.concat([rootId]))
-		.select(['postId', 'p'])
+		.selectFrom('Post')
+		.leftJoin('Score', join => join.onRef('Score.postId', '=', 'Post.id'))
+		.where('id', 'in', descendantIds.concat([rootId]))
+		.select(['id as postId', 'p'])
 		.execute()
 
 	const userVotes: VoteState[] | undefined = userId
