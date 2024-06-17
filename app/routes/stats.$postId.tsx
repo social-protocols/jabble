@@ -67,15 +67,15 @@ export default function PostStats() {
 `
 
 	const topCommentMarkdown =
-		post.topCommentId == null
+		post.criticalThreadId == null
 			? ''
 			: `
-## Top Reply 
+## Critical Comment
 
 - **top reply id:** ${
-					post.topCommentId == null
+					post.criticalThreadId == null
 						? 'null'
-						: `[${post.topCommentId}](/stats/${post.topCommentId})`
+						: `[${post.criticalThreadId}](/stats/${post.criticalThreadId})`
 				}
 - **informed votes:** &nbsp;&nbsp;&nbsp;&nbsp; ${post.pCount} ▲ ${
 					post.pSize - post.pCount

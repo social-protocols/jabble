@@ -105,7 +105,7 @@ export async function getUserVotes(
 ): Promise<VoteState[]> {
 	return await trx
 		.selectFrom('Post')
-		.innerJoin('ScoreWithDefault as Score', 'Score.postId', 'Post.id')
+		.innerJoin('FullScore as Score', 'Score.postId', 'Post.id')
 		.leftJoin('Vote', join =>
 			join.onRef('Vote.postId', '=', 'Post.id').on('Vote.userId', '=', userId),
 		)
