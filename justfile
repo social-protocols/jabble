@@ -103,6 +103,7 @@ use-production-data:
 	cp -f $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db-wal $SOCIAL_PROTOCOLS_DATADIR/
 	cp -f $SOCIAL_PROTOCOLS_DATADIR/production/global-brain.db-wal $SOCIAL_PROTOCOLS_DATADIR/
 	just migrate
+	just replay-vote-events
 
 production-db:
 	fly ssh console -C 'sqlite3 /litefs/data/sqlite.db'
@@ -118,4 +119,8 @@ recent-sessions:
 
 replay-vote-events:
 	rm -f $SOCIAL_PROTOCOLS_DATADIR/global-brain.db
+	sqlite3 $APP_DATABASE_PATH "delete from effectEvent where 1=1"
+	sqlite3 $APP_DATABASE_PATH "delete from effect where 1=1"
+	sqlite3 $APP_DATABASE_PATH "delete from score where 1=1"
+	sqlite3 $APP_DATABASE_PATH "delete from scoreEvent where 1=1"
 	time npx tsx other/replay-vote-events.ts
