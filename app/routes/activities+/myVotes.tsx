@@ -1,5 +1,5 @@
 import { type LoaderFunctionArgs, json } from '@remix-run/node'
-import { Link, useLoaderData } from '@remix-run/react'
+import { useLoaderData } from '@remix-run/react'
 import { useState } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
@@ -95,7 +95,11 @@ function CurrentVoteListItem({
 	return (
 		<>
 			<div className="flex w-full flex-col">
-				<PostContent linkTo={`/post/${postWithVote.id}`} content={postWithVote.content} deactivateLinks={false} />
+				<PostContent
+					linkTo={`/post/${postWithVote.id}`}
+					content={postWithVote.content}
+					deactivateLinks={false}
+				/>
 				<div className="flex w-full">
 					<div className="items-end space-x-2">
 						<span className="italic text-gray-500">You voted:</span>
