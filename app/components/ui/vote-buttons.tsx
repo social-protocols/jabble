@@ -61,7 +61,7 @@ export function VoteButtons({
 					className={upClass + ' ' + negMargin}
 					onClick={async () => await submitVote(Direction.Up)}
 				>
-					🡅
+					⬆
 				</button>
 				<Link to={`/stats/${postId}`} className={'text-xs opacity-50'}>
 					{pCurrentString}
@@ -70,7 +70,7 @@ export function VoteButtons({
 					className={downClass + ' ' + negMargin}
 					onClick={async () => await submitVote(Direction.Down)}
 				>
-					🡇
+					⬇
 				</button>
 			</div>
 		</>
