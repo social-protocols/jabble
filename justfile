@@ -108,11 +108,17 @@ use-production-data:
 production-db:
 	fly ssh console -C 'sqlite3 /litefs/data/sqlite.db'
 
-
 install-node-extension-from-earthly:
-  earthly --artifact +globalbrain-node-package/artifact ./GlobalBrain.jl/globalbrain-node
-  (cd ./GlobalBrain.jl/globalbrain-node && npm install)
-  npm install --ignore-scripts --save './GlobalBrain.jl/globalbrain-node'
+	npm remove ../GlobalBrain.jl/globalbrain-node
+	earthly --artifact +globalbrain-node-package/artifact ./GlobalBrain.jl/globalbrain-node
+	(cd ./GlobalBrain.jl/globalbrain-node && npm install)
+	npm install --ignore-scripts --save './GlobalBrain.jl/globalbrain-node'
+
+install-local-node-extension:
+	cd ../GlobalBrain.jl && just --justfile ./justfile build-shared-library
+	npm install
+#	npm remove ./GlobalBrain.jl/globalbrain-node
+#	rm -rf ./GlobalBrain.jl/globalbrain-node
 
 recent-sessions:
 	fly ssh console -C 'other/recent-sessions.sh'
