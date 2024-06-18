@@ -47,7 +47,7 @@ nix-packages:
 
 globalbrain-node-package:
   FROM scratch
-  ARG GLOBALBRAIN_REF=f45875c02ad0f44484457a34b9d01b69beaea08e # perf improvements, fix another negative tallies bug 
+  ARG GLOBALBRAIN_REF=55fc3a287d70cd68d9796b57d070b3eaa9c0aa1a # Fix bug where no score event was output if parent has not yet been seen
   COPY github.com/social-protocols/GlobalBrain.jl:$GLOBALBRAIN_REF+node-ext/artifact /artifact
   # COPY ../GlobalBrain.jl+node-ext/artifact /artifact
   SAVE ARTIFACT /artifact
