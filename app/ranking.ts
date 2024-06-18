@@ -60,7 +60,7 @@ export function addReplyToReplyTree(
 
 export type CommentTreeState = {
 	[key: number]: {
-		p: number
+		p: number | null
 		voteState: VoteState
 		isDeleted: boolean
 	}
