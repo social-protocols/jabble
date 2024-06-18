@@ -95,17 +95,11 @@ function CurrentVoteListItem({
 	return (
 		<>
 			<div className="flex w-full flex-col">
-				<PostContent content={postWithVote.content} deactivateLinks={false} />
+				<PostContent linkTo={`/post/${postWithVote.id}`} content={postWithVote.content} deactivateLinks={false} />
 				<div className="flex w-full">
 					<div className="items-end space-x-2">
 						<span className="italic text-gray-500">You voted:</span>
 						<span className={voteIconColor}>{currentVoteString}</span>
-						<Link
-							to={`/post/${postWithVote.id}`}
-							className="rounded bg-green-500 px-1 text-white"
-						>
-							review
-						</Link>
 					</div>
 				</div>
 			</div>
