@@ -127,3 +127,16 @@ export async function getUserVotes(
 		)
 		.execute()
 }
+
+export async function getAllCurrentVotes(
+	trx: Transaction<DB>,
+	userId: string,
+): Promise<VoteState[]> {
+	const result: { postId: number }[] = await trx
+		.selectFrom('Vote')
+		.where('userId', '=', userId)
+		.select('postId')
+		.execute()
+	const postsUserVotedOn = result.map(row => row.postId)
+	return await getUserVotes(trx, userId, postsUserVotedOn)
+}
