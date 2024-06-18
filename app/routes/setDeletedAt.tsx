@@ -1,13 +1,14 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { db } from '#app/db.ts'
-import { restoreDeletedPost } from '#app/post.ts'
+import { setDeletedAt } from '#app/post.ts'
 import { getCommentTreeState } from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariant } from '#app/utils/misc.tsx'
 
-type restoreData = {
+type deletionData = {
 	postId: number
 	focussedPostId: number | null
+	deletedAt: number | null
 }
 
 export const action = async (args: ActionFunctionArgs) => {
@@ -15,13 +16,14 @@ export const action = async (args: ActionFunctionArgs) => {
 	const userId = await getUserId(request)
 	invariant(userId, `No authenticated user, got userId ${userId}`)
 
-	const data = (await request.json()) as restoreData
+	const data = (await request.json()) as deletionData
 	const postId = data.postId
 	const focussedPostId = data.focussedPostId
+	const deletedAt = data.deletedAt
 
 	await db
 		.transaction()
-		.execute(async trx => await restoreDeletedPost(trx, postId, userId))
+		.execute(async trx => await setDeletedAt(trx, postId, deletedAt, userId))
 
 	if (focussedPostId) {
 		const newCommentTreeState = await db

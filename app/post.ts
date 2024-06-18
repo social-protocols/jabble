@@ -86,57 +86,36 @@ export async function getReplyIds(
 	return result.map(postResult => postResult.id)
 }
 
-export async function deletePost(
+export async function setDeletedAt(
 	trx: Transaction<DB>,
-	id: number,
+	postId: number,
+	deletedAt: number | null,
 	byUserId: string,
 ) {
 	checkIsAdminOrThrow(byUserId)
 
 	const existingPost = await trx
 		.selectFrom('Post')
-		.where('id', '=', id)
+		.where('id', '=', postId)
 		.selectAll()
 		.executeTakeFirst()
 
-	invariant(existingPost, `Cannot delete post: Post ${id} not found`)
+	invariant(existingPost, `Cannot delete post: Post ${postId} not found`)
 
-	if (existingPost.deletedAt != null) {
-		console.warn(`Cannot delete post: Post ${id} already deleted`)
+	if (deletedAt != null && existingPost.deletedAt != null) {
+		console.warn(`Cannot delete post: Post ${postId} already deleted`)
+		return
+	}
+
+	if (deletedAt == null && existingPost.deletedAt == null) {
+		console.warn(`Cannot restore non-deleted post ${postId}`)
 		return
 	}
 
 	await trx
 		.updateTable('Post')
-		.set({ deletedAt: Date.now() })
-		.where('id', '=', id)
-		.execute()
-}
-
-export async function restoreDeletedPost(
-	trx: Transaction<DB>,
-	id: number,
-	byUserId: string,
-) {
-	checkIsAdminOrThrow(byUserId)
-
-	const existingPost = await trx
-		.selectFrom('Post')
-		.where('id', '=', id)
-		.selectAll()
-		.executeTakeFirst()
-
-	invariant(existingPost, `Cannot restore post: Post ${id} not found`)
-
-	if (existingPost.deletedAt == null) {
-		console.warn(`Cannot restore non-deleted post ${id}`)
-		return
-	}
-
-	await trx
-		.updateTable('Post')
-		.set({ deletedAt: null })
-		.where('id', '=', id)
+		.set({ deletedAt: deletedAt })
+		.where('id', '=', postId)
 		.execute()
 }
 

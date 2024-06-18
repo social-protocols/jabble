@@ -32,30 +32,13 @@ export function PostActionBar({
 	// TODO: Is this a sane default?
 	const isDeleted = postDataState[post.id]?.isDeleted || false
 
-	// TODO: maybe this handlers could be one function and the delete/restore
-	// feature could be one route
-	async function handleDelete() {
+	async function handleSetDeletedAt(deletedAt: number | null) {
 		const payload = {
 			postId: post.id,
 			focussedPostId: focussedPostId,
+			deletedAt: deletedAt,
 		}
-		const response = await fetch('/deletePost', {
-			method: 'POST',
-			body: JSON.stringify(payload),
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		})
-		const newPostDataState = (await response.json()) as CommentTreeState
-		setPostDataState(newPostDataState)
-	}
-
-	async function handleRestore() {
-		const payload = {
-			postId: post.id,
-			focussedPostId: focussedPostId,
-		}
-		const response = await fetch('/restorePost', {
+		const response = await fetch('/setDeletedAt', {
 			method: 'POST',
 			body: JSON.stringify(payload),
 			headers: {
@@ -85,14 +68,14 @@ export function PostActionBar({
 					(!isDeleted ? (
 						<button
 							className="rounded bg-red-400 px-1 text-white"
-							onClick={handleDelete}
+							onClick={() => handleSetDeletedAt(Date.now())}
 						>
 							delete
 						</button>
 					) : (
 						<button
 							className="rounded bg-green-500 px-1 text-white"
-							onClick={handleRestore}
+							onClick={() => handleSetDeletedAt(null)}
 						>
 							restore
 						</button>
