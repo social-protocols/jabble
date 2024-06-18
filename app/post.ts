@@ -4,6 +4,7 @@ import { type Post } from '#app/db/types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { Direction, vote } from '#app/vote.ts'
 import { type DB } from './db/kysely-types.ts'
+import { checkIsAdminOrThrow } from './utils/auth.server.ts'
 
 export async function createPost(
 	trx: Transaction<DB>,
@@ -85,77 +86,36 @@ export async function getReplyIds(
 	return result.map(postResult => postResult.id)
 }
 
-export async function deletePost(
+export async function setDeletedAt(
 	trx: Transaction<DB>,
-	id: number,
+	postId: number,
+	deletedAt: number | null,
 	byUserId: string,
 ) {
-	const user = await trx
-		.selectFrom('User')
-		.where('id', '=', byUserId)
-		.selectAll()
-		.executeTakeFirst()
-
-	invariant(user, `Cannot delete post: User ${byUserId} not found`)
-	invariant(
-		user.isAdmin,
-		`Cannot delete post: User ${byUserId} doesn't have permission`,
-	)
+	checkIsAdminOrThrow(byUserId)
 
 	const existingPost = await trx
 		.selectFrom('Post')
-		.where('id', '=', id)
+		.where('id', '=', postId)
 		.selectAll()
 		.executeTakeFirst()
 
-	invariant(existingPost, `Cannot delete post: Post ${id} not found`)
+	invariant(existingPost, `Cannot delete post: Post ${postId} not found`)
 
-	if (existingPost.deletedAt != null) {
-		console.warn(`Cannot delete post: Post ${id} already deleted`)
+	if (deletedAt != null && existingPost.deletedAt != null) {
+		console.warn(`Cannot delete post: Post ${postId} already deleted`)
+		return
+	}
+
+	if (deletedAt == null && existingPost.deletedAt == null) {
+		console.warn(`Cannot restore non-deleted post ${postId}`)
 		return
 	}
 
 	await trx
 		.updateTable('Post')
-		.set({ deletedAt: Date.now() })
-		.where('id', '=', id)
-		.execute()
-}
-
-export async function restoreDeletedPost(
-	trx: Transaction<DB>,
-	id: number,
-	byUserId: string,
-) {
-	const user = await trx
-		.selectFrom('User')
-		.where('id', '=', byUserId)
-		.selectAll()
-		.executeTakeFirst()
-
-	invariant(user, `Cannot restore post: User ${byUserId} not found`)
-	invariant(
-		user.isAdmin,
-		`Cannot restore post: User ${byUserId} doesn't have permission`,
-	)
-
-	const existingPost = await trx
-		.selectFrom('Post')
-		.where('id', '=', id)
-		.selectAll()
-		.executeTakeFirst()
-
-	invariant(existingPost, `Cannot delete post: Post ${id} not found`)
-
-	if (existingPost.deletedAt == null) {
-		console.warn(`Cannot restore non-deleted post ${id}`)
-		return
-	}
-
-	await trx
-		.updateTable('Post')
-		.set({ deletedAt: null })
-		.where('id', '=', id)
+		.set({ deletedAt: deletedAt })
+		.where('id', '=', postId)
 		.execute()
 }
 

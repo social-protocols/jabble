@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs'
 import { safeRedirect } from 'remix-utils/safe-redirect'
 import { type Password, type User } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
-import { combineHeaders } from './misc.tsx'
+import { combineHeaders, invariant } from './misc.tsx'
 import { authSessionStorage } from './session.server.ts'
 
 export const SESSION_EXPIRATION_TIME = 1000 * 60 * 60 * 24 * 30
@@ -68,6 +68,17 @@ export async function requireAnonymous(request: Request) {
 	if (userId) {
 		throw redirect('/')
 	}
+}
+
+export async function checkIsAdminOrThrow(userId: string) {
+	const user: User | undefined = await db
+		.selectFrom('User')
+		.where('id', '=', userId)
+		.selectAll()
+		.executeTakeFirst()
+
+	invariant(user, `User ${userId} not found when checking for admin status`)
+	invariant(user.isAdmin, `User ${userId} is not an admin`)
 }
 
 export async function login({
