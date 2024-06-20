@@ -64,6 +64,9 @@ export function PostDetails({
 
 	const marginLeft = loggedIn ? 'ml-[40px]' : 'ml-2'
 
+	// TODO: Is this a sane default?
+	const isDeleted = postDataState[post.id]?.isDeleted || false
+
 	return (
 		<div className={'flex w-full ' + (className ? className : '')}>
 			{isCollapsed ? (
@@ -104,7 +107,7 @@ export function PostDetails({
 							setIsCollapsedState={setIsCollapsedState}
 							onCollapseParentSiblings={onCollapseParentSiblings}
 						/>
-						{post.deletedAt == null ? (
+						{!isDeleted ? (
 							<PostContent
 								content={post.content}
 								maxLines={teaser ? postTeaserMaxLines : undefined}
@@ -126,6 +129,7 @@ export function PostDetails({
 							post={post}
 							focussedPostId={focussedPostId}
 							loggedIn={loggedIn}
+							postDataState={postDataState}
 							setPostDataState={setPostDataState}
 							onReplySubmit={onReplySubmit}
 						/>
