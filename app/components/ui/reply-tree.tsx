@@ -102,7 +102,7 @@ export function PostWithReplies({
 					<TreeReplies
 						initialReplyTree={replyTreeState}
 						criticalCommentId={criticalCommentId}
-						targetHasVote={currentVoteState.vote !== Direction.Neutral}
+						targetHasVote={targetHasVote}
 						loggedIn={loggedIn}
 						focussedPostId={focussedPostId}
 						pathFromFocussedPost={pathFromFocussedPost}
