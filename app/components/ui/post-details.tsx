@@ -62,7 +62,11 @@ export function PostDetails({
 
 	const marginLeft = loggedIn ? 'ml-[40px]' : 'ml-2'
 
-	const isDeleted = commentTreeState.posts[post.id]?.isDeleted || true
+	const commentTreeStatePostEntry = commentTreeState.posts[post.id]
+	const isDeleted =
+		commentTreeStatePostEntry === undefined
+			? true
+			: commentTreeStatePostEntry.isDeleted
 
 	return (
 		<div className={'flex w-full ' + (className ? className : '')}>
@@ -126,7 +130,7 @@ export function PostDetails({
 							post={post}
 							focussedPostId={focussedPostId}
 							loggedIn={loggedIn}
-							commentTreeState={commentTreeState}
+							isDeleted={isDeleted}
 							setCommentTreeState={setCommentTreeState}
 							onReplySubmit={onReplySubmit}
 						/>
