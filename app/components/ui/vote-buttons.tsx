@@ -7,28 +7,28 @@ export function VoteButtons({
 	postId,
 	focussedPostId,
 	needsVoteOnCriticalComment,
-	postDataState,
-	setPostDataState,
+	commentTreeState,
+	setCommentTreeState,
 }: {
 	postId: number
 	focussedPostId: number
 	needsVoteOnCriticalComment: boolean
-	postDataState: CommentTreeState
-	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
+	commentTreeState: CommentTreeState
+	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
 }) {
 	const buttonColorClass = needsVoteOnCriticalComment
 		? 'text-blue-500 dark:text-[#7dcfff]'
 		: ''
 
 	const currentVoteState =
-		postDataState[postId]?.voteState || defaultVoteState(postId)
+		commentTreeState.posts[postId]?.voteState || defaultVoteState(postId)
 
 	const upClass =
 		currentVoteState.vote == Direction.Up ? buttonColorClass : 'opacity-30'
 	const downClass =
 		currentVoteState.vote == Direction.Down ? buttonColorClass : 'opacity-30'
 
-	const pCurrent: number = postDataState[postId]?.p || NaN
+	const pCurrent: number = commentTreeState.posts[postId]?.p || NaN
 	const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
 
 	const submitVote = async function (direction: Direction) {
@@ -45,8 +45,8 @@ export function VoteButtons({
 				'Content-Type': 'application/json',
 			},
 		})
-		const newPostDataState = (await response.json()) as CommentTreeState
-		setPostDataState(newPostDataState)
+		const newCommentTreeState = (await response.json()) as CommentTreeState
+		setCommentTreeState(newCommentTreeState)
 	}
 
 	const negMargin = 'my-[-1px]'
