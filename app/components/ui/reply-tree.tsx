@@ -1,12 +1,10 @@
 import { type Map } from 'immutable'
 import { useState, type Dispatch, type SetStateAction } from 'react'
-import { CONVINCINGNESS_THRESHOLD } from '#app/constants.ts'
 import {
 	type ImmutableReplyTree,
 	addReplyToReplyTree,
 	type CommentTreeState,
 } from '#app/ranking.ts'
-import { relativeEntropy } from '#app/utils/entropy.ts'
 import { Direction, defaultVoteState } from '#app/vote.ts'
 import { PostDetails } from './post-details.tsx'
 
@@ -37,16 +35,9 @@ export function PostWithReplies({
 	) => void
 	className?: string
 }) {
-	const effectOnParentSize = relativeEntropy(
-		initialReplyTree.effect ? initialReplyTree.effect.p : 0,
-		initialReplyTree.effect ? initialReplyTree.effect.q : 0,
-	)
-	const isConvincing = effectOnParentSize > CONVINCINGNESS_THRESHOLD
-
 	const [replyTreeState, setReplyTreeState] = useState(initialReplyTree)
 	function onReplySubmit(reply: ImmutableReplyTree) {
 		const newReplyTreeState = addReplyToReplyTree(replyTreeState, reply)
-		console.log('updated', newReplyTreeState)
 		setReplyTreeState(newReplyTreeState)
 	}
 
@@ -78,7 +69,6 @@ export function PostWithReplies({
 					post={replyTreeState.post}
 					teaser={false}
 					loggedIn={loggedIn}
-					isConvincing={isConvincing}
 					voteHereIndicator={voteHereIndicator}
 					className={'mt-3 ' + (className || '')}
 					focussedPostId={focussedPostId}

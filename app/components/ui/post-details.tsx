@@ -22,7 +22,6 @@ export function PostDetails({
 	post,
 	teaser,
 	loggedIn,
-	isConvincing,
 	voteHereIndicator,
 	className,
 	focussedPostId,
@@ -37,7 +36,6 @@ export function PostDetails({
 	post: ScoredPost
 	teaser: boolean
 	loggedIn: boolean
-	isConvincing?: boolean
 	voteHereIndicator?: boolean
 	className?: string
 	focussedPostId: number
@@ -73,7 +71,7 @@ export function PostDetails({
 					<PostInfoBar
 						post={post}
 						pathFromFocussedPost={pathFromFocussedPost}
-						isConvincing={isConvincing || false}
+						isConvincing={false}
 						voteHereIndicator={voteHereIndicator}
 						isCollapsedState={isCollapsedState}
 						setIsCollapsedState={setIsCollapsedState}
@@ -100,7 +98,7 @@ export function PostDetails({
 						<PostInfoBar
 							post={post}
 							pathFromFocussedPost={pathFromFocussedPost}
-							isConvincing={isConvincing || false}
+							isConvincing={false}
 							voteHereIndicator={voteHereIndicator}
 							isCollapsedState={isCollapsedState}
 							setIsCollapsedState={setIsCollapsedState}

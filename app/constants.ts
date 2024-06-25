@@ -1,2 +1,1 @@
-export const CONVINCINGNESS_THRESHOLD = 0.1
 export const MAX_POSTS_PER_PAGE = 100
