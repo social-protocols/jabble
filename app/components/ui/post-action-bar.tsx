@@ -13,15 +13,15 @@ export function PostActionBar({
 	post,
 	focussedPostId,
 	loggedIn,
-	postDataState,
-	setPostDataState,
+	commentTreeState,
+	setCommentTreeState,
 	onReplySubmit,
 }: {
 	post: ScoredPost
 	focussedPostId: number
 	loggedIn: boolean
-	postDataState: CommentTreeState
-	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
+	commentTreeState: CommentTreeState
+	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
 	onReplySubmit: (reply: ImmutableReplyTree) => void
 }) {
 	const user = useOptionalUser()
@@ -30,7 +30,7 @@ export function PostActionBar({
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
 	// TODO: Is this a sane default?
-	const isDeleted = postDataState[post.id]?.isDeleted || false
+	const isDeleted = commentTreeState.posts[post.id]?.isDeleted || false
 
 	async function handleSetDeletedAt(deletedAt: number | null) {
 		const payload = {
@@ -45,8 +45,8 @@ export function PostActionBar({
 				'Content-Type': 'application/json',
 			},
 		})
-		const newPostDataState = (await response.json()) as CommentTreeState
-		setPostDataState(newPostDataState)
+		const newCommentTreeState = (await response.json()) as CommentTreeState
+		setCommentTreeState(newCommentTreeState)
 	}
 
 	return (
@@ -95,7 +95,7 @@ export function PostActionBar({
 					post={post}
 					setShowReplyForm={setShowReplyForm}
 					focussedPostId={focussedPostId}
-					setPostDataState={setPostDataState}
+					setCommentTreeState={setCommentTreeState}
 					onReplySubmit={onReplySubmit}
 				/>
 			)}
@@ -107,13 +107,13 @@ function ReplyForm({
 	post,
 	setShowReplyForm,
 	focussedPostId,
-	setPostDataState,
+	setCommentTreeState,
 	onReplySubmit,
 }: {
 	post: ScoredPost
 	setShowReplyForm: Dispatch<SetStateAction<boolean>>
 	focussedPostId: number
-	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
+	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
 	onReplySubmit: (reply: ImmutableReplyTree) => void
 }) {
 	const [contentState, setContentState] = useState<string>('')
@@ -137,7 +137,7 @@ function ReplyForm({
 			commentTreeState: CommentTreeState
 			newReplyTree: ReplyTree
 		}
-		setPostDataState && setPostDataState(responseDecoded.commentTreeState)
+		setCommentTreeState && setCommentTreeState(responseDecoded.commentTreeState)
 		onReplySubmit &&
 			onReplySubmit(toImmutableReplyTree(responseDecoded.newReplyTree))
 	}

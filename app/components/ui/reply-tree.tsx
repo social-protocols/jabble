@@ -12,26 +12,24 @@ import { PostDetails } from './post-details.tsx'
 
 export function PostWithReplies({
 	initialReplyTree,
-	criticalCommentId,
 	targetHasVote,
 	focussedPostId,
 	pathFromFocussedPost,
 	loggedIn,
-	postDataState,
-	setPostDataState,
+	commentTreeState,
+	setCommentTreeState,
 	isCollapsedState,
 	setIsCollapsedState,
 	onCollapseParentSiblings,
 	className,
 }: {
 	initialReplyTree: ImmutableReplyTree
-	criticalCommentId: number | null
 	targetHasVote: boolean
 	focussedPostId: number
 	pathFromFocussedPost: Immutable.List<number>
 	loggedIn: boolean
-	postDataState: CommentTreeState
-	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
+	commentTreeState: CommentTreeState
+	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
 	isCollapsedState: Immutable.Map<number, boolean>
 	setIsCollapsedState: Dispatch<SetStateAction<Map<number, boolean>>>
 	onCollapseParentSiblings: (
@@ -53,11 +51,11 @@ export function PostWithReplies({
 	}
 
 	const currentVoteState =
-		postDataState[replyTreeState.post.id]?.voteState ||
+		commentTreeState.posts[replyTreeState.post.id]?.voteState ||
 		defaultVoteState(replyTreeState.post.id)
 
 	const voteHereIndicator =
-		criticalCommentId == replyTreeState.post.id &&
+		commentTreeState.criticalCommentId === replyTreeState.post.id &&
 		targetHasVote &&
 		currentVoteState.vote == Direction.Neutral
 
@@ -85,8 +83,8 @@ export function PostWithReplies({
 					className={'mt-3 ' + (className || '')}
 					focussedPostId={focussedPostId}
 					pathFromFocussedPost={pathFromFocussedPost}
-					postDataState={postDataState}
-					setPostDataState={setPostDataState}
+					commentTreeState={commentTreeState}
+					setCommentTreeState={setCommentTreeState}
 					isCollapsedState={isCollapsedState}
 					setIsCollapsedState={setIsCollapsedState}
 					onReplySubmit={onReplySubmit}
@@ -101,13 +99,12 @@ export function PostWithReplies({
 				>
 					<TreeReplies
 						initialReplyTree={replyTreeState}
-						criticalCommentId={criticalCommentId}
 						targetHasVote={targetHasVote}
 						loggedIn={loggedIn}
 						focussedPostId={focussedPostId}
 						pathFromFocussedPost={pathFromFocussedPost}
-						postDataState={postDataState}
-						setPostDataState={setPostDataState}
+						commentTreeState={commentTreeState}
+						setCommentTreeState={setCommentTreeState}
 						isCollapsedState={isCollapsedState}
 						setIsCollapsedState={setIsCollapsedState}
 						onCollapseParentSiblings={onCollapseParentSiblings}
@@ -120,25 +117,23 @@ export function PostWithReplies({
 
 function TreeReplies({
 	initialReplyTree,
-	criticalCommentId,
 	targetHasVote,
 	loggedIn,
 	focussedPostId,
 	pathFromFocussedPost,
-	postDataState,
-	setPostDataState,
+	commentTreeState,
+	setCommentTreeState,
 	isCollapsedState,
 	setIsCollapsedState,
 	onCollapseParentSiblings,
 }: {
 	initialReplyTree: ImmutableReplyTree
-	criticalCommentId: number | null
 	targetHasVote: boolean
 	loggedIn: boolean
 	focussedPostId: number
 	pathFromFocussedPost: Immutable.List<number>
-	postDataState: CommentTreeState
-	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
+	commentTreeState: CommentTreeState
+	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
 	isCollapsedState: Immutable.Map<number, boolean>
 	setIsCollapsedState: Dispatch<SetStateAction<Map<number, boolean>>>
 	onCollapseParentSiblings: (
@@ -154,13 +149,12 @@ function TreeReplies({
 					<PostWithReplies
 						key={`${focussedPostId}-${tree.post.id}`}
 						initialReplyTree={tree}
-						criticalCommentId={criticalCommentId}
 						targetHasVote={targetHasVote}
 						focussedPostId={focussedPostId}
 						pathFromFocussedPost={pathFromFocussedPost.push(tree.post.id)}
 						loggedIn={loggedIn}
-						postDataState={postDataState}
-						setPostDataState={setPostDataState}
+						commentTreeState={commentTreeState}
+						setCommentTreeState={setCommentTreeState}
 						isCollapsedState={isCollapsedState}
 						setIsCollapsedState={setIsCollapsedState}
 						onCollapseParentSiblings={onCollapseParentSiblings}

@@ -27,8 +27,8 @@ export function PostDetails({
 	className,
 	focussedPostId,
 	pathFromFocussedPost,
-	postDataState,
-	setPostDataState,
+	commentTreeState,
+	setCommentTreeState,
 	isCollapsedState,
 	setIsCollapsedState,
 	onReplySubmit,
@@ -42,8 +42,8 @@ export function PostDetails({
 	className?: string
 	focussedPostId: number
 	pathFromFocussedPost: Immutable.List<number>
-	postDataState: CommentTreeState
-	setPostDataState: Dispatch<SetStateAction<CommentTreeState>>
+	commentTreeState: CommentTreeState
+	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
 	isCollapsedState?: Immutable.Map<number, boolean>
 	setIsCollapsedState?: Dispatch<SetStateAction<Map<number, boolean>>>
 	onReplySubmit: (reply: ImmutableReplyTree) => void
@@ -54,7 +54,7 @@ export function PostDetails({
 	voteHereIndicator = voteHereIndicator || false
 
 	const currentVoteState =
-		postDataState[post.id]?.voteState || defaultVoteState(post.id)
+		commentTreeState.posts[post.id]?.voteState || defaultVoteState(post.id)
 	const needsVoteOnCriticalComment: boolean =
 		currentVoteState.vote !== Direction.Neutral && !currentVoteState.isInformed
 
@@ -64,8 +64,7 @@ export function PostDetails({
 
 	const marginLeft = loggedIn ? 'ml-[40px]' : 'ml-2'
 
-	// TODO: Is this a sane default?
-	const isDeleted = postDataState[post.id]?.isDeleted || false
+	const isDeleted = commentTreeState.posts[post.id]?.isDeleted || true
 
 	return (
 		<div className={'flex w-full ' + (className ? className : '')}>
@@ -88,8 +87,8 @@ export function PostDetails({
 							postId={post.id}
 							focussedPostId={focussedPostId}
 							needsVoteOnCriticalComment={needsVoteOnCriticalComment}
-							postDataState={postDataState}
-							setPostDataState={setPostDataState}
+							commentTreeState={commentTreeState}
+							setCommentTreeState={setCommentTreeState}
 						/>
 					</div>
 					<div
@@ -129,8 +128,8 @@ export function PostDetails({
 							post={post}
 							focussedPostId={focussedPostId}
 							loggedIn={loggedIn}
-							postDataState={postDataState}
-							setPostDataState={setPostDataState}
+							commentTreeState={commentTreeState}
+							setCommentTreeState={setCommentTreeState}
 							onReplySubmit={onReplySubmit}
 						/>
 					</div>

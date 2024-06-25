@@ -43,16 +43,27 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		.transaction()
 		.execute(async trx => await getTransitiveParents(trx, post.id))
 
-	const postData: CommentTreeState = await db
+	const commentTreeState: CommentTreeState = await db
 		.transaction()
 		.execute(async trx => await getCommentTreeState(trx, postId, userId))
 
-	return json({ post, mutableReplyTree, transitiveParents, postData, loggedIn })
+	return json({
+		post,
+		mutableReplyTree,
+		transitiveParents,
+		commentTreeState,
+		loggedIn,
+	})
 }
 
 export default function PostPage() {
-	const { post, mutableReplyTree, transitiveParents, postData, loggedIn } =
-		useLoaderData<typeof loader>()
+	const {
+		post,
+		mutableReplyTree,
+		transitiveParents,
+		commentTreeState,
+		loggedIn,
+	} = useLoaderData<typeof loader>()
 
 	const params = useParams()
 
@@ -63,7 +74,7 @@ export default function PostPage() {
 			post={post}
 			mutableReplyTree={mutableReplyTree}
 			transitiveParents={transitiveParents}
-			postData={postData}
+			initialCommentTreeState={commentTreeState}
 			loggedIn={loggedIn}
 		/>
 	)
@@ -73,21 +84,23 @@ function Post({
 	post,
 	mutableReplyTree,
 	transitiveParents,
-	postData,
+	initialCommentTreeState,
 	loggedIn,
 }: {
 	post: ScoredPost
 	mutableReplyTree: ReplyTree
 	transitiveParents: Post[]
-	postData: CommentTreeState
+	initialCommentTreeState: CommentTreeState
 	loggedIn: boolean
 }) {
 	const replyTree = toImmutableReplyTree(mutableReplyTree)
 
-	const [postDataState, setPostDataState] = useState<CommentTreeState>(postData)
+	const [commentTreeState, setCommentTreeState] = useState<CommentTreeState>(
+		initialCommentTreeState,
+	)
 
 	const currentVoteState =
-		postDataState[post.id]?.voteState || defaultVoteState(post.id)
+		commentTreeState.posts[post.id]?.voteState || defaultVoteState(post.id)
 
 	let initialIsCollapsedState = Map<number, boolean>()
 	const allIds = getAllPostIdsInTree(replyTree)
@@ -106,13 +119,12 @@ function Post({
 			<PostWithReplies
 				className={'mb-2 rounded-sm bg-post p-2'}
 				initialReplyTree={replyTree}
-				criticalCommentId={post.criticalThreadId}
 				targetHasVote={currentVoteState.vote !== Direction.Neutral}
 				loggedIn={loggedIn}
 				focussedPostId={post.id}
 				pathFromFocussedPost={Immutable.List()}
-				postDataState={postDataState}
-				setPostDataState={setPostDataState}
+				commentTreeState={commentTreeState}
+				setCommentTreeState={setCommentTreeState}
 				isCollapsedState={isCollapsedState}
 				setIsCollapsedState={setIsCollapsedState}
 				onCollapseParentSiblings={pathFromFocussedPost =>

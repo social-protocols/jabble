@@ -51,7 +51,7 @@ export function addReplyToReplyTree(
 	}
 }
 
-export type CommentTreeState = {
+export type PostMap = {
 	[key: number]: {
 		p: number | null
 		voteState: VoteState
@@ -59,12 +59,17 @@ export type CommentTreeState = {
 	}
 }
 
+export type CommentTreeState = {
+	criticalCommentId: number | null
+	posts: PostMap
+}
+
 export async function getCommentTreeState(
 	trx: Transaction<DB>,
-	rootId: number,
+	targetPostId: number,
 	userId: string | null,
 ): Promise<CommentTreeState> {
-	const descendantIds = await getDescendants(trx, rootId)
+	const descendantIds = await getDescendants(trx, targetPostId)
 
 	const results = await trx
 		.selectFrom('Post')
@@ -76,17 +81,25 @@ export async function getCommentTreeState(
 			'FullScore.p as p',
 			'Post.deletedAt as deletedAt',
 		])
-		.where('Post.id', 'in', descendantIds.concat([rootId]))
+		.where('Post.id', 'in', descendantIds.concat([targetPostId]))
 		.where('p', 'is not', null)
 		.execute()
 
+	const criticalCommentId = (
+		await trx
+			.selectFrom('FullScore')
+			.where('postId', '=', targetPostId)
+			.select('criticalThreadId')
+			.executeTakeFirstOrThrow()
+	).criticalThreadId
+
 	const userVotes: VoteState[] | undefined = userId
-		? await getUserVotes(trx, userId, descendantIds.concat([rootId]))
+		? await getUserVotes(trx, userId, descendantIds.concat([targetPostId]))
 		: undefined
 
-	let commentTreeState: CommentTreeState = {}
+	let commentTreeState: CommentTreeState = { criticalCommentId, posts: {} }
 	results.forEach(result => {
-		commentTreeState[result.postId] = {
+		commentTreeState.posts[result.postId] = {
 			// We have to use the non-null assertion here because kysely doesn't
 			// return values as non-null type even if we filter nulls with a where
 			// condition. We can, however, be sure that the values are never null.
