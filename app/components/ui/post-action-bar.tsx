@@ -63,19 +63,11 @@ export function PostActionBar({
 				)}
 				{isAdminUser &&
 					(!isDeleted ? (
-						<button
-							className="rounded bg-red-400 px-1 text-white"
-							onClick={() => handleSetDeletedAt(Date.now())}
-						>
-							delete
+						<button onClick={() => handleSetDeletedAt(Date.now())}>
+							Delete
 						</button>
 					) : (
-						<button
-							className="rounded bg-green-500 px-1 text-white"
-							onClick={() => handleSetDeletedAt(null)}
-						>
-							restore
-						</button>
+						<button onClick={() => handleSetDeletedAt(null)}>Restore</button>
 					))}
 				{showReplyForm && (
 					<button
