@@ -13,14 +13,14 @@ export function PostActionBar({
 	post,
 	focussedPostId,
 	loggedIn,
-	commentTreeState,
+	isDeleted,
 	setCommentTreeState,
 	onReplySubmit,
 }: {
 	post: ScoredPost
 	focussedPostId: number
 	loggedIn: boolean
-	commentTreeState: CommentTreeState
+	isDeleted: boolean
 	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
 	onReplySubmit: (reply: ImmutableReplyTree) => void
 }) {
@@ -28,9 +28,6 @@ export function PostActionBar({
 	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
-
-	// TODO: Is this a sane default?
-	const isDeleted = commentTreeState.posts[post.id]?.isDeleted || false
 
 	async function handleSetDeletedAt(deletedAt: number | null) {
 		const payload = {
