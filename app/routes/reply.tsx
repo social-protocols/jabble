@@ -6,8 +6,8 @@ import { getCommentTreeState, getReplyTree } from '#app/ranking.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
 type ReplyData = {
-	parentId: number | null
-	focussedPostId: number | null
+	parentId: number
+	focussedPostId: number
 	content: string
 	isPrivate: number
 }
@@ -20,7 +20,7 @@ export const action = async (args: ActionFunctionArgs) => {
 	const userId: string = await requireUserId(request)
 
 	const content = dataParsed.content
-	const parentId = dataParsed.parentId || null
+	const parentId = dataParsed.parentId
 	const isPrivate = Boolean(dataParsed.isPrivate)
 	const focussedPostId = dataParsed.focussedPostId
 
@@ -37,10 +37,12 @@ export const action = async (args: ActionFunctionArgs) => {
 	if (focussedPostId) {
 		const newReplyTree = await db
 			.transaction()
-			.execute(async trx => getReplyTree(trx, postId, userId))
+			.execute(async trx => await getReplyTree(trx, postId, userId))
 		const commentTreeState = await db
 			.transaction()
-			.execute(async trx => getCommentTreeState(trx, focussedPostId, userId))
+			.execute(
+				async trx => await getCommentTreeState(trx, focussedPostId, userId),
+			)
 		return {
 			commentTreeState,
 			newReplyTree,

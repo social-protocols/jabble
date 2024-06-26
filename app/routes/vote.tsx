@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs, json } from '@remix-run/node'
+import { type ActionFunctionArgs } from '@remix-run/node'
 import { db } from '#app/db.ts'
 import { getCommentTreeState } from '#app/ranking.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
@@ -26,13 +26,14 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	await db
 		.transaction()
-		.execute(async trx => vote(trx, userId, dataParsed.postId, newState))
+		.execute(async trx => await vote(trx, userId, dataParsed.postId, newState))
 
 	const commentTreeState = await db
 		.transaction()
-		.execute(async trx =>
-			getCommentTreeState(trx, dataParsed.focussedPostId, userId),
+		.execute(
+			async trx =>
+				await getCommentTreeState(trx, dataParsed.focussedPostId, userId),
 		)
 
-	return json(commentTreeState)
+	return commentTreeState
 }

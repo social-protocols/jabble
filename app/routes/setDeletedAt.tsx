@@ -28,7 +28,9 @@ export const action = async (args: ActionFunctionArgs) => {
 	if (focussedPostId) {
 		const newCommentTreeState = await db
 			.transaction()
-			.execute(async trx => getCommentTreeState(trx, focussedPostId, userId))
+			.execute(
+				async trx => await getCommentTreeState(trx, focussedPostId, userId),
+			)
 		return newCommentTreeState
 	}
 
