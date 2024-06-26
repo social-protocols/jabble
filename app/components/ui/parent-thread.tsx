@@ -1,11 +1,11 @@
 import { Link } from '@remix-run/react'
-import { type Post } from '#app/db/types.ts'
+import { type ApiPost } from '#app/api-types.js'
 import { PostContent } from './post-content.tsx'
 
 export function ParentThread({
 	transitiveParents,
 }: {
-	transitiveParents: Post[]
+	transitiveParents: ApiPost[]
 }) {
 	return (
 		<div>

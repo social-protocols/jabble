@@ -19,9 +19,9 @@ import {
 import { getUserId } from '#app/utils/auth.server.ts'
 import { defaultVoteState } from '#app/vote.ts'
 import {
-  Direction, 
-	type ReplyTree,
-  type ApiPost,
+	Direction,
+	type ApiReplyTree,
+	type ApiPost,
 	type CommentTreeState,
 	type ImmutableReplyTree,
 } from '#app/api-types.ts'
@@ -29,56 +29,30 @@ import {
 const postIdSchema = z.coerce.number()
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-
-  console.log("===============fetching post data=====================")
-
-  performance.clearMeasures();
-  performance.clearMarks();
-
-  performance.mark('start');
+	console.log('===============fetching post data=====================')
 
 	const userId: string | null = await getUserId(request)
-  performance.mark('getUserId');
 
 	const loggedIn = userId !== null
-  
 
 	const postId = postIdSchema.parse(params.postId)
 	const post: ApiPost = await db
 		.transaction()
 		.execute(async trx => await getApiStatsPost(trx, postId))
-  
-  performance.mark('getScoredPost');
 
-	const mutableReplyTree: ReplyTree = await db
+	const mutableReplyTree: ApiReplyTree = await db
 		.transaction()
 		.execute(async trx => await getReplyTree(trx, postId, userId))
-  
-  performance.mark('getReplyTree');
 
 	const transitiveParents: ApiPost[] = await db
 		.transaction()
 		.execute(async trx => await getTransitiveParents(trx, post.id))
 
-  performance.mark('getTransitiveParents');
-
 	const commentTreeState: CommentTreeState = await db
 		.transaction()
 		.execute(async trx => await getCommentTreeState(trx, postId, userId))
-    
-  performance.mark('getCommentTreeState');
 
-  performance.measure('getUserId', 'start', 'getUserId');
-  performance.measure('getScoredPost', 'getUserId', 'getScoredPost');
-  performance.measure('getReplyTree', 'getScoredPost', 'getReplyTree');
-  performance.measure('getTransitiveParents', 'getReplyTree', 'getTransitiveParents');
-  performance.measure('getCommentTreeState', 'getTransitiveParents', 'getCommentTreeState');
-
-  performance.getEntries().forEach(entry => {
-    console.log(entry.name + ' duration: ' + entry.duration + ' ms')
-  })
-
-  console.log("ReplyTree", JSON.stringify(mutableReplyTree, null, 2))
+	console.log('ReplyTree', JSON.stringify(mutableReplyTree, null, 2))
 
 	return json({
 		post,
@@ -121,7 +95,7 @@ function Post({
 	loggedIn,
 }: {
 	post: ApiPost
-	mutableReplyTree: ReplyTree
+	mutableReplyTree: ApiReplyTree
 	transitiveParents: ApiPost[]
 	initialCommentTreeState: CommentTreeState
 	loggedIn: boolean

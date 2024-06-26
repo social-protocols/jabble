@@ -1,7 +1,6 @@
 import * as Immutable from 'immutable'
 import { type Transaction, sql } from 'kysely'
 import { MAX_POSTS_PER_PAGE } from '#app/constants.ts'
-import { type Effect, type Post, type FullScore } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { type DB } from './db/kysely-types.ts'
 import {
 	getDescendantCount,
@@ -12,19 +11,21 @@ import {
 import { relativeEntropy } from './utils/entropy.ts'
 import { defaultVoteState, getUserVotes } from './vote.ts'
 import {
-  type VoteState,
-  type ApiPostWithOSize,
-  type ApiStatsPost,
-  type ApiPost,
-  type ApiEffect,
-  type ReplyTree,
-  type ImmutableReplyTree,
-  type CommentTreeState,
-  type ApiFrontPagePost,
+	type VoteState,
+	type ApiPostWithOSize,
+	type ApiStatsPost,
+	type ApiPost,
+	type ApiEffect,
+	type ApiReplyTree,
+	type ImmutableReplyTree,
+	type CommentTreeState,
+	type ApiFrontPagePost,
 } from '#app/api-types.ts'
+import { Effect } from './db/types.ts'
 
-
-export function toImmutableReplyTree(replyTree: ReplyTree): ImmutableReplyTree {
+export function toImmutableReplyTree(
+	replyTree: ApiReplyTree,
+): ImmutableReplyTree {
 	return {
 		...replyTree,
 		replies: Immutable.List(replyTree.replies.map(toImmutableReplyTree)),
@@ -115,29 +116,30 @@ export async function getReplyTree(
 	trx: Transaction<DB>,
 	postId: number,
 	userId: string | null,
-  indent: number = 0,
-): Promise<ReplyTree> {
+	indent: number = 0,
+): Promise<ApiReplyTree> {
+	const indentStr = '  '.repeat(indent)
+	console.log(indentStr + `getReplyTree(${postId})`)
 
-  let start = performance.now()
+	let start = performance.now()
 
 	const directReplyIds = await getReplyIds(trx, postId)
 
-  const indentStr = "  ".repeat(indent)
-  console.log(indentStr + "getReplyIds", performance.now() - start)
-  start = performance.now()
+	console.log(indentStr + 'getReplyIds', performance.now() - start)
+	start = performance.now()
 
-	const post = await getApiStatsPost(trx, postId)
-  
-  console.log(indentStr + "getScoredPost", performance.now() - start)
-  start = performance.now()
+	const post = await getApiPostWithOSize(trx, postId)
+
+	console.log(indentStr + 'getScoredPost', performance.now() - start)
+	start = performance.now()
 
 	const effect: Effect | undefined =
 		post.parentId == null
 			? undefined
 			: await getEffect(trx, post.parentId, postId)
 
-  console.log(indentStr + "getEffect", performance.now() - start)
-  start = performance.now()
+	console.log(indentStr + 'getEffect', performance.now() - start)
+	start = performance.now()
 
 	// TODO: not necessary because iterating over empty list is trivial
 	if (directReplyIds.length === 0) {
@@ -148,9 +150,9 @@ export async function getReplyTree(
 		}
 	}
 	// const effectsOnParent: Effect[] = await getEffects(trx, postId)
-  
-  // console.log(indentStr + "getEffects", performance.now() - start)
-  // start = performance.now()
+
+	// console.log(indentStr + "getEffects", performance.now() - start)
+	// start = performance.now()
 
 	// let effectLookup: Map<number, Effect> = new Map<number, Effect>()
 	// for (const e of effectsOnParent) {
@@ -163,8 +165,8 @@ export async function getReplyTree(
 	// 	directReplyIds.map(async replyId => await getScoredPost(trx, replyId)),
 	// )
 
-//   console.log(indentStr + "getScoredPosts (map)", performance.now() - start)
-//   start = performance.now()
+	//   console.log(indentStr + "getScoredPosts (map)", performance.now() - start)
+	//   start = performance.now()
 
 	// let scoredRepliesLookup: Map<number, ScoredPost> = new Map<
 	// 	number,
@@ -195,17 +197,14 @@ export async function getReplyTree(
 	// 	)
 	// })
 
-  console.log(indentStr + "sort", performance.now() - start)
-  start = performance.now()
-
-	const replies: ReplyTree[] = await Promise.all(
+	const replies: ApiReplyTree[] = await Promise.all(
 		directReplyIds.map(
 			async replyId => await getReplyTree(trx, replyId, userId, indent + 1),
 		),
 	)
 
-  console.log(indentStr + "getReplyTree (map)", performance.now() - start)
-  start = performance.now()
+	console.log(indentStr + 'getReplyTree (recursive)', performance.now() - start)
+	start = performance.now()
 
 	return {
 		post: post,
@@ -228,7 +227,6 @@ export async function getEffect(
 	return effect
 }
 
-
 export async function getApiPost(
 	trx: Transaction<DB>,
 	postId: number,
@@ -237,13 +235,14 @@ export async function getApiPost(
 		.selectFrom('Post')
 		.selectAll('Post')
 		.where('Post.id', '=', postId)
-    .executeTakeFirstOrThrow()
+		.executeTakeFirstOrThrow()
 }
 
 export async function getApiPostWithOSize(
 	trx: Transaction<DB>,
 	postId: number,
 ): Promise<ApiPostWithOSize> {
+	const start = performance.now()
 	let query = trx
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
@@ -254,12 +253,15 @@ export async function getApiPostWithOSize(
 		.select('oSize')
 		.where('Post.id', '=', postId)
 
-	const scoredPost = (await query.execute())[0]
+	console.log(query.toString())
+
+	const scoredPost = await query.executeTakeFirstOrThrow()
 
 	if (scoredPost === undefined) {
 		throw new Error(`Failed to read scored post postId=${postId}`)
 	}
 
+	console.log(`getScoredPost(${postId})`, performance.now() - start)
 	return scoredPost
 }
 

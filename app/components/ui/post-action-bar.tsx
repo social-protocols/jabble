@@ -1,13 +1,11 @@
 import { type Dispatch, type SetStateAction, useState } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
-import {
-	toImmutableReplyTree,
-} from '#app/ranking.ts'
+import { toImmutableReplyTree } from '#app/ranking.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 import {
 	type ImmutableReplyTree,
-  type ApiPost,
-	type ReplyTree,
+	type ApiPost,
+	type ApiReplyTree,
 	type CommentTreeState,
 } from '#app/api-types.ts'
 
@@ -126,7 +124,7 @@ function ReplyForm({
 		})
 		const responseDecoded = (await response.json()) as {
 			commentTreeState: CommentTreeState
-			newReplyTree: ReplyTree
+			newReplyTree: ApiReplyTree
 		}
 		setCommentTreeState && setCommentTreeState(responseDecoded.commentTreeState)
 		onReplySubmit &&

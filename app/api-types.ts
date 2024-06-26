@@ -1,10 +1,10 @@
-import * as Immutable from 'immutable'
+import type * as Immutable from 'immutable'
 
 export type ApiPost = {
 	id: number
 	parentId: number | null
 	content: string
-	authorId: string
+	// authorId: string
 	createdAt: number
 	deletedAt: number | null
 	isPrivate: number
@@ -12,7 +12,10 @@ export type ApiPost = {
 
 export type ApiPostWithOSize = ApiPost & { oSize: number }
 
-export type ApiFrontPagePost = ApiPost & { oSize: number, nTransitiveComments: number }
+export type ApiFrontPagePost = ApiPost & {
+	oSize: number
+	nTransitiveComments: number
+}
 
 export type ApiEffect = {
 	postId: number
@@ -27,10 +30,10 @@ export type ApiEffect = {
 	weight: number
 }
 
-export type ReplyTree = {
+export type ApiReplyTree = {
 	post: ApiPostWithOSize
 	effect: ApiEffect | null // TODO: move to CommentTreeState
-	replies: ReplyTree[]
+	replies: ApiReplyTree[]
 }
 
 export type ImmutableReplyTree = {
@@ -42,12 +45,12 @@ export type ImmutableReplyTree = {
 export type CommentTreeState = {
 	criticalCommentId: number | null
 	posts: {
-    [key: number]: {
-      p: number | null
-      voteState: VoteState
-      isDeleted: boolean
-    }
-  }
+		[key: number]: {
+			p: number | null
+			voteState: VoteState
+			isDeleted: boolean
+		}
+	}
 }
 
 export enum Direction {
@@ -80,7 +83,6 @@ export type ApiStatsPost = ApiPost & {
 	qSize: number
 	r: number
 	weight: number
-	
-  criticalThreadId: number | null
-}
 
+	criticalThreadId: number | null
+}
