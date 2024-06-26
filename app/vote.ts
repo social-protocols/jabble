@@ -3,18 +3,12 @@ import { type VoteEvent, type InsertableVoteEvent } from '#app/db/types.ts'
 import { sendVoteEvent } from '#app/globalbrain.ts'
 import { type DB } from './db/kysely-types.ts'
 import { invariant } from './utils/misc.tsx'
+import {
+  Direction,
+  type VoteState,
+} from '#app/api-types.ts'
 
-export enum Direction {
-	Up = 1,
-	Down = -1,
-	Neutral = 0,
-}
 
-export type VoteState = {
-	postId: number
-	vote: Direction
-	isInformed: boolean
-}
 
 export function defaultVoteState(postId: number): VoteState {
 	return {

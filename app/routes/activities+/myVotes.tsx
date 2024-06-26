@@ -4,11 +4,15 @@ import { useState } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
 import { db } from '#app/db.ts'
-import { type ScoredPost, getScoredPost } from '#app/ranking.ts'
+import {  getApiPost } from '#app/ranking.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
-import { type VoteState, getAllCurrentVotes } from '#app/vote.ts'
+import { getAllCurrentVotes } from '#app/vote.ts'
+import {
+  type ApiPost,
+  type VoteState,
+} from '#app/api-types.ts'
 
-type PostWithVote = ScoredPost & VoteState
+type PostWithVote = ApiPost & VoteState
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
@@ -23,7 +27,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		.execute(async trx => {
 			return Promise.all(
 				userVotes.map(async vote => {
-					const post = await getScoredPost(trx, vote.postId)
+					const post = await getApiPost(trx, vote.postId)
 					return { ...post, ...vote }
 				}),
 			)

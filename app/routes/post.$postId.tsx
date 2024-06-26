@@ -7,45 +7,78 @@ import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/ui/reply-tree.tsx'
-import { type Post } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
 import { getTransitiveParents } from '#app/post.ts'
 import {
-	type ReplyTree,
-	type ScoredPost,
 	getReplyTree,
-	getScoredPost,
+	getApiStatsPost,
 	getCommentTreeState,
-	type CommentTreeState,
 	getAllPostIdsInTree,
 	toImmutableReplyTree,
-	type ImmutableReplyTree,
 } from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
-import { Direction, defaultVoteState } from '#app/vote.ts'
+import { defaultVoteState } from '#app/vote.ts'
+import {
+  Direction, 
+	type ReplyTree,
+  type ApiPost,
+	type CommentTreeState,
+	type ImmutableReplyTree,
+} from '#app/api-types.ts'
 
 const postIdSchema = z.coerce.number()
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
+
+  console.log("===============fetching post data=====================")
+
+  performance.clearMeasures();
+  performance.clearMarks();
+
+  performance.mark('start');
+
 	const userId: string | null = await getUserId(request)
+  performance.mark('getUserId');
+
 	const loggedIn = userId !== null
+  
 
 	const postId = postIdSchema.parse(params.postId)
-	const post: ScoredPost = await db
+	const post: ApiPost = await db
 		.transaction()
-		.execute(async trx => await getScoredPost(trx, postId))
+		.execute(async trx => await getApiStatsPost(trx, postId))
+  
+  performance.mark('getScoredPost');
 
 	const mutableReplyTree: ReplyTree = await db
 		.transaction()
 		.execute(async trx => await getReplyTree(trx, postId, userId))
+  
+  performance.mark('getReplyTree');
 
-	const transitiveParents: Post[] = await db
+	const transitiveParents: ApiPost[] = await db
 		.transaction()
 		.execute(async trx => await getTransitiveParents(trx, post.id))
+
+  performance.mark('getTransitiveParents');
 
 	const commentTreeState: CommentTreeState = await db
 		.transaction()
 		.execute(async trx => await getCommentTreeState(trx, postId, userId))
+    
+  performance.mark('getCommentTreeState');
+
+  performance.measure('getUserId', 'start', 'getUserId');
+  performance.measure('getScoredPost', 'getUserId', 'getScoredPost');
+  performance.measure('getReplyTree', 'getScoredPost', 'getReplyTree');
+  performance.measure('getTransitiveParents', 'getReplyTree', 'getTransitiveParents');
+  performance.measure('getCommentTreeState', 'getTransitiveParents', 'getCommentTreeState');
+
+  performance.getEntries().forEach(entry => {
+    console.log(entry.name + ' duration: ' + entry.duration + ' ms')
+  })
+
+  console.log("ReplyTree", JSON.stringify(mutableReplyTree, null, 2))
 
 	return json({
 		post,
@@ -87,9 +120,9 @@ function Post({
 	initialCommentTreeState,
 	loggedIn,
 }: {
-	post: ScoredPost
+	post: ApiPost
 	mutableReplyTree: ReplyTree
-	transitiveParents: Post[]
+	transitiveParents: ApiPost[]
 	initialCommentTreeState: CommentTreeState
 	loggedIn: boolean
 }) {

@@ -10,23 +10,19 @@ import {
 	getReplyIds,
 } from './post.ts'
 import { relativeEntropy } from './utils/entropy.ts'
-import { type VoteState, defaultVoteState, getUserVotes } from './vote.ts'
-// Post with score and the effect of its top reply
-export type ScoredPost = Post & FullScore & { nReplies: number } // TODO: nReplies not needed anymore -> remove
+import { defaultVoteState, getUserVotes } from './vote.ts'
+import {
+  type VoteState,
+  type ApiPostWithOSize,
+  type ApiStatsPost,
+  type ApiPost,
+  type ApiEffect,
+  type ReplyTree,
+  type ImmutableReplyTree,
+  type CommentTreeState,
+  type ApiFrontPagePost,
+} from '#app/api-types.ts'
 
-export type FrontPagePost = ScoredPost & { nTransitiveComments: number }
-
-export type ReplyTree = {
-	post: ScoredPost
-	effect: Effect | null // TODO: move to CommentTreeState
-	replies: ReplyTree[]
-}
-
-export type ImmutableReplyTree = {
-	post: ScoredPost
-	effect: Effect | null // TODO: move to CommentTreeState
-	replies: Immutable.List<ImmutableReplyTree>
-}
 
 export function toImmutableReplyTree(replyTree: ReplyTree): ImmutableReplyTree {
 	return {
@@ -49,19 +45,6 @@ export function addReplyToReplyTree(
 		...tree,
 		replies: tree.replies.map(child => addReplyToReplyTree(child, reply)),
 	}
-}
-
-export type PostMap = {
-	[key: number]: {
-		p: number | null
-		voteState: VoteState
-		isDeleted: boolean
-	}
-}
-
-export type CommentTreeState = {
-	criticalCommentId: number | null
-	posts: PostMap
 }
 
 export async function getCommentTreeState(
@@ -132,13 +115,29 @@ export async function getReplyTree(
 	trx: Transaction<DB>,
 	postId: number,
 	userId: string | null,
+  indent: number = 0,
 ): Promise<ReplyTree> {
+
+  let start = performance.now()
+
 	const directReplyIds = await getReplyIds(trx, postId)
-	const post = await getScoredPost(trx, postId)
+
+  const indentStr = "  ".repeat(indent)
+  console.log(indentStr + "getReplyIds", performance.now() - start)
+  start = performance.now()
+
+	const post = await getApiStatsPost(trx, postId)
+  
+  console.log(indentStr + "getScoredPost", performance.now() - start)
+  start = performance.now()
+
 	const effect: Effect | undefined =
 		post.parentId == null
 			? undefined
 			: await getEffect(trx, post.parentId, postId)
+
+  console.log(indentStr + "getEffect", performance.now() - start)
+  start = performance.now()
 
 	// TODO: not necessary because iterating over empty list is trivial
 	if (directReplyIds.length === 0) {
@@ -148,51 +147,66 @@ export async function getReplyTree(
 			replies: [],
 		}
 	}
-	const effectsOnParent: Effect[] = await getEffects(trx, postId)
-	let effectLookup: Map<number, Effect> = new Map<number, Effect>()
-	for (const e of effectsOnParent) {
-		if (e.commentId == null) {
-			continue
-		}
-		effectLookup.set(e.commentId, e)
-	}
-	const scoredReplies: ScoredPost[] = await Promise.all(
-		directReplyIds.map(async replyId => await getScoredPost(trx, replyId)),
-	)
-	let scoredRepliesLookup: Map<number, ScoredPost> = new Map<
-		number,
-		ScoredPost
-	>()
-	for (const r of scoredReplies) {
-		scoredRepliesLookup.set(r.id, r)
-	}
-	const directReplyIdsSorted = directReplyIds.sort((a, b) => {
-		const effectA = effectLookup.get(a)
-		const targetPA = effectA ? effectA.p : 0
-		const targetQA = effectA ? effectA.q : 0
-		const targetPSizeA = effectA ? effectA.pSize : 0
+	// const effectsOnParent: Effect[] = await getEffects(trx, postId)
+  
+  // console.log(indentStr + "getEffects", performance.now() - start)
+  // start = performance.now()
 
-		const effectB = effectLookup.get(b)
-		const targetPB = effectB ? effectB.p : 0
-		const targetQB = effectB ? effectB.q : 0
-		const targetPSizeB = effectB ? effectB.pSize : 0
+	// let effectLookup: Map<number, Effect> = new Map<number, Effect>()
+	// for (const e of effectsOnParent) {
+	// 	if (e.commentId == null) {
+	// 		continue
+	// 	}
+	// 	effectLookup.set(e.commentId, e)
+	// }
+	// const scoredReplies: ScoredPost[] = await Promise.all(
+	// 	directReplyIds.map(async replyId => await getScoredPost(trx, replyId)),
+	// )
 
-		const scoredPostA = scoredRepliesLookup.get(a)
-		const scoredPostB = scoredRepliesLookup.get(b)
-		const scoreA = scoredPostA ? scoredPostA.score : 0
-		const scoreB = scoredPostB ? scoredPostB.score : 0
+//   console.log(indentStr + "getScoredPosts (map)", performance.now() - start)
+//   start = performance.now()
 
-		return (
-			relativeEntropy(targetPB, targetQB) * targetPSizeB -
-				relativeEntropy(targetPA, targetQA) * targetPSizeA || scoreB - scoreA
-		)
-	})
+	// let scoredRepliesLookup: Map<number, ScoredPost> = new Map<
+	// 	number,
+	// 	ScoredPost
+	// >()
+	// for (const r of scoredReplies) {
+	// 	scoredRepliesLookup.set(r.id, r)
+	// }
+	// const directReplyIdsSorted = directReplyIds.sort((a, b) => {
+	// 	const effectA = effectLookup.get(a)
+	// 	const targetPA = effectA ? effectA.p : 0
+	// 	const targetQA = effectA ? effectA.q : 0
+	// 	const targetPSizeA = effectA ? effectA.pSize : 0
+
+	// 	const effectB = effectLookup.get(b)
+	// 	const targetPB = effectB ? effectB.p : 0
+	// 	const targetQB = effectB ? effectB.q : 0
+	// 	const targetPSizeB = effectB ? effectB.pSize : 0
+
+	// 	const scoredPostA = scoredRepliesLookup.get(a)
+	// 	const scoredPostB = scoredRepliesLookup.get(b)
+	// 	const scoreA = scoredPostA ? scoredPostA.score : 0
+	// 	const scoreB = scoredPostB ? scoredPostB.score : 0
+
+	// 	return (
+	// 		relativeEntropy(targetPB, targetQB) * targetPSizeB -
+	// 			relativeEntropy(targetPA, targetQA) * targetPSizeA || scoreB - scoreA
+	// 	)
+	// })
+
+  console.log(indentStr + "sort", performance.now() - start)
+  start = performance.now()
 
 	const replies: ReplyTree[] = await Promise.all(
-		directReplyIdsSorted.map(
-			async replyId => await getReplyTree(trx, replyId, userId),
+		directReplyIds.map(
+			async replyId => await getReplyTree(trx, replyId, userId, indent + 1),
 		),
 	)
+
+  console.log(indentStr + "getReplyTree (map)", performance.now() - start)
+  start = performance.now()
+
 	return {
 		post: post,
 		effect: effect ? effect : null,
@@ -214,10 +228,45 @@ export async function getEffect(
 	return effect
 }
 
-export async function getScoredPost(
+
+export async function getApiPost(
 	trx: Transaction<DB>,
 	postId: number,
-): Promise<ScoredPost> {
+): Promise<ApiPost> {
+	return await trx
+		.selectFrom('Post')
+		.selectAll('Post')
+		.where('Post.id', '=', postId)
+    .executeTakeFirstOrThrow()
+}
+
+export async function getApiPostWithOSize(
+	trx: Transaction<DB>,
+	postId: number,
+): Promise<ApiPostWithOSize> {
+	let query = trx
+		.selectFrom('Post')
+		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
+		.leftJoin('PostStats', join =>
+			join.onRef('PostStats.postId', '=', 'Post.id'),
+		)
+		.selectAll('Post')
+		.select('oSize')
+		.where('Post.id', '=', postId)
+
+	const scoredPost = (await query.execute())[0]
+
+	if (scoredPost === undefined) {
+		throw new Error(`Failed to read scored post postId=${postId}`)
+	}
+
+	return scoredPost
+}
+
+export async function getApiStatsPost(
+	trx: Transaction<DB>,
+	postId: number,
+): Promise<ApiStatsPost> {
 	let query = trx
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
@@ -260,7 +309,7 @@ export async function getEffects(
 
 export async function getChronologicalToplevelPosts(
 	trx: Transaction<DB>,
-): Promise<FrontPagePost[]> {
+): Promise<ApiFrontPagePost[]> {
 	let query = trx
 		.selectFrom('Post')
 		.where('Post.parentId', 'is', null)

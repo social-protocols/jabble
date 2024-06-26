@@ -2,9 +2,10 @@ import assert from 'assert'
 import { type Transaction } from 'kysely'
 import { type Post } from '#app/db/types.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { Direction, vote } from '#app/vote.ts'
+import { vote } from '#app/vote.ts'
 import { type DB } from './db/kysely-types.ts'
 import { checkIsAdminOrThrow } from './utils/auth.server.ts'
+import { Direction, type ApiPost } from '#app/api-types.ts'
 
 export async function createPost(
 	trx: Transaction<DB>,
@@ -122,7 +123,7 @@ export async function setDeletedAt(
 export async function getTransitiveParents(
 	trx: Transaction<DB>,
 	id: number,
-): Promise<Post[]> {
+): Promise<ApiPost[]> {
 	let result: Post[] = await trx
 		.withRecursive('transitive_parents', db =>
 			db
@@ -159,6 +160,7 @@ export async function getTransitiveParents(
 	// the topmost parent is the first element in the array
 	// skip the first element, which is the post itself
 	let resultReversed = result.slice(1).reverse()
+
 	return resultReversed
 }
 

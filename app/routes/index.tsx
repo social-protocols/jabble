@@ -9,6 +9,7 @@ import { PostForm } from '#app/components/ui/post-form.tsx'
 import { db } from '#app/db.ts'
 import * as rankingTs from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
+import { ApiFrontPagePost } from '#app/api-types.ts'
 
 export default function Index() {
 	// due to the loader, this component will never be rendered, but we'll return
@@ -31,7 +32,7 @@ export function FrontpageFeed({
 	feed,
 	loggedIn,
 }: {
-	feed: rankingTs.FrontPagePost[]
+	feed: ApiFrontPagePost[]
 	loggedIn: boolean
 }) {
 	const [showNewDiscussionForm, setShowNewDiscussionForm] = useState(false)
@@ -79,7 +80,7 @@ Read [how Jabble makes conversations better](https://github.com/social-protocols
 	}
 }
 
-function PostList({ feed }: { feed: rankingTs.FrontPagePost[] }) {
+function PostList({ feed }: { feed: ApiFrontPagePost[] }) {
 	const filteredFeed = feed.filter(post => !post.isPrivate)
 	return filteredFeed.map(post => {
 		return <TopLevelPost key={post.id} post={post} className="flex-1" />
@@ -90,7 +91,7 @@ export function TopLevelPost({
 	post,
 	className,
 }: {
-	post: rankingTs.FrontPagePost
+	post: ApiFrontPagePost
 	className?: string
 }) {
 	const ageString = moment(post.createdAt).fromNow()
