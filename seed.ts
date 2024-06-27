@@ -1,8 +1,9 @@
 import bcrypt from 'bcryptjs'
+import { Direction } from '#app/api-types.ts'
 import { db } from '#app/db.ts'
 import { createPost } from '#app/post.ts'
 import { getPasswordHash } from '#app/utils/auth.server.ts'
-import { Direction, vote } from '#app/vote.ts'
+import { vote } from '#app/vote.ts'
 
 export async function seed() {
 	console.log('seeding...')
@@ -55,7 +56,7 @@ export async function seed() {
 
 	// First, alice creates a post
 	let post1 = await db.transaction().execute(async trx => {
-		return createPost(
+		return await createPost(
 			trx,
 			null,
 			'So, pregnant people can’t cross state lines to get abortions but guys like Kyle Rittenhouse can cross state lines to murder people. Seems fair.',
@@ -66,7 +67,7 @@ export async function seed() {
 
 	// Then bob posts a response to alice's post
 	let post2 = await db.transaction().execute(async trx => {
-		return createPost(
+		return await createPost(
 			trx,
 			post1,
 			'Kyle Rittenhouse was acquitted of murder charges. Clear video evidence showed he acted in self defense.',
@@ -82,7 +83,7 @@ export async function seed() {
 
 	// And responds to bob's response
 	await db.transaction().execute(async trx => {
-		return createPost(
+		return await createPost(
 			trx,
 			post2,
 			'That trial was a sham. They were never going to convict.',
@@ -93,7 +94,7 @@ export async function seed() {
 
 	// And then creates another unrelated post
 	let post4 = await db.transaction().execute(async trx => {
-		return createPost(
+		return await createPost(
 			trx,
 			null,
 			'Sudafed, Benadryl and most decongestants don’t work: FDA advisory panel https://trib.al/sJmOJBP',
@@ -104,7 +105,7 @@ export async function seed() {
 
 	// And respond's to Alices's latest post
 	await db.transaction().execute(async trx => {
-		return createPost(
+		return await createPost(
 			trx,
 			post4,
 			'This is misleading. Regular Benadryl is an antihistamine; it is not a decongestant. There is a Benadryl branded product that is impacted. https://www.nbcnews.com/news/amp/rcna104424',
@@ -115,7 +116,7 @@ export async function seed() {
 
 	// Alice post's again
 	let post6 = await db.transaction().execute(async trx => {
-		return createPost(
+		return await createPost(
 			trx,
 			null,
 			"Right now, real wages for the average American worker is higher than it was before the pandemic, with lower wage workers seeing the largest gains. That's Bidenomics.",
@@ -126,7 +127,7 @@ export async function seed() {
 
 	// And respond's to Alice's third post
 	await db.transaction().execute(async trx => {
-		return createPost(
+		return await createPost(
 			trx,
 			post6,
 			"The tweet's claim about real wages contains a factual error. On 3/15/20 when US COVID lockdowns began real wages adjusted for inflation (AFI) were $11.15. As of 7/16/23 real wages AFI are $11.05. Real wages AFI remain lower (not higher) than before the pandemic.",
@@ -136,32 +137,32 @@ export async function seed() {
 	})
 
 	await db.transaction().execute(async trx => {
-		vote(trx, alice, post6, Direction.Down)
+		await vote(trx, alice, post6, Direction.Down)
 
 		// agreed with 2 (shown 3)
-		vote(trx, charlie, post2, Direction.Up)
+		await vote(trx, charlie, post2, Direction.Up)
 
 		// changed mind after seeing 2
-		vote(trx, charlie, post1, Direction.Down)
+		await vote(trx, charlie, post1, Direction.Down)
 
 		// changed mind back (for no particular reason)
-		vote(trx, charlie, post1, Direction.Up)
+		await vote(trx, charlie, post1, Direction.Up)
 
 		// duplicate vote
-		vote(trx, charlie, post1, Direction.Up)
+		await vote(trx, charlie, post1, Direction.Up)
 
 		// changed mind back again
-		vote(trx, charlie, post1, Direction.Down)
+		await vote(trx, charlie, post1, Direction.Down)
 
 		// and s some other votes
-		vote(trx, charlie, post1, Direction.Down)
-		vote(trx, charlie, post2, Direction.Down)
-		vote(trx, charlie, post2, Direction.Up)
-		vote(trx, charlie, 3, 1)
-		vote(trx, charlie, 2, -1)
-		vote(trx, bob, 6, -1)
-		vote(trx, alice, 5, -1)
-		vote(trx, alice, 4, -1)
+		await vote(trx, charlie, post1, Direction.Down)
+		await vote(trx, charlie, post2, Direction.Down)
+		await vote(trx, charlie, post2, Direction.Up)
+		await vote(trx, charlie, 3, 1)
+		await vote(trx, charlie, 2, -1)
+		await vote(trx, bob, 6, -1)
+		await vote(trx, alice, 5, -1)
+		await vote(trx, alice, 4, -1)
 	})
 
 	// Create developer user with password 'password'. Can login with this user by pointing browser to /dev-login

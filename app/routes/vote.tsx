@@ -1,8 +1,9 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
+import { Direction } from '#app/api-types.ts'
 import { db } from '#app/db.ts'
 import { getCommentTreeState } from '#app/ranking.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
-import { Direction, vote } from '#app/vote.ts'
+import { vote } from '#app/vote.ts'
 
 type VoteData = {
 	postId: number

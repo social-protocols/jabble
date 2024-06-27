@@ -1,20 +1,9 @@
 import { type Transaction, sql } from 'kysely'
-import { type VoteEvent, type InsertableVoteEvent } from '#app/db/types.ts'
+import { Direction, type VoteState } from '#app/api-types.ts'
+import { type DBVoteEvent, type DBInsertableVoteEvent } from '#app/db/types.ts'
 import { sendVoteEvent } from '#app/globalbrain.ts'
 import { type DB } from './db/kysely-types.ts'
 import { invariant } from './utils/misc.tsx'
-
-export enum Direction {
-	Up = 1,
-	Down = -1,
-	Neutral = 0,
-}
-
-export type VoteState = {
-	postId: number
-	vote: Direction
-	isInformed: boolean
-}
 
 export function defaultVoteState(postId: number): VoteState {
 	return {
@@ -30,8 +19,8 @@ export async function vote(
 	userId: string,
 	postId: number,
 	direction: Direction,
-): Promise<VoteEvent> {
-	let voteEvent: VoteEvent = await insertVoteEvent(
+): Promise<DBVoteEvent> {
+	let voteEvent: DBVoteEvent = await insertVoteEvent(
 		trx,
 		userId,
 		postId,
@@ -48,7 +37,7 @@ async function insertVoteEvent(
 	userId: string,
 	postId: number,
 	vote: Direction,
-): Promise<VoteEvent> {
+): Promise<DBVoteEvent> {
 	const voteInt = vote as number
 
 	const post: { parentId: number | null } | undefined = await trx
@@ -64,14 +53,14 @@ async function insertVoteEvent(
 
 	const parentId = post.parentId
 
-	const voteEvent: InsertableVoteEvent = {
+	const voteEvent: DBInsertableVoteEvent = {
 		userId: userId,
 		parentId: parentId,
 		postId: postId,
 		vote: voteInt,
 	}
 
-	const results: VoteEvent[] = await trx
+	const results: DBVoteEvent[] = await trx
 		.insertInto('VoteEvent')
 		.values(voteEvent)
 		.returning([

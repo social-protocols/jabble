@@ -4,36 +4,38 @@ import * as Immutable from 'immutable'
 import { Map } from 'immutable'
 import { useState } from 'react'
 import { z } from 'zod'
+import {
+	Direction,
+	type ReplyTree,
+	type Post,
+	type CommentTreeState,
+	type ImmutableReplyTree,
+} from '#app/api-types.ts'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/ui/reply-tree.tsx'
-import { type Post } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
-import { getTransitiveParents } from '#app/post.ts'
+import { getPost, getTransitiveParents } from '#app/post.ts'
 import {
-	type ReplyTree,
-	type ScoredPost,
 	getReplyTree,
-	getScoredPost,
 	getCommentTreeState,
-	type CommentTreeState,
 	getAllPostIdsInTree,
 	toImmutableReplyTree,
-	type ImmutableReplyTree,
 } from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
-import { Direction, defaultVoteState } from '#app/vote.ts'
+import { defaultVoteState } from '#app/vote.ts'
 
 const postIdSchema = z.coerce.number()
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	const userId: string | null = await getUserId(request)
+
 	const loggedIn = userId !== null
 
 	const postId = postIdSchema.parse(params.postId)
-	const post: ScoredPost = await db
+	const post: Post = await db
 		.transaction()
-		.execute(async trx => await getScoredPost(trx, postId))
+		.execute(async trx => await getPost(trx, postId))
 
 	const mutableReplyTree: ReplyTree = await db
 		.transaction()
@@ -87,7 +89,7 @@ function Post({
 	initialCommentTreeState,
 	loggedIn,
 }: {
-	post: ScoredPost
+	post: Post
 	mutableReplyTree: ReplyTree
 	transitiveParents: Post[]
 	initialCommentTreeState: CommentTreeState

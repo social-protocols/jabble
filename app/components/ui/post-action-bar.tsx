@@ -1,12 +1,12 @@
 import { type Dispatch, type SetStateAction, useState } from 'react'
-import { Textarea } from '#app/components/ui/textarea.tsx'
 import {
 	type ImmutableReplyTree,
+	type Post,
 	type ReplyTree,
-	toImmutableReplyTree,
 	type CommentTreeState,
-	type ScoredPost,
-} from '#app/ranking.ts'
+} from '#app/api-types.ts'
+import { Textarea } from '#app/components/ui/textarea.tsx'
+import { toImmutableReplyTree } from '#app/ranking.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 
 export function PostActionBar({
@@ -17,7 +17,7 @@ export function PostActionBar({
 	setCommentTreeState,
 	onReplySubmit,
 }: {
-	post: ScoredPost
+	post: Post
 	focussedPostId: number
 	loggedIn: boolean
 	isDeleted: boolean
@@ -99,7 +99,7 @@ function ReplyForm({
 	setCommentTreeState,
 	onReplySubmit,
 }: {
-	post: ScoredPost
+	post: Post
 	setShowReplyForm: Dispatch<SetStateAction<boolean>>
 	focussedPostId: number
 	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>

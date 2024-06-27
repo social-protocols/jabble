@@ -2,10 +2,12 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
+import { type StatsPost } from '#app/api-types.ts'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
 import { db } from '#app/db.ts'
-import { type ScoredPost, getScoredPost, getEffects } from '#app/ranking.ts'
+import { getStatsPost } from '#app/post.ts'
+import { getEffects } from '#app/ranking.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
 
 const postIdSchema = z.coerce.number()
@@ -14,9 +16,9 @@ export async function loader({ params }: LoaderFunctionArgs) {
 	invariant(params.postId, 'Missing postid param')
 	const postId: number = postIdSchema.parse(params.postId)
 
-	const post: ScoredPost = await db
+	const post: StatsPost = await db
 		.transaction()
-		.execute(async trx => getScoredPost(trx, postId))
+		.execute(async trx => getStatsPost(trx, postId))
 
 	const effects =
 		post.parentId == null

@@ -1,32 +1,24 @@
 import * as Immutable from 'immutable'
 import { type Transaction, sql } from 'kysely'
+import {
+	type VoteState,
+	type ReplyTree,
+	type ImmutableReplyTree,
+	type CommentTreeState,
+	type FrontPagePost,
+} from '#app/api-types.ts'
 import { MAX_POSTS_PER_PAGE } from '#app/constants.ts'
-import { type Effect, type Post, type FullScore } from '#app/db/types.ts' // this is the Database interface we defined earlier
 import { type DB } from './db/kysely-types.ts'
+import { type DBEffect } from './db/types.ts'
 import {
 	getDescendantCount,
 	getDescendants,
 	getPost,
 	getReplyIds,
+	getPostWithOSizeAndScore,
 } from './post.ts'
 import { relativeEntropy } from './utils/entropy.ts'
-import { type VoteState, defaultVoteState, getUserVotes } from './vote.ts'
-// Post with score and the effect of its top reply
-export type ScoredPost = Post & FullScore & { nReplies: number } // TODO: nReplies not needed anymore -> remove
-
-export type FrontPagePost = ScoredPost & { nTransitiveComments: number }
-
-export type ReplyTree = {
-	post: ScoredPost
-	effect: Effect | null // TODO: move to CommentTreeState
-	replies: ReplyTree[]
-}
-
-export type ImmutableReplyTree = {
-	post: ScoredPost
-	effect: Effect | null // TODO: move to CommentTreeState
-	replies: Immutable.List<ImmutableReplyTree>
-}
+import { defaultVoteState, getUserVotes } from './vote.ts'
 
 export function toImmutableReplyTree(replyTree: ReplyTree): ImmutableReplyTree {
 	return {
@@ -49,19 +41,6 @@ export function addReplyToReplyTree(
 		...tree,
 		replies: tree.replies.map(child => addReplyToReplyTree(child, reply)),
 	}
-}
-
-export type PostMap = {
-	[key: number]: {
-		p: number | null
-		voteState: VoteState
-		isDeleted: boolean
-	}
-}
-
-export type CommentTreeState = {
-	criticalCommentId: number | null
-	posts: PostMap
 }
 
 export async function getCommentTreeState(
@@ -134,65 +113,40 @@ export async function getReplyTree(
 	userId: string | null,
 ): Promise<ReplyTree> {
 	const directReplyIds = await getReplyIds(trx, postId)
-	const post = await getScoredPost(trx, postId)
-	const effect: Effect | undefined =
+
+	const post = await getPostWithOSizeAndScore(trx, postId)
+
+	const effect: DBEffect | undefined =
 		post.parentId == null
 			? undefined
 			: await getEffect(trx, post.parentId, postId)
 
-	// TODO: not necessary because iterating over empty list is trivial
-	if (directReplyIds.length === 0) {
-		return {
-			post: post,
-			effect: effect ? effect : null,
-			replies: [],
-		}
-	}
-	const effectsOnParent: Effect[] = await getEffects(trx, postId)
-	let effectLookup: Map<number, Effect> = new Map<number, Effect>()
-	for (const e of effectsOnParent) {
-		if (e.commentId == null) {
-			continue
-		}
-		effectLookup.set(e.commentId, e)
-	}
-	const scoredReplies: ScoredPost[] = await Promise.all(
-		directReplyIds.map(async replyId => await getScoredPost(trx, replyId)),
-	)
-	let scoredRepliesLookup: Map<number, ScoredPost> = new Map<
-		number,
-		ScoredPost
-	>()
-	for (const r of scoredReplies) {
-		scoredRepliesLookup.set(r.id, r)
-	}
-	const directReplyIdsSorted = directReplyIds.sort((a, b) => {
-		const effectA = effectLookup.get(a)
-		const targetPA = effectA ? effectA.p : 0
-		const targetQA = effectA ? effectA.q : 0
-		const targetPSizeA = effectA ? effectA.pSize : 0
-
-		const effectB = effectLookup.get(b)
-		const targetPB = effectB ? effectB.p : 0
-		const targetQB = effectB ? effectB.q : 0
-		const targetPSizeB = effectB ? effectB.pSize : 0
-
-		const scoredPostA = scoredRepliesLookup.get(a)
-		const scoredPostB = scoredRepliesLookup.get(b)
-		const scoreA = scoredPostA ? scoredPostA.score : 0
-		const scoreB = scoredPostB ? scoredPostB.score : 0
-
-		return (
-			relativeEntropy(targetPB, targetQB) * targetPSizeB -
-				relativeEntropy(targetPA, targetQA) * targetPSizeA || scoreB - scoreA
-		)
-	})
-
 	const replies: ReplyTree[] = await Promise.all(
-		directReplyIdsSorted.map(
+		// Stopping criterion: Once we reach a leaf node, its replies will be an
+		// empty array, so the Promise.all will resolve immediately.
+		directReplyIds.map(
 			async replyId => await getReplyTree(trx, replyId, userId),
 		),
-	)
+	).then(replyTrees => {
+		return replyTrees.sort((a, b) => {
+			const targetPA = a.effect ? a.effect.p : 0
+			const targetQA = a.effect ? a.effect.q : 0
+			const targetPSizeA = a.effect ? a.effect.pSize : 0
+
+			const targetPB = b.effect ? b.effect.p : 0
+			const targetQB = b.effect ? b.effect.q : 0
+			const targetPSizeB = b.effect ? b.effect.pSize : 0
+
+			const scoreA = a.post ? a.post.score : 0
+			const scoreB = b.post ? b.post.score : 0
+
+			return (
+				relativeEntropy(targetPB, targetQB) * targetPSizeB -
+					relativeEntropy(targetPA, targetQA) * targetPSizeA || scoreB - scoreA
+			)
+		})
+	})
+
 	return {
 		post: post,
 		effect: effect ? effect : null,
@@ -204,8 +158,8 @@ export async function getEffect(
 	trx: Transaction<DB>,
 	postId: number,
 	commentId: number,
-): Promise<Effect | undefined> {
-	const effect: Effect | undefined = await trx
+): Promise<DBEffect | undefined> {
+	const effect: DBEffect | undefined = await trx
 		.selectFrom('Effect')
 		.where('postId', '=', postId)
 		.where('commentId', '=', commentId)
@@ -214,36 +168,10 @@ export async function getEffect(
 	return effect
 }
 
-export async function getScoredPost(
-	trx: Transaction<DB>,
-	postId: number,
-): Promise<ScoredPost> {
-	let query = trx
-		.selectFrom('Post')
-		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
-		.leftJoin('PostStats', join =>
-			join.onRef('PostStats.postId', '=', 'Post.id'),
-		)
-		.selectAll('Post')
-		.selectAll('FullScore')
-		.select(eb =>
-			eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'),
-		)
-		.where('Post.id', '=', postId)
-
-	const scoredPost = (await query.execute())[0]
-
-	if (scoredPost === undefined) {
-		throw new Error(`Failed to read scored post postId=${postId}`)
-	}
-
-	return scoredPost
-}
-
 export async function getEffects(
 	trx: Transaction<DB>,
 	postId: number,
-): Promise<Effect[]> {
+): Promise<DBEffect[]> {
 	let query = trx
 		.selectFrom('Post')
 		.innerJoin('EffectWithDefault as Effect', join =>
