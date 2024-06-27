@@ -87,9 +87,6 @@ export async function getPostWithOSize(
 	let query = trx
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
-		.leftJoin('PostStats', join =>
-			join.onRef('PostStats.postId', '=', 'Post.id'),
-		)
 		.selectAll('Post')
 		.select('oSize')
 		.where('Post.id', '=', postId)
@@ -110,9 +107,6 @@ export async function getPostWithOSizeAndScore(
 	const scoredPost: PostWithOSizeAndScore = await trx
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
-		.leftJoin('PostStats', join =>
-			join.onRef('PostStats.postId', '=', 'Post.id'),
-		)
 		.where('Post.id', '=', postId)
 		.selectAll('Post')
 		.select(['oSize', 'score'])
