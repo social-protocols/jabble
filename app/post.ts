@@ -4,6 +4,7 @@ import {
 	type PostWithOSize,
 	type StatsPost,
 	type Post,
+	type PostWithOSizeAndScore,
 } from '#app/api-types.ts'
 import { type DBPost } from '#app/db/types.ts'
 import { invariant } from '#app/utils/misc.tsx'
@@ -98,6 +99,24 @@ export async function getPostWithOSize(
 	if (scoredPost === undefined) {
 		throw new Error(`Failed to read scored post postId=${postId}`)
 	}
+
+	return scoredPost
+}
+
+export async function getPostWithOSizeAndScore(
+	trx: Transaction<DB>,
+	postId: number,
+): Promise<PostWithOSizeAndScore> {
+	const scoredPost: PostWithOSizeAndScore = await trx
+		.selectFrom('Post')
+		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
+		.leftJoin('PostStats', join =>
+			join.onRef('PostStats.postId', '=', 'Post.id'),
+		)
+		.where('Post.id', '=', postId)
+		.selectAll('Post')
+		.select(['oSize', 'score'])
+		.executeTakeFirstOrThrow()
 
 	return scoredPost
 }

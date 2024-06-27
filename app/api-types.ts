@@ -12,6 +12,8 @@ export type Post = {
 
 export type PostWithOSize = Post & { oSize: number }
 
+export type PostWithOSizeAndScore = Post & { oSize: number; score: number }
+
 export type FrontPagePost = Post & {
 	oSize: number
 	nTransitiveComments: number
@@ -31,13 +33,13 @@ export type Effect = {
 }
 
 export type ReplyTree = {
-	post: PostWithOSize
+	post: PostWithOSizeAndScore
 	effect: Effect | null // TODO: move to CommentTreeState
 	replies: ReplyTree[]
 }
 
 export type ImmutableReplyTree = {
-	post: PostWithOSize
+	post: PostWithOSizeAndScore
 	effect: Effect | null // TODO: move to CommentTreeState
 	replies: Immutable.List<ImmutableReplyTree>
 }

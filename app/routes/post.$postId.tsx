@@ -15,7 +15,7 @@ import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/ui/reply-tree.tsx'
 import { db } from '#app/db.ts'
-import { getStatsPost, getTransitiveParents } from '#app/post.js'
+import { getStatsPost, getTransitiveParents } from '#app/post.ts'
 import {
 	getReplyTree,
 	getCommentTreeState,

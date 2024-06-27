@@ -15,7 +15,7 @@ import {
 	getDescendants,
 	getPost,
 	getReplyIds,
-	getPostWithOSize,
+	getPostWithOSizeAndScore,
 } from './post.ts'
 import { relativeEntropy } from './utils/entropy.ts'
 import { defaultVoteState, getUserVotes } from './vote.ts'
@@ -115,68 +115,38 @@ export async function getReplyTree(
 ): Promise<ReplyTree> {
 	const directReplyIds = await getReplyIds(trx, postId)
 
-	const post = await getPostWithOSize(trx, postId)
+	const post = await getPostWithOSizeAndScore(trx, postId)
 
 	const effect: DBEffect | undefined =
 		post.parentId == null
 			? undefined
 			: await getEffect(trx, post.parentId, postId)
 
-	// TODO: not necessary because iterating over empty list is trivial
-	if (directReplyIds.length === 0) {
-		return {
-			post: post,
-			effect: effect ? effect : null,
-			replies: [],
-		}
-	}
-	// const effectsOnParent: Effect[] = await getEffects(trx, postId)
-
-	// let effectLookup: Map<number, Effect> = new Map<number, Effect>()
-	// for (const e of effectsOnParent) {
-	// 	if (e.commentId == null) {
-	// 		continue
-	// 	}
-	// 	effectLookup.set(e.commentId, e)
-	// }
-	// const scoredReplies: ScoredPost[] = await Promise.all(
-	// 	directReplyIds.map(async replyId => await getScoredPost(trx, replyId)),
-	// )
-
-	// let scoredRepliesLookup: Map<number, ScoredPost> = new Map<
-	// 	number,
-	// 	ScoredPost
-	// >()
-	// for (const r of scoredReplies) {
-	// 	scoredRepliesLookup.set(r.id, r)
-	// }
-	// const directReplyIdsSorted = directReplyIds.sort((a, b) => {
-	// 	const effectA = effectLookup.get(a)
-	// 	const targetPA = effectA ? effectA.p : 0
-	// 	const targetQA = effectA ? effectA.q : 0
-	// 	const targetPSizeA = effectA ? effectA.pSize : 0
-
-	// 	const effectB = effectLookup.get(b)
-	// 	const targetPB = effectB ? effectB.p : 0
-	// 	const targetQB = effectB ? effectB.q : 0
-	// 	const targetPSizeB = effectB ? effectB.pSize : 0
-
-	// 	const scoredPostA = scoredRepliesLookup.get(a)
-	// 	const scoredPostB = scoredRepliesLookup.get(b)
-	// 	const scoreA = scoredPostA ? scoredPostA.score : 0
-	// 	const scoreB = scoredPostB ? scoredPostB.score : 0
-
-	// 	return (
-	// 		relativeEntropy(targetPB, targetQB) * targetPSizeB -
-	// 			relativeEntropy(targetPA, targetQA) * targetPSizeA || scoreB - scoreA
-	// 	)
-	// })
-
 	const replies: ReplyTree[] = await Promise.all(
+		// Stopping criterion: Once we reach a leaf node, its replies will be an
+		// empty array, so the Promise.all will resolve immediately.
 		directReplyIds.map(
 			async replyId => await getReplyTree(trx, replyId, userId, indent + 1),
 		),
-	)
+	).then(replyTrees => {
+		return replyTrees.sort((a, b) => {
+			const targetPA = a.effect ? a.effect.p : 0
+			const targetQA = a.effect ? a.effect.q : 0
+			const targetPSizeA = a.effect ? a.effect.pSize : 0
+
+			const targetPB = b.effect ? b.effect.p : 0
+			const targetQB = b.effect ? b.effect.q : 0
+			const targetPSizeB = b.effect ? b.effect.pSize : 0
+
+			const scoreA = a.post ? a.post.score : 0
+			const scoreB = b.post ? b.post.score : 0
+
+			return (
+				relativeEntropy(targetPB, targetQB) * targetPSizeB -
+					relativeEntropy(targetPA, targetQA) * targetPSizeA || scoreB - scoreA
+			)
+		})
+	})
 
 	return {
 		post: post,
