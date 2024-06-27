@@ -1,5 +1,5 @@
 import { Link } from '@remix-run/react'
-import { type Post } from '#app/api-types.js'
+import { type Post } from '#app/api-types.ts'
 import { PostContent } from './post-content.tsx'
 
 export function ParentThread({

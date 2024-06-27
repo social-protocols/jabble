@@ -111,7 +111,6 @@ export async function getReplyTree(
 	trx: Transaction<DB>,
 	postId: number,
 	userId: string | null,
-	indent: number = 0,
 ): Promise<ReplyTree> {
 	const directReplyIds = await getReplyIds(trx, postId)
 

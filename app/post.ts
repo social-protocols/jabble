@@ -122,6 +122,7 @@ export async function getStatsPost(
 	let query = trx
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
+		// TODO: check if this join is even necessary
 		.leftJoin('PostStats', join =>
 			join.onRef('PostStats.postId', '=', 'Post.id'),
 		)
