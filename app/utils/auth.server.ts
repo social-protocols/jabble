@@ -2,7 +2,7 @@ import { createId } from '@paralleldrive/cuid2'
 import { redirect } from '@remix-run/node'
 import bcrypt from 'bcryptjs'
 import { safeRedirect } from 'remix-utils/safe-redirect'
-import { type Password, type User } from '#app/db/types.ts'
+import { type DBPassword, type DBUser } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
 import { combineHeaders, invariant } from './misc.tsx'
 import { authSessionStorage } from './session.server.ts'
@@ -71,7 +71,7 @@ export async function requireAnonymous(request: Request) {
 }
 
 export async function checkIsAdminOrThrow(userId: string) {
-	const user: User | undefined = await db
+	const user: DBUser | undefined = await db
 		.selectFrom('User')
 		.where('id', '=', userId)
 		.selectAll()
@@ -85,7 +85,7 @@ export async function login({
 	username,
 	password,
 }: {
-	username: User['username']
+	username: DBUser['username']
 	password: string
 }) {
 	const user = await verifyUserPassword({ username }, password)
@@ -119,7 +119,7 @@ export async function resetUserPassword({
 	username,
 	password,
 }: {
-	username: User['username']
+	username: DBUser['username']
 	password: string
 }) {
 	const hashedPassword = await bcrypt.hash(password, 10)
@@ -145,8 +145,8 @@ export async function signup({
 	username,
 	password,
 }: {
-	email: User['email']
-	username: User['username']
+	email: DBUser['email']
+	username: DBUser['username']
 	password: string
 }) {
 	const hashedPassword = await getPasswordHash(password)
@@ -217,8 +217,8 @@ export async function getPasswordHash(password: string) {
 }
 
 export async function verifyUserPassword(
-	where: Pick<User, 'username'> | Pick<User, 'id'>,
-	password: Password['hash'],
+	where: Pick<DBUser, 'username'> | Pick<DBUser, 'id'>,
+	password: DBPassword['hash'],
 ) {
 	let id
 	if ('username' in where) {

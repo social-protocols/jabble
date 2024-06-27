@@ -1,11 +1,12 @@
 import { type Map } from 'immutable'
 import { useState, type Dispatch, type SetStateAction } from 'react'
 import {
+	Direction,
 	type ImmutableReplyTree,
-	addReplyToReplyTree,
 	type CommentTreeState,
-} from '#app/ranking.ts'
-import { Direction, defaultVoteState } from '#app/vote.ts'
+} from '#app/api-types.ts'
+import { addReplyToReplyTree } from '#app/ranking.ts'
+import { defaultVoteState } from '#app/vote.ts'
 import { PostDetails } from './post-details.tsx'
 
 export function PostWithReplies({

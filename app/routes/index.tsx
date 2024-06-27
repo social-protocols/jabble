@@ -1,7 +1,8 @@
 import { type LoaderFunctionArgs } from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
+import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { useState } from 'react'
+import { type FrontPagePost } from '#app/api-types.ts'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
@@ -31,7 +32,7 @@ export function FrontpageFeed({
 	feed,
 	loggedIn,
 }: {
-	feed: rankingTs.FrontPagePost[]
+	feed: FrontPagePost[]
 	loggedIn: boolean
 }) {
 	const [showNewDiscussionForm, setShowNewDiscussionForm] = useState(false)
@@ -79,7 +80,7 @@ Read [how Jabble makes conversations better](https://github.com/social-protocols
 	}
 }
 
-function PostList({ feed }: { feed: rankingTs.FrontPagePost[] }) {
+function PostList({ feed }: { feed: FrontPagePost[] }) {
 	const filteredFeed = feed.filter(post => !post.isPrivate)
 	return filteredFeed.map(post => {
 		return <TopLevelPost key={post.id} post={post} className="flex-1" />
@@ -90,7 +91,7 @@ export function TopLevelPost({
 	post,
 	className,
 }: {
-	post: rankingTs.FrontPagePost
+	post: FrontPagePost
 	className?: string
 }) {
 	const ageString = moment(post.createdAt).fromNow()
@@ -111,7 +112,10 @@ export function TopLevelPost({
 				linkTo={`/post/${post.id}`}
 			/>
 			<div className="mb-2 text-sm opacity-50">
-				{post.nTransitiveComments} {commentString} - {post.oSize} {voteString}
+				<Link to={`/post/${post.id}`}>
+					{post.nTransitiveComments} {commentString}
+				</Link>{' '}
+				- {post.oSize} {voteString}
 			</div>
 		</div>
 	)
