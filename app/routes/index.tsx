@@ -2,7 +2,7 @@ import { type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { useState } from 'react'
-import { type ApiFrontPagePost } from '#app/api-types.ts'
+import { type FrontPagePost } from '#app/api-types.ts'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Button } from '#app/components/ui/button.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
@@ -32,7 +32,7 @@ export function FrontpageFeed({
 	feed,
 	loggedIn,
 }: {
-	feed: ApiFrontPagePost[]
+	feed: FrontPagePost[]
 	loggedIn: boolean
 }) {
 	const [showNewDiscussionForm, setShowNewDiscussionForm] = useState(false)
@@ -80,7 +80,7 @@ Read [how Jabble makes conversations better](https://github.com/social-protocols
 	}
 }
 
-function PostList({ feed }: { feed: ApiFrontPagePost[] }) {
+function PostList({ feed }: { feed: FrontPagePost[] }) {
 	const filteredFeed = feed.filter(post => !post.isPrivate)
 	return filteredFeed.map(post => {
 		return <TopLevelPost key={post.id} post={post} className="flex-1" />
@@ -91,7 +91,7 @@ export function TopLevelPost({
 	post,
 	className,
 }: {
-	post: ApiFrontPagePost
+	post: FrontPagePost
 	className?: string
 }) {
 	const ageString = moment(post.createdAt).fromNow()

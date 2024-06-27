@@ -1,13 +1,13 @@
 import global_brain from '@socialprotocols/globalbrain-node'
 import { type Transaction } from 'kysely'
 import { type DB } from './db/kysely-types.ts'
-import { type VoteEvent } from './db/types.ts'
+import { type DBVoteEvent } from './db/types.ts'
 
 const gbDatabasePath = process.env.GB_DATABASE_PATH
 
 export async function sendVoteEvent(
 	trx: Transaction<DB>,
-	voteEvent: VoteEvent,
+	voteEvent: DBVoteEvent,
 ) {
 	const json = JSON.stringify(voteEvent, (_key, value) => {
 		if (value && typeof value === 'object' && !Array.isArray(value)) {
@@ -33,7 +33,7 @@ export async function sendVoteEvent(
 export async function processScoreEvents(
 	trx: Transaction<DB>,
 	scoreEventsJsonl: String,
-	voteEvent: VoteEvent,
+	voteEvent: DBVoteEvent,
 ) {
 	const lines = scoreEventsJsonl.split('\n').filter(line => line !== '')
 

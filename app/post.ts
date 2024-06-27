@@ -1,11 +1,11 @@
 import assert from 'assert'
 import { type Transaction } from 'kysely'
-import { type Post } from '#app/db/types.ts'
+import { Direction, type Post } from '#app/api-types.ts'
+import { type DBPost } from '#app/db/types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { vote } from '#app/vote.ts'
 import { type DB } from './db/kysely-types.ts'
 import { checkIsAdminOrThrow } from './utils/auth.server.ts'
-import { Direction, type ApiPost } from '#app/api-types.ts'
 
 export async function createPost(
 	trx: Transaction<DB>,
@@ -14,7 +14,7 @@ export async function createPost(
 	authorId: string,
 	options?: { isPrivate: boolean; withUpvote?: boolean },
 ): Promise<number> {
-	const persistedPost: Post = await trx
+	const persistedPost: DBPost = await trx
 		.insertInto('Post')
 		.values({
 			content: content,
@@ -64,8 +64,11 @@ export async function incrementReplyCount(
 		.execute()
 }
 
-export async function getPost(trx: Transaction<DB>, id: number): Promise<Post> {
-	let result: Post | undefined = await trx
+export async function getPost(
+	trx: Transaction<DB>,
+	id: number,
+): Promise<DBPost> {
+	let result: DBPost | undefined = await trx
 		.selectFrom('Post')
 		.where('id', '=', id)
 		.selectAll()
@@ -126,8 +129,8 @@ export async function setDeletedAt(
 export async function getTransitiveParents(
 	trx: Transaction<DB>,
 	id: number,
-): Promise<ApiPost[]> {
-	let result: Post[] = await trx
+): Promise<Post[]> {
+	let result: DBPost[] = await trx
 		.withRecursive('transitive_parents', db =>
 			db
 				.selectFrom('Post')

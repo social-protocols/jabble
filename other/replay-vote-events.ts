@@ -1,10 +1,10 @@
-import { type VoteEvent } from '../app/db/types.ts'
+import { type DBVoteEvent } from '../app/db/types.ts'
 import { db } from '../app/db.ts'
 import { sendVoteEvent } from '../app/globalbrain.ts'
 
 async function replayVoteEvents() {
 	console.log('Replaying vote events')
-	const voteEvents: VoteEvent[] = await db
+	const voteEvents: DBVoteEvent[] = await db
 		.selectFrom('VoteEvent')
 		.selectAll()
 		.execute()

@@ -1,7 +1,7 @@
 import type * as Immutable from 'immutable'
 import moment from 'moment'
 import { type Dispatch, type SetStateAction } from 'react'
-import { type ApiPostWithOSize } from '#app/api-types.ts'
+import { type PostWithOSize } from '#app/api-types.ts'
 
 export function PostInfoBar({
 	post,
@@ -12,7 +12,7 @@ export function PostInfoBar({
 	setIsCollapsedState,
 	onCollapseParentSiblings,
 }: {
-	post: ApiPostWithOSize
+	post: PostWithOSize
 	pathFromFocussedPost: Immutable.List<number>
 	isConvincing: boolean
 	voteHereIndicator: boolean

@@ -3,10 +3,10 @@ import type * as Immutable from 'immutable'
 import { type Map } from 'immutable'
 import { type Dispatch, type SetStateAction } from 'react'
 import {
-  Direction,
+	Direction,
 	type ImmutableReplyTree,
 	type CommentTreeState,
-	type ApiPostWithOSize,
+	type PostWithOSize,
 } from '#app/api-types.ts'
 import { defaultVoteState } from '#app/vote.ts'
 import { PostActionBar } from './post-action-bar.tsx'
@@ -34,7 +34,7 @@ export function PostDetails({
 	onReplySubmit,
 	onCollapseParentSiblings,
 }: {
-	post: ApiPostWithOSize
+	post: PostWithOSize
 	teaser: boolean
 	loggedIn: boolean
 	voteHereIndicator?: boolean

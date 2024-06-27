@@ -7,16 +7,16 @@ import type * as schema from '#app/db/kysely-types.ts'
 // when selecting. Now, since it is the Selectable type, which has all fields that should exist in a DB record,  that we
 // will generally want to use in App code, for convenience we export all of these in this file.
 
-export type User = Selectable<schema.User>
-export type Post = Selectable<schema.Post>
-export type Password = Selectable<schema.Password>
-export type PostStats = Selectable<schema.PostStats>
-export type Verification = Selectable<schema.Verification>
-export type Score = Selectable<schema.Score>
-export type FullScore = Selectable<schema.FullScore>
-export type Lineage = Selectable<schema.Lineage>
-export type Effect = Selectable<schema.Effect>
-export type InsertableScore = Insertable<schema.Score>
-export type VoteEvent = Selectable<schema.VoteEvent>
-export type Vote = Selectable<schema.Vote>
-export type InsertableVoteEvent = Insertable<schema.VoteEvent>
+export type DBUser = Selectable<schema.User>
+export type DBPost = Selectable<schema.Post>
+export type DBPassword = Selectable<schema.Password>
+export type DBPostStats = Selectable<schema.PostStats>
+export type DBVerification = Selectable<schema.Verification>
+export type DBScore = Selectable<schema.Score>
+export type DBFullScore = Selectable<schema.FullScore>
+export type DBLineage = Selectable<schema.Lineage>
+export type DBEffect = Selectable<schema.Effect>
+export type DBInsertableScore = Insertable<schema.Score>
+export type DBVoteEvent = Selectable<schema.VoteEvent>
+export type DBVote = Selectable<schema.Vote>
+export type DBInsertableVoteEvent = Insertable<schema.VoteEvent>

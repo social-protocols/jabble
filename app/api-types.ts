@@ -1,6 +1,6 @@
 import type * as Immutable from 'immutable'
 
-export type ApiPost = {
+export type Post = {
 	id: number
 	parentId: number | null
 	content: string
@@ -10,14 +10,14 @@ export type ApiPost = {
 	isPrivate: number
 }
 
-export type ApiPostWithOSize = ApiPost & { oSize: number }
+export type PostWithOSize = Post & { oSize: number }
 
-export type ApiFrontPagePost = ApiPost & {
+export type FrontPagePost = Post & {
 	oSize: number
 	nTransitiveComments: number
 }
 
-export type ApiEffect = {
+export type Effect = {
 	postId: number
 	commentId: number | null
 	p: number
@@ -30,15 +30,15 @@ export type ApiEffect = {
 	weight: number
 }
 
-export type ApiReplyTree = {
-	post: ApiPostWithOSize
-	effect: ApiEffect | null // TODO: move to CommentTreeState
-	replies: ApiReplyTree[]
+export type ReplyTree = {
+	post: PostWithOSize
+	effect: Effect | null // TODO: move to CommentTreeState
+	replies: ReplyTree[]
 }
 
 export type ImmutableReplyTree = {
-	post: ApiPostWithOSize
-	effect: ApiEffect | null // TODO: move to CommentTreeState
+	post: PostWithOSize
+	effect: Effect | null // TODO: move to CommentTreeState
 	replies: Immutable.List<ImmutableReplyTree>
 }
 
@@ -65,7 +65,7 @@ export type VoteState = {
 	isInformed: boolean
 }
 
-export type ApiStatsPost = ApiPost & {
+export type StatsPost = Post & {
 	voteEventId: number
 	voteEventTime: number
 	postId: number

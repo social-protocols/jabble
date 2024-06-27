@@ -4,6 +4,13 @@ import * as Immutable from 'immutable'
 import { Map } from 'immutable'
 import { useState } from 'react'
 import { z } from 'zod'
+import {
+	Direction,
+	type ReplyTree,
+	type Post,
+	type CommentTreeState,
+	type ImmutableReplyTree,
+} from '#app/api-types.ts'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/ui/reply-tree.tsx'
@@ -18,13 +25,6 @@ import {
 } from '#app/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { defaultVoteState } from '#app/vote.ts'
-import {
-	Direction,
-	type ApiReplyTree,
-	type ApiPost,
-	type CommentTreeState,
-	type ImmutableReplyTree,
-} from '#app/api-types.ts'
 
 const postIdSchema = z.coerce.number()
 
@@ -36,15 +36,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	const loggedIn = userId !== null
 
 	const postId = postIdSchema.parse(params.postId)
-	const post: ApiPost = await db
+	const post: Post = await db
 		.transaction()
 		.execute(async trx => await getApiStatsPost(trx, postId))
 
-	const mutableReplyTree: ApiReplyTree = await db
+	const mutableReplyTree: ReplyTree = await db
 		.transaction()
 		.execute(async trx => await getReplyTree(trx, postId, userId))
 
-	const transitiveParents: ApiPost[] = await db
+	const transitiveParents: Post[] = await db
 		.transaction()
 		.execute(async trx => await getTransitiveParents(trx, post.id))
 
@@ -94,9 +94,9 @@ function Post({
 	initialCommentTreeState,
 	loggedIn,
 }: {
-	post: ApiPost
-	mutableReplyTree: ApiReplyTree
-	transitiveParents: ApiPost[]
+	post: Post
+	mutableReplyTree: ReplyTree
+	transitiveParents: Post[]
 	initialCommentTreeState: CommentTreeState
 	loggedIn: boolean
 }) {

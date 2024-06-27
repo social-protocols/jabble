@@ -1,9 +1,9 @@
 import bcrypt from 'bcryptjs'
+import { Direction } from '#app/api-types.ts'
 import { db } from '#app/db.ts'
 import { createPost } from '#app/post.ts'
 import { getPasswordHash } from '#app/utils/auth.server.ts'
 import { vote } from '#app/vote.ts'
-import { Direction } from '#app/api-types.ts'
 
 export async function seed() {
 	console.log('seeding...')

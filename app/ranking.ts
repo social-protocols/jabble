@@ -1,7 +1,19 @@
 import * as Immutable from 'immutable'
 import { type Transaction, sql } from 'kysely'
+import {
+	type VoteState,
+	type PostWithOSize,
+	type StatsPost,
+	type Post,
+	type Effect,
+	type ReplyTree,
+	type ImmutableReplyTree,
+	type CommentTreeState,
+	type FrontPagePost,
+} from '#app/api-types.ts'
 import { MAX_POSTS_PER_PAGE } from '#app/constants.ts'
 import { type DB } from './db/kysely-types.ts'
+import { type DBEffect } from './db/types.ts'
 import {
 	getDescendantCount,
 	getDescendants,
@@ -10,21 +22,9 @@ import {
 } from './post.ts'
 import { relativeEntropy } from './utils/entropy.ts'
 import { defaultVoteState, getUserVotes } from './vote.ts'
-import {
-	type VoteState,
-	type ApiPostWithOSize,
-	type ApiStatsPost,
-	type ApiPost,
-	type ApiEffect,
-	type ApiReplyTree,
-	type ImmutableReplyTree,
-	type CommentTreeState,
-	type ApiFrontPagePost,
-} from '#app/api-types.ts'
-import { Effect } from './db/types.ts'
 
 export function toImmutableReplyTree(
-	replyTree: ApiReplyTree,
+	replyTree: ReplyTree,
 ): ImmutableReplyTree {
 	return {
 		...replyTree,
@@ -117,7 +117,7 @@ export async function getReplyTree(
 	postId: number,
 	userId: string | null,
 	indent: number = 0,
-): Promise<ApiReplyTree> {
+): Promise<ReplyTree> {
 	const indentStr = '  '.repeat(indent)
 	console.log(indentStr + `getReplyTree(${postId})`)
 
@@ -133,7 +133,7 @@ export async function getReplyTree(
 	console.log(indentStr + 'getScoredPost', performance.now() - start)
 	start = performance.now()
 
-	const effect: Effect | undefined =
+	const effect: DBEffect | undefined =
 		post.parentId == null
 			? undefined
 			: await getEffect(trx, post.parentId, postId)
@@ -197,7 +197,7 @@ export async function getReplyTree(
 	// 	)
 	// })
 
-	const replies: ApiReplyTree[] = await Promise.all(
+	const replies: ReplyTree[] = await Promise.all(
 		directReplyIds.map(
 			async replyId => await getReplyTree(trx, replyId, userId, indent + 1),
 		),
@@ -217,8 +217,8 @@ export async function getEffect(
 	trx: Transaction<DB>,
 	postId: number,
 	commentId: number,
-): Promise<Effect | undefined> {
-	const effect: Effect | undefined = await trx
+): Promise<DBEffect | undefined> {
+	const effect: DBEffect | undefined = await trx
 		.selectFrom('Effect')
 		.where('postId', '=', postId)
 		.where('commentId', '=', commentId)
@@ -230,7 +230,7 @@ export async function getEffect(
 export async function getApiPost(
 	trx: Transaction<DB>,
 	postId: number,
-): Promise<ApiPost> {
+): Promise<Post> {
 	return await trx
 		.selectFrom('Post')
 		.selectAll('Post')
@@ -241,7 +241,7 @@ export async function getApiPost(
 export async function getApiPostWithOSize(
 	trx: Transaction<DB>,
 	postId: number,
-): Promise<ApiPostWithOSize> {
+): Promise<PostWithOSize> {
 	const start = performance.now()
 	let query = trx
 		.selectFrom('Post')
@@ -268,7 +268,7 @@ export async function getApiPostWithOSize(
 export async function getApiStatsPost(
 	trx: Transaction<DB>,
 	postId: number,
-): Promise<ApiStatsPost> {
+): Promise<StatsPost> {
 	let query = trx
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
@@ -294,7 +294,7 @@ export async function getApiStatsPost(
 export async function getEffects(
 	trx: Transaction<DB>,
 	postId: number,
-): Promise<Effect[]> {
+): Promise<DBEffect[]> {
 	let query = trx
 		.selectFrom('Post')
 		.innerJoin('EffectWithDefault as Effect', join =>
@@ -311,7 +311,7 @@ export async function getEffects(
 
 export async function getChronologicalToplevelPosts(
 	trx: Transaction<DB>,
-): Promise<ApiFrontPagePost[]> {
+): Promise<FrontPagePost[]> {
 	let query = trx
 		.selectFrom('Post')
 		.where('Post.parentId', 'is', null)
