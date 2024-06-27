@@ -1,7 +1,7 @@
 import { type LoaderFunctionArgs, json } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { useState } from 'react'
-import { type Post, type VoteState } from '#app/api-types.ts'
+import { type Post, type VoteState } from '#app/types/api-types.ts'
 import { Markdown } from '#app/components/markdown.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
 import { db } from '#app/db.ts'

@@ -1,6 +1,6 @@
 import { Link } from '@remix-run/react'
 import { type Dispatch, type SetStateAction } from 'react'
-import { Direction, type CommentTreeState } from '#app/api-types.ts'
+import { Direction, type CommentTreeState } from '#app/types/api-types.ts'
 import { defaultVoteState } from '#app/vote.ts'
 
 export function VoteButtons({

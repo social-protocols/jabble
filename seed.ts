@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs'
-import { Direction } from '#app/api-types.ts'
+import { Direction } from '#app/types/api-types.js'
 import { db } from '#app/db.ts'
 import { createPost } from '#app/post.ts'
 import { getPasswordHash } from '#app/utils/auth.server.ts'

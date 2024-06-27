@@ -4,7 +4,7 @@ import {
 	Direction,
 	type ImmutableReplyTree,
 	type CommentTreeState,
-} from '#app/api-types.ts'
+} from '#app/types/api-types.ts'
 import { addReplyToReplyTree } from '#app/ranking.ts'
 import { defaultVoteState } from '#app/vote.ts'
 import { PostDetails } from './post-details.tsx'

@@ -1,4 +1,4 @@
-import { type DBVoteEvent } from '../app/db/types.ts'
+import { type DBVoteEvent } from '../app/types/db-types.ts'
 import { db } from '../app/db.ts'
 import { sendVoteEvent } from '../app/globalbrain.ts'
 

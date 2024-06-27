@@ -4,7 +4,7 @@ import {
 	type Post,
 	type ReplyTree,
 	type CommentTreeState,
-} from '#app/api-types.ts'
+} from '#app/types/api-types.ts'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { toImmutableReplyTree } from '#app/ranking.ts'
 import { useOptionalUser } from '#app/utils/user.ts'

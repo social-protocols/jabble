@@ -6,10 +6,10 @@ import {
 	type ImmutableReplyTree,
 	type CommentTreeState,
 	type FrontPagePost,
-} from '#app/api-types.ts'
+} from '#app/types/api-types.ts'
 import { MAX_POSTS_PER_PAGE } from '#app/constants.ts'
-import { type DB } from './db/kysely-types.ts'
-import { type DBEffect } from './db/types.ts'
+import { type DB } from './types/kysely-types.ts'
+import { type DBEffect } from './types/db-types.ts'
 import {
 	getDescendantCount,
 	getDescendants,

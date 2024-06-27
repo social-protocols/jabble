@@ -10,7 +10,7 @@ import {
 	type Post,
 	type CommentTreeState,
 	type ImmutableReplyTree,
-} from '#app/api-types.ts'
+} from '#app/types/api-types.ts'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/ui/reply-tree.tsx'

@@ -7,7 +7,7 @@ import {
 	type ImmutableReplyTree,
 	type CommentTreeState,
 	type PostWithOSize,
-} from '#app/api-types.ts'
+} from '#app/types/api-types.ts'
 import { defaultVoteState } from '#app/vote.ts'
 import { PostActionBar } from './post-action-bar.tsx'
 import { PostContent } from './post-content.tsx'
