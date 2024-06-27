@@ -1,7 +1,7 @@
 import { type Kysely, sql } from 'kysely'
 
 export async function up(db: Kysely<any>): Promise<void> {
-	db.transaction().execute(async trx => {
+	await db.transaction().execute(async trx => {
 		await sql`alter table VoteEvent drop column noteId`.execute(trx)
 
 		await sql`alter table EffectEvent rename column noteId to commentId`.execute(

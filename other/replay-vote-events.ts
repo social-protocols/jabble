@@ -13,7 +13,7 @@ async function replayVoteEvents() {
 		console.log(
 			`Sending vote event ${ve.voteEventId} to globalbrain.process_vote_event`,
 		)
-		await db.transaction().execute(async trx => sendVoteEvent(trx, ve))
+		await db.transaction().execute(async trx => await sendVoteEvent(trx, ve))
 	}
 	console.log('Done')
 }

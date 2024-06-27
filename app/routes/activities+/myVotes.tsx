@@ -16,13 +16,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 	const userVotesWithNeutrals: VoteState[] = await db
 		.transaction()
-		.execute(async trx => getAllCurrentVotes(trx, userId))
+		.execute(async trx => await getAllCurrentVotes(trx, userId))
 	const userVotes = userVotesWithNeutrals.filter(vote => vote.vote !== 0)
 
 	const postsWithVotes: PostWithVote[] = await db
 		.transaction()
 		.execute(async trx => {
-			return Promise.all(
+			return await Promise.all(
 				userVotes.map(async vote => {
 					const post = await getPost(trx, vote.postId)
 					return { ...post, ...vote }
