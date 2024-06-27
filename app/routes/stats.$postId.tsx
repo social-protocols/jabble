@@ -2,12 +2,12 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
-import { type StatsPost } from '#app/types/api-types.ts'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
 import { db } from '#app/db.ts'
 import { getStatsPost } from '#app/repositories/post.ts'
 import { getEffects } from '#app/repositories/ranking.ts'
+import { type StatsPost } from '#app/types/api-types.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
 
 const postIdSchema = z.coerce.number()

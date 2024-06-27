@@ -4,13 +4,6 @@ import * as Immutable from 'immutable'
 import { Map } from 'immutable'
 import { useState } from 'react'
 import { z } from 'zod'
-import {
-	Direction,
-	type ReplyTree,
-	type Post,
-	type CommentTreeState,
-	type ImmutableReplyTree,
-} from '#app/types/api-types.ts'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/ui/reply-tree.tsx'
@@ -22,8 +15,15 @@ import {
 	getAllPostIdsInTree,
 	toImmutableReplyTree,
 } from '#app/repositories/ranking.ts'
-import { getUserId } from '#app/utils/auth.server.ts'
 import { defaultVoteState } from '#app/repositories/vote.ts'
+import {
+	Direction,
+	type ReplyTree,
+	type Post,
+	type CommentTreeState,
+	type ImmutableReplyTree,
+} from '#app/types/api-types.ts'
+import { getUserId } from '#app/utils/auth.server.ts'
 
 const postIdSchema = z.coerce.number()
 

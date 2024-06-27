@@ -1,5 +1,6 @@
 import * as Immutable from 'immutable'
 import { type Transaction, sql } from 'kysely'
+import { MAX_POSTS_PER_PAGE } from '#app/constants.ts'
 import {
 	type VoteState,
 	type ReplyTree,
@@ -7,9 +8,9 @@ import {
 	type CommentTreeState,
 	type FrontPagePost,
 } from '#app/types/api-types.ts'
-import { MAX_POSTS_PER_PAGE } from '#app/constants.ts'
-import { type DB } from '../types/kysely-types.ts'
 import { type DBEffect } from '../types/db-types.ts'
+import { type DB } from '../types/kysely-types.ts'
+import { relativeEntropy } from '../utils/entropy.ts'
 import {
 	getDescendantCount,
 	getDescendants,
@@ -17,7 +18,6 @@ import {
 	getReplyIds,
 	getPostWithOSizeAndScore,
 } from './post.ts'
-import { relativeEntropy } from '../utils/entropy.ts'
 import { defaultVoteState, getUserVotes } from './vote.ts'
 
 export function toImmutableReplyTree(replyTree: ReplyTree): ImmutableReplyTree {

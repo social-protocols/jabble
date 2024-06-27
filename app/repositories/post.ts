@@ -1,4 +1,5 @@
 import { sql, type Transaction } from 'kysely'
+import { vote } from '#app/repositories/vote.ts'
 import {
 	Direction,
 	type PostWithOSize,
@@ -8,7 +9,6 @@ import {
 } from '#app/types/api-types.ts'
 import { type DBPost } from '#app/types/db-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { vote } from '#app/repositories/vote.ts'
 import { type DB } from '../types/kysely-types.ts'
 import { checkIsAdminOrThrow } from '../utils/auth.server.ts'
 
