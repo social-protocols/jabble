@@ -18,12 +18,14 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
 	const post: StatsPost = await db
 		.transaction()
-		.execute(async trx => getStatsPost(trx, postId))
+		.execute(async trx => await getStatsPost(trx, postId))
 
 	const effects =
 		post.parentId == null
 			? []
-			: await db.transaction().execute(async trx => getEffects(trx, post.id))
+			: await db
+					.transaction()
+					.execute(async trx => await getEffects(trx, post.id))
 
 	// So the first of the replies and the top comment are not necessarily the same thing?!?
 	// The top comment is the most convincing one. But the replies are ordered by *information rate*.

@@ -1,7 +1,7 @@
 import { type Kysely, sql } from 'kysely'
 
 export async function up(db: Kysely<any>): Promise<void> {
-	db.transaction().execute(async trx => {
+	await db.transaction().execute(async trx => {
 		await sql`drop view EffectWithDefault`.execute(trx)
 
 		await sql`
