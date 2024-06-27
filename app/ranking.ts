@@ -118,28 +118,15 @@ export async function getReplyTree(
 	userId: string | null,
 	indent: number = 0,
 ): Promise<ReplyTree> {
-	const indentStr = '  '.repeat(indent)
-	console.log(indentStr + `getReplyTree(${postId})`)
-
-	let start = performance.now()
 
 	const directReplyIds = await getReplyIds(trx, postId)
 
-	console.log(indentStr + 'getReplyIds', performance.now() - start)
-	start = performance.now()
-
 	const post = await getApiPostWithOSize(trx, postId)
-
-	console.log(indentStr + 'getScoredPost', performance.now() - start)
-	start = performance.now()
 
 	const effect: DBEffect | undefined =
 		post.parentId == null
 			? undefined
 			: await getEffect(trx, post.parentId, postId)
-
-	console.log(indentStr + 'getEffect', performance.now() - start)
-	start = performance.now()
 
 	// TODO: not necessary because iterating over empty list is trivial
 	if (directReplyIds.length === 0) {
@@ -151,9 +138,6 @@ export async function getReplyTree(
 	}
 	// const effectsOnParent: Effect[] = await getEffects(trx, postId)
 
-	// console.log(indentStr + "getEffects", performance.now() - start)
-	// start = performance.now()
-
 	// let effectLookup: Map<number, Effect> = new Map<number, Effect>()
 	// for (const e of effectsOnParent) {
 	// 	if (e.commentId == null) {
@@ -164,9 +148,6 @@ export async function getReplyTree(
 	// const scoredReplies: ScoredPost[] = await Promise.all(
 	// 	directReplyIds.map(async replyId => await getScoredPost(trx, replyId)),
 	// )
-
-	//   console.log(indentStr + "getScoredPosts (map)", performance.now() - start)
-	//   start = performance.now()
 
 	// let scoredRepliesLookup: Map<number, ScoredPost> = new Map<
 	// 	number,
@@ -202,9 +183,6 @@ export async function getReplyTree(
 			async replyId => await getReplyTree(trx, replyId, userId, indent + 1),
 		),
 	)
-
-	console.log(indentStr + 'getReplyTree (recursive)', performance.now() - start)
-	start = performance.now()
 
 	return {
 		post: post,
@@ -242,7 +220,6 @@ export async function getApiPostWithOSize(
 	trx: Transaction<DB>,
 	postId: number,
 ): Promise<PostWithOSize> {
-	const start = performance.now()
 	let query = trx
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
@@ -253,15 +230,12 @@ export async function getApiPostWithOSize(
 		.select('oSize')
 		.where('Post.id', '=', postId)
 
-	console.log(query.toString())
-
 	const scoredPost = await query.executeTakeFirstOrThrow()
 
 	if (scoredPost === undefined) {
 		throw new Error(`Failed to read scored post postId=${postId}`)
 	}
 
-	console.log(`getScoredPost(${postId})`, performance.now() - start)
 	return scoredPost
 }
 

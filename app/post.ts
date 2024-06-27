@@ -82,14 +82,12 @@ export async function getReplyIds(
 	trx: Transaction<DB>,
 	postId: number,
 ): Promise<number[]> {
-	const start = performance.now()
 	const result: { id: number }[] = await trx
 		.selectFrom('Post')
 		.where('parentId', '=', postId)
 		.select('id')
 		.execute()
 	const ids = result.map(postResult => postResult.id)
-	console.log('getReplyIds', performance.now() - start)
 	return ids
 }
 

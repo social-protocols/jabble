@@ -29,8 +29,6 @@ import { defaultVoteState } from '#app/vote.ts'
 const postIdSchema = z.coerce.number()
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-	console.log('===============fetching post data=====================')
-
 	const userId: string | null = await getUserId(request)
 
 	const loggedIn = userId !== null
@@ -51,8 +49,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	const commentTreeState: CommentTreeState = await db
 		.transaction()
 		.execute(async trx => await getCommentTreeState(trx, postId, userId))
-
-	console.log('ReplyTree', JSON.stringify(mutableReplyTree, null, 2))
 
 	return json({
 		post,
