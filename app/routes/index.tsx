@@ -8,7 +8,7 @@ import { Button } from '#app/components/ui/button.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
 import { PostForm } from '#app/components/ui/post-form.tsx'
 import { db } from '#app/db.ts'
-import * as rankingTs from '#app/ranking.ts'
+import * as rankingTs from '#app/repositories/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 
 export default function Index() {

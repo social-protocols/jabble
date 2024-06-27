@@ -8,9 +8,9 @@ import {
 } from '#app/types/api-types.ts'
 import { type DBPost } from '#app/types/db-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { vote } from '#app/vote.ts'
-import { type DB } from './types/kysely-types.ts'
-import { checkIsAdminOrThrow } from './utils/auth.server.ts'
+import { vote } from '#app/repositories/vote.ts'
+import { type DB } from '../types/kysely-types.ts'
+import { checkIsAdminOrThrow } from '../utils/auth.server.ts'
 
 export async function createPost(
 	trx: Transaction<DB>,

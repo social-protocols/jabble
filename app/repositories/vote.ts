@@ -1,9 +1,9 @@
 import { type Transaction, sql } from 'kysely'
 import { Direction, type VoteState } from '#app/types/api-types.ts'
 import { type DBVoteEvent, type DBInsertableVoteEvent } from '#app/types/db-types.ts'
-import { sendVoteEvent } from '#app/globalbrain.ts'
-import { type DB } from './types/kysely-types.ts'
-import { invariant } from './utils/misc.tsx'
+import { sendVoteEvent } from '#app/repositories/globalbrain.ts'
+import { type DB } from '../types/kysely-types.ts'
+import { invariant } from '../utils/misc.tsx'
 
 export function defaultVoteState(postId: number): VoteState {
 	return {

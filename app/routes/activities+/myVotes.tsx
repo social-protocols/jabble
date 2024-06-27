@@ -5,9 +5,9 @@ import { type Post, type VoteState } from '#app/types/api-types.ts'
 import { Markdown } from '#app/components/markdown.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
 import { db } from '#app/db.ts'
-import { getPost } from '#app/post.ts'
+import { getPost } from '#app/repositories/post.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
-import { getAllCurrentVotes } from '#app/vote.ts'
+import { getAllCurrentVotes } from '#app/repositories/vote.ts'
 
 type PostWithVote = Post & VoteState
 

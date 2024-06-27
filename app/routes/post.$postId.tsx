@@ -15,15 +15,15 @@ import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/ui/reply-tree.tsx'
 import { db } from '#app/db.ts'
-import { getPost, getTransitiveParents } from '#app/post.ts'
+import { getPost, getTransitiveParents } from '#app/repositories/post.ts'
 import {
 	getReplyTree,
 	getCommentTreeState,
 	getAllPostIdsInTree,
 	toImmutableReplyTree,
-} from '#app/ranking.ts'
+} from '#app/repositories/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
-import { defaultVoteState } from '#app/vote.ts'
+import { defaultVoteState } from '#app/repositories/vote.ts'
 
 const postIdSchema = z.coerce.number()
 

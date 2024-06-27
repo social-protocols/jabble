@@ -6,7 +6,7 @@ import {
 	type CommentTreeState,
 } from '#app/types/api-types.ts'
 import { Textarea } from '#app/components/ui/textarea.tsx'
-import { toImmutableReplyTree } from '#app/ranking.ts'
+import { toImmutableReplyTree } from '#app/repositories/ranking.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 
 export function PostActionBar({

@@ -5,8 +5,8 @@ import {
 	type ImmutableReplyTree,
 	type CommentTreeState,
 } from '#app/types/api-types.ts'
-import { addReplyToReplyTree } from '#app/ranking.ts'
-import { defaultVoteState } from '#app/vote.ts'
+import { addReplyToReplyTree } from '#app/repositories/ranking.ts'
+import { defaultVoteState } from '#app/repositories/vote.ts'
 import { PostDetails } from './post-details.tsx'
 
 export function PostWithReplies({
