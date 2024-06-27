@@ -125,7 +125,7 @@ export async function getReplyTree(
 		// Stopping criterion: Once we reach a leaf node, its replies will be an
 		// empty array, so the Promise.all will resolve immediately.
 		directReplyIds.map(
-			async replyId => await getReplyTree(trx, replyId, userId, indent + 1),
+			async replyId => await getReplyTree(trx, replyId, userId),
 		),
 	).then(replyTrees => {
 		return replyTrees.sort((a, b) => {
