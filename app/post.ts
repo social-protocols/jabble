@@ -1,6 +1,10 @@
-import assert from 'assert'
-import { type Transaction } from 'kysely'
-import { Direction, type Post } from '#app/api-types.ts'
+import { sql, type Transaction } from 'kysely'
+import {
+	Direction,
+	type PostWithOSize,
+	type StatsPost,
+	type Post,
+} from '#app/api-types.ts'
 import { type DBPost } from '#app/db/types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { vote } from '#app/vote.ts'
@@ -66,16 +70,62 @@ export async function incrementReplyCount(
 
 export async function getPost(
 	trx: Transaction<DB>,
-	id: number,
-): Promise<DBPost> {
-	let result: DBPost | undefined = await trx
+	postId: number,
+): Promise<Post> {
+	return await trx
 		.selectFrom('Post')
-		.where('id', '=', id)
-		.selectAll()
-		.executeTakeFirst()
+		.where('Post.id', '=', postId)
+		.selectAll('Post')
+		.executeTakeFirstOrThrow()
+}
 
-	assert(result != null, 'result != null')
-	return result
+export async function getPostWithOSize(
+	trx: Transaction<DB>,
+	postId: number,
+): Promise<PostWithOSize> {
+	let query = trx
+		.selectFrom('Post')
+		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
+		.leftJoin('PostStats', join =>
+			join.onRef('PostStats.postId', '=', 'Post.id'),
+		)
+		.selectAll('Post')
+		.select('oSize')
+		.where('Post.id', '=', postId)
+
+	const scoredPost = await query.executeTakeFirstOrThrow()
+
+	if (scoredPost === undefined) {
+		throw new Error(`Failed to read scored post postId=${postId}`)
+	}
+
+	return scoredPost
+}
+
+export async function getStatsPost(
+	trx: Transaction<DB>,
+	postId: number,
+): Promise<StatsPost> {
+	let query = trx
+		.selectFrom('Post')
+		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
+		.leftJoin('PostStats', join =>
+			join.onRef('PostStats.postId', '=', 'Post.id'),
+		)
+		.selectAll('Post')
+		.selectAll('FullScore')
+		.select(eb =>
+			eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'),
+		)
+		.where('Post.id', '=', postId)
+
+	const scoredPost = (await query.execute())[0]
+
+	if (scoredPost === undefined) {
+		throw new Error(`Failed to read scored post postId=${postId}`)
+	}
+
+	return scoredPost
 }
 
 export async function getReplyIds(

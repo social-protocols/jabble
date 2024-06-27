@@ -5,7 +5,7 @@ import { type Post, type VoteState } from '#app/api-types.ts'
 import { Markdown } from '#app/components/markdown.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
 import { db } from '#app/db.ts'
-import { getApiPost } from '#app/ranking.ts'
+import { getPost } from '#app/post.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 import { getAllCurrentVotes } from '#app/vote.ts'
 
@@ -24,7 +24,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		.execute(async trx => {
 			return Promise.all(
 				userVotes.map(async vote => {
-					const post = await getApiPost(trx, vote.postId)
+					const post = await getPost(trx, vote.postId)
 					return { ...post, ...vote }
 				}),
 			)

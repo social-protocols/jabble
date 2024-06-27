@@ -15,10 +15,9 @@ import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/ui/reply-tree.tsx'
 import { db } from '#app/db.ts'
-import { getTransitiveParents } from '#app/post.ts'
+import { getStatsPost, getTransitiveParents } from '#app/post.js'
 import {
 	getReplyTree,
-	getApiStatsPost,
 	getCommentTreeState,
 	getAllPostIdsInTree,
 	toImmutableReplyTree,
@@ -36,7 +35,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	const postId = postIdSchema.parse(params.postId)
 	const post: Post = await db
 		.transaction()
-		.execute(async trx => await getApiStatsPost(trx, postId))
+		.execute(async trx => await getStatsPost(trx, postId))
 
 	const mutableReplyTree: ReplyTree = await db
 		.transaction()

@@ -2,10 +2,6 @@ import * as Immutable from 'immutable'
 import { type Transaction, sql } from 'kysely'
 import {
 	type VoteState,
-	type PostWithOSize,
-	type StatsPost,
-	type Post,
-	type Effect,
 	type ReplyTree,
 	type ImmutableReplyTree,
 	type CommentTreeState,
@@ -19,13 +15,12 @@ import {
 	getDescendants,
 	getPost,
 	getReplyIds,
+	getPostWithOSize,
 } from './post.ts'
 import { relativeEntropy } from './utils/entropy.ts'
 import { defaultVoteState, getUserVotes } from './vote.ts'
 
-export function toImmutableReplyTree(
-	replyTree: ReplyTree,
-): ImmutableReplyTree {
+export function toImmutableReplyTree(replyTree: ReplyTree): ImmutableReplyTree {
 	return {
 		...replyTree,
 		replies: Immutable.List(replyTree.replies.map(toImmutableReplyTree)),
@@ -118,10 +113,9 @@ export async function getReplyTree(
 	userId: string | null,
 	indent: number = 0,
 ): Promise<ReplyTree> {
-
 	const directReplyIds = await getReplyIds(trx, postId)
 
-	const post = await getApiPostWithOSize(trx, postId)
+	const post = await getPostWithOSize(trx, postId)
 
 	const effect: DBEffect | undefined =
 		post.parentId == null
@@ -203,66 +197,6 @@ export async function getEffect(
 		.selectAll()
 		.executeTakeFirst()
 	return effect
-}
-
-export async function getApiPost(
-	trx: Transaction<DB>,
-	postId: number,
-): Promise<Post> {
-	return await trx
-		.selectFrom('Post')
-		.selectAll('Post')
-		.where('Post.id', '=', postId)
-		.executeTakeFirstOrThrow()
-}
-
-export async function getApiPostWithOSize(
-	trx: Transaction<DB>,
-	postId: number,
-): Promise<PostWithOSize> {
-	let query = trx
-		.selectFrom('Post')
-		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
-		.leftJoin('PostStats', join =>
-			join.onRef('PostStats.postId', '=', 'Post.id'),
-		)
-		.selectAll('Post')
-		.select('oSize')
-		.where('Post.id', '=', postId)
-
-	const scoredPost = await query.executeTakeFirstOrThrow()
-
-	if (scoredPost === undefined) {
-		throw new Error(`Failed to read scored post postId=${postId}`)
-	}
-
-	return scoredPost
-}
-
-export async function getApiStatsPost(
-	trx: Transaction<DB>,
-	postId: number,
-): Promise<StatsPost> {
-	let query = trx
-		.selectFrom('Post')
-		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
-		.leftJoin('PostStats', join =>
-			join.onRef('PostStats.postId', '=', 'Post.id'),
-		)
-		.selectAll('Post')
-		.selectAll('FullScore')
-		.select(eb =>
-			eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'),
-		)
-		.where('Post.id', '=', postId)
-
-	const scoredPost = (await query.execute())[0]
-
-	if (scoredPost === undefined) {
-		throw new Error(`Failed to read scored post postId=${postId}`)
-	}
-
-	return scoredPost
 }
 
 export async function getEffects(

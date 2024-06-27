@@ -6,7 +6,8 @@ import { type StatsPost } from '#app/api-types.ts'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
 import { db } from '#app/db.ts'
-import { getApiStatsPost, getEffects } from '#app/ranking.ts'
+import { getStatsPost } from '#app/post.js'
+import { getEffects } from '#app/ranking.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
 
 const postIdSchema = z.coerce.number()
@@ -17,7 +18,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
 	const post: StatsPost = await db
 		.transaction()
-		.execute(async trx => getApiStatsPost(trx, postId))
+		.execute(async trx => getStatsPost(trx, postId))
 
 	const effects =
 		post.parentId == null
