@@ -15,6 +15,7 @@ module.exports = {
 		// 'prettier/prettier': ['error'],
 		// playwright requires destructuring in fixtures even if you don't use anything 🤷‍♂️
 		'no-empty-pattern': 'off',
+    'require-await': 'error',
 		'@typescript-eslint/no-non-null-assertion': 'error',
 		'@typescript-eslint/consistent-type-imports': [
 			'warn',
