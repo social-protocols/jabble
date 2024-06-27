@@ -2,6 +2,8 @@ const vitestFiles = ['app/**/__tests__/**/*', 'app/**/*.{spec,test}.*']
 const testFiles = ['**/tests/**', ...vitestFiles]
 const appFiles = ['app/**']
 
+const isCI = process.env.CI === 'true'
+
 /** @type {import('@types/eslint').Linter.BaseConfig} */
 module.exports = {
 	extends: [
@@ -12,7 +14,7 @@ module.exports = {
 	plugins: ['@typescript-eslint'],
 
 	rules: {
-		// 'prettier/prettier': ['error'],
+		'prettier/prettier': [isCI ? 'error' : 'off'],
 		// playwright requires destructuring in fixtures even if you don't use anything 🤷‍♂️
 		'no-empty-pattern': 'off',
 		'@typescript-eslint/no-non-null-assertion': 'error',

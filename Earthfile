@@ -181,6 +181,7 @@ app-typecheck:
 app-lint:
   FROM +app-setup
   COPY .eslintrc.cjs .prettierrc.js .prettierignore ./
+  ENV CI=true
   RUN npx eslint --max-warnings=0 . # also checks formatting
 
 ci-test:
