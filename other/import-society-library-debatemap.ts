@@ -1,6 +1,6 @@
 import fs from 'fs'
 import { db } from '#app/db.ts'
-import { createPost } from '../app/post.ts'
+import { createPost } from '../app/repositories/post.ts'
 import { invariant } from '../app/utils/misc.tsx'
 
 // Filename is first commandline argument

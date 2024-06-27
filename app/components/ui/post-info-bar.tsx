@@ -1,7 +1,7 @@
 import type * as Immutable from 'immutable'
 import moment from 'moment'
 import { type Dispatch, type SetStateAction } from 'react'
-import { type PostWithOSize } from '#app/api-types.ts'
+import { type PostWithOSize } from '#app/types/api-types.ts'
 
 export function PostInfoBar({
 	post,

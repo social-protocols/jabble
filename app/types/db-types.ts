@@ -1,5 +1,5 @@
 import { type Selectable, type Insertable } from 'kysely'
-import type * as schema from '#app/db/kysely-types.ts'
+import type * as schema from '#app/types/kysely-types.ts'
 
 // The types exported from kysely-types (which are generated from prisma.schema) are not used directly in app code.
 // Instead, Kysely wants values of type Selectable<User>, Insertable<User>, etc. This is because what fields are

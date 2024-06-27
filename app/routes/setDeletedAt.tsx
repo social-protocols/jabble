@@ -1,7 +1,7 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { db } from '#app/db.ts'
-import { setDeletedAt } from '#app/post.ts'
-import { getCommentTreeState } from '#app/ranking.ts'
+import { setDeletedAt } from '#app/repositories/post.ts'
+import { getCommentTreeState } from '#app/repositories/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariant } from '#app/utils/misc.tsx'
 

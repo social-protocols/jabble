@@ -1,8 +1,8 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import invariant from 'tiny-invariant'
 import { db } from '#app/db.ts'
-import { createPost } from '#app/post.ts'
-import { getCommentTreeState, getReplyTree } from '#app/ranking.ts'
+import { createPost } from '#app/repositories/post.ts'
+import { getCommentTreeState, getReplyTree } from '#app/repositories/ranking.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
 type ReplyData = {

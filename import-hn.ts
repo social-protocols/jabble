@@ -5,7 +5,7 @@ import * as cliProgress from 'cli-progress'
 import { glob } from 'glob'
 import TurndownService from 'turndown'
 import { db } from '#app/db.ts'
-import { createPost } from '#app/post.ts'
+import { createPost } from '#app/repositories/post.ts'
 
 const turndownService = new TurndownService({ emDelimiter: '*' })
 

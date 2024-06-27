@@ -1,12 +1,12 @@
 import { type Dispatch, type SetStateAction, useState } from 'react'
+import { Textarea } from '#app/components/ui/textarea.tsx'
+import { toImmutableReplyTree } from '#app/repositories/ranking.ts'
 import {
 	type ImmutableReplyTree,
 	type Post,
 	type ReplyTree,
 	type CommentTreeState,
-} from '#app/api-types.ts'
-import { Textarea } from '#app/components/ui/textarea.tsx'
-import { toImmutableReplyTree } from '#app/ranking.ts'
+} from '#app/types/api-types.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 
 export function PostActionBar({

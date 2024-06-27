@@ -1,7 +1,7 @@
 import global_brain from '@socialprotocols/globalbrain-node'
 import { type Transaction, sql } from 'kysely'
-import { type DB } from './db/kysely-types.ts'
-import { type DBVoteEvent } from './db/types.ts'
+import { type DBVoteEvent } from '../types/db-types.ts'
+import { type DB } from '../types/kysely-types.ts'
 
 const gbDatabasePath = process.env.GB_DATABASE_PATH
 
