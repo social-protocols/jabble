@@ -14,16 +14,18 @@ type PostWithVote = Post & VoteState
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
 
-	const postsWithVotes: PostWithVote[] = await db.transaction().execute(async trx => {
-		const userVotesWithNeutrals = await getAllCurrentVotes(trx, userId)
-		const userVotes = userVotesWithNeutrals.filter(vote => vote.vote !== 0)
-		return await Promise.all(
+	const postsWithVotes: PostWithVote[] = await db
+		.transaction()
+		.execute(async trx => {
+			const userVotesWithNeutrals = await getAllCurrentVotes(trx, userId)
+			const userVotes = userVotesWithNeutrals.filter(vote => vote.vote !== 0)
+			return await Promise.all(
 				userVotes.map(async vote => {
 					const post = await getPost(trx, vote.postId)
 					return { ...post, ...vote }
-				})
-		)
-	})
+				}),
+			)
+		})
 
 	return json({ postsWithVotes })
 }

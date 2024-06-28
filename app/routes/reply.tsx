@@ -33,9 +33,13 @@ export const action = async (args: ActionFunctionArgs) => {
 		})
 		return focussedPostId
 			? {
-				commentTreeState: await getCommentTreeState(trx, focussedPostId, userId),
-				newReplyTree: await getReplyTree(trx, postId, userId),
-			}
+					commentTreeState: await getCommentTreeState(
+						trx,
+						focussedPostId,
+						userId,
+					),
+					newReplyTree: await getReplyTree(trx, postId, userId),
+				}
 			: {}
 	})
 }

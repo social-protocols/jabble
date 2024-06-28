@@ -8,8 +8,8 @@ import { db } from '#app/db.ts'
 import { getStatsPost } from '#app/repositories/post.ts'
 import { getEffects } from '#app/repositories/ranking.ts'
 import { type StatsPost } from '#app/types/api-types.ts'
+import { type DBEffect } from '#app/types/db-types.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
-import { DBEffect } from '#app/types/db-types.ts'
 
 const postIdSchema = z.coerce.number()
 
@@ -25,9 +25,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 		effects: DBEffect[]
 	} = await db.transaction().execute(async trx => {
 		const post = await getStatsPost(trx, postId)
-		const effects = post.parentId == null
-				? []
-				: await getEffects(trx, post.id)
+		const effects = post.parentId == null ? [] : await getEffects(trx, post.id)
 		return { post, effects }
 	})
 
