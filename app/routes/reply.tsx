@@ -26,28 +26,16 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	invariant(content, 'content !== undefined')
 
-	const postId = await db.transaction().execute(
-		async trx =>
-			await createPost(trx, parentId, content, userId, {
-				isPrivate: isPrivate,
-				withUpvote: true,
-			}),
-	)
-
-	if (focussedPostId) {
-		const newReplyTree = await db
-			.transaction()
-			.execute(async trx => await getReplyTree(trx, postId, userId))
-		const commentTreeState = await db
-			.transaction()
-			.execute(
-				async trx => await getCommentTreeState(trx, focussedPostId, userId),
-			)
-		return {
-			commentTreeState,
-			newReplyTree,
-		}
-	}
-
-	return {}
+	return await db.transaction().execute(async trx => {
+		const postId = await createPost(trx, parentId, content, userId, {
+			isPrivate: isPrivate,
+			withUpvote: true,
+		})
+		return focussedPostId
+			? {
+				commentTreeState: await getCommentTreeState(trx, focussedPostId, userId),
+				newReplyTree: await getReplyTree(trx, postId, userId),
+			}
+			: {}
+	})
 }

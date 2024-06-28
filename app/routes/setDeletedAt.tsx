@@ -21,18 +21,10 @@ export const action = async (args: ActionFunctionArgs) => {
 	const focussedPostId = data.focussedPostId
 	const deletedAt = data.deletedAt
 
-	await db
-		.transaction()
-		.execute(async trx => await setDeletedAt(trx, postId, deletedAt, userId))
-
-	if (focussedPostId) {
-		const newCommentTreeState = await db
-			.transaction()
-			.execute(
-				async trx => await getCommentTreeState(trx, focussedPostId, userId),
-			)
-		return newCommentTreeState
-	}
-
-	return {}
+	return await db.transaction().execute(async trx => {
+		await setDeletedAt(trx, postId, deletedAt, userId)
+		return focussedPostId
+			? await getCommentTreeState(trx, focussedPostId, userId)
+			: {}
+	})
 }
