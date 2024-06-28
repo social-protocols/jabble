@@ -8,6 +8,7 @@ import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/ui/reply-tree.tsx'
 import { db } from '#app/db.ts'
+import { updateHN } from '#app/repositories/hackernews.ts'
 import { getPost, getTransitiveParents } from '#app/repositories/post.ts'
 import {
 	getReplyTree,
@@ -32,7 +33,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 	const loggedIn = userId !== null
 
+	// TODO: Everything should be in one transaction
 	const postId = postIdSchema.parse(params.postId)
+	await db.transaction().execute(async trx => await updateHN(trx, postId))
 	const post: Post = await db
 		.transaction()
 		.execute(async trx => await getPost(trx, postId))

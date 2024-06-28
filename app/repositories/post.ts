@@ -17,7 +17,7 @@ export async function createPost(
 	parentId: number | null, // TODO: use parentId?: number
 	content: string,
 	authorId: string,
-	options?: { isPrivate: boolean; withUpvote?: boolean },
+	options?: { isPrivate: boolean; withUpvote?: boolean; createdAt?: number },
 ): Promise<number> {
 	const persistedPost: DBPost = await trx
 		.insertInto('Post')
@@ -26,6 +26,7 @@ export async function createPost(
 			parentId: parentId,
 			authorId: authorId,
 			isPrivate: options ? Number(options.isPrivate) : 0,
+			createdAt: options?.createdAt ?? Date.now(),
 		})
 		.returningAll()
 		.executeTakeFirstOrThrow()
@@ -256,4 +257,18 @@ export async function getDescendants(
 		.execute()
 
 	return result.map(row => row.descendantId)
+}
+
+export async function getRootPostId(
+	trx: Transaction<DB>,
+	postId: number,
+): Promise<number> {
+	const parentId = (
+		await trx
+			.selectFrom('Post')
+			.where('id', '=', postId)
+			.select('parentId')
+			.executeTakeFirst()
+	)?.parentId
+	return parentId == null ? postId : await getRootPostId(trx, parentId)
 }
