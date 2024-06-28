@@ -9,7 +9,7 @@ import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/ui/reply-tree.tsx'
 import { db } from '#app/db.ts'
 import { updateHN } from '#app/repositories/hackernews.ts'
-import { getPost, getTransitiveParents } from '#app/repositories/post.ts'
+import { getTransitiveParents } from '#app/repositories/post.ts'
 import {
 	getReplyTree,
 	getCommentTreeState,
@@ -36,9 +36,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	// TODO: Everything should be in one transaction
 	const postId = postIdSchema.parse(params.postId)
 	await db.transaction().execute(async trx => await updateHN(trx, postId))
-	const post: Post = await db
-		.transaction()
-		.execute(async trx => await getPost(trx, postId))
 
 	const mutableReplyTree: ReplyTree = await db
 		.transaction()
@@ -46,14 +43,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
 	const transitiveParents: Post[] = await db
 		.transaction()
-		.execute(async trx => await getTransitiveParents(trx, post.id))
+		.execute(async trx => await getTransitiveParents(trx, postId))
 
 	const commentTreeState: CommentTreeState = await db
 		.transaction()
 		.execute(async trx => await getCommentTreeState(trx, postId, userId))
 
 	return json({
-		post,
 		mutableReplyTree,
 		transitiveParents,
 		commentTreeState,
@@ -62,13 +58,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export default function PostPage() {
-	const {
-		post,
-		mutableReplyTree,
-		transitiveParents,
-		commentTreeState,
-		loggedIn,
-	} = useLoaderData<typeof loader>()
+	const { mutableReplyTree, transitiveParents, commentTreeState, loggedIn } =
+		useLoaderData<typeof loader>()
 
 	const params = useParams()
 
@@ -76,7 +67,6 @@ export default function PostPage() {
 	return (
 		<Post
 			key={params['postId']}
-			post={post}
 			mutableReplyTree={mutableReplyTree}
 			transitiveParents={transitiveParents}
 			initialCommentTreeState={commentTreeState}
@@ -86,13 +76,11 @@ export default function PostPage() {
 }
 
 function Post({
-	post,
 	mutableReplyTree,
 	transitiveParents,
 	initialCommentTreeState,
 	loggedIn,
 }: {
-	post: Post
 	mutableReplyTree: ReplyTree
 	transitiveParents: Post[]
 	initialCommentTreeState: CommentTreeState
@@ -104,13 +92,15 @@ function Post({
 		initialCommentTreeState,
 	)
 
+	const postId = replyTree.post.id
+
 	const currentVoteState =
-		commentTreeState.posts[post.id]?.voteState || defaultVoteState(post.id)
+		commentTreeState.posts[postId]?.voteState || defaultVoteState(postId)
 
 	let initialIsCollapsedState = Map<number, boolean>()
 	const allIds = getAllPostIdsInTree(replyTree)
 	allIds.forEach(id => {
-		if (!(id == post.id)) {
+		if (!(id == postId)) {
 			initialIsCollapsedState = initialIsCollapsedState.set(id, false)
 		}
 	})
@@ -126,7 +116,7 @@ function Post({
 				initialReplyTree={replyTree}
 				targetHasVote={currentVoteState.vote !== Direction.Neutral}
 				loggedIn={loggedIn}
-				focussedPostId={post.id}
+				focussedPostId={postId}
 				pathFromFocussedPost={Immutable.List()}
 				commentTreeState={commentTreeState}
 				setCommentTreeState={setCommentTreeState}
