@@ -1,10 +1,10 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import invariant from 'tiny-invariant'
+import { z } from 'zod'
 import { db } from '#app/db.ts'
 import { createPost } from '#app/repositories/post.ts'
 import { getCommentTreeState, getReplyTree } from '#app/repositories/ranking.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
-import { z } from 'zod'
 
 type ReplyData = {
 	parentId: number
@@ -24,12 +24,8 @@ export const action = async (args: ActionFunctionArgs) => {
 	let request = args.request
 	const userId: string = await requireUserId(request)
 
-	const {
-		parentId,
-		focussedPostId,
-		content,
-		isPrivate,
-	}: ReplyData = replyDataSchema.parse(await request.json())
+	const { parentId, focussedPostId, content, isPrivate }: ReplyData =
+		replyDataSchema.parse(await request.json())
 
 	invariant(content, 'content !== undefined')
 

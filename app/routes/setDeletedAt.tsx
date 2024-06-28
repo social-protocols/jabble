@@ -1,10 +1,10 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
+import { z } from 'zod'
 import { db } from '#app/db.ts'
 import { setDeletedAt } from '#app/repositories/post.ts'
 import { getCommentTreeState } from '#app/repositories/ranking.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { z } from 'zod'
 
 type DeletionData = {
 	postId: number
@@ -23,11 +23,8 @@ export const action = async (args: ActionFunctionArgs) => {
 	const userId = await getUserId(request)
 	invariant(userId, `No authenticated user, got userId ${userId}`)
 
-	const {
-		postId,
-		focussedPostId,
-		deletedAt,
-	}: DeletionData = deletionDataSchema.parse(await request.json())
+	const { postId, focussedPostId, deletedAt }: DeletionData =
+		deletionDataSchema.parse(await request.json())
 
 	return await db.transaction().execute(async trx => {
 		await setDeletedAt(trx, postId, deletedAt, userId)
