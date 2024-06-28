@@ -19,5 +19,9 @@ export async function up(db: Kysely<any>): Promise<void> {
 				primary key (hnId, postId)
 			)
     `.execute(trx)
+    
+    await sql`
+			create index idx_HNItem_postId on HNItem(postId)
+    `.execute(trx)
 	})
 }
