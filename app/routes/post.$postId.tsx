@@ -55,12 +55,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export default function PostPage() {
-	const {
-		mutableReplyTree,
-		transitiveParents,
-		commentTreeState,
-		loggedIn,
-	} = useLoaderData<typeof loader>()
+	const { mutableReplyTree, transitiveParents, commentTreeState, loggedIn } =
+		useLoaderData<typeof loader>()
 
 	const params = useParams()
 
@@ -93,7 +89,7 @@ function Post({
 		initialCommentTreeState,
 	)
 
-  const postId = replyTree.post.id
+	const postId = replyTree.post.id
 
 	const currentVoteState =
 		commentTreeState.posts[postId]?.voteState || defaultVoteState(postId)
