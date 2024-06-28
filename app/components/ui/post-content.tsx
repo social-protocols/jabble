@@ -1,4 +1,5 @@
 import { useNavigate } from '@remix-run/react'
+import DOMPurify from 'isomorphic-dompurify'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Truncate } from './truncate.tsx'
 
@@ -15,13 +16,17 @@ export function PostContent({
 }) {
 	const navigate = useNavigate()
 
+	const sanitizedContent = DOMPurify.sanitize(content)
+
 	return (
 		<div
 			style={{ cursor: 'pointer' }}
 			onClick={() => linkTo && navigate(linkTo)}
 		>
 			<Truncate lines={maxLines}>
-				<Markdown deactivateLinks={deactivateLinks}>{content}</Markdown>
+				<Markdown deactivateLinks={deactivateLinks}>
+					{sanitizedContent}
+				</Markdown>
 			</Truncate>
 		</div>
 	)
