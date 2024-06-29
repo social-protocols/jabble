@@ -37,23 +37,23 @@ export function PostWithReplies({
 	className?: string
 }) {
 	const [replyTreeState, setReplyTreeState] = useState(initialReplyTree)
+	const postId = replyTreeState.post.id
 	function onReplySubmit(reply: ImmutableReplyTree) {
 		const newReplyTreeState = addReplyToReplyTree(replyTreeState, reply)
 		setReplyTreeState(newReplyTreeState)
 	}
 
 	const currentVoteState =
-		commentTreeState.posts[replyTreeState.post.id]?.voteState ||
-		defaultVoteState(replyTreeState.post.id)
+		commentTreeState.posts[postId]?.voteState || defaultVoteState(postId)
 
 	const voteHereIndicator =
-		commentTreeState.criticalCommentId === replyTreeState.post.id &&
+		commentTreeState.criticalCommentId === postId &&
 		targetHasVote &&
 		currentVoteState.vote == Direction.Neutral
 
-	const isCollapsed = isCollapsedState.get(replyTreeState.post.id) || false
+	const isCollapsed = isCollapsedState.get(postId) || false
 
-	const isRootPost = replyTreeState.post.id == focussedPostId
+	const isRootPost = postId == focussedPostId
 
 	const lineColor = voteHereIndicator
 		? 'border-l-blue-500 dark:border-l-[#7dcfff]'
@@ -65,7 +65,7 @@ export function PostWithReplies({
 
 	return (
 		<>
-			<div className={lineClass}>
+			<div key={`${postId}-postdetails`} className={lineClass}>
 				<PostDetails
 					post={replyTreeState.post}
 					teaser={false}
@@ -84,6 +84,7 @@ export function PostWithReplies({
 			</div>
 			{!isCollapsed && (
 				<div
+					key={`${postId}-subtree`}
 					className={
 						'border-left-solid ml-2 border-l-4 border-post border-transparent pl-3'
 					}

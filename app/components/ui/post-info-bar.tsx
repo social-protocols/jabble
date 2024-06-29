@@ -1,6 +1,6 @@
 import type * as Immutable from 'immutable'
 import moment from 'moment'
-import { type Dispatch, type SetStateAction } from 'react'
+import { useRef, type Dispatch, type SetStateAction } from 'react'
 import { type PostWithOSize } from '#app/types/api-types.ts'
 import { Icon } from './icon.tsx'
 
@@ -31,6 +31,13 @@ export function PostInfoBar({
 		if (isCollapsedState && setIsCollapsedState) {
 			let newisCollapsedState = isCollapsedState.set(post.id, !isCollapsed)
 			setIsCollapsedState(newisCollapsedState)
+		}
+	}
+
+	const myRef = useRef<HTMLDivElement>(null)
+	const scrollIntoView = () => {
+		if (myRef.current) {
+			myRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
 		}
 	}
 
@@ -70,8 +77,11 @@ export function PostInfoBar({
 						</button>
 						<button
 							title="Collapse unrelated comments"
-							onClick={() => onCollapseParentSiblings(pathFromFocussedPost)}
 							className="my-[-2px] text-[30px] sm:text-base"
+							onClick={() => {
+								onCollapseParentSiblings(pathFromFocussedPost)
+								scrollIntoView()
+							}}
 						>
 							<Icon name="target" />
 						</button>
