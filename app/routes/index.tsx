@@ -111,7 +111,7 @@ export function TopLevelPost({
 				deactivateLinks={false}
 				linkTo={`/post/${post.id}`}
 			/>
-			<div className="mb-2 text-sm opacity-50">
+			<div className="text-sm opacity-50">
 				<Link to={`/post/${post.id}`}>
 					{post.nTransitiveComments} {commentString}
 				</Link>{' '}
