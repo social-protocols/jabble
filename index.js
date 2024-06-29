@@ -6,7 +6,7 @@ import 'source-map-support/register.js'
 
 installGlobals()
 
-closeWithGrace(async ({ err }) => {
+closeWithGrace(({ err }) => {
 	console.log('Received shutdown signal.')
 	if (err) {
 		console.error(chalk.red(err))

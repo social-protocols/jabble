@@ -1,25 +1,32 @@
-import assert from 'assert'
-import { type Transaction } from 'kysely'
-import { type Post } from '#app/db/types.ts'
+import { sql, type Transaction } from 'kysely'
+import { vote } from '#app/repositories/vote.ts'
+import {
+	Direction,
+	type PostWithOSize,
+	type StatsPost,
+	type Post,
+	type PostWithOSizeAndScore,
+} from '#app/types/api-types.ts'
+import { type DBPost } from '#app/types/db-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { Direction, vote } from '#app/vote.ts'
-import { type DB } from './db/kysely-types.ts'
-import { checkIsAdminOrThrow } from './utils/auth.server.ts'
+import { type DB } from '../types/kysely-types.ts'
+import { checkIsAdminOrThrow } from '../utils/auth.server.ts'
 
 export async function createPost(
 	trx: Transaction<DB>,
 	parentId: number | null, // TODO: use parentId?: number
 	content: string,
 	authorId: string,
-	options?: { isPrivate: boolean; withUpvote?: boolean },
+	options?: { isPrivate: boolean; withUpvote?: boolean; createdAt?: number },
 ): Promise<number> {
-	const persistedPost: Post = await trx
+	const persistedPost: DBPost = await trx
 		.insertInto('Post')
 		.values({
 			content: content,
 			parentId: parentId,
 			authorId: authorId,
 			isPrivate: options ? Number(options.isPrivate) : 0,
+			createdAt: options?.createdAt ?? Date.now(),
 		})
 		.returningAll()
 		.executeTakeFirstOrThrow()
@@ -63,15 +70,77 @@ export async function incrementReplyCount(
 		.execute()
 }
 
-export async function getPost(trx: Transaction<DB>, id: number): Promise<Post> {
-	let result: Post | undefined = await trx
+export async function getPost(
+	trx: Transaction<DB>,
+	postId: number,
+): Promise<Post> {
+	return await trx
 		.selectFrom('Post')
-		.where('id', '=', id)
-		.selectAll()
-		.executeTakeFirst()
+		.where('Post.id', '=', postId)
+		.selectAll('Post')
+		.executeTakeFirstOrThrow()
+}
 
-	assert(result != null, 'result != null')
-	return result
+export async function getPostWithOSize(
+	trx: Transaction<DB>,
+	postId: number,
+): Promise<PostWithOSize> {
+	let query = trx
+		.selectFrom('Post')
+		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
+		.selectAll('Post')
+		.select('oSize')
+		.where('Post.id', '=', postId)
+
+	const scoredPost = await query.executeTakeFirstOrThrow()
+
+	if (scoredPost === undefined) {
+		throw new Error(`Failed to read scored post postId=${postId}`)
+	}
+
+	return scoredPost
+}
+
+export async function getPostWithOSizeAndScore(
+	trx: Transaction<DB>,
+	postId: number,
+): Promise<PostWithOSizeAndScore> {
+	const scoredPost: PostWithOSizeAndScore = await trx
+		.selectFrom('Post')
+		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
+		.where('Post.id', '=', postId)
+		.selectAll('Post')
+		.select(['oSize', 'score'])
+		.executeTakeFirstOrThrow()
+
+	return scoredPost
+}
+
+export async function getStatsPost(
+	trx: Transaction<DB>,
+	postId: number,
+): Promise<StatsPost> {
+	let query = trx
+		.selectFrom('Post')
+		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
+		// TODO: check if this join is even necessary
+		.leftJoin('PostStats', join =>
+			join.onRef('PostStats.postId', '=', 'Post.id'),
+		)
+		.selectAll('Post')
+		.selectAll('FullScore')
+		.select(eb =>
+			eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'),
+		)
+		.where('Post.id', '=', postId)
+
+	const scoredPost = (await query.execute())[0]
+
+	if (scoredPost === undefined) {
+		throw new Error(`Failed to read scored post postId=${postId}`)
+	}
+
+	return scoredPost
 }
 
 export async function getReplyIds(
@@ -83,7 +152,8 @@ export async function getReplyIds(
 		.where('parentId', '=', postId)
 		.select('id')
 		.execute()
-	return result.map(postResult => postResult.id)
+	const ids = result.map(postResult => postResult.id)
+	return ids
 }
 
 export async function setDeletedAt(
@@ -123,7 +193,7 @@ export async function getTransitiveParents(
 	trx: Transaction<DB>,
 	id: number,
 ): Promise<Post[]> {
-	let result: Post[] = await trx
+	let result: DBPost[] = await trx
 		.withRecursive('transitive_parents', db =>
 			db
 				.selectFrom('Post')
@@ -159,6 +229,7 @@ export async function getTransitiveParents(
 	// the topmost parent is the first element in the array
 	// skip the first element, which is the post itself
 	let resultReversed = result.slice(1).reverse()
+
 	return resultReversed
 }
 
@@ -186,4 +257,18 @@ export async function getDescendants(
 		.execute()
 
 	return result.map(row => row.descendantId)
+}
+
+export async function getRootPostId(
+	trx: Transaction<DB>,
+	postId: number,
+): Promise<number> {
+	const parentId = (
+		await trx
+			.selectFrom('Post')
+			.where('id', '=', postId)
+			.select('parentId')
+			.executeTakeFirst()
+	)?.parentId
+	return parentId == null ? postId : await getRootPostId(trx, parentId)
 }

@@ -5,7 +5,7 @@ import * as cliProgress from 'cli-progress'
 import { glob } from 'glob'
 import TurndownService from 'turndown'
 import { db } from '#app/db.ts'
-import { createPost } from '#app/post.ts'
+import { createPost } from '#app/repositories/post.ts'
 
 const turndownService = new TurndownService({ emDelimiter: '*' })
 
@@ -65,11 +65,12 @@ async function importHNPostsFromFile(filename: string) {
 					}
 				}
 
-				const postId = await db.transaction().execute(async trx =>
-					createPost(trx, parentId, markdown, ourUserId, {
-						isPrivate: false,
-						withUpvote: true,
-					}),
+				const postId = await db.transaction().execute(
+					async trx =>
+						await createPost(trx, parentId, markdown, ourUserId, {
+							isPrivate: false,
+							withUpvote: true,
+						}),
 				)
 
 				idMap.set(item.id, postId)
@@ -83,7 +84,7 @@ async function importHNPostsFromFile(filename: string) {
 }
 
 async function readJsonLinesFromFile(filePath: string): Promise<any[]> {
-	return new Promise((resolve, reject) => {
+	return await new Promise((resolve, reject) => {
 		const gunzip = zlib.createGunzip()
 		let readStream = filePath.endsWith('.gz')
 			? fs.createReadStream(filePath).pipe(gunzip)

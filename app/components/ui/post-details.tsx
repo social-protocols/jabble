@@ -2,12 +2,13 @@ import { useNavigate } from '@remix-run/react'
 import type * as Immutable from 'immutable'
 import { type Map } from 'immutable'
 import { type Dispatch, type SetStateAction } from 'react'
+import { defaultVoteState } from '#app/repositories/vote.ts'
 import {
+	Direction,
 	type ImmutableReplyTree,
 	type CommentTreeState,
-	type ScoredPost,
-} from '#app/ranking.ts'
-import { defaultVoteState, Direction } from '#app/vote.ts'
+	type PostWithOSize,
+} from '#app/types/api-types.ts'
 import { PostActionBar } from './post-action-bar.tsx'
 import { PostContent } from './post-content.tsx'
 import { PostInfoBar } from './post-info-bar.tsx'
@@ -33,7 +34,7 @@ export function PostDetails({
 	onReplySubmit,
 	onCollapseParentSiblings,
 }: {
-	post: ScoredPost
+	post: PostWithOSize
 	teaser: boolean
 	loggedIn: boolean
 	voteHereIndicator?: boolean

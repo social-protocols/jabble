@@ -131,6 +131,11 @@ export type Lineage = {
 	separation: number
 }
 
+export type HNItem = {
+	hnId: number
+	postId: number
+}
+
 export type DB = {
 	Vote: Vote
 	Password: Password
@@ -148,4 +153,5 @@ export type DB = {
 	EffectEvent: EffectEvent
 	FullScore: FullScore
 	Lineage: Lineage
+	HNItem: HNItem
 }

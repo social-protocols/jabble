@@ -7,48 +7,50 @@ import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/ui/reply-tree.tsx'
-import { type Post } from '#app/db/types.ts'
 import { db } from '#app/db.ts'
-import { getTransitiveParents } from '#app/post.ts'
+import { updateHN } from '#app/repositories/hackernews.ts'
+import { getTransitiveParents } from '#app/repositories/post.ts'
 import {
-	type ReplyTree,
-	type ScoredPost,
 	getReplyTree,
-	getScoredPost,
 	getCommentTreeState,
-	type CommentTreeState,
 	getAllPostIdsInTree,
 	toImmutableReplyTree,
+} from '#app/repositories/ranking.ts'
+import { defaultVoteState } from '#app/repositories/vote.ts'
+import {
+	Direction,
+	type ReplyTree,
+	type Post,
+	type CommentTreeState,
 	type ImmutableReplyTree,
-} from '#app/ranking.ts'
+} from '#app/types/api-types.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
-import { Direction, defaultVoteState } from '#app/vote.ts'
 
 const postIdSchema = z.coerce.number()
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	const userId: string | null = await getUserId(request)
 	const loggedIn = userId !== null
-
 	const postId = postIdSchema.parse(params.postId)
-	const post: ScoredPost = await db
-		.transaction()
-		.execute(async trx => await getScoredPost(trx, postId))
 
-	const mutableReplyTree: ReplyTree = await db
-		.transaction()
-		.execute(async trx => await getReplyTree(trx, postId, userId))
-
-	const transitiveParents: Post[] = await db
-		.transaction()
-		.execute(async trx => await getTransitiveParents(trx, post.id))
-
-	const commentTreeState: CommentTreeState = await db
-		.transaction()
-		.execute(async trx => await getCommentTreeState(trx, postId, userId))
+	const {
+		mutableReplyTree,
+		transitiveParents,
+		commentTreeState,
+	}: {
+		mutableReplyTree: ReplyTree
+		transitiveParents: Post[]
+		commentTreeState: CommentTreeState
+	} = await db.transaction().execute(async trx => {
+		await updateHN(trx, postId)
+		return {
+			mutableReplyTree: await getReplyTree(trx, postId, userId),
+			transitiveParents: await getTransitiveParents(trx, postId),
+			commentTreeState: await getCommentTreeState(trx, postId, userId),
+		}
+	})
 
 	return json({
-		post,
 		mutableReplyTree,
 		transitiveParents,
 		commentTreeState,
@@ -57,13 +59,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export default function PostPage() {
-	const {
-		post,
-		mutableReplyTree,
-		transitiveParents,
-		commentTreeState,
-		loggedIn,
-	} = useLoaderData<typeof loader>()
+	const { mutableReplyTree, transitiveParents, commentTreeState, loggedIn } =
+		useLoaderData<typeof loader>()
 
 	const params = useParams()
 
@@ -71,7 +68,6 @@ export default function PostPage() {
 	return (
 		<Post
 			key={params['postId']}
-			post={post}
 			mutableReplyTree={mutableReplyTree}
 			transitiveParents={transitiveParents}
 			initialCommentTreeState={commentTreeState}
@@ -81,13 +77,11 @@ export default function PostPage() {
 }
 
 function Post({
-	post,
 	mutableReplyTree,
 	transitiveParents,
 	initialCommentTreeState,
 	loggedIn,
 }: {
-	post: ScoredPost
 	mutableReplyTree: ReplyTree
 	transitiveParents: Post[]
 	initialCommentTreeState: CommentTreeState
@@ -99,13 +93,15 @@ function Post({
 		initialCommentTreeState,
 	)
 
+	const postId = replyTree.post.id
+
 	const currentVoteState =
-		commentTreeState.posts[post.id]?.voteState || defaultVoteState(post.id)
+		commentTreeState.posts[postId]?.voteState || defaultVoteState(postId)
 
 	let initialIsCollapsedState = Map<number, boolean>()
 	const allIds = getAllPostIdsInTree(replyTree)
 	allIds.forEach(id => {
-		if (!(id == post.id)) {
+		if (!(id == postId)) {
 			initialIsCollapsedState = initialIsCollapsedState.set(id, false)
 		}
 	})
@@ -121,7 +117,7 @@ function Post({
 				initialReplyTree={replyTree}
 				targetHasVote={currentVoteState.vote !== Direction.Neutral}
 				loggedIn={loggedIn}
-				focussedPostId={post.id}
+				focussedPostId={postId}
 				pathFromFocussedPost={Immutable.List()}
 				commentTreeState={commentTreeState}
 				setCommentTreeState={setCommentTreeState}

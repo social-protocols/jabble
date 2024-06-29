@@ -7,7 +7,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const fixturesDirPath = path.join(__dirname, '..', 'fixtures')
 
 export async function readFixture(subdir: string, name: string) {
-	return fsExtra.readJSON(path.join(fixturesDirPath, subdir, `${name}.json`))
+	return await fsExtra.readJSON(
+		path.join(fixturesDirPath, subdir, `${name}.json`),
+	)
 }
 
 export async function createFixture(

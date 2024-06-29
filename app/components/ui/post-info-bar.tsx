@@ -1,7 +1,7 @@
 import type * as Immutable from 'immutable'
 import moment from 'moment'
 import { type Dispatch, type SetStateAction } from 'react'
-import { type ScoredPost } from '#app/ranking.ts'
+import { type PostWithOSize } from '#app/types/api-types.ts'
 
 export function PostInfoBar({
 	post,
@@ -12,7 +12,7 @@ export function PostInfoBar({
 	setIsCollapsedState,
 	onCollapseParentSiblings,
 }: {
-	post: ScoredPost
+	post: PostWithOSize
 	pathFromFocussedPost: Immutable.List<number>
 	isConvincing: boolean
 	voteHereIndicator: boolean
@@ -26,7 +26,7 @@ export function PostInfoBar({
 
 	const isCollapsed = isCollapsedState?.get(post.id) || false
 
-	async function handleClick() {
+	function handleClick() {
 		if (isCollapsedState && setIsCollapsedState) {
 			let newisCollapsedState = isCollapsedState.set(post.id, !isCollapsed)
 			setIsCollapsedState(newisCollapsedState)

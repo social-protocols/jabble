@@ -5,7 +5,10 @@ import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
 import { db } from '#app/db.ts'
-import { type ScoredPost, getScoredPost, getEffects } from '#app/ranking.ts'
+import { getStatsPost } from '#app/repositories/post.ts'
+import { getEffects } from '#app/repositories/ranking.ts'
+import { type StatsPost } from '#app/types/api-types.ts'
+import { type DBEffect } from '#app/types/db-types.ts'
 import { relativeEntropy } from '#app/utils/entropy.ts'
 
 const postIdSchema = z.coerce.number()
@@ -14,24 +17,25 @@ export async function loader({ params }: LoaderFunctionArgs) {
 	invariant(params.postId, 'Missing postid param')
 	const postId: number = postIdSchema.parse(params.postId)
 
-	const post: ScoredPost = await db
-		.transaction()
-		.execute(async trx => getScoredPost(trx, postId))
-
-	const effects =
-		post.parentId == null
-			? []
-			: await db.transaction().execute(async trx => getEffects(trx, post.id))
+	const {
+		post,
+		effects,
+	}: {
+		post: StatsPost
+		effects: DBEffect[]
+	} = await db.transaction().execute(async trx => {
+		const post = await getStatsPost(trx, postId)
+		const effects = post.parentId == null ? [] : await getEffects(trx, post.id)
+		return { post, effects }
+	})
 
 	// So the first of the replies and the top comment are not necessarily the same thing?!?
 	// The top comment is the most convincing one. But the replies are ordered by *information rate*.
 
-	let result = json({
+	return json({
 		post,
 		effects,
 	})
-
-	return result
 }
 
 export default function PostStats() {

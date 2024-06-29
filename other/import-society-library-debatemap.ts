@@ -1,6 +1,6 @@
 import fs from 'fs'
 import { db } from '#app/db.ts'
-import { createPost } from '../app/post.ts'
+import { createPost } from '../app/repositories/post.ts'
 import { invariant } from '../app/utils/misc.tsx'
 
 // Filename is first commandline argument
@@ -74,7 +74,7 @@ async function importQuestion(question: Question) {
 	let wording = removePrefix(question.question, '[question] ')
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, null, wording, userId, {
+		return await createPost(trx, null, wording, userId, {
 			isPrivate: true,
 			withUpvote: withUpvote,
 		})
@@ -90,7 +90,7 @@ async function importPosition(parentId: number, position: Position) {
 	let wording = removePrefix(position.position, '[position] ')
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, parentId, wording, userId, {
+		return await createPost(trx, parentId, wording, userId, {
 			isPrivate: true,
 			withUpvote: withUpvote,
 		})
@@ -112,7 +112,7 @@ async function importClaim(parentId: number, claim: Claim) {
 	let wording = removePrefix(claim.claim, '[for reasons like] ')
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, parentId, wording, userId, {
+		return await createPost(trx, parentId, wording, userId, {
 			isPrivate: true,
 			withUpvote: withUpvote,
 		})
@@ -131,7 +131,7 @@ async function importExample(parentId: number, example: Example) {
 	let wording = removePrefix(example.original_example, '[original example] ')
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, parentId, wording, userId, {
+		return await createPost(trx, parentId, wording, userId, {
 			isPrivate: true,
 			withUpvote: withUpvote,
 		})
@@ -145,7 +145,7 @@ async function importExample(parentId: number, example: Example) {
 
 async function importEvidence(parentId: number, evidence: Evidence) {
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(
+		return await createPost(
 			trx,
 			parentId,
 			`
@@ -172,7 +172,7 @@ async function importCounterClaim(parentId: number, counterClaim: string) {
 	)
 
 	const postId = await db.transaction().execute(async trx => {
-		return createPost(trx, parentId, wording, userId, {
+		return await createPost(trx, parentId, wording, userId, {
 			isPrivate: true,
 			withUpvote: withUpvote,
 		})

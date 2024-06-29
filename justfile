@@ -40,7 +40,7 @@ typecheck:
 
 # run linters and formatter
 lint:
-	npx eslint . --fix
+	CI=true npx eslint . --fix
 
 # run all tests non-e2e tests
 test:

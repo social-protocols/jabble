@@ -4,26 +4,24 @@ import { useState } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
 import { db } from '#app/db.ts'
-import { type ScoredPost, getScoredPost } from '#app/ranking.ts'
+import { getPost } from '#app/repositories/post.ts'
+import { getAllCurrentVotes } from '#app/repositories/vote.ts'
+import { type Post, type VoteState } from '#app/types/api-types.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
-import { type VoteState, getAllCurrentVotes } from '#app/vote.ts'
 
-type PostWithVote = ScoredPost & VoteState
+type PostWithVote = Post & VoteState
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
 
-	const userVotesWithNeutrals: VoteState[] = await db
-		.transaction()
-		.execute(async trx => getAllCurrentVotes(trx, userId))
-	const userVotes = userVotesWithNeutrals.filter(vote => vote.vote !== 0)
-
 	const postsWithVotes: PostWithVote[] = await db
 		.transaction()
 		.execute(async trx => {
-			return Promise.all(
+			const userVotesWithNeutrals = await getAllCurrentVotes(trx, userId)
+			const userVotes = userVotesWithNeutrals.filter(vote => vote.vote !== 0)
+			return await Promise.all(
 				userVotes.map(async vote => {
-					const post = await getScoredPost(trx, vote.postId)
+					const post = await getPost(trx, vote.postId)
 					return { ...post, ...vote }
 				}),
 			)
@@ -89,7 +87,7 @@ function CurrentVoteListItem({
 	isUpvote: boolean
 	isInformed: boolean
 }) {
-	const currentVoteString = isUpvote ? '🡅' : '🡇'
+	const currentVoteString = isUpvote ? '⬆' : '⬇'
 	const voteIconColor = isInformed ? 'text-black' : 'text-blue-500'
 
 	return (
