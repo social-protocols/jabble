@@ -2,6 +2,7 @@ import { Link } from '@remix-run/react'
 import { type Dispatch, type SetStateAction } from 'react'
 import { defaultVoteState } from '#app/repositories/vote.ts'
 import { Direction, type CommentTreeState } from '#app/types/api-types.ts'
+import { Icon } from './icon.tsx'
 
 export function VoteButtons({
 	postId,
@@ -58,19 +59,21 @@ export function VoteButtons({
 				className={'flex w-[32px] flex-col items-center'}
 			>
 				<button
+					title="Upvote"
 					className={upClass + ' ' + negMargin}
 					onClick={async () => await submitVote(Direction.Up)}
 				>
-					⬆
+					<Icon name="thick-arrow-up" />
 				</button>
 				<Link to={`/stats/${postId}`} className={'text-xs opacity-50'}>
 					{pCurrentString}
 				</Link>
 				<button
+					title="Downvote"
 					className={downClass + ' ' + negMargin}
 					onClick={async () => await submitVote(Direction.Down)}
 				>
-					⬇
+					<Icon name="thick-arrow-down" />
 				</button>
 			</div>
 		</>
