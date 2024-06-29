@@ -71,7 +71,7 @@ export function PostWithReplies({
 					teaser={false}
 					loggedIn={loggedIn}
 					voteHereIndicator={voteHereIndicator}
-					className={'mt-3 ' + (className || '')}
+					className={(isCollapsed ? '' : 'mb-3 ') + (className ?? '')}
 					focussedPostId={focussedPostId}
 					pathFromFocussedPost={pathFromFocussedPost}
 					commentTreeState={commentTreeState}
@@ -85,7 +85,7 @@ export function PostWithReplies({
 			{!isCollapsed && (
 				<div
 					className={
-						'border-left-solid mb-2 ml-2 border-l-4 border-post border-transparent pl-3'
+						'border-left-solid ml-2 border-l-4 border-post border-transparent pl-3'
 					}
 				>
 					<TreeReplies

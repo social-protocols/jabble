@@ -27,7 +27,7 @@ export function PostInfoBar({
 
 	const isCollapsed = isCollapsedState?.get(post.id) || false
 
-	function handleClick() {
+	function toggleCollapse() {
 		if (isCollapsedState && setIsCollapsedState) {
 			let newisCollapsedState = isCollapsedState.set(post.id, !isCollapsed)
 			setIsCollapsedState(newisCollapsedState)
@@ -36,7 +36,7 @@ export function PostInfoBar({
 
 	return (
 		<>
-			<div className="flex w-full space-x-2 text-sm">
+			<div className="flex w-full items-center space-x-2 text-sm sm:items-baseline">
 				{isConvincing && (
 					<span title="Convincing" className="">
 						💡
@@ -56,9 +56,11 @@ export function PostInfoBar({
 				{isCollapsedState && (
 					<>
 						<button
-							title="Collapse this comment"
-							className="my-[-2px] text-base"
-							onClick={handleClick}
+							title={
+								isCollapsed ? 'Expand this comment' : 'Collapse this comment'
+							}
+							className="text-[30px] sm:text-base"
+							onClick={toggleCollapse}
 						>
 							{isCollapsed ? (
 								<Icon name="plus-circled" />
@@ -68,8 +70,8 @@ export function PostInfoBar({
 						</button>
 						<button
 							title="Collapse unrelated comments"
-							className="my-[-2px] text-base"
 							onClick={() => onCollapseParentSiblings(pathFromFocussedPost)}
+							className="my-[-2px] text-[30px] sm:text-base"
 						>
 							<Icon name="target" />
 						</button>

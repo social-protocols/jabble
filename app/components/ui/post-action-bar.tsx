@@ -49,7 +49,7 @@ export function PostActionBar({
 
 	return (
 		<>
-			<div className="mb-3 flex w-full text-sm">
+			<div className="mt-1 flex w-full text-sm">
 				{!isDeleted && loggedIn && (
 					<button
 						onClick={() => {
@@ -133,7 +133,7 @@ function ReplyForm({
 	}
 
 	return (
-		<div className="flex flex-col items-end">
+		<div className="mt-2 flex flex-col items-end">
 			<Textarea
 				name="content"
 				className="mb-2 w-full"

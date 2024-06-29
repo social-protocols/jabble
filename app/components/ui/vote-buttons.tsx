@@ -51,6 +51,7 @@ export function VoteButtons({
 	}
 
 	const negMargin = 'my-[-1px]'
+	const responsiveSize = 'text-[30px] sm:text-base'
 
 	return (
 		<>
@@ -60,7 +61,7 @@ export function VoteButtons({
 			>
 				<button
 					title="Upvote"
-					className={upClass + ' ' + negMargin}
+					className={upClass + ' ' + negMargin + ' ' + responsiveSize}
 					onClick={async () => await submitVote(Direction.Up)}
 				>
 					<Icon name="thick-arrow-up" />
@@ -70,7 +71,7 @@ export function VoteButtons({
 				</Link>
 				<button
 					title="Downvote"
-					className={downClass + ' ' + negMargin}
+					className={downClass + ' ' + negMargin + ' ' + responsiveSize}
 					onClick={async () => await submitVote(Direction.Down)}
 				>
 					<Icon name="thick-arrow-down" />
