@@ -125,6 +125,7 @@
 	}
 
 	.markdown {
+		word-wrap: break-word;
 		> * {
 			margin-top: var(--post-content-line-height); /* consistent spacing */
 		}
