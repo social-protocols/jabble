@@ -2,7 +2,7 @@ import { type ActionFunctionArgs } from '@remix-run/node'
 import { db } from '#app/db.ts'
 import { getCommentTreeState } from '#app/repositories/ranking.ts'
 import { vote } from '#app/repositories/vote.ts'
-import { Direction } from '#app/types/api-types.ts'
+import { type CommentTreeState, Direction } from '#app/types/api-types.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
 type VoteData = {
@@ -25,16 +25,12 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	const userId: string = await requireUserId(request)
 
-	await db
+	const commentTreeState: CommentTreeState = await db
 		.transaction()
-		.execute(async trx => await vote(trx, userId, dataParsed.postId, newState))
-
-	const commentTreeState = await db
-		.transaction()
-		.execute(
-			async trx =>
-				await getCommentTreeState(trx, dataParsed.focussedPostId, userId),
-		)
+		.execute(async trx => {
+			await vote(trx, userId, dataParsed.postId, newState)
+			return await getCommentTreeState(trx, dataParsed.focussedPostId, userId)
+		})
 
 	return commentTreeState
 }

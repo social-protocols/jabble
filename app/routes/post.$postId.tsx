@@ -30,24 +30,25 @@ const postIdSchema = z.coerce.number()
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	const userId: string | null = await getUserId(request)
-
 	const loggedIn = userId !== null
-
-	// TODO: Everything should be in one transaction
 	const postId = postIdSchema.parse(params.postId)
-	await db.transaction().execute(async trx => await updateHN(trx, postId))
 
-	const mutableReplyTree: ReplyTree = await db
-		.transaction()
-		.execute(async trx => await getReplyTree(trx, postId, userId))
-
-	const transitiveParents: Post[] = await db
-		.transaction()
-		.execute(async trx => await getTransitiveParents(trx, postId))
-
-	const commentTreeState: CommentTreeState = await db
-		.transaction()
-		.execute(async trx => await getCommentTreeState(trx, postId, userId))
+	const {
+		mutableReplyTree,
+		transitiveParents,
+		commentTreeState,
+	}: {
+		mutableReplyTree: ReplyTree
+		transitiveParents: Post[]
+		commentTreeState: CommentTreeState
+	} = await db.transaction().execute(async trx => {
+		await updateHN(trx, postId)
+		return {
+			mutableReplyTree: await getReplyTree(trx, postId, userId),
+			transitiveParents: await getTransitiveParents(trx, postId),
+			commentTreeState: await getCommentTreeState(trx, postId, userId),
+		}
+	})
 
 	return json({
 		mutableReplyTree,

@@ -18,10 +18,10 @@ export async function up(db: Kysely<any>): Promise<void> {
 				postId integer not null references post(id),
 				primary key (hnId, postId)
 			)
-    `.execute(trx)
-    
-    await sql`
+		`.execute(trx)
+
+		await sql`
 			create index idx_HNItem_postId on HNItem(postId)
-    `.execute(trx)
+		`.execute(trx)
 	})
 }
