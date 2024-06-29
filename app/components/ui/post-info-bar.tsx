@@ -2,6 +2,7 @@ import type * as Immutable from 'immutable'
 import moment from 'moment'
 import { type Dispatch, type SetStateAction } from 'react'
 import { type PostWithOSize } from '#app/types/api-types.ts'
+import { Icon } from './icon.tsx'
 
 export function PostInfoBar({
 	post,
@@ -59,14 +60,18 @@ export function PostInfoBar({
 							className="my-[-2px] text-base"
 							onClick={handleClick}
 						>
-							{isCollapsed ? '⊕' : '⊖'}
+							{isCollapsed ? (
+								<Icon name="plus-circled" />
+							) : (
+								<Icon name="minus-circled" />
+							)}
 						</button>
 						<button
 							title="Collapse unrelated comments"
 							className="my-[-2px] text-base"
 							onClick={() => onCollapseParentSiblings(pathFromFocussedPost)}
 						>
-							⊚
+							<Icon name="target" />
 						</button>
 					</>
 				)}

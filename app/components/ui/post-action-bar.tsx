@@ -8,6 +8,7 @@ import {
 	type CommentTreeState,
 } from '#app/types/api-types.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
+import { Icon } from './icon.tsx'
 
 export function PostActionBar({
 	post,
@@ -58,7 +59,7 @@ export function PostActionBar({
 						className="mr-2"
 						style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
 					>
-						🗨 Reply
+						<Icon name="chat-bubble" /> Reply
 					</button>
 				)}
 				{isAdminUser &&
