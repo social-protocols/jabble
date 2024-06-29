@@ -9,6 +9,7 @@
 		/* https://aykevl.nl/2014/09/fix-jumping-scrollbar */
 		margin-left: calc(100vw - 100%);
 		margin-right: 0;
+		line-height: 1.2;
 	}
 }
 
@@ -123,9 +124,7 @@
 		@apply underline;
 	}
 
-
 	.markdown {
-
 		> * {
 			margin-top: var(--post-content-line-height); /* consistent spacing */
 		}

@@ -96,7 +96,7 @@ export function PostDetails({
 					</div>
 					<div
 						className={
-							'ml-2 flex w-full min-w-0 flex-col space-y-1' +
+							'ml-2 flex w-full min-w-0 flex-col' +
 							(teaser ? ' postteaser' : '')
 						}
 					>
