@@ -60,7 +60,11 @@ export function VoteButtons({
 				className={'flex w-[32px] flex-col items-center'}
 			>
 				<button
-					title={needsVoteOnCriticalComment ? "Your vote is uninformed. To make it informed, please vote on the comment labeled 'Vote here'" : "Upvote"}
+					title={
+						needsVoteOnCriticalComment
+							? "Your vote is uninformed. To make it informed, please vote on the comment labeled 'Vote here'"
+							: 'Upvote'
+					}
 					className={upClass + ' ' + negMargin + ' ' + responsiveSize}
 					onClick={async () => await submitVote(Direction.Up)}
 				>
@@ -70,7 +74,11 @@ export function VoteButtons({
 					{pCurrentString}
 				</Link>
 				<button
-					title={needsVoteOnCriticalComment ? "Your vote is uninformed. To make it informed, please vote on the comment labeled 'Vote here'" : "Downvote"}
+					title={
+						needsVoteOnCriticalComment
+							? "Your vote is uninformed. To make it informed, please vote on the comment labeled 'Vote here'"
+							: 'Downvote'
+					}
 					className={downClass + ' ' + negMargin + ' ' + responsiveSize}
 					onClick={async () => await submitVote(Direction.Down)}
 				>
