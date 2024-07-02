@@ -185,7 +185,7 @@ export async function getReplyTree(
 	}
 }
 
-function effectSizeOnTarget(effectOnTarget: Effect | null): number {
+export function effectSizeOnTarget(effectOnTarget: Effect | null): number {
 	const targetP = effectOnTarget?.p ?? 0
 	const targetQ = effectOnTarget?.q ?? 0
 	const targetPSize = effectOnTarget?.pSize ?? 0

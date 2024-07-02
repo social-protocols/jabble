@@ -78,7 +78,6 @@ export function PostDetails({
 						post={post}
 						postState={postState}
 						pathFromFocussedPost={pathFromFocussedPost}
-						isConvincing={false}
 						voteHereIndicator={voteHereIndicator}
 						isCollapsedState={isCollapsedState}
 						setIsCollapsedState={setIsCollapsedState}
@@ -106,7 +105,6 @@ export function PostDetails({
 							post={post}
 							postState={postState}
 							pathFromFocussedPost={pathFromFocussedPost}
-							isConvincing={false}
 							voteHereIndicator={voteHereIndicator}
 							isCollapsedState={isCollapsedState}
 							setIsCollapsedState={setIsCollapsedState}

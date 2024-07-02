@@ -1,6 +1,7 @@
 import type * as Immutable from 'immutable'
 import moment from 'moment'
 import { useRef, type Dispatch, type SetStateAction } from 'react'
+import { effectSizeOnTarget } from '#app/repositories/ranking.ts'
 import { type PostState, type Post } from '#app/types/api-types.ts'
 import { Icon } from './icon.tsx'
 
@@ -8,7 +9,6 @@ export function PostInfoBar({
 	post,
 	postState,
 	pathFromFocussedPost,
-	isConvincing,
 	voteHereIndicator,
 	isCollapsedState,
 	setIsCollapsedState,
@@ -17,7 +17,6 @@ export function PostInfoBar({
 	post: Post
 	postState: PostState
 	pathFromFocussedPost: Immutable.List<number>
-	isConvincing: boolean
 	voteHereIndicator: boolean
 	isCollapsedState?: Immutable.Map<number, boolean>
 	setIsCollapsedState?: Dispatch<SetStateAction<Immutable.Map<number, boolean>>>
@@ -26,6 +25,8 @@ export function PostInfoBar({
 	) => void
 }) {
 	const ageString = moment(post.createdAt).fromNow()
+	const effectSize = effectSizeOnTarget(postState.effectOnTargetPost)
+	const isConvincing = effectSize > 0.1
 
 	const isCollapsed = isCollapsedState?.get(post.id) || false
 
@@ -51,9 +52,17 @@ export function PostInfoBar({
 						💡
 					</span>
 				)}
-				<span className="opacity-50">{ageString}</span>
-				<span className="opacity-50">-</span>
-				<span className="opacity-50">{postState.voteCount} votes</span>
+				<span className="opacity-50">
+					{ageString} - {postState.voteCount} votes
+				</span>
+				{postState.effectOnTargetPost !== null ? (
+					<span className="opacity-50">
+						{' '}
+						- convincing: {effectSize.toFixed(2)}
+					</span>
+				) : (
+					''
+				)}
 				{voteHereIndicator && (
 					<span
 						title="Take a position here to give your vote above more weight"
