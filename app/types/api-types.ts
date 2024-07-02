@@ -34,22 +34,22 @@ export type Effect = {
 
 export type ReplyTree = {
 	post: PostWithOSizeAndScore
-	effect: Effect | null // TODO: move to CommentTreeState
 	replies: ReplyTree[]
 }
 
 export type ImmutableReplyTree = {
 	post: PostWithOSizeAndScore
-	effect: Effect | null // TODO: move to CommentTreeState
 	replies: Immutable.List<ImmutableReplyTree>
 }
 
 export type CommentTreeState = {
+	targetPostId: number
 	criticalCommentId: number | null
 	posts: {
 		[key: number]: {
 			p: number | null
 			voteState: VoteState
+			effectOnTargetPost: Effect | null
 			isDeleted: boolean
 		}
 	}
