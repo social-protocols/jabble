@@ -14,6 +14,7 @@ export const Truncate: React.FC<{
 	useEffect(() => {
 		function truncate() {
 			if (lines === undefined) {
+				setIsTruncated(false)
 				return
 			}
 
