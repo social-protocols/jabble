@@ -136,6 +136,12 @@ export type HNItem = {
 	postId: number
 }
 
+export type DiscussionOfTheDay = {
+	id: Generated<number>
+	postId: number
+	promotedAt: number
+}
+
 export type DB = {
 	Vote: Vote
 	Password: Password
@@ -154,4 +160,5 @@ export type DB = {
 	FullScore: FullScore
 	Lineage: Lineage
 	HNItem: HNItem
+	DiscussionOfTheDay: DiscussionOfTheDay
 }

@@ -66,7 +66,7 @@ export default function PostPage() {
 
 	// subcomponent and key needed for react to not preserve state on page changes
 	return (
-		<Post
+		<DiscussionView
 			key={params['postId']}
 			mutableReplyTree={mutableReplyTree}
 			transitiveParents={transitiveParents}
@@ -76,7 +76,7 @@ export default function PostPage() {
 	)
 }
 
-function Post({
+export function DiscussionView({
 	mutableReplyTree,
 	transitiveParents,
 	initialCommentTreeState,

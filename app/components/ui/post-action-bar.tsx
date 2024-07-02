@@ -47,6 +47,19 @@ export function PostActionBar({
 		setCommentTreeState(newCommentTreeState)
 	}
 
+	async function handleSetDiscussionOfTheDay() {
+		const payload = {
+			postId: post.id,
+		}
+		await fetch('/promoteDiscussionOfTheDay', {
+			method: 'POST',
+			body: JSON.stringify(payload),
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		})
+	}
+
 	return (
 		<>
 			<div className="mt-1 flex w-full text-sm">
@@ -64,12 +77,24 @@ export function PostActionBar({
 				)}
 				{isAdminUser &&
 					(!isDeleted ? (
-						<button onClick={() => handleSetDeletedAt(Date.now())}>
+						<button
+							className="mr-2"
+							onClick={() => handleSetDeletedAt(Date.now())}
+						>
 							Delete
 						</button>
 					) : (
 						<button onClick={() => handleSetDeletedAt(null)}>Restore</button>
 					))}
+				{isAdminUser && (
+					<button
+						className="mr-2"
+						title="Promote the root post of this discussion to discussion of the day"
+						onClick={handleSetDiscussionOfTheDay}
+					>
+						Promote
+					</button>
+				)}
 				{showReplyForm && (
 					<button
 						className="ml-auto pr-2"
