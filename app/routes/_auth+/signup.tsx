@@ -126,14 +126,18 @@ export default function SignupRoute() {
 	})
 
 	return (
-		<div className="container flex flex-col justify-center pb-32 pt-20">
+		<div className="container flex flex-col justify-center pb-32 pt-15">
 			<div className="text-center">
-				<h1 className="text-h1">Let's start your journey!</h1>
-				<p className="mt-3 text-body-md text-muted-foreground">
-					Please enter your email.
+				<h1 className="text-h1 mb-10">Welcome to Jabble!</h1>
+				<p className="mt-3 text-body-sm text-muted-foreground">
+					You are among the first people to try Jabble.
+					Everything here is a work in progress and we'd appreciate your feedback!
+				</p>
+				<p className="mt-3 text-body-md text-muted-foreground bold">
+					Enter your email and let's get started! 🚀
 				</p>
 			</div>
-			<div className="mx-auto mt-16 min-w-[368px] max-w-sm">
+			<div className="mx-auto mt-10 min-w-[268px] max-w-sm">
 				<Form method="POST" {...form.props}>
 					<AuthenticityTokenInput />
 					<HoneypotInputs />
