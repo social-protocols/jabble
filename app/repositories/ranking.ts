@@ -143,7 +143,7 @@ export async function getReplyTree(
 	// (in-place sort)
 	replies.sort((a, b) => {
 		const effectA = commentTreeState.posts[a.post.id]?.effectOnTargetPost
-		const effectB = commentTreeState.posts[a.post.id]?.effectOnTargetPost
+		const effectB = commentTreeState.posts[b.post.id]?.effectOnTargetPost
 		invariant(
 			effectA !== undefined,
 			`post ${a.post.id} not found in commentTreeState`,
