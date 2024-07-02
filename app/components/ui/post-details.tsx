@@ -71,7 +71,10 @@ export function PostDetails({
 	const isDeleted = postState.isDeleted
 
 	return (
-		<div className={'flex w-full ' + (className ? className : '')}>
+		<div
+			id={`post-${post.id}`}
+			className={'flex w-full ' + (className ? className : '')}
+		>
 			{isCollapsed ? (
 				<div className={'flex ' + marginLeft}>
 					<PostInfoBar
