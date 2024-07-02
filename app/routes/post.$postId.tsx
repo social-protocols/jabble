@@ -5,6 +5,7 @@ import { Map } from 'immutable'
 import { useState } from 'react'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import InfoText from '#app/components/ui/info-text.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/ui/reply-tree.tsx'
 import { db } from '#app/db.ts'
@@ -66,17 +67,20 @@ export default function PostPage() {
 
 	// subcomponent and key needed for react to not preserve state on page changes
 	return (
-		<Post
-			key={params['postId']}
-			mutableReplyTree={mutableReplyTree}
-			transitiveParents={transitiveParents}
-			initialCommentTreeState={commentTreeState}
-			loggedIn={loggedIn}
-		/>
+		<>
+			<InfoText className="mb-8" />
+			<DiscussionView
+				key={params['postId']}
+				mutableReplyTree={mutableReplyTree}
+				transitiveParents={transitiveParents}
+				initialCommentTreeState={commentTreeState}
+				loggedIn={loggedIn}
+			/>
+		</>
 	)
 }
 
-function Post({
+export function DiscussionView({
 	mutableReplyTree,
 	transitiveParents,
 	initialCommentTreeState,

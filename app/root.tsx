@@ -306,7 +306,10 @@ function UserDropdown() {
 						</Form>
 					</DropdownMenuItem>
 					<DropdownMenuItem>
-						<Link to={'/activities/myVotes'}>My Votes</Link>
+						<Link to={'/explore'}>👀 Explore</Link>
+					</DropdownMenuItem>
+					<DropdownMenuItem>
+						<Link to={'/activities/myVotes'}>🔎 Review</Link>
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenuPortal>
