@@ -196,6 +196,13 @@ function Document({
 				<meta name="viewport" content="width=device-width,initial-scale=1" />
 				<Links />
 				<ExternalScripts />
+				{process.env.NODE_ENV === 'production' && (
+					<script
+						data-goatcounter="https://jabble.goatcounter.com/count"
+						async
+						src="//gc.zgo.at/count.js"
+					></script>
+				)}
 			</head>
 			<body className="bg-background text-foreground">
 				{children}
