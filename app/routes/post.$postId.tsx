@@ -25,6 +25,7 @@ import {
 	type ImmutableReplyTree,
 } from '#app/types/api-types.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
+import InfoText from '#app/components/ui/info-text.tsx'
 
 const postIdSchema = z.coerce.number()
 
@@ -66,13 +67,16 @@ export default function PostPage() {
 
 	// subcomponent and key needed for react to not preserve state on page changes
 	return (
-		<DiscussionView
-			key={params['postId']}
-			mutableReplyTree={mutableReplyTree}
-			transitiveParents={transitiveParents}
-			initialCommentTreeState={commentTreeState}
-			loggedIn={loggedIn}
-		/>
+		<>
+			<InfoText className="mb-8" />
+			<DiscussionView
+				key={params['postId']}
+				mutableReplyTree={mutableReplyTree}
+				transitiveParents={transitiveParents}
+				initialCommentTreeState={commentTreeState}
+				loggedIn={loggedIn}
+			/>
+		</>
 	)
 }
 
