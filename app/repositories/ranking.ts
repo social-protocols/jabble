@@ -18,7 +18,7 @@ import {
 	getDescendants,
 	getPost,
 	getReplyIds,
-	getPostWithOSizeAndScore,
+	getPostWithScore,
 } from './post.ts'
 import { defaultVoteState, getUserVotes } from './vote.ts'
 
@@ -60,6 +60,7 @@ export async function getCommentTreeState(
 		.select([
 			'Post.id as postId',
 			'FullScore.p as p',
+			'FullScore.oSize as voteCount',
 			'Post.deletedAt as deletedAt',
 		])
 		.where('Post.id', 'in', descendantIds.concat([targetPostId]))
@@ -92,6 +93,8 @@ export async function getCommentTreeState(
 				// See: https://kysely.dev/docs/examples/SELECT/not-null
 				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 				p: result.p!,
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				voteCount: result.voteCount!,
 				voteState:
 					userVotes?.find(voteState => voteState.postId == result.postId) ||
 					defaultVoteState(result.postId),
@@ -124,7 +127,7 @@ export async function getReplyTree(
 	commentTreeState: CommentTreeState,
 ): Promise<ReplyTree> {
 	const directReplyIds = await getReplyIds(trx, postId)
-	const post = await getPostWithOSizeAndScore(trx, postId)
+	const post = await getPostWithScore(trx, postId)
 
 	const replies: ReplyTree[] = await Promise.all(
 		// Recursively get all subtrees.
