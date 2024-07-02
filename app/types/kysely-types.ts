@@ -137,7 +137,6 @@ export type HNItem = {
 }
 
 export type DiscussionOfTheDay = {
-	id: Generated<number>
 	postId: number
 	promotedAt: number
 }

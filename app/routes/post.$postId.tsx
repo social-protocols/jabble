@@ -5,6 +5,7 @@ import { Map } from 'immutable'
 import { useState } from 'react'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import InfoText from '#app/components/ui/info-text.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/ui/reply-tree.tsx'
 import { db } from '#app/db.ts'
@@ -25,7 +26,6 @@ import {
 	type ImmutableReplyTree,
 } from '#app/types/api-types.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
-import InfoText from '#app/components/ui/info-text.tsx'
 
 const postIdSchema = z.coerce.number()
 

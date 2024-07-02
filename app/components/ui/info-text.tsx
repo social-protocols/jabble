@@ -14,10 +14,13 @@ Use [this feedback form](https://forms.gle/dzJtsTJwPSsBihPUA) or submit a [GitHu
 	`
 
 	return (
-		<div className={"text-sm border-dashed border-2 border-gray-500 p-4 rounded-xl mb-4 " + (className ?? "")}>
+		<div
+			className={
+				'mb-4 rounded-xl border-2 border-dashed border-gray-500 p-4 text-sm ' +
+				(className ?? '')
+			}
+		>
 			<Markdown deactivateLinks={false}>{infoText}</Markdown>
 		</div>
 	)
 }
-
-

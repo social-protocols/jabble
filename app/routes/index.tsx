@@ -1,6 +1,7 @@
 import { json, type LoaderFunctionArgs, redirect } from '@remix-run/node'
 import { useLoaderData, useParams } from '@remix-run/react'
 import { Markdown } from '#app/components/markdown.tsx'
+import InfoText from '#app/components/ui/info-text.tsx'
 import { db } from '#app/db.ts'
 import { updateHN } from '#app/repositories/hackernews.ts'
 import {
@@ -15,7 +16,6 @@ import {
 } from '#app/types/api-types.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { DiscussionView } from './post.$postId.tsx'
-import InfoText from '#app/components/ui/info-text.tsx'
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const discussionOfTheDayPostId = await db
@@ -76,7 +76,7 @@ export default function Index() {
 	return (
 		<>
 			<InfoText />
-			<div className="markdown mt-8 mb-4">
+			<div className="markdown mb-4 mt-8">
 				<Markdown deactivateLinks={false}>## Discussion of the Day 🔥</Markdown>
 			</div>
 			<DiscussionView
