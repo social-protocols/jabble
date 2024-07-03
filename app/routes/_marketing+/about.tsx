@@ -1,4 +1,4 @@
-import { Markdown } from "#app/components/markdown.tsx"
+import { Markdown } from '#app/components/markdown.tsx'
 
 export default function AboutRoute() {
 	const aboutText = `
