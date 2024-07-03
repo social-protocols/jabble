@@ -42,12 +42,6 @@ export function PostWithReplies({
 		setReplyTreeState(newReplyTreeState)
 	}
 
-	const postState = commentTreeState.posts[postId]
-	invariant(
-		postState !== undefined,
-		`Post ${postId} not found in commentTreeState`,
-	)
-
 	const isCollapsed = isCollapsedState.get(postId) ?? false
 
 	return (
