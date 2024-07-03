@@ -10,6 +10,7 @@ export type IconName =
 	| 'clock'
 	| 'cross-1'
 	| 'dots-horizontal'
+	| 'double-arrow-down'
 	| 'download'
 	| 'envelope-closed'
 	| 'exit'
