@@ -5,6 +5,7 @@ const schema = z.object({
 	APP_DATABASE_PATH: z.string(),
 	APP_DATABASE_URL: z.string(),
 	GB_DATABASE_PATH: z.string(),
+	HTTP_LOG_PATH: z.string(),
 	SESSION_SECRET: z.string(),
 	INTERNAL_COMMAND_TOKEN: z.string(),
 	HONEYPOT_SECRET: z.string(),
