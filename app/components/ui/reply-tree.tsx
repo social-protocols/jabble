@@ -5,7 +5,6 @@ import {
 	type ImmutableReplyTree,
 	type CommentTreeState,
 } from '#app/types/api-types.ts'
-import { invariant } from '#app/utils/misc.tsx'
 import { PostDetails } from './post-details.tsx'
 
 export function PostWithReplies({
