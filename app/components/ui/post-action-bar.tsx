@@ -1,3 +1,4 @@
+import { Link } from '@remix-run/react'
 import { type Dispatch, type SetStateAction, useState } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { toImmutableReplyTree } from '#app/repositories/ranking.ts'
@@ -6,12 +7,15 @@ import {
 	type Post,
 	type ReplyTree,
 	type CommentTreeState,
+	type PostState,
 } from '#app/types/api-types.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 import { Icon } from './icon.tsx'
 
 export function PostActionBar({
 	post,
+	postState,
+	hasUninformedVote,
 	focussedPostId,
 	loggedIn,
 	isDeleted,
@@ -19,6 +23,8 @@ export function PostActionBar({
 	onReplySubmit,
 }: {
 	post: Post
+	postState: PostState
+	hasUninformedVote: boolean
 	focussedPostId: number
 	loggedIn: boolean
 	isDeleted: boolean
@@ -63,6 +69,16 @@ export function PostActionBar({
 	return (
 		<>
 			<div className="mt-1 flex w-full text-sm">
+				{hasUninformedVote ? (
+					<Link
+						title="Jump to comment labeled 'Vote here'"
+						to={`/post/${focussedPostId}/#post-${postState.criticalCommentId}`}
+					>
+						<Icon className="mr-2 text-blue-500" name="double-arrow-down" />
+					</Link>
+				) : (
+					''
+				)}
 				{!isDeleted && loggedIn && (
 					<button
 						onClick={() => {

@@ -1,33 +1,36 @@
 import { Link } from '@remix-run/react'
 import { type Dispatch, type SetStateAction } from 'react'
-import { defaultVoteState } from '#app/repositories/vote.ts'
 import { Direction, type CommentTreeState } from '#app/types/api-types.ts'
+import { invariant } from '#app/utils/misc.tsx'
 import { Icon } from './icon.tsx'
 
 export function VoteButtons({
 	postId,
 	focussedPostId,
-	needsVoteOnCriticalComment,
+	hasUninformedVote,
 	commentTreeState,
 	setCommentTreeState,
 }: {
 	postId: number
 	focussedPostId: number
-	needsVoteOnCriticalComment: boolean
+	hasUninformedVote: boolean
 	commentTreeState: CommentTreeState
 	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
 }) {
-	const buttonColorClass = needsVoteOnCriticalComment
+	const postState = commentTreeState.posts[postId]
+	invariant(
+		postState !== undefined,
+		`post ${postId} not found in commentTreeState`,
+	)
+
+	const buttonColorClass = hasUninformedVote
 		? 'text-blue-500 dark:text-[#7dcfff]'
 		: ''
 
-	const currentVoteState =
-		commentTreeState.posts[postId]?.voteState || defaultVoteState(postId)
-
 	const upClass =
-		currentVoteState.vote == Direction.Up ? buttonColorClass : 'opacity-30'
+		postState.voteState.vote == Direction.Up ? buttonColorClass : 'opacity-30'
 	const downClass =
-		currentVoteState.vote == Direction.Down ? buttonColorClass : 'opacity-30'
+		postState.voteState.vote == Direction.Down ? buttonColorClass : 'opacity-30'
 
 	const pCurrent: number = commentTreeState.posts[postId]?.p || NaN
 	const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
@@ -37,7 +40,7 @@ export function VoteButtons({
 			postId: postId,
 			focussedPostId: focussedPostId,
 			direction: direction,
-			currentVoteState: currentVoteState.vote,
+			currentVoteState: postState.voteState.vote,
 		}
 		const response = await fetch('/vote', {
 			method: 'POST',
@@ -61,7 +64,7 @@ export function VoteButtons({
 			>
 				<button
 					title={
-						needsVoteOnCriticalComment
+						hasUninformedVote
 							? "Your vote is uninformed. To make it informed, please vote on the comment labeled 'Vote here'"
 							: 'Upvote'
 					}
@@ -75,7 +78,7 @@ export function VoteButtons({
 				</Link>
 				<button
 					title={
-						needsVoteOnCriticalComment
+						hasUninformedVote
 							? "Your vote is uninformed. To make it informed, please vote on the comment labeled 'Vote here'"
 							: 'Downvote'
 					}

@@ -14,7 +14,6 @@ import { getTransitiveParents } from '#app/repositories/post.ts'
 import {
 	getReplyTree,
 	getCommentTreeState,
-	getAllPostIdsInTree,
 	toImmutableReplyTree,
 } from '#app/repositories/ranking.ts'
 import { defaultVoteState } from '#app/repositories/vote.ts'
@@ -108,16 +107,8 @@ export function DiscussionView({
 	const currentVoteState =
 		commentTreeState.posts[postId]?.voteState || defaultVoteState(postId)
 
-	let initialIsCollapsedState = Map<number, boolean>()
-	const allIds = getAllPostIdsInTree(replyTree)
-	allIds.forEach(id => {
-		if (!(id == postId)) {
-			initialIsCollapsedState = initialIsCollapsedState.set(id, false)
-		}
-	})
-	const [isCollapsedState, setIsCollapsedState] = useState<
-		Map<number, boolean>
-	>(initialIsCollapsedState)
+	const [isCollapsedState, setIsCollapsedState] =
+		useState(Map<number, boolean>())
 
 	return (
 		<>
