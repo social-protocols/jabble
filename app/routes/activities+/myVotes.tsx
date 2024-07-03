@@ -2,6 +2,7 @@ import { type LoaderFunctionArgs, json } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { useState } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
+import { Icon } from '#app/components/ui/icon.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
 import { db } from '#app/db.ts'
 import { getPost } from '#app/repositories/post.ts'
@@ -87,7 +88,6 @@ function CurrentVoteListItem({
 	isUpvote: boolean
 	isInformed: boolean
 }) {
-	const currentVoteString = isUpvote ? '⬆' : '⬇'
 	const voteIconColor = isInformed ? 'text-black' : 'text-blue-500'
 
 	return (
@@ -101,7 +101,13 @@ function CurrentVoteListItem({
 				<div className="flex w-full">
 					<div className="items-end space-x-2">
 						<span className="italic text-gray-500">You voted:</span>
-						<span className={voteIconColor}>{currentVoteString}</span>
+						<span className={voteIconColor}>
+							{isUpvote ? (
+								<Icon name="thick-arrow-up" />
+							) : (
+								<Icon name="thick-arrow-down" />
+							)}
+						</span>
 					</div>
 				</div>
 			</div>

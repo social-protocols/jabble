@@ -88,6 +88,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 	return [
 		{ title: data ? SITE_NAME : 'Error | ' + SITE_NAME },
 		{ name: 'description', content: `Open Public Discussions` },
+		{ tagName: 'meta', name: 'robots', content: 'noindex' },
 	]
 }
 

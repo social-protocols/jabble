@@ -23,7 +23,6 @@ export function PostDetails({
 	post,
 	teaser,
 	loggedIn,
-	voteHereIndicator,
 	className,
 	focussedPostId,
 	pathFromFocussedPost,
@@ -37,32 +36,29 @@ export function PostDetails({
 	post: Post
 	teaser: boolean
 	loggedIn: boolean
-	voteHereIndicator?: boolean
 	className?: string
 	focussedPostId: number
 	pathFromFocussedPost: Immutable.List<number>
 	commentTreeState: CommentTreeState
 	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
-	isCollapsedState?: Immutable.Map<number, boolean>
-	setIsCollapsedState?: Dispatch<SetStateAction<Map<number, boolean>>>
+	isCollapsedState: Immutable.Map<number, boolean>
+	setIsCollapsedState: Dispatch<SetStateAction<Map<number, boolean>>>
 	onReplySubmit: (reply: ImmutableReplyTree) => void
 	onCollapseParentSiblings: (
 		pathFromFocussedPost: Immutable.List<number>,
 	) => void
 }) {
-	voteHereIndicator = voteHereIndicator ?? false
-
 	const postState = commentTreeState.posts[post.id]
 	invariant(
 		postState !== undefined,
 		`post ${post.id} not found in commentTreeState`,
 	)
 
-	const currentVoteState = postState.voteState
-	const needsVoteOnCriticalComment: boolean =
-		currentVoteState.vote !== Direction.Neutral && !currentVoteState.isInformed
+	const isCollapsed = isCollapsedState.get(post.id) ?? false
 
-	const isCollapsed = isCollapsedState?.get(post.id) || false
+	const hasUninformedVote: boolean =
+		!postState.voteState.isInformed &&
+		postState.voteState.vote !== Direction.Neutral
 
 	const navigate = useNavigate()
 
@@ -70,8 +66,28 @@ export function PostDetails({
 
 	const isDeleted = postState.isDeleted
 
+	const targetPostIds = commentTreeState.criticalCommentIdToTargetId[post.id]
+
+	const voteHereIndicator =
+		postState.voteState.vote == Direction.Neutral &&
+		targetPostIds !== undefined && // := is this post a critical comment?
+		targetPostIds.find(id => {
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			return commentTreeState.posts[id]!.voteState.vote !== Direction.Neutral
+		}) !== undefined // := any target has vote?
+
+	const lineColor = voteHereIndicator
+		? 'border-l-blue-500 dark:border-l-[#7dcfff]'
+		: 'border-l-transparent'
+
+	const lineClass =
+		post.id == focussedPostId ? '' : `border-l-4 border-solid pl-2 ${lineColor}`
+
 	return (
-		<div className={'flex w-full ' + (className ? className : '')}>
+		<div
+			id={`post-${post.id}`}
+			className={`flex w-full ${lineClass} ${className ?? ''}`}
+		>
 			{isCollapsed ? (
 				<div className={'flex ' + marginLeft}>
 					<PostInfoBar
@@ -90,7 +106,7 @@ export function PostDetails({
 						<VoteButtons
 							postId={post.id}
 							focussedPostId={focussedPostId}
-							needsVoteOnCriticalComment={needsVoteOnCriticalComment}
+							hasUninformedVote={hasUninformedVote}
 							commentTreeState={commentTreeState}
 							setCommentTreeState={setCommentTreeState}
 						/>
@@ -131,6 +147,8 @@ export function PostDetails({
 						<PostActionBar
 							post={post}
 							focussedPostId={focussedPostId}
+							postState={postState}
+							hasUninformedVote={hasUninformedVote}
 							loggedIn={loggedIn}
 							isDeleted={isDeleted}
 							setCommentTreeState={setCommentTreeState}

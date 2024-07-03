@@ -62,31 +62,39 @@ export async function getCommentTreeState(
 			'FullScore.p as p',
 			'FullScore.oSize as voteCount',
 			'Post.deletedAt as deletedAt',
+			'FullScore.criticalThreadId',
 		])
 		.where('Post.id', 'in', descendantIds.concat([targetPostId]))
 		.where('p', 'is not', null)
 		.execute()
 
-	const criticalCommentId = (
-		await trx
-			.selectFrom('FullScore')
-			.where('postId', '=', targetPostId)
-			.select('criticalThreadId')
-			.executeTakeFirstOrThrow()
-	).criticalThreadId
-
 	const userVotes: VoteState[] | undefined = userId
 		? await getUserVotes(trx, userId, descendantIds.concat([targetPostId]))
 		: undefined
 
+	const criticalCommentIdToTargetId: { [key: number]: number[] } = {}
+	results.forEach(res => {
+		const criticalThreadId = res.criticalThreadId
+		if (criticalThreadId !== null) {
+			const entry = criticalCommentIdToTargetId[criticalThreadId]
+			if (entry !== undefined) {
+				entry.push(res.postId)
+			} else {
+				criticalCommentIdToTargetId[criticalThreadId] = [res.postId]
+			}
+		}
+	})
+
 	let commentTreeState: CommentTreeState = {
 		targetPostId,
-		criticalCommentId,
+		criticalCommentIdToTargetId,
 		posts: {},
 	}
+
 	await Promise.all(
 		results.map(async result => {
 			commentTreeState.posts[result.postId] = {
+				criticalCommentId: result.criticalThreadId,
 				// We have to use the non-null assertion here because kysely doesn't
 				// return values as non-null type even if we filter nulls with a where
 				// condition. We can, however, be sure that the values are never null.
