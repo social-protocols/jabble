@@ -1,12 +1,11 @@
 import { type Map } from 'immutable'
 import { useState, type Dispatch, type SetStateAction } from 'react'
 import { addReplyToReplyTree } from '#app/repositories/ranking.ts'
-import { defaultVoteState } from '#app/repositories/vote.ts'
 import {
-	Direction,
 	type ImmutableReplyTree,
 	type CommentTreeState,
 } from '#app/types/api-types.ts'
+import { invariant } from '#app/utils/misc.tsx'
 import { PostDetails } from './post-details.tsx'
 
 export function PostWithReplies({
@@ -43,45 +42,31 @@ export function PostWithReplies({
 		setReplyTreeState(newReplyTreeState)
 	}
 
-	const currentVoteState =
-		commentTreeState.posts[postId]?.voteState || defaultVoteState(postId)
+	const postState = commentTreeState.posts[postId]
+	invariant(
+		postState !== undefined,
+		`Post ${postId} not found in commentTreeState`,
+	)
 
-	const voteHereIndicator =
-		commentTreeState.criticalCommentId === postId &&
-		targetHasVote &&
-		currentVoteState.vote == Direction.Neutral
-
-	const isCollapsed = isCollapsedState.get(postId) || false
-
-	const isRootPost = postId == focussedPostId
-
-	const lineColor = voteHereIndicator
-		? 'border-l-blue-500 dark:border-l-[#7dcfff]'
-		: 'border-l-transparent'
-
-	const lineClass = isRootPost
-		? ''
-		: 'border-l-4 border-solid pl-2 ' + lineColor
+	const isCollapsed = isCollapsedState.get(postId) ?? false
 
 	return (
 		<>
-			<div key={`${postId}-postdetails`} className={lineClass}>
-				<PostDetails
-					post={replyTreeState.post}
-					teaser={false}
-					loggedIn={loggedIn}
-					voteHereIndicator={voteHereIndicator}
-					className={(isCollapsed ? '' : 'mb-3 ') + (className ?? '')}
-					focussedPostId={focussedPostId}
-					pathFromFocussedPost={pathFromFocussedPost}
-					commentTreeState={commentTreeState}
-					setCommentTreeState={setCommentTreeState}
-					isCollapsedState={isCollapsedState}
-					setIsCollapsedState={setIsCollapsedState}
-					onReplySubmit={onReplySubmit}
-					onCollapseParentSiblings={onCollapseParentSiblings}
-				/>
-			</div>
+			<PostDetails
+				key={`${postId}-postdetails`}
+				post={replyTreeState.post}
+				teaser={false}
+				loggedIn={loggedIn}
+				className={(isCollapsed ? '' : 'mb-3 ') + (className ?? '')}
+				focussedPostId={focussedPostId}
+				pathFromFocussedPost={pathFromFocussedPost}
+				commentTreeState={commentTreeState}
+				setCommentTreeState={setCommentTreeState}
+				isCollapsedState={isCollapsedState}
+				setIsCollapsedState={setIsCollapsedState}
+				onReplySubmit={onReplySubmit}
+				onCollapseParentSiblings={onCollapseParentSiblings}
+			/>
 			{!isCollapsed && (
 				<div
 					key={`${postId}-subtree`}

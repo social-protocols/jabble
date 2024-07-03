@@ -51,7 +51,9 @@ export type PostState = {
 
 export type CommentTreeState = {
 	targetPostId: number
-	criticalCommentId: number | null
+	criticalCommentIdToTargetId: {
+		[key: number]: number[]
+	}
 	posts: {
 		[key: number]: PostState
 	}

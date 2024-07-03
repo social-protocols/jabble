@@ -7,13 +7,13 @@ import { Icon } from './icon.tsx'
 export function VoteButtons({
 	postId,
 	focussedPostId,
-	needsVoteOnCriticalComment,
+	hasUninformedVote,
 	commentTreeState,
 	setCommentTreeState,
 }: {
 	postId: number
 	focussedPostId: number
-	needsVoteOnCriticalComment: boolean
+	hasUninformedVote: boolean
 	commentTreeState: CommentTreeState
 	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
 }) {
@@ -23,7 +23,7 @@ export function VoteButtons({
 		`post ${postId} not found in commentTreeState`,
 	)
 
-	const buttonColorClass = needsVoteOnCriticalComment
+	const buttonColorClass = hasUninformedVote
 		? 'text-blue-500 dark:text-[#7dcfff]'
 		: ''
 
@@ -64,7 +64,7 @@ export function VoteButtons({
 			>
 				<button
 					title={
-						needsVoteOnCriticalComment
+						hasUninformedVote
 							? "Your vote is uninformed. To make it informed, please vote on the comment labeled 'Vote here'"
 							: 'Upvote'
 					}
@@ -78,7 +78,7 @@ export function VoteButtons({
 				</Link>
 				<button
 					title={
-						needsVoteOnCriticalComment
+						hasUninformedVote
 							? "Your vote is uninformed. To make it informed, please vote on the comment labeled 'Vote here'"
 							: 'Downvote'
 					}
@@ -87,11 +87,6 @@ export function VoteButtons({
 				>
 					<Icon name="thick-arrow-down" />
 				</button>
-				{needsVoteOnCriticalComment ? (
-					<Link to={`#post-${postState.criticalCommentId}`}>Jump</Link>
-				) : (
-					''
-				)}
 			</div>
 		</>
 	)

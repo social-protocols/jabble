@@ -68,23 +68,29 @@ export async function getCommentTreeState(
 		.where('p', 'is not', null)
 		.execute()
 
-	const criticalCommentId = (
-		await trx
-			.selectFrom('FullScore')
-			.where('postId', '=', targetPostId)
-			.select('criticalThreadId')
-			.executeTakeFirstOrThrow()
-	).criticalThreadId
-
 	const userVotes: VoteState[] | undefined = userId
 		? await getUserVotes(trx, userId, descendantIds.concat([targetPostId]))
 		: undefined
 
+	const criticalCommentIdToTargetId: { [key: number]: number[] } = {}
+	results.forEach(res => {
+		const criticalThreadId = res.criticalThreadId
+		if (criticalThreadId !== null) {
+			const entry = criticalCommentIdToTargetId[criticalThreadId]
+			if (entry !== undefined) {
+				entry.push(res.postId)
+			} else {
+				criticalCommentIdToTargetId[criticalThreadId] = [res.postId]
+			}
+		}
+	})
+
 	let commentTreeState: CommentTreeState = {
 		targetPostId,
-		criticalCommentId,
+		criticalCommentIdToTargetId,
 		posts: {},
 	}
+
 	await Promise.all(
 		results.map(async result => {
 			commentTreeState.posts[result.postId] = {
