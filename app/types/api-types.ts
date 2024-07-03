@@ -41,6 +41,7 @@ export type ImmutableReplyTree = {
 }
 
 export type PostState = {
+	criticalCommentId: number | null
 	voteState: VoteState
 	voteCount: number
 	p: number | null

@@ -62,6 +62,7 @@ export async function getCommentTreeState(
 			'FullScore.p as p',
 			'FullScore.oSize as voteCount',
 			'Post.deletedAt as deletedAt',
+			'FullScore.criticalThreadId',
 		])
 		.where('Post.id', 'in', descendantIds.concat([targetPostId]))
 		.where('p', 'is not', null)
@@ -87,6 +88,7 @@ export async function getCommentTreeState(
 	await Promise.all(
 		results.map(async result => {
 			commentTreeState.posts[result.postId] = {
+				criticalCommentId: result.criticalThreadId,
 				// We have to use the non-null assertion here because kysely doesn't
 				// return values as non-null type even if we filter nulls with a where
 				// condition. We can, however, be sure that the values are never null.

@@ -88,7 +88,7 @@ export function VoteButtons({
 					<Icon name="thick-arrow-down" />
 				</button>
 				{needsVoteOnCriticalComment ? (
-					<Link to={`#post-${commentTreeState.criticalCommentId}`}>Jump</Link>
+					<Link to={`#post-${postState.criticalCommentId}`}>Jump</Link>
 				) : (
 					''
 				)}
