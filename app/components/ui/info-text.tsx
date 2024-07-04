@@ -5,7 +5,7 @@ export default function InfoText({ className }: { className?: string }) {
 ### Hey, you are part of our early experiments! 🚀
 
 This platform ranks content not only by how many votes it received, but
-according to **how convincing** it is
+according to **how convincing** it is. The more you vote, the more accurate the convincingness score becomes
 ([learn more](https://github.com/social-protocols/social-network#readme)).
 Everything you see here is work in progress.
 We would love to hear your feedback!
