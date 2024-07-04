@@ -40,7 +40,6 @@ export default function MyVotes() {
 On this page, you can review your past votes.
 Sometimes you change your mind and that's okay.
 In fact, we encourage it.
-If one of your votes turned blue, it means there is a new comment that might inform your vote.
 	`
 
 	const [onlyUninformedVotes, setOnlyUninformedVotes] = useState(false)
