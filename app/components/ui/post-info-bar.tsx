@@ -9,7 +9,6 @@ export function PostInfoBar({
 	post,
 	postState,
 	pathFromFocussedPost,
-	voteHereIndicator,
 	isCollapsedState,
 	setIsCollapsedState,
 	onCollapseParentSiblings,
@@ -17,7 +16,6 @@ export function PostInfoBar({
 	post: Post
 	postState: PostState
 	pathFromFocussedPost: Immutable.List<number>
-	voteHereIndicator: boolean
 	isCollapsedState?: Immutable.Map<number, boolean>
 	setIsCollapsedState?: Dispatch<SetStateAction<Immutable.Map<number, boolean>>>
 	onCollapseParentSiblings: (
@@ -55,14 +53,6 @@ export function PostInfoBar({
 					</span>
 				) : (
 					''
-				)}
-				{voteHereIndicator && (
-					<span
-						title="Take a position here to give your vote above more weight"
-						className="rounded bg-blue-100 px-1 text-blue-500 dark:bg-[#2c333e] dark:text-[#7dcfff]"
-					>
-						Vote here
-					</span>
 				)}
 				<span className="opacity-50">{ageString}</span>
 				<span className="opacity-50">{postState.voteCount} votes</span>
