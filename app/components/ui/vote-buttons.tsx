@@ -17,7 +17,7 @@ export function VoteButtons({
 	hasUninformedVote: boolean
 	commentTreeState: CommentTreeState
 	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
-	showInformedProbability: boolean,
+	showInformedProbability: boolean
 }) {
 	const postState = commentTreeState.posts[postId]
 	invariant(

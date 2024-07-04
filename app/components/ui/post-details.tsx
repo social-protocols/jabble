@@ -48,7 +48,7 @@ export function PostDetails({
 	onCollapseParentSiblings: (
 		pathFromFocussedPost: Immutable.List<number>,
 	) => void
-	showInformativeProbability: boolean,
+	showInformativeProbability: boolean
 }) {
 	const postState = commentTreeState.posts[post.id]
 	invariant(
