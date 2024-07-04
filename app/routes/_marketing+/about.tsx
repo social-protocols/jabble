@@ -5,7 +5,7 @@ export default function AboutRoute() {
 # About
 
 **Jabble** is a new kind of conversation platform, designed to make conversations on the Internet more productive and less polarized.
-It ranks content not only by how many votes it received, but according to **how convincing** it is
+It ranks content not only by how many votes it received, but according to **how convincing** it is. Convincingness is determined by analyzing votes. The more you vote, the more accurate the convincingness score becomes.
 ([learn more](https://github.com/social-protocols/social-network#readme)).
 
 Everything you see here is work in progress.
