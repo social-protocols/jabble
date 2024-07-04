@@ -32,6 +32,7 @@ export function PostDetails({
 	setIsCollapsedState,
 	onReplySubmit,
 	onCollapseParentSiblings,
+	showInformativeProbability,
 }: {
 	post: Post
 	teaser: boolean
@@ -47,6 +48,7 @@ export function PostDetails({
 	onCollapseParentSiblings: (
 		pathFromFocussedPost: Immutable.List<number>,
 	) => void
+	showInformativeProbability: boolean
 }) {
 	const postState = commentTreeState.posts[post.id]
 	invariant(
@@ -109,6 +111,7 @@ export function PostDetails({
 							hasUninformedVote={hasUninformedVote}
 							commentTreeState={commentTreeState}
 							setCommentTreeState={setCommentTreeState}
+							showInformedProbability={showInformativeProbability}
 						/>
 					</div>
 					<div
