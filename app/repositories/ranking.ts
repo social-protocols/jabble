@@ -128,21 +128,6 @@ export function getAllPostIdsInTree(
 	)
 }
 
-export function findSubTree(
-	postId: number,
-	tree: ImmutableReplyTree,
-): ImmutableReplyTree | undefined {
-	if (tree.post.id === postId) {
-		return tree
-	}
-	tree.replies.forEach(replyTree => {
-		const subTree = findSubTree(postId, replyTree)
-		if (subTree && subTree.post.id === postId) {
-			return subTree
-		}
-	})
-}
-
 export async function getReplyTree(
 	trx: Transaction<DB>,
 	postId: number,
