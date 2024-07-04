@@ -10,12 +10,14 @@ export function VoteButtons({
 	hasUninformedVote,
 	commentTreeState,
 	setCommentTreeState,
+	showInformedProbability,
 }: {
 	postId: number
 	focussedPostId: number
 	hasUninformedVote: boolean
 	commentTreeState: CommentTreeState
 	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
+	showInformedProbability: boolean
 }) {
 	const postState = commentTreeState.posts[postId]
 	invariant(
@@ -73,9 +75,11 @@ export function VoteButtons({
 				>
 					<Icon name="thick-arrow-up" />
 				</button>
-				<Link to={`/stats/${postId}`} className={'text-xs opacity-50'}>
-					{pCurrentString}
-				</Link>
+				{showInformedProbability && (
+					<Link to={`/stats/${postId}`} className={'text-xs opacity-50'}>
+						{pCurrentString}
+					</Link>
+				)}
 				<button
 					title={
 						hasUninformedVote

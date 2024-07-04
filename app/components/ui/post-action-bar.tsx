@@ -97,10 +97,12 @@ export function PostActionBar({
 							className="mr-2"
 							onClick={() => handleSetDeletedAt(Date.now())}
 						>
-							Delete
+							<Icon name="trash" /> Delete
 						</button>
 					) : (
-						<button onClick={() => handleSetDeletedAt(null)}>Restore</button>
+						<button className="mr-2" onClick={() => handleSetDeletedAt(null)}>
+							<Icon name="counter-clockwise-clock" /> Restore
+						</button>
 					))}
 				{isAdminUser && (
 					<button
@@ -108,7 +110,7 @@ export function PostActionBar({
 						title="Promote the root post of this discussion to discussion of the day"
 						onClick={handleSetDiscussionOfTheDay}
 					>
-						Promote
+						<Icon name="double-arrow-up" /> Promote
 					</button>
 				)}
 				{showReplyForm && (

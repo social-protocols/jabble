@@ -59,6 +59,7 @@ export function PostWithReplies({
 				setIsCollapsedState={setIsCollapsedState}
 				onReplySubmit={onReplySubmit}
 				onCollapseParentSiblings={onCollapseParentSiblings}
+				showInformativeProbability={postId === focussedPostId}
 			/>
 			{!isCollapsed && (
 				<div
