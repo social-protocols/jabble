@@ -9,7 +9,6 @@ export function PostInfoBar({
 	post,
 	postState,
 	pathFromFocussedPost,
-	voteHereIndicator,
 	isCollapsedState,
 	setIsCollapsedState,
 	onCollapseParentSiblings,
@@ -17,7 +16,6 @@ export function PostInfoBar({
 	post: Post
 	postState: PostState
 	pathFromFocussedPost: Immutable.List<number>
-	voteHereIndicator: boolean
 	isCollapsedState?: Immutable.Map<number, boolean>
 	setIsCollapsedState?: Dispatch<SetStateAction<Immutable.Map<number, boolean>>>
 	onCollapseParentSiblings: (
@@ -26,14 +24,13 @@ export function PostInfoBar({
 }) {
 	const ageString = moment(post.createdAt).fromNow()
 	const effectSize = effectSizeOnTarget(postState.effectOnTargetPost)
-	const isConvincing = effectSize > 0.1
 
 	const isCollapsed = isCollapsedState?.get(post.id) || false
 
 	function toggleCollapse() {
 		if (isCollapsedState && setIsCollapsedState) {
-			let newisCollapsedState = isCollapsedState.set(post.id, !isCollapsed)
-			setIsCollapsedState(newisCollapsedState)
+			let newIsCollapsedState = isCollapsedState.set(post.id, !isCollapsed)
+			setIsCollapsedState(newIsCollapsedState)
 		}
 	}
 
@@ -46,31 +43,19 @@ export function PostInfoBar({
 
 	return (
 		<>
-			<div className="flex w-full items-center space-x-2 text-sm sm:items-baseline">
-				{isConvincing && (
-					<span title="Convincing" className="">
-						💡
-					</span>
-				)}
-				{voteHereIndicator && (
-					<span
-						title="Take a position here to give your vote above more weight"
-						className="rounded bg-blue-100 px-1 text-blue-500 dark:bg-[#2c333e] dark:text-[#7dcfff]"
-					>
-						Vote here
-					</span>
-				)}
-				<span className="opacity-50">
-					{ageString} - {postState.voteCount} votes
-				</span>
+			<div className="flex w-full items-center space-x-2 text-xs sm:items-baseline">
 				{postState.effectOnTargetPost !== null ? (
-					<span className="opacity-50">
-						{' '}
-						- convincing: {effectSize.toFixed(2)}
+					<span
+						title="How much this post changed people's view on the focussed post."
+						className={`${scaleColorConvincing(effectSize)}`}
+					>
+						convincing: {effectSize.toFixed(2)}
 					</span>
 				) : (
 					''
 				)}
+				<span className="opacity-50">{ageString}</span>
+				<span className="opacity-50">{postState.voteCount} votes</span>
 				{isCollapsedState && (
 					<>
 						<button
@@ -101,4 +86,24 @@ export function PostInfoBar({
 			</div>
 		</>
 	)
+}
+
+function scaleColorConvincing(effectSize: number): string {
+	// Convert a numeric effect size (in bits) to a color class.
+	// So far, the mapping is arbitrary, we can replace this with a more
+	// sophisticated function once we know what values are common and once we get
+	// a feeling for what values are large or small.
+	if (effectSize < 0.1) {
+		return 'text-blue-200 dark:text-blue-900'
+	} else if (effectSize < 0.2) {
+		return 'text-blue-300 dark:text-blue-800'
+	} else if (effectSize < 0.3) {
+		return 'text-blue-400 dark:text-blue-700'
+	} else if (effectSize < 0.5) {
+		return 'text-blue-500 dark:text-blue-600'
+	} else if (effectSize < 0.7) {
+		return 'text-blue-600 dark:text-blue-500'
+	} else {
+		return 'text-blue-700 dark:text-blue-400'
+	}
 }

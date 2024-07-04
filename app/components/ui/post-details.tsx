@@ -96,7 +96,6 @@ export function PostDetails({
 						post={post}
 						postState={postState}
 						pathFromFocussedPost={pathFromFocussedPost}
-						voteHereIndicator={voteHereIndicator}
 						isCollapsedState={isCollapsedState}
 						setIsCollapsedState={setIsCollapsedState}
 						onCollapseParentSiblings={onCollapseParentSiblings}
@@ -124,7 +123,6 @@ export function PostDetails({
 							post={post}
 							postState={postState}
 							pathFromFocussedPost={pathFromFocussedPost}
-							voteHereIndicator={voteHereIndicator}
 							isCollapsedState={isCollapsedState}
 							setIsCollapsedState={setIsCollapsedState}
 							onCollapseParentSiblings={onCollapseParentSiblings}
