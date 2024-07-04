@@ -47,7 +47,10 @@ export function PostInfoBar({
 		<>
 			<div className="flex w-full items-center space-x-2 text-xs sm:items-baseline">
 				{postState.effectOnTargetPost !== null ? (
-					<span className={`${scaleColorConvincing(effectSize)}`}>
+					<span
+						title="How much this post changed people's view on the focussed post."
+						className={`${scaleColorConvincing(effectSize)}`}
+					>
 						convincing: {effectSize.toFixed(2)}
 					</span>
 				) : (
