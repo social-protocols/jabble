@@ -26,7 +26,6 @@ export function PostInfoBar({
 }) {
 	const ageString = moment(post.createdAt).fromNow()
 	const effectSize = effectSizeOnTarget(postState.effectOnTargetPost)
-	const isConvincing = effectSize > 0.1
 
 	const isCollapsed = isCollapsedState?.get(post.id) || false
 
@@ -46,11 +45,13 @@ export function PostInfoBar({
 
 	return (
 		<>
-			<div className="flex w-full items-center space-x-2 text-sm sm:items-baseline">
-				{isConvincing && (
-					<span title="Convincing" className="">
-						💡
+			<div className="flex w-full items-center space-x-2 text-xs sm:items-baseline">
+				{postState.effectOnTargetPost !== null ? (
+					<span className={`${scaleColorConvincing(effectSize)}`}>
+						convincing: {effectSize.toFixed(2)}
 					</span>
+				) : (
+					''
 				)}
 				{voteHereIndicator && (
 					<span
@@ -60,17 +61,8 @@ export function PostInfoBar({
 						Vote here
 					</span>
 				)}
-				<span className="opacity-50">
-					{ageString} - {postState.voteCount} votes
-				</span>
-				{postState.effectOnTargetPost !== null ? (
-					<span className="opacity-50">
-						{' '}
-						- convincing: {effectSize.toFixed(2)}
-					</span>
-				) : (
-					''
-				)}
+				<span className="opacity-50">{ageString}</span>
+				<span className="opacity-50">{postState.voteCount} votes</span>
 				{isCollapsedState && (
 					<>
 						<button
@@ -101,4 +93,24 @@ export function PostInfoBar({
 			</div>
 		</>
 	)
+}
+
+function scaleColorConvincing(effectSize: number): string {
+	// Convert a numeric effect size (in bits) to a color class.
+	// So far, the mapping is arbitrary, we can replace this with a more
+	// sophisticated function once we know what values are common and once we get
+	// a feeling for what values are large or small.
+	if (effectSize < 0.1) {
+		return 'text-blue-200'
+	} else if (effectSize < 0.2) {
+		return 'text-blue-300'
+	} else if (effectSize < 0.3) {
+		return 'text-blue-400'
+	} else if (effectSize < 0.5) {
+		return 'text-blue-500'
+	} else if (effectSize < 0.7) {
+		return 'text-blue-600'
+	} else {
+		return 'text-blue-700'
+	}
 }
