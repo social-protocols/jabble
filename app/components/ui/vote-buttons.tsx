@@ -31,8 +31,7 @@ export function VoteButtons({
 		`post ${postId} not found in commentTreeState`,
 	)
 
-	const upClass =
-		postState.voteState.vote == Direction.Up ? '' : 'opacity-30'
+	const upClass = postState.voteState.vote == Direction.Up ? '' : 'opacity-30'
 	const downClass =
 		postState.voteState.vote == Direction.Down ? '' : 'opacity-30'
 

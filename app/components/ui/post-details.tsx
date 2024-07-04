@@ -2,7 +2,6 @@ import { useNavigate } from '@remix-run/react'
 import type * as Immutable from 'immutable'
 import { type Dispatch, type SetStateAction, useRef } from 'react'
 import {
-	Direction,
 	type ImmutableReplyTree,
 	type CommentTreeState,
 	type Post,
@@ -57,10 +56,6 @@ export function PostDetails({
 	)
 
 	const hidePost = isCollapsedState.hidePost.get(post.id) ?? false
-
-	const hasUninformedVote: boolean =
-		!postState.voteState.isInformed &&
-		postState.voteState.vote !== Direction.Neutral
 
 	const navigate = useNavigate()
 

@@ -14,7 +14,7 @@ export function PostInfoBar({
 
 	return (
 		<>
-			<div className="flex w-full items-center space-x-2 text-xs sm:items-baseline pb-1">
+			<div className="flex w-full items-center space-x-2 pb-1 text-xs sm:items-baseline">
 				{postState.effectOnTargetPost !== null ? (
 					<span
 						title="How much this post changed people's view on the focussed post."
