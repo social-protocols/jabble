@@ -70,7 +70,6 @@ If one of your votes turned blue, it means there is a new comment that might inf
 							key={postWithVote.postId}
 							postWithVote={postWithVote}
 							isUpvote={postWithVote.vote === 1}
-							isInformed={postWithVote.isInformed}
 						/>
 					)
 				})}
@@ -82,14 +81,10 @@ If one of your votes turned blue, it means there is a new comment that might inf
 function CurrentVoteListItem({
 	postWithVote,
 	isUpvote,
-	isInformed,
 }: {
 	postWithVote: PostWithVote
 	isUpvote: boolean
-	isInformed: boolean
 }) {
-	const voteIconColor = isInformed ? 'text-black' : 'text-blue-500'
-
 	return (
 		<>
 			<div className="flex w-full flex-col">
@@ -101,7 +96,7 @@ function CurrentVoteListItem({
 				<div className="flex w-full">
 					<div className="items-end space-x-2">
 						<span className="italic text-gray-500">You voted:</span>
-						<span className={voteIconColor}>
+						<span>
 							{isUpvote ? (
 								<Icon name="thick-arrow-up" />
 							) : (
