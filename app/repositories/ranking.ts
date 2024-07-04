@@ -128,7 +128,10 @@ export function getAllPostIdsInTree(
 	)
 }
 
-export function findSubTree(postId: number, tree: ImmutableReplyTree): ImmutableReplyTree | undefined {
+export function findSubTree(
+	postId: number,
+	tree: ImmutableReplyTree,
+): ImmutableReplyTree | undefined {
 	if (tree.post.id === postId) {
 		return tree
 	}

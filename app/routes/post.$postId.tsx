@@ -22,7 +22,7 @@ import {
 	type Post,
 	type CommentTreeState,
 	type ImmutableReplyTree,
-	CollapsedState,
+	type CollapsedState,
 } from '#app/types/api-types.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 
@@ -109,10 +109,10 @@ export function DiscussionView({
 		commentTreeState.posts[postId]?.voteState || defaultVoteState(postId)
 
 	const [isCollapsedState, setIsCollapsedState] = useState<CollapsedState>({
+		currentlyFocussedPostId: null,
 		hidePost: Immutable.Map<number, boolean>(),
 		hideChildren: Immutable.Map<number, boolean>(),
 	})
-	console.log('new hidePost:', isCollapsedState.hidePost.toJS())
 
 	return (
 		<>
@@ -123,7 +123,7 @@ export function DiscussionView({
 				targetHasVote={currentVoteState.vote !== Direction.Neutral}
 				loggedIn={loggedIn}
 				focussedPostId={postId}
-				pathFromFocussedPost={Immutable.List()}
+				pathFromFocussedPost={Immutable.List([postId])}
 				commentTreeState={commentTreeState}
 				setCommentTreeState={setCommentTreeState}
 				isCollapsedState={isCollapsedState}
@@ -135,18 +135,20 @@ export function DiscussionView({
 						replyTree,
 					)
 					if (
-						newCollapseState.hidePost == isCollapsedState.hidePost &&
-						newCollapseState.hideChildren == isCollapsedState.hideChildren
+						isCollapsedState.currentlyFocussedPostId !==
+						newCollapseState.currentlyFocussedPostId
 					) {
-						setIsCollapsedState({
-							hidePost: Immutable.Map(),
-							hideChildren: Immutable.Map(),
-						})
-					} else {
 						setIsCollapsedState(newCollapseState)
+					} else {
+						setIsCollapsedState({
+							currentlyFocussedPostId: null,
+							hidePost: Immutable.Map(),
+							hideChildren: isCollapsedState.hideChildren,
+						})
 					}
 				}}
 			/>
+			<div className="h-[300px]" />
 		</>
 	)
 }
@@ -160,13 +162,14 @@ function collapseParentSiblingsAndIndirectChildren(
 	// and collapse all siblings on the way.
 	let newCollapseState = collapsedState
 	let currentSubTree = replyTree
-	pathFromFocussedPost.forEach(postId => {
+	pathFromFocussedPost.rest().forEach(postId => {
 		// postId must be among currentSubTree.replies
 		currentSubTree.replies.forEach(reply => {
 			if (reply.post.id == postId) {
 				newCollapseState = {
 					...newCollapseState,
 					hidePost: newCollapseState.hidePost.set(reply.post.id, false),
+					hideChildren: newCollapseState.hideChildren.set(reply.post.id, false),
 				}
 				currentSubTree = reply
 			} else {
@@ -177,19 +180,19 @@ function collapseParentSiblingsAndIndirectChildren(
 			}
 		})
 	})
-	// collapse all children of direct children of clicked post
 	currentSubTree.replies.forEach(directChild => {
 		newCollapseState = {
 			...newCollapseState,
-			hidePost: newCollapseState.hidePost.set(directChild.post.id, false),
+			hideChildren: newCollapseState.hideChildren.set(
+				directChild.post.id,
+				true,
+			),
 		}
-		directChild.replies.forEach(reply => {
-			newCollapseState = {
-				...newCollapseState,
-				hidePost: newCollapseState.hidePost.set(reply.post.id, true),
-			}
-		})
 	})
+	newCollapseState = {
+		...newCollapseState,
+		currentlyFocussedPostId: pathFromFocussedPost.last(),
+	}
 	return newCollapseState
 }
 

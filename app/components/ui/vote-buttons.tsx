@@ -1,9 +1,8 @@
 import { Link } from '@remix-run/react'
-import { type Dispatch, type SetStateAction, useRef, useState } from 'react'
+import { type Dispatch, type SetStateAction } from 'react'
 import {
-	CollapsedState,
+	type CollapsedState,
 	Direction,
-	ImmutableReplyTree,
 	type CommentTreeState,
 } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
@@ -12,8 +11,6 @@ import { Icon } from './icon.tsx'
 export function VoteButtons({
 	postId,
 	focussedPostId,
-	replySubTree,
-	hasUninformedVote,
 	commentTreeState,
 	setCommentTreeState,
 	showInformedProbability,
@@ -22,8 +19,6 @@ export function VoteButtons({
 }: {
 	postId: number
 	focussedPostId: number
-	replySubTree: ImmutableReplyTree
-	hasUninformedVote: boolean
 	commentTreeState: CommentTreeState
 	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
 	showInformedProbability: boolean
@@ -36,14 +31,10 @@ export function VoteButtons({
 		`post ${postId} not found in commentTreeState`,
 	)
 
-	const buttonColorClass = hasUninformedVote
-		? 'text-blue-500 dark:text-[#7dcfff]'
-		: ''
-
 	const upClass =
-		postState.voteState.vote == Direction.Up ? buttonColorClass : 'opacity-30'
+		postState.voteState.vote == Direction.Up ? '' : 'opacity-30'
 	const downClass =
-		postState.voteState.vote == Direction.Down ? buttonColorClass : 'opacity-30'
+		postState.voteState.vote == Direction.Down ? '' : 'opacity-30'
 
 	const pCurrent: number = commentTreeState.posts[postId]?.p || NaN
 	const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
@@ -84,11 +75,7 @@ export function VoteButtons({
 				className={'flex h-full w-[32px] flex-col items-center'}
 			>
 				<button
-					title={
-						hasUninformedVote
-							? "Your vote is uninformed. To make it informed, please vote on the comment labeled 'Vote here'"
-							: 'Upvote'
-					}
+					title={'Upvote'}
 					className={upClass + ' ' + negMargin + ' ' + responsiveSize}
 					onClick={async () => await submitVote(Direction.Up)}
 				>
@@ -100,11 +87,7 @@ export function VoteButtons({
 					</Link>
 				)}
 				<button
-					title={
-						hasUninformedVote
-							? "Your vote is uninformed. To make it informed, please vote on the comment labeled 'Vote here'"
-							: 'Downvote'
-					}
+					title={'Downvote'}
 					className={downClass + ' ' + negMargin + ' ' + responsiveSize}
 					onClick={async () => await submitVote(Direction.Down)}
 				>
