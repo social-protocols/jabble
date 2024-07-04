@@ -1,7 +1,6 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData, useParams } from '@remix-run/react'
 import * as Immutable from 'immutable'
-import { Map } from 'immutable'
 import { useState } from 'react'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
@@ -23,6 +22,7 @@ import {
 	type Post,
 	type CommentTreeState,
 	type ImmutableReplyTree,
+	CollapsedState,
 } from '#app/types/api-types.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 
@@ -97,6 +97,7 @@ export function DiscussionView({
 	loggedIn: boolean
 }) {
 	const replyTree = toImmutableReplyTree(mutableReplyTree)
+	console.log(replyTree.replies.toJS())
 
 	const [commentTreeState, setCommentTreeState] = useState<CommentTreeState>(
 		initialCommentTreeState,
@@ -107,8 +108,11 @@ export function DiscussionView({
 	const currentVoteState =
 		commentTreeState.posts[postId]?.voteState || defaultVoteState(postId)
 
-	const [isCollapsedState, setIsCollapsedState] =
-		useState(Map<number, boolean>())
+	const [isCollapsedState, setIsCollapsedState] = useState<CollapsedState>({
+		hidePost: Immutable.Map<number, boolean>(),
+		hideChildren: Immutable.Map<number, boolean>(),
+	})
+	console.log('new hidePost:', isCollapsedState.hidePost.toJS())
 
 	return (
 		<>
@@ -124,15 +128,24 @@ export function DiscussionView({
 				setCommentTreeState={setCommentTreeState}
 				isCollapsedState={isCollapsedState}
 				setIsCollapsedState={setIsCollapsedState}
-				onCollapseParentSiblings={pathFromFocussedPost =>
-					setIsCollapsedState(
-						collapseParentSiblingsAndIndirectChildren(
-							pathFromFocussedPost,
-							isCollapsedState,
-							replyTree,
-						),
+				onCollapseParentSiblings={pathFromFocussedPost => {
+					const newCollapseState = collapseParentSiblingsAndIndirectChildren(
+						pathFromFocussedPost,
+						isCollapsedState,
+						replyTree,
 					)
-				}
+					if (
+						newCollapseState.hidePost == isCollapsedState.hidePost &&
+						newCollapseState.hideChildren == isCollapsedState.hideChildren
+					) {
+						setIsCollapsedState({
+							hidePost: Immutable.Map(),
+							hideChildren: Immutable.Map(),
+						})
+					} else {
+						setIsCollapsedState(newCollapseState)
+					}
+				}}
 			/>
 		</>
 	)
@@ -140,29 +153,41 @@ export function DiscussionView({
 
 function collapseParentSiblingsAndIndirectChildren(
 	pathFromFocussedPost: Immutable.List<number>,
-	collapseState: Immutable.Map<number, boolean>,
+	collapsedState: CollapsedState,
 	replyTree: ImmutableReplyTree,
-): Immutable.Map<number, boolean> {
+): CollapsedState {
 	// go down the tree along the path
 	// and collapse all siblings on the way.
-	let newCollapseState = collapseState
+	let newCollapseState = collapsedState
 	let currentSubTree = replyTree
 	pathFromFocussedPost.forEach(postId => {
 		// postId must be among currentSubTree.replies
 		currentSubTree.replies.forEach(reply => {
 			if (reply.post.id == postId) {
-				newCollapseState = newCollapseState.set(reply.post.id, false)
+				newCollapseState = {
+					...newCollapseState,
+					hidePost: newCollapseState.hidePost.set(reply.post.id, false),
+				}
 				currentSubTree = reply
 			} else {
-				newCollapseState = newCollapseState.set(reply.post.id, true)
+				newCollapseState = {
+					...newCollapseState,
+					hidePost: newCollapseState.hidePost.set(reply.post.id, true),
+				}
 			}
 		})
 	})
 	// collapse all children of direct children of clicked post
 	currentSubTree.replies.forEach(directChild => {
-		newCollapseState = newCollapseState.set(directChild.post.id, false)
+		newCollapseState = {
+			...newCollapseState,
+			hidePost: newCollapseState.hidePost.set(directChild.post.id, false),
+		}
 		directChild.replies.forEach(reply => {
-			newCollapseState = newCollapseState.set(reply.post.id, true)
+			newCollapseState = {
+				...newCollapseState,
+				hidePost: newCollapseState.hidePost.set(reply.post.id, true),
+			}
 		})
 	})
 	return newCollapseState

@@ -8,6 +8,7 @@ import {
 	type ReplyTree,
 	type CommentTreeState,
 	type PostState,
+	type CollapsedState,
 } from '#app/types/api-types.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 import { Icon } from './icon.tsx'
@@ -34,7 +35,7 @@ export function PostActionBar({
 	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
 	onReplySubmit: (reply: ImmutableReplyTree) => void
 	pathFromFocussedPost: Immutable.List<number>
-	isCollapsedState?: Immutable.Map<number, boolean>
+	isCollapsedState: CollapsedState
 	onCollapseParentSiblings: (
 		pathFromFocussedPost: Immutable.List<number>,
 	) => void
@@ -83,7 +84,7 @@ export function PostActionBar({
 
 	return (
 		<>
-			<div className="mt-auto pt-1 flex w-full text-sm">
+			<div className="mt-auto flex w-full pt-1 text-sm">
 				{hasUninformedVote ? (
 					<Link
 						title="Jump to comment labeled 'Vote here'"
@@ -106,20 +107,16 @@ export function PostActionBar({
 						<Icon name="chat-bubble" /> Reply
 					</button>
 				)}
-				{isCollapsedState && (
-					<>
-						<button
-							title="Collapse unrelated comments"
-							className="my-[-2px] text-[30px] sm:text-base"
-							onClick={() => {
-								onCollapseParentSiblings(pathFromFocussedPost)
-								scrollIntoView()
-							}}
-						>
-							<Icon name="target" /> Focus
-						</button>
-					</>
-				)}
+				<button
+					title="Collapse unrelated comments"
+					className="my-[-2px] text-[30px] sm:text-base"
+					onClick={() => {
+						onCollapseParentSiblings(pathFromFocussedPost)
+						scrollIntoView()
+					}}
+				>
+					<Icon name="target" /> Focus
+				</button>
 				{isAdminUser &&
 					(!isDeleted ? (
 						<button

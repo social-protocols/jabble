@@ -1,9 +1,9 @@
-import { type Map } from 'immutable'
 import { useState, type Dispatch, type SetStateAction } from 'react'
 import { addReplyToReplyTree } from '#app/repositories/ranking.ts'
 import {
 	type ImmutableReplyTree,
 	type CommentTreeState,
+	type CollapsedState,
 } from '#app/types/api-types.ts'
 import { PostDetails } from './post-details.tsx'
 
@@ -27,21 +27,24 @@ export function PostWithReplies({
 	loggedIn: boolean
 	commentTreeState: CommentTreeState
 	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
-	isCollapsedState: Immutable.Map<number, boolean>
-	setIsCollapsedState: Dispatch<SetStateAction<Map<number, boolean>>>
+	isCollapsedState: CollapsedState
+	setIsCollapsedState: Dispatch<SetStateAction<CollapsedState>>
 	onCollapseParentSiblings: (
 		pathFromFocussedPost: Immutable.List<number>,
 	) => void
 	className?: string
 }) {
 	const [replyTreeState, setReplyTreeState] = useState(initialReplyTree)
+	// TODO: new replies are not collapsed by focus button?
 	const postId = replyTreeState.post.id
 	function onReplySubmit(reply: ImmutableReplyTree) {
 		const newReplyTreeState = addReplyToReplyTree(replyTreeState, reply)
 		setReplyTreeState(newReplyTreeState)
 	}
 
-	const isCollapsed = isCollapsedState.get(postId) ?? false
+	const hidePost = isCollapsedState.hidePost.get(postId) ?? false
+	const hideChildren =
+		(isCollapsedState.hideChildren.get(postId) ?? false) || hidePost
 
 	return (
 		<>
@@ -51,7 +54,7 @@ export function PostWithReplies({
 				replySubTree={replyTreeState}
 				teaser={false}
 				loggedIn={loggedIn}
-				className={(isCollapsed ? '' : 'mb-3 ') + (className ?? '')}
+				className={(hidePost ? '' : 'mb-3 ') + (className ?? '')}
 				focussedPostId={focussedPostId}
 				pathFromFocussedPost={pathFromFocussedPost}
 				commentTreeState={commentTreeState}
@@ -62,7 +65,7 @@ export function PostWithReplies({
 				onCollapseParentSiblings={onCollapseParentSiblings}
 				showInformativeProbability={postId === focussedPostId}
 			/>
-			{!isCollapsed && (
+			{!hideChildren && (
 				<div
 					key={`${postId}-subtree`}
 					className={
@@ -106,8 +109,8 @@ function TreeReplies({
 	pathFromFocussedPost: Immutable.List<number>
 	commentTreeState: CommentTreeState
 	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
-	isCollapsedState: Immutable.Map<number, boolean>
-	setIsCollapsedState: Dispatch<SetStateAction<Map<number, boolean>>>
+	isCollapsedState: CollapsedState
+	setIsCollapsedState: Dispatch<SetStateAction<CollapsedState>>
 	onCollapseParentSiblings: (
 		pathFromFocussedPost: Immutable.List<number>,
 	) => void

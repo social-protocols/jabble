@@ -7,6 +7,7 @@ import {
 	type ImmutableReplyTree,
 	type CommentTreeState,
 	type Post,
+	CollapsedState,
 } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { PostActionBar } from './post-action-bar.tsx'
@@ -44,8 +45,8 @@ export function PostDetails({
 	pathFromFocussedPost: Immutable.List<number>
 	commentTreeState: CommentTreeState
 	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
-	isCollapsedState: Immutable.Map<number, boolean>
-	setIsCollapsedState: Dispatch<SetStateAction<Map<number, boolean>>>
+	isCollapsedState: CollapsedState
+	setIsCollapsedState: Dispatch<SetStateAction<CollapsedState>>
 	onReplySubmit: (reply: ImmutableReplyTree) => void
 	onCollapseParentSiblings: (
 		pathFromFocussedPost: Immutable.List<number>,
@@ -58,7 +59,7 @@ export function PostDetails({
 		`post ${post.id} not found in commentTreeState`,
 	)
 
-	const isCollapsed = isCollapsedState.get(post.id) ?? false
+	const hidePost = isCollapsedState.hidePost.get(post.id) ?? false
 
 	const hasUninformedVote: boolean =
 		!postState.voteState.isInformed &&
@@ -92,14 +93,9 @@ export function PostDetails({
 			id={`post-${post.id}`}
 			className={`flex w-full ${lineClass} ${className ?? ''}`}
 		>
-			{isCollapsed ? (
+			{hidePost ? (
 				<div className={'flex ' + marginLeft}>
-				{/*
-					<PostInfoBar
-						post={post}
-						postState={postState}
-					/>
-				*/}
+					{<PostInfoBar post={post} postState={postState} />}
 				</div>
 			) : (
 				<>
@@ -122,10 +118,7 @@ export function PostDetails({
 							(teaser ? ' postteaser' : '')
 						}
 					>
-						<PostInfoBar
-							post={post}
-							postState={postState}
-						/>
+						<PostInfoBar post={post} postState={postState} />
 						{!isDeleted ? (
 							<PostContent
 								content={post.content}
