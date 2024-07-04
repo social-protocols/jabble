@@ -1,45 +1,16 @@
-import type * as Immutable from 'immutable'
 import moment from 'moment'
-import { useRef, type Dispatch, type SetStateAction } from 'react'
 import { effectSizeOnTarget } from '#app/repositories/ranking.ts'
 import { type PostState, type Post } from '#app/types/api-types.ts'
-import { Icon } from './icon.tsx'
 
 export function PostInfoBar({
 	post,
 	postState,
-	pathFromFocussedPost,
-	isCollapsedState,
-	setIsCollapsedState,
-	onCollapseParentSiblings,
 }: {
 	post: Post
 	postState: PostState
-	pathFromFocussedPost: Immutable.List<number>
-	isCollapsedState?: Immutable.Map<number, boolean>
-	setIsCollapsedState?: Dispatch<SetStateAction<Immutable.Map<number, boolean>>>
-	onCollapseParentSiblings: (
-		pathFromFocussedPost: Immutable.List<number>,
-	) => void
 }) {
 	const ageString = moment(post.createdAt).fromNow()
 	const effectSize = effectSizeOnTarget(postState.effectOnTargetPost)
-
-	const isCollapsed = isCollapsedState?.get(post.id) || false
-
-	function toggleCollapse() {
-		if (isCollapsedState && setIsCollapsedState) {
-			let newIsCollapsedState = isCollapsedState.set(post.id, !isCollapsed)
-			setIsCollapsedState(newIsCollapsedState)
-		}
-	}
-
-	const myRef = useRef<HTMLDivElement>(null)
-	const scrollIntoView = () => {
-		if (myRef.current) {
-			myRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-		}
-	}
 
 	return (
 		<>
@@ -56,33 +27,6 @@ export function PostInfoBar({
 				)}
 				<span className="opacity-50">{ageString}</span>
 				<span className="opacity-50">{postState.voteCount} votes</span>
-				{isCollapsedState && (
-					<>
-						<button
-							title={
-								isCollapsed ? 'Expand this comment' : 'Collapse this comment'
-							}
-							className="text-[30px] sm:text-base"
-							onClick={toggleCollapse}
-						>
-							{isCollapsed ? (
-								<Icon name="plus-circled" />
-							) : (
-								<Icon name="minus-circled" />
-							)}
-						</button>
-						<button
-							title="Collapse unrelated comments"
-							className="my-[-2px] text-[30px] sm:text-base"
-							onClick={() => {
-								onCollapseParentSiblings(pathFromFocussedPost)
-								scrollIntoView()
-							}}
-						>
-							<Icon name="target" />
-						</button>
-					</>
-				)}
 			</div>
 		</>
 	)
