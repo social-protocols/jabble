@@ -48,6 +48,7 @@ export function PostWithReplies({
 			<PostDetails
 				key={`${postId}-postdetails`}
 				post={replyTreeState.post}
+				replySubTree={replyTreeState}
 				teaser={false}
 				loggedIn={loggedIn}
 				className={(isCollapsed ? '' : 'mb-3 ') + (className ?? '')}

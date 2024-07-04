@@ -21,6 +21,7 @@ const postTeaserMaxLines = 20
 
 export function PostDetails({
 	post,
+	replySubTree,
 	teaser,
 	loggedIn,
 	className,
@@ -35,6 +36,7 @@ export function PostDetails({
 	showInformativeProbability,
 }: {
 	post: Post
+	replySubTree: ImmutableReplyTree
 	teaser: boolean
 	loggedIn: boolean
 	className?: string
@@ -92,14 +94,12 @@ export function PostDetails({
 		>
 			{isCollapsed ? (
 				<div className={'flex ' + marginLeft}>
+				{/*
 					<PostInfoBar
 						post={post}
 						postState={postState}
-						pathFromFocussedPost={pathFromFocussedPost}
-						isCollapsedState={isCollapsedState}
-						setIsCollapsedState={setIsCollapsedState}
-						onCollapseParentSiblings={onCollapseParentSiblings}
 					/>
+				*/}
 				</div>
 			) : (
 				<>
@@ -107,10 +107,13 @@ export function PostDetails({
 						<VoteButtons
 							postId={post.id}
 							focussedPostId={focussedPostId}
+							replySubTree={replySubTree}
 							hasUninformedVote={hasUninformedVote}
 							commentTreeState={commentTreeState}
 							setCommentTreeState={setCommentTreeState}
 							showInformedProbability={showInformativeProbability}
+							isCollapsedState={isCollapsedState}
+							setIsCollapsedState={setIsCollapsedState}
 						/>
 					</div>
 					<div
@@ -122,10 +125,6 @@ export function PostDetails({
 						<PostInfoBar
 							post={post}
 							postState={postState}
-							pathFromFocussedPost={pathFromFocussedPost}
-							isCollapsedState={isCollapsedState}
-							setIsCollapsedState={setIsCollapsedState}
-							onCollapseParentSiblings={onCollapseParentSiblings}
 						/>
 						{!isDeleted ? (
 							<PostContent
@@ -154,6 +153,9 @@ export function PostDetails({
 							isDeleted={isDeleted}
 							setCommentTreeState={setCommentTreeState}
 							onReplySubmit={onReplySubmit}
+							pathFromFocussedPost={pathFromFocussedPost}
+							isCollapsedState={isCollapsedState}
+							onCollapseParentSiblings={onCollapseParentSiblings}
 						/>
 					</div>
 				</>

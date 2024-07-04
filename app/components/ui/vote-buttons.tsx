@@ -1,23 +1,29 @@
 import { Link } from '@remix-run/react'
-import { type Dispatch, type SetStateAction } from 'react'
-import { Direction, type CommentTreeState } from '#app/types/api-types.ts'
+import { type Dispatch, type SetStateAction, useRef, useState } from 'react'
+import { Direction, ImmutableReplyTree, type CommentTreeState } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { Icon } from './icon.tsx'
 
 export function VoteButtons({
 	postId,
 	focussedPostId,
+	replySubTree,
 	hasUninformedVote,
 	commentTreeState,
 	setCommentTreeState,
 	showInformedProbability,
+	isCollapsedState,
+	setIsCollapsedState,
 }: {
 	postId: number
 	focussedPostId: number
+	replySubTree: ImmutableReplyTree
 	hasUninformedVote: boolean
 	commentTreeState: CommentTreeState
 	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
 	showInformedProbability: boolean
+	isCollapsedState: Immutable.Map<number, boolean>
+	setIsCollapsedState: Dispatch<SetStateAction<Immutable.Map<number, boolean>>>
 }) {
 	const postState = commentTreeState.posts[postId]
 	invariant(
@@ -58,11 +64,27 @@ export function VoteButtons({
 	const negMargin = 'my-[-1px]'
 	const responsiveSize = 'text-[30px] sm:text-base'
 
+	console.log(`FOR POST ${postId}`)
+	const childFound = replySubTree.replies.find(replyTree => isCollapsedState.get(replyTree.post.id) ?? false)
+	console.log("find output", childFound)
+	const anyChildIsCollapsed = childFound !== undefined
+	console.log(replySubTree.replies.toJS())
+	console.log(JSON.stringify(isCollapsedState), anyChildIsCollapsed)
+
+	function toggleCollapseSubTree() {
+		const directChildIds = replySubTree.replies.map(replyTree => replyTree.post.id)
+		let newIsCollapsedState = isCollapsedState
+		directChildIds.forEach(childId => {
+			newIsCollapsedState = newIsCollapsedState.set(childId, !anyChildIsCollapsed)
+		})
+		setIsCollapsedState(newIsCollapsedState)
+	}
+
 	return (
 		<>
 			<div
 				key={`vote-buttons-${focussedPostId}-${postId}`}
-				className={'flex w-[32px] flex-col items-center'}
+				className={'flex w-[32px] flex-col items-center h-full'}
 			>
 				<button
 					title={
@@ -91,6 +113,25 @@ export function VoteButtons({
 				>
 					<Icon name="thick-arrow-down" />
 				</button>
+				<div className="mt-auto">
+					{anyChildIsCollapsed ? (
+						<button
+							title="Expand this comment"
+							className="text-[30px] sm:text-base"
+							onClick={toggleCollapseSubTree}
+						>
+							<Icon name="plus-circled" />
+						</button>
+					) : (
+						<button
+							title="Collapse this comment"
+							className="text-[30px] sm:text-base"
+							onClick={toggleCollapseSubTree}
+						>
+							<Icon name="minus-circled" />
+						</button>
+					)}
+				</div>
 			</div>
 		</>
 	)

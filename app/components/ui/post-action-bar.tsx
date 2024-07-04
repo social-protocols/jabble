@@ -1,5 +1,5 @@
 import { Link } from '@remix-run/react'
-import { type Dispatch, type SetStateAction, useState } from 'react'
+import { type Dispatch, type SetStateAction, useRef, useState } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { toImmutableReplyTree } from '#app/repositories/ranking.ts'
 import {
@@ -21,6 +21,9 @@ export function PostActionBar({
 	isDeleted,
 	setCommentTreeState,
 	onReplySubmit,
+	pathFromFocussedPost,
+	isCollapsedState,
+	onCollapseParentSiblings,
 }: {
 	post: Post
 	postState: PostState
@@ -30,6 +33,11 @@ export function PostActionBar({
 	isDeleted: boolean
 	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
 	onReplySubmit: (reply: ImmutableReplyTree) => void
+	pathFromFocussedPost: Immutable.List<number>
+	isCollapsedState?: Immutable.Map<number, boolean>
+	onCollapseParentSiblings: (
+		pathFromFocussedPost: Immutable.List<number>,
+	) => void
 }) {
 	const user = useOptionalUser()
 	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
@@ -66,9 +74,16 @@ export function PostActionBar({
 		})
 	}
 
+	const myRef = useRef<HTMLDivElement>(null)
+	const scrollIntoView = () => {
+		if (myRef.current) {
+			myRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+		}
+	}
+
 	return (
 		<>
-			<div className="mt-1 flex w-full text-sm">
+			<div className="mt-auto pt-1 flex w-full text-sm">
 				{hasUninformedVote ? (
 					<Link
 						title="Jump to comment labeled 'Vote here'"
@@ -90,6 +105,20 @@ export function PostActionBar({
 					>
 						<Icon name="chat-bubble" /> Reply
 					</button>
+				)}
+				{isCollapsedState && (
+					<>
+						<button
+							title="Collapse unrelated comments"
+							className="my-[-2px] text-[30px] sm:text-base"
+							onClick={() => {
+								onCollapseParentSiblings(pathFromFocussedPost)
+								scrollIntoView()
+							}}
+						>
+							<Icon name="target" /> Focus
+						</button>
+					</>
 				)}
 				{isAdminUser &&
 					(!isDeleted ? (
