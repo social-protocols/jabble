@@ -77,16 +77,13 @@ export function PostDetails({
 			ref={postDetailsRef}
 		>
 			{hidePost ? (
-				<div className={'flex ' + marginLeft}>
-					{/*<PostInfoBar post={post} postState={postState} />*/}
-				</div>
+				<div className={'flex ' + marginLeft} />
 			) : (
 				<>
 					<div style={{ display: loggedIn ? 'block' : 'none' }}>
 						<VoteButtons
 							postId={post.id}
 							focussedPostId={focussedPostId}
-							hasUninformedVote={hasUninformedVote}
 							commentTreeState={commentTreeState}
 							setCommentTreeState={setCommentTreeState}
 							showInformedProbability={showInformativeProbability}
