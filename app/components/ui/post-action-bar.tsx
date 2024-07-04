@@ -100,10 +100,7 @@ export function PostActionBar({
 							<Icon name="trash" /> Delete
 						</button>
 					) : (
-						<button
-							className="mr-2"
-							onClick={() => handleSetDeletedAt(null)}
-						>
+						<button className="mr-2" onClick={() => handleSetDeletedAt(null)}>
 							<Icon name="counter-clockwise-clock" /> Restore
 						</button>
 					))}
