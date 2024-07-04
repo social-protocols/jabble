@@ -31,8 +31,8 @@ export function PostInfoBar({
 
 	function toggleCollapse() {
 		if (isCollapsedState && setIsCollapsedState) {
-			let newisCollapsedState = isCollapsedState.set(post.id, !isCollapsed)
-			setIsCollapsedState(newisCollapsedState)
+			let newIsCollapsedState = isCollapsedState.set(post.id, !isCollapsed)
+			setIsCollapsedState(newIsCollapsedState)
 		}
 	}
 
