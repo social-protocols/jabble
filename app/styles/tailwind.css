@@ -139,7 +139,7 @@
 		}
 
 		h1 {
-			@apply text-xl sm:text-base font-bold;
+			@apply text-xl font-bold;
 			@apply mb-0;
 		}
 

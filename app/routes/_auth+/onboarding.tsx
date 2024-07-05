@@ -38,10 +38,6 @@ const onboardingEmailSessionKey = 'onboardingEmail'
 const SignupFormSchema = z
 	.object({
 		username: UsernameSchema,
-		agreeToTermsOfServiceAndPrivacyPolicy: z.boolean({
-			required_error:
-				'You must agree to the terms of service and privacy policy',
-		}),
 		remember: z.boolean().optional(),
 		redirectTo: z.string().optional(),
 	})
@@ -151,18 +147,17 @@ export default function SignupRoute() {
 	})
 
 	return (
-		<div className="container flex min-h-full flex-col justify-center pb-32 pt-20">
+		<div className="container flex min-h-full flex-col justify-center pb-32 md:pt-20">
 			<div className="mx-auto w-full max-w-lg">
-				<div className="flex flex-col gap-3 text-center">
-					<h1 className="text-h1">Welcome aboard!</h1>
-					<p className="text-body-md text-muted-foreground">
-						Please enter your details.
+				<div className="flex flex-col text-center mb-[16px] md:mb-[64px]">
+					<h1 className="text-2xl md:text-h1 mb-6">Your Account</h1>
+					<p className="text-body-sm text-muted-foreground">
+						Please enter your username and password.
 					</p>
 				</div>
-				<Spacer size="xs" />
 				<Form
 					method="POST"
-					className="mx-auto min-w-[368px] max-w-sm"
+					className="mx-auto min-w-[268px] max-w-sm"
 					{...form.props}
 				>
 					<AuthenticityTokenInput />
@@ -199,18 +194,6 @@ export default function SignupRoute() {
 
 					<CheckboxField
 						labelProps={{
-							htmlFor: fields.agreeToTermsOfServiceAndPrivacyPolicy.id,
-							children:
-								'Do you agree to our Terms of Service and Privacy Policy?',
-						}}
-						buttonProps={conform.input(
-							fields.agreeToTermsOfServiceAndPrivacyPolicy,
-							{ type: 'checkbox' },
-						)}
-						errors={fields.agreeToTermsOfServiceAndPrivacyPolicy.errors}
-					/>
-					<CheckboxField
-						labelProps={{
 							htmlFor: fields.remember.id,
 							children: 'Remember me',
 						}}
@@ -228,7 +211,7 @@ export default function SignupRoute() {
 							type="submit"
 							disabled={isPending}
 						>
-							Create an account
+							Start debating!
 						</StatusButton>
 					</div>
 				</Form>

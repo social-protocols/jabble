@@ -126,15 +126,11 @@ export default function SignupRoute() {
 	})
 
 	return (
-		<div className="pt-15 container flex flex-col justify-center pb-32">
-			<div className="text-center">
-				<h1 className="mb-10 text-h1">Hey there! 👋</h1>
-				<p className="mb-10 text-body-sm text-muted-foreground">
-					You are among the first people to try Jabble. Everything here is a
-					work in progress and we'd appreciate your feedback!
-				</p>
-				<p className="bold mt-3 text-body-md text-muted-foreground">
-					Enter your email and let's get started! 🚀
+		<div className="pt-15 container flex flex-col justify-center pb-32 md:pt-20">
+			<div className="text-center space-y-5 sm:space-y-10 mb-[16px] md:mb-[64px]">
+				<h1 className="text-xl font-bold md:text-h1">Welcome to Jabble!</h1>
+				<p className="text-body-sm text-muted-foreground">
+					Please enter your e-mail.
 				</p>
 			</div>
 			<div className="mx-auto mt-10 min-w-[268px] max-w-sm">
@@ -156,7 +152,7 @@ export default function SignupRoute() {
 						type="submit"
 						disabled={isPending}
 					>
-						Submit
+						Sign Up
 					</StatusButton>
 				</Form>
 			</div>
