@@ -76,13 +76,15 @@ export function PostActionBar({
 			postDetailsRef.current.scrollIntoView()
 		}
 	}
+	
+	const focusButtonColor = isCollapsedState.currentlyFocussedPostId === post.id ? 'bg-rose-800/100 text-white' : ''
 
 	return (
 		<>
-			<div className="mt-auto flex w-full pt-1 text-sm">
+			<div className="mt-auto flex w-full pt-1 opacity-50 text-md md:text-xs">
 				<button
 					title="Collapse unrelated comments"
-					className={`transition-color mr-2 rounded px-2 text-[30px] duration-1000 sm:text-base ${isCollapsedState.currentlyFocussedPostId === post.id ? 'bg-orange-300 text-black' : ''}`}
+					className={`transition-color mr-2 rounded px-1 duration-1000 ${focusButtonColor}`}
 					onClick={() => {
 						onCollapseParentSiblings(pathFromFocussedPost)
 						scrollIntoView()
@@ -96,7 +98,7 @@ export function PostActionBar({
 							setShowReplyForm(!showReplyForm)
 							return false
 						}}
-						className="my-[-2px] text-[30px] sm:text-base"
+						className="mr-2"
 						style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
 					>
 						<Icon name="chat-bubble" className="mt-[-4px]" /> Reply
