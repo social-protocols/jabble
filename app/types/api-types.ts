@@ -10,6 +10,12 @@ export type Post = {
 	isPrivate: number
 }
 
+export type User = {
+	id: string
+	username: string
+	isAdmin: number
+}
+
 export type PostWithScore = Post & { score: number }
 
 export type FrontPagePost = Post & {

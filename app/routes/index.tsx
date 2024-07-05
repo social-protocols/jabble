@@ -22,7 +22,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		.transaction()
 		.execute(async trx => await getDiscussionOfTheDay(trx))
 	const userId: string | null = await getUserId(request)
-	const loggedIn = userId !== null
 
 	if (discussionOfTheDayPostId === undefined) {
 		console.log(
@@ -65,12 +64,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		mutableReplyTree,
 		transitiveParents,
 		commentTreeState,
-		loggedIn,
 	})
 }
 
 export default function Index() {
-	const { mutableReplyTree, transitiveParents, commentTreeState, loggedIn } =
+	const { mutableReplyTree, transitiveParents, commentTreeState } =
 		useLoaderData<typeof loader>()
 
 	const params = useParams()
@@ -84,7 +82,6 @@ export default function Index() {
 				mutableReplyTree={mutableReplyTree}
 				transitiveParents={transitiveParents}
 				initialCommentTreeState={commentTreeState}
-				loggedIn={loggedIn}
 			/>
 		</>
 	)

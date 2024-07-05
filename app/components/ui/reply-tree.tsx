@@ -1,87 +1,40 @@
-import { useState, type Dispatch, type SetStateAction } from 'react'
-import { addReplyToReplyTree } from '#app/repositories/ranking.ts'
-import {
-	type ImmutableReplyTree,
-	type CommentTreeState,
-	type CollapsedState,
-} from '#app/types/api-types.ts'
+import { type TreeContext } from '#app/routes/post.$postId.tsx'
+import { type ImmutableReplyTree } from '#app/types/api-types.ts'
 import { PostDetails } from './post-details.tsx'
 
 export function PostWithReplies({
-	initialReplyTree,
-	targetHasVote,
-	focussedPostId,
-	pathFromFocussedPost,
-	loggedIn,
-	commentTreeState,
-	setCommentTreeState,
-	isCollapsedState,
-	setIsCollapsedState,
-	onCollapseParentSiblings,
+	replyTree,
+	pathFromTargetPost,
+	treeContext,
 	className,
 }: {
-	initialReplyTree: ImmutableReplyTree
-	targetHasVote: boolean
-	focussedPostId: number
-	pathFromFocussedPost: Immutable.List<number>
-	loggedIn: boolean
-	commentTreeState: CommentTreeState
-	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
-	isCollapsedState: CollapsedState
-	setIsCollapsedState: Dispatch<SetStateAction<CollapsedState>>
-	onCollapseParentSiblings: (
-		pathFromFocussedPost: Immutable.List<number>,
-	) => void
+	replyTree: ImmutableReplyTree
+	pathFromTargetPost: Immutable.List<number>
+	treeContext: TreeContext
 	className?: string
 }) {
-	const [replyTreeState, setReplyTreeState] = useState(initialReplyTree)
 	// TODO: new replies are not collapsed by focus button?
-	const postId = replyTreeState.post.id
-	function onReplySubmit(reply: ImmutableReplyTree) {
-		const newReplyTreeState = addReplyToReplyTree(replyTreeState, reply)
-		setReplyTreeState(newReplyTreeState)
-	}
+	const postId = replyTree.post.id
 
-	const hidePost = isCollapsedState.hidePost.get(postId) ?? false
+	const hidePost = treeContext.collapsedState.hidePost.get(postId) ?? false
 	const hideChildren =
-		(isCollapsedState.hideChildren.get(postId) ?? false) || hidePost
+		(treeContext.collapsedState.hideChildren.get(postId) ?? false) || hidePost
 
 	return (
 		<>
 			<PostDetails
 				key={`${postId}-postdetails`}
-				post={replyTreeState.post}
-				teaser={false}
-				loggedIn={loggedIn}
+				post={replyTree.post}
 				className={(hidePost ? '' : 'mb-3 ') + (className ?? '')}
-				focussedPostId={focussedPostId}
-				pathFromFocussedPost={pathFromFocussedPost}
-				commentTreeState={commentTreeState}
-				setCommentTreeState={setCommentTreeState}
-				isCollapsedState={isCollapsedState}
-				setIsCollapsedState={setIsCollapsedState}
-				onReplySubmit={onReplySubmit}
-				onCollapseParentSiblings={onCollapseParentSiblings}
-				showInformativeProbability={postId === focussedPostId}
+				pathFromTargetPost={pathFromTargetPost}
+				treeContext={treeContext}
 			/>
 			{!hideChildren && (
-				<div
-					key={`${postId}-subtree`}
-					className={
-						'border-left-solid ml-2 border-l-4 border-post border-transparent pl-3'
-					}
-				>
+				<div key={`${postId}-subtree`} className={'ml-2 pl-3'}>
 					<TreeReplies
-						initialReplyTree={replyTreeState}
-						targetHasVote={targetHasVote}
-						loggedIn={loggedIn}
-						focussedPostId={focussedPostId}
-						pathFromFocussedPost={pathFromFocussedPost}
-						commentTreeState={commentTreeState}
-						setCommentTreeState={setCommentTreeState}
-						isCollapsedState={isCollapsedState}
-						setIsCollapsedState={setIsCollapsedState}
-						onCollapseParentSiblings={onCollapseParentSiblings}
+						replyTree={replyTree}
+						pathFromTargetPost={pathFromTargetPost}
+						treeContext={treeContext}
 					/>
 				</div>
 			)}
@@ -90,48 +43,25 @@ export function PostWithReplies({
 }
 
 function TreeReplies({
-	initialReplyTree,
-	targetHasVote,
-	loggedIn,
-	focussedPostId,
-	pathFromFocussedPost,
-	commentTreeState,
-	setCommentTreeState,
-	isCollapsedState,
-	setIsCollapsedState,
-	onCollapseParentSiblings,
+	replyTree,
+	pathFromTargetPost,
+	treeContext,
 }: {
-	initialReplyTree: ImmutableReplyTree
-	targetHasVote: boolean
-	loggedIn: boolean
-	focussedPostId: number
-	pathFromFocussedPost: Immutable.List<number>
-	commentTreeState: CommentTreeState
-	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
-	isCollapsedState: CollapsedState
-	setIsCollapsedState: Dispatch<SetStateAction<CollapsedState>>
-	onCollapseParentSiblings: (
-		pathFromFocussedPost: Immutable.List<number>,
-	) => void
+	replyTree: ImmutableReplyTree
+	pathFromTargetPost: Immutable.List<number>
+	treeContext: TreeContext
 }) {
 	// The purpose of this component is to be able to give state to its children
 	// so that each one can maintain and update its own children state.
 	return (
 		<>
-			{initialReplyTree.replies.map((tree: ImmutableReplyTree) => {
+			{replyTree.replies.map((tree: ImmutableReplyTree) => {
 				return (
 					<PostWithReplies
-						key={`${focussedPostId}-${tree.post.id}`}
-						initialReplyTree={tree}
-						targetHasVote={targetHasVote}
-						focussedPostId={focussedPostId}
-						pathFromFocussedPost={pathFromFocussedPost.push(tree.post.id)}
-						loggedIn={loggedIn}
-						commentTreeState={commentTreeState}
-						setCommentTreeState={setCommentTreeState}
-						isCollapsedState={isCollapsedState}
-						setIsCollapsedState={setIsCollapsedState}
-						onCollapseParentSiblings={onCollapseParentSiblings}
+						key={`${treeContext.targetPostId}-${tree.post.id}`}
+						replyTree={tree}
+						pathFromTargetPost={pathFromTargetPost.push(tree.post.id)}
+						treeContext={treeContext}
 					/>
 				)
 			})}
