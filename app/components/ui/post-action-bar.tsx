@@ -83,7 +83,7 @@ export function PostActionBar({
 					title={
 						isFocused ? 'Click again to unfocus' : 'Collapse unrelated comments'
 					}
-					className={`transition-color mr-2 rounded px-1 duration-1000 ${focusButtonColor}`}
+					className={`transition-color mr-2 hidden rounded px-1 duration-1000 ${focusButtonColor}`}
 					onClick={() => {
 						treeContext.onCollapseParentSiblings(pathFromTargetPost)
 						scrollIntoView()
