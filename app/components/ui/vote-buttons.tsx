@@ -56,8 +56,7 @@ export function VoteButtons({
 		setCommentTreeState(newCommentTreeState)
 	}
 
-	const negMargin = 'my-[-1px]'
-	const responsiveSize = 'text-[30px] sm:text-base'
+	const responsiveSize = 'text-[30px] sm:text-lg'
 	const childrenHidden = isCollapsedState.hideChildren.get(postId) ?? false
 
 	function toggleHideChildren() {
@@ -75,7 +74,7 @@ export function VoteButtons({
 			>
 				<button
 					title={'Upvote'}
-					className={upClass + ' ' + negMargin + ' ' + responsiveSize}
+					className={`${upClass} + ${responsiveSize}`}
 					onClick={async () => await submitVote(Direction.Up)}
 				>
 					<Icon name="thick-arrow-up" />
@@ -87,7 +86,7 @@ export function VoteButtons({
 				)}
 				<button
 					title={'Downvote'}
-					className={downClass + ' ' + negMargin + ' ' + responsiveSize}
+					className={`${downClass} + ${responsiveSize} mt-[-3px]`}
 					onClick={async () => await submitVote(Direction.Down)}
 				>
 					<Icon name="thick-arrow-down" />
@@ -96,7 +95,7 @@ export function VoteButtons({
 					{childrenHidden ? (
 						<button
 							title="Expand this comment"
-							className="text-[30px] sm:text-base"
+							className={responsiveSize}
 							onClick={toggleHideChildren}
 						>
 							<Icon name="chevron-right" />
@@ -104,7 +103,7 @@ export function VoteButtons({
 					) : (
 						<button
 							title="Collapse this comment"
-							className="text-[30px] sm:text-base"
+							className={responsiveSize}
 							onClick={toggleHideChildren}
 						>
 							<Icon name="chevron-down" />
