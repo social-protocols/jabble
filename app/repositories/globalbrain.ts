@@ -65,14 +65,6 @@ export async function processScoreEvents(
 		}),
 	)
 
-	// Ideally, we would update this table incrementally, but for now we just
-	// delete all rows and reinsert them.
-	await sql`delete from CriticalThread`.execute(trx)
-	await sql`
-			insert into CriticalThread
-			select * from CriticalThreadView
-	`.execute(trx)
-
 	if (!gotExpectedScoreEvent) {
 		console.error(
 			`Expected score event not found: ${voteEvent.voteEventId}, ${voteEvent.postId}`,

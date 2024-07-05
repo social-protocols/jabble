@@ -70,26 +70,6 @@ export default function PostStats() {
 - **score:** ${post.score}
 `
 
-	const topCommentMarkdown =
-		post.criticalThreadId == null
-			? ''
-			: `
-## Critical Comment
-
-- **top reply id:** ${
-					post.criticalThreadId == null
-						? 'null'
-						: `[${post.criticalThreadId}](/stats/${post.criticalThreadId})`
-				}
-- **informed votes:** &nbsp;&nbsp;&nbsp;&nbsp; ${post.pCount} ▲ ${
-					post.pSize - post.pCount
-				} ▼ &nbsp; **p**: ${(post.p * 100).toFixed(1)}%
-- **uninformed votes:** ${post.qCount} ▲ ${
-					post.qSize - post.qCount
-				} ▼ &nbsp; **q**: ${(post.q * 100).toFixed(1)}%
-- **r**: ${post.r.toFixed(3)}
-`
-
 	// - q = Bayesian Average(upvotes/votes), upvoteProbabilityPrior)
 	// - see [Docs on Rating and Evaluating Content](https://social-protocols.org/global-brain/rating-and-evaluating-content.html)
 
@@ -135,7 +115,7 @@ ${effects
 	return (
 		<div className="markdown">
 			<Markdown deactivateLinks={false}>
-				{overallMarkdown + topCommentMarkdown + effectsMarkdown}
+				{overallMarkdown + effectsMarkdown}
 			</Markdown>
 		</div>
 	)
