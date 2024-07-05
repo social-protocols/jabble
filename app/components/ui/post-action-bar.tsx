@@ -1,3 +1,4 @@
+import { Link } from '@remix-run/react'
 import { type Dispatch, type SetStateAction, useState } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { toImmutableReplyTree } from '#app/repositories/ranking.ts'
@@ -7,6 +8,7 @@ import {
 	type ReplyTree,
 	type CommentTreeState,
 	type ImmutableReplyTree,
+	Direction,
 } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
@@ -80,6 +82,44 @@ export function PostActionBar({
 		})
 	}
 
+	const showInformedProbability = post.id == treeContext.targetPostId
+
+	const pCurrent: number = treeContext.commentTreeState.posts[post.id]?.p || NaN
+	const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
+
+	const submitVote = async function (direction: Direction) {
+		const payLoad = {
+			postId: post.id,
+			focussedPostId: treeContext.targetPostId,
+			direction: direction,
+			currentVoteState: postState.voteState.vote,
+		}
+		const response = await fetch('/vote', {
+			method: 'POST',
+			body: JSON.stringify(payLoad),
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		})
+		const newCommentTreeState = (await response.json()) as CommentTreeState
+		treeContext.setCommentTreeState(newCommentTreeState)
+	}
+
+	const childrenHidden =
+		treeContext.collapsedState.hideChildren.get(post.id) ?? false
+
+	const hasChildren = !replyTree.replies.isEmpty()
+
+	function toggleHideChildren() {
+		treeContext.setCollapsedState({
+			...treeContext.collapsedState,
+			hideChildren: treeContext.collapsedState.hideChildren.set(
+				post.id,
+				!childrenHidden,
+			),
+		})
+	}
+
 	const isFocused =
 		treeContext.collapsedState.currentlyFocussedPostId === post.id
 	const isDeleted = postState.isDeleted
@@ -90,29 +130,76 @@ export function PostActionBar({
 
 	return (
 		<>
-			<div className="text-md mt-auto flex w-full pt-1 opacity-50 md:text-xs">
-				<button
-					title={
-						isFocused ? 'Click again to unfocus' : 'Collapse unrelated comments'
-					}
-					className={`transition-color mr-2 hidden rounded px-1 duration-1000 ${focusButtonColor}`}
-					onClick={() => {
-						treeContext.onCollapseParentSiblings(pathFromTargetPost)
-						scrollIntoView()
-					}}
-				>
-					<Icon name="target" className="mt-[-4px]" /> Focus
-				</button>
+			<div className="flex w-full items-start gap-2 text-2xl opacity-50 sm:text-base">
+				{hasChildren &&
+					(childrenHidden ? (
+						<button title="Expand this comment" onClick={toggleHideChildren}>
+							<Icon name="chevron-right" className="ml-[-0.2em]" />
+						</button>
+					) : (
+						<button title="Collapse this comment" onClick={toggleHideChildren}>
+							<Icon name="chevron-down" className="ml-[-0.2em]" />
+						</button>
+					))}
+				{loggedIn && (
+					<button
+						title={'Upvote'}
+						onClick={async () => await submitVote(Direction.Up)}
+					>
+						<Icon
+							name={
+								postState.voteState.vote == Direction.Up
+									? 'thick-arrow-up-solid'
+									: 'thick-arrow-up'
+							}
+						/>
+					</button>
+				)}
+				{showInformedProbability && (
+					<Link title="Informed upvote probability" to={`/stats/${post.id}`}>
+						{pCurrentString}
+					</Link>
+				)}
+				{loggedIn && (
+					<button
+						title={'Downvote'}
+						onClick={async () => await submitVote(Direction.Down)}
+					>
+						<Icon
+							name={
+								postState.voteState.vote == Direction.Down
+									? 'thick-arrow-down-solid'
+									: 'thick-arrow-down'
+							}
+							className="mt-[-0.2em]"
+						/>
+					</button>
+				)}
+				{false && (
+					<button
+						title={
+							isFocused
+								? 'Click again to unfocus'
+								: 'Collapse unrelated comments'
+						}
+						className={`transition-color mr-2 rounded px-1 duration-1000 ${focusButtonColor}`}
+						onClick={() => {
+							treeContext.onCollapseParentSiblings(pathFromTargetPost)
+							scrollIntoView()
+						}}
+					>
+						<Icon name="target" /> Focus
+					</button>
+				)}
 				{!isDeleted && loggedIn && (
 					<button
 						onClick={() => {
 							setShowReplyForm(!showReplyForm)
 							return false
 						}}
-						className="mr-2"
-						style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
+						className="shrink-0"
 					>
-						<Icon name="chat-bubble" className="mt-[-4px]" /> Reply
+						<Icon name="chat-bubble" className="mt-[-0.1em]" /> Reply
 					</button>
 				)}
 				{isAdminUser && (
@@ -122,18 +209,18 @@ export function PostActionBar({
 						handleSetDiscussionOfTheDay={handleSetDiscussionOfTheDay}
 					/>
 				)}
+				{hideChildren && (
+					<button onClick={showChildren} className="shrink-0">
+						({replyTree.replies.size}{' '}
+						{replyTree.replies.size == 1 ? 'comment' : 'comments'})
+					</button>
+				)}
 				{showReplyForm && (
 					<button
-						className="ml-auto pr-2"
+						className="ml-auto self-center pr-2"
 						onClick={() => setShowReplyForm(false)}
 					>
 						✕
-					</button>
-				)}
-				{hideChildren && (
-					<button className="mr-2" onClick={showChildren}>
-						({replyTree.replies.size}{' '}
-						{replyTree.replies.size == 1 ? 'comment' : 'comments'})
 					</button>
 				)}
 			</div>

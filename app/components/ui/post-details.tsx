@@ -4,11 +4,9 @@ import { useRef } from 'react'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import { type ImmutableReplyTree, type Post } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { useOptionalUser } from '#app/utils/user.ts'
 import { PostActionBar } from './post-action-bar.tsx'
 import { PostContent } from './post-content.tsx'
 import { PostInfoBar } from './post-info-bar.tsx'
-import { VoteButtons } from './vote-buttons.tsx'
 
 export function PostDetails({
 	post,
@@ -23,7 +21,6 @@ export function PostDetails({
 	pathFromTargetPost: Immutable.List<number>
 	treeContext: TreeContext
 }) {
-	const loggedIn: boolean = useOptionalUser() !== null
 	const postState = treeContext.commentTreeState.posts[post.id]
 	invariant(
 		postState !== undefined,
@@ -42,13 +39,6 @@ export function PostDetails({
 			className={`flex w-full ${className ?? ''}`}
 			ref={postDetailsRef}
 		>
-			<div style={{ display: loggedIn ? 'block' : 'none' }}>
-				<VoteButtons
-					postId={post.id}
-					replyTree={replyTree}
-					treeContext={treeContext}
-				/>
-			</div>
 			<div className={'ml-2 flex w-full min-w-0 flex-col'}>
 				<PostInfoBar post={post} postState={postState} />
 				{!isDeleted ? (

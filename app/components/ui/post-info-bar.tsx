@@ -14,9 +14,12 @@ export function PostInfoBar({
 
 	return (
 		<>
-			<div className="flex w-full items-center space-x-2 pb-1 text-xs sm:items-baseline">
+			<div className="flex w-full items-center gap-2 text-xs sm:items-baseline">
 				{postState.effectOnTargetPost !== null && (
-					<span title="Convincingness Score. How much this post changed people's opinion on the target post.">
+					<span
+						title="Convincingness Score. How much this post changed people's opinion on the target post."
+						className="opacity-50"
+					>
 						{(effectSize * 100).toFixed(0)}% {convincingnessScale(effectSize)}
 					</span>
 				)}
