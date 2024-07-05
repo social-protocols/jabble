@@ -114,7 +114,6 @@ export function DiscussionView({
 	loggedIn: boolean
 }) {
 	const replyTree = toImmutableReplyTree(mutableReplyTree)
-	console.log(replyTree.replies.toJS())
 
 	const [commentTreeState, setCommentTreeState] = useState<CommentTreeState>(
 		initialCommentTreeState,
