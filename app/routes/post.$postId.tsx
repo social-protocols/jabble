@@ -183,7 +183,7 @@ export function DiscussionView({
 				pathFromTargetPost={Immutable.List([postId])}
 				treeContext={treeContext}
 			/>
-			<div className="h-[300px]" />
+			<div className="h-screen" />
 		</>
 	)
 }

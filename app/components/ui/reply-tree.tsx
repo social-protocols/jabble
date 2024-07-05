@@ -25,7 +25,7 @@ export function PostWithReplies({
 				<PostDetails
 					key={`${postId}-postdetails`}
 					post={replyTree.post}
-					className={'mb-3 ' + (className ?? '')}
+					className={'mb-4 ' + (className ?? '')}
 					replyTree={replyTree}
 					pathFromTargetPost={pathFromTargetPost}
 					treeContext={treeContext}

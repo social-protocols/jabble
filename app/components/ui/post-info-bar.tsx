@@ -14,14 +14,17 @@ export function PostInfoBar({
 
 	return (
 		<>
-			<div className="flex w-full items-center space-x-2 pb-1 text-xs sm:items-baseline">
+			<div className="mb-1 flex w-full items-center gap-2 text-xs sm:items-baseline">
 				{postState.effectOnTargetPost !== null && (
 					<span title="Convincingness Score. How much this post changed people's opinion on the target post.">
-						{(effectSize * 100).toFixed(0)}% {convincingnessScale(effectSize)}
+						<span className="opacity-50">{(effectSize * 100).toFixed(0)}%</span>{' '}
+						{convincingnessScale(effectSize)}
 					</span>
 				)}
 				<span className="opacity-50">{ageString}</span>
-				<span className="opacity-50">{postState.voteCount} votes</span>
+				<span className="opacity-50">
+					{postState.voteCount} {postState.voteCount == 1 ? 'vote' : 'votes'}
+				</span>
 			</div>
 		</>
 	)
