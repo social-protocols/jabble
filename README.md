@@ -20,20 +20,20 @@ Like many online social platforms, in Jabble users post things and other users c
 Each post gets a score, shown as a percentage, based on how many upvotes and downvotes it receives.
 
 ![screenshot of reply with votes](public/img/post-with-vote.png)
-<br/>*a reply with votes*
+<br/>*a post with votes*
 
 
 **However, not all votes count equally!** Your votes on a post get more weight if you **read and acknowledge convincing replies** to that post made by other users.
 
 
-## Convincingness
+## Convincing Replies
 
-Jabble scores replies based on *how convincing they appear to be*. A reply is given a high convincingness score if users who have considered that reply are more likely to upvote the post being replied to (and vice versa). For example, if a post containing a video has a reply claiming that the video is fake, users who see that reply may be less likely to upvote the video.
+Jabble ranks replies based on *how convincing they appear to be*. A reply is considered convincing if users who have considered that reply are more likely to upvote the post being replied to (and vice versa). For example, if a post containing a video has a reply claiming that the video is fake, users who see that reply may be less likely to upvote the video.
 
 ![screenshot of reply with votes](public/img/convincing-reply.png)
 <br/>*a convincing reply*
 
-Jabble will place the replies with the highest convincingness score at the top, in order to make sure as many people as possible are exposed to the most convincing replies and have a chance to respond to them.
+Jabble will place the most convincing replies at the top, in order to make sure as many people as possible are exposed to the most convincing replies and have a chance to respond to them.
 
 ## The Big Idea: Informed Content
 
@@ -61,11 +61,11 @@ Simply voting on a convincing reply gives **more weight** to your vote on the po
 
 For example, suppose you upvoted the post with the video, but have not seen the reply claiming it is fake. You are in one sense less informed than the users who saw the reply. Voting on the reply signals to Jabble that you have considered it and are thus fully-informed, and so your vote will have more influence on the final score of the video.
 
-Now, suppose you are not convinced by the reply. By downvoting the reply, while not changing your vote on the video, you signal to Jabble that you are informed but unconvinced. Jabble will give more weight to your upvote on the video, resulting in an *increase* it its score (as well as a *decrease* in the score for the reply). 
+Now, suppose you are not convinced by the reply. By downvoting the reply, while not changing your vote on the video, you signal to Jabble that you are informed but unconvinced. Jabble will give more weight to your upvote on the video, resulting in an *increase* in its score.
 
-This means that you can have more influence on the scores of posts, and thus on what posts get more or less attention (and possibly go viral), by making sure to vote on comments with high convincingness scores. 
+This means that you can have more influence on the scores of posts, and thus on what posts get more or less attention (and possibly go viral), by making sure to vote on comments marked as convincing.
 
-This will be immediately visible in the UI: when you vote on a reply with a high convincingness score, you will see an immediate change in the score of the post being replied to.
+This will be immediately visible in the UI: when you vote on a convincing reply, you will see an immediate change in the score of the post being replied to.
 
 ![screenshot of reply with votes](public/img/vote-on-convincing-reply.png)
 <br/>*voting on this comment gives more weight to vote on video*
@@ -74,7 +74,7 @@ This will be immediately visible in the UI: when you vote on a reply with a high
 
 You can also respond to a convincing reply by replying to it. Replying to a reply also signals to Jabble that you have considered it, and thus gives your vote more weight. 
 
-But a reply also gives you a chance to make counter-arguments that might convince people the other way. For example, if you reply with a reason to believe that the video is in fact authentic, and people who consider your counter-argument are more likely to upvote the video (compared to people who only considered the reply claiming the video was fake), then your counter-argument will have a high convincingness score!
+But a reply also gives you a chance to make counter-arguments that might convince people the other way. For example, if you reply with a reason to believe that the video is in fact authentic, and people who consider your counter-argument are more likely to upvote the video (compared to people who only considered the reply claiming the video was fake), then your counter-argument will be marked as convincing!
 
 ![screenshot of reply with votes](public/img/reply-to-reply.png)
 <br/>*a reply to a convincing reply*
@@ -83,11 +83,11 @@ It might seem like this process could go on forever, but it probably won't. As w
 
 ## Deliberation and Informed Opinion
 
-The result, we hope, is a conversation platform that drives constructive **deliberative processes** for discovering **informed opinion**. By focusing attention on convincing replies, and the replies to those replies, the process drives a constructive discussion that surfaces the best arguments on both sides of any controversy. And by scoring posts based on the **informed votes** of users who have considered the most informed argument threads, the algorithm will promote **informed content**, instead of content that gets a lot of upvotes based on initial impressions and knee-jerk reactions.
+Jabble is designed to drive constructive **deliberative processes** for discovering **informed opinion**. By focusing attention on convincing replies, and the replies to those replies, the process drives a constructive discussion that surfaces the best arguments on both sides of any controversy. And by scoring posts based on the **informed votes** of users who have considered the most informed argument threads, the algorithm will promote **informed content**, instead of content that gets a lot of upvotes based on initial impressions and knee-jerk reactions.
 
 ## Conclusion
 
-The algorithm we've described here is just one part of our vision for improving ranking algorithm for social platforms. It doesn't yet solve certain big problems, such as people voting in bad faith. Or worse: large-scale, coordinated manipulation efforts. 
+The algorithm we've described here is just one part of our vision for improving ranking algorithm for social platforms. It doesn't yet solve certain big problems, such as bias, bad faith voting, and large-scale, coordinated manipulation efforts. 
 
 We hope to address the problem of bad-faith actors using a reputation system, combined with a game-theoretical mechanism called the Bayesian Truth Serum, both of which we discuss in our article on [Deliberative Consensus Protocols](https://social-protocols.org/deliberative-consensus-protocols/).
 
