@@ -126,14 +126,14 @@ export default function SignupRoute() {
 	})
 
 	return (
-		<div className="container flex flex-col justify-center pb-32 pt-15">
+		<div className="pt-15 container flex flex-col justify-center pb-32">
 			<div className="text-center">
-				<h1 className="text-h1 mb-10">Welcome to Jabble!</h1>
-				<p className="mt-3 text-body-sm text-muted-foreground">
-					You are among the first people to try Jabble.
-					Everything here is a work in progress and we'd appreciate your feedback!
+				<h1 className="mb-10 text-h1">Hey there! 👋</h1>
+				<p className="mb-10 text-body-sm text-muted-foreground">
+					You are among the first people to try Jabble. Everything here is a
+					work in progress and we'd appreciate your feedback!
 				</p>
-				<p className="mt-3 text-body-md text-muted-foreground bold">
+				<p className="bold mt-3 text-body-md text-muted-foreground">
 					Enter your email and let's get started! 🚀
 				</p>
 			</div>

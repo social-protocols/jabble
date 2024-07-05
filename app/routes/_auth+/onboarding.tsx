@@ -10,7 +10,6 @@ import {
 import {
 	Form,
 	useActionData,
-	useLoaderData,
 	useSearchParams,
 } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
@@ -58,10 +57,6 @@ async function requireOnboardingEmail(request: Request) {
 		throw redirect('/signup')
 	}
 	return email
-}
-export async function loader({ request }: LoaderFunctionArgs) {
-	const email = await requireOnboardingEmail(request)
-	return json({ email })
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -139,7 +134,6 @@ export const meta: MetaFunction = () => {
 }
 
 export default function SignupRoute() {
-	const data = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 	const isPending = useIsPending()
 	const [searchParams] = useSearchParams()
