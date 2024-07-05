@@ -14,12 +14,12 @@
 
 Like many online social platforms, in Jabble users post things and other users can reply. Here's an example:
 
-SCREENSHOT
+![screenshot of a post with a reply](public/img/post-with-reply.png)
 <br/>*a post with a reply*
 
-Each post or reply then gets a score, shown as a percentage, based on how many upvotes and downvotes it receives.
+Each post gets a score, shown as a percentage, based on how many upvotes and downvotes it receives.
 
-SCREENSHOT
+![screenshot of reply with votes](public/img/post-with-vote.png)
 <br/>*a reply with votes*
 
 
@@ -30,8 +30,8 @@ SCREENSHOT
 
 Jabble scores replies based on *how convincing they appear to be*. A reply is given a high convincingness score if users who have considered that reply are more likely to upvote the post being replied to (and vice versa). For example, if a post containing a video has a reply claiming that the video is fake, users who see that reply may be less likely to upvote the video.
 
-SCREENSHOT
-<br/>*a reply with a convincingness score*
+![screenshot of reply with votes](public/img/convincing-reply.png)
+<br/>*a convincing reply*
 
 Jabble will place the replies with the highest convincingness score at the top, in order to make sure as many people as possible are exposed to the most convincing replies and have a chance to respond to them.
 
@@ -67,7 +67,7 @@ This means that you can have more influence on the scores of posts, and thus on 
 
 This will be immediately visible in the UI: when you vote on a reply with a high convincingness score, you will see an immediate change in the score of the post being replied to.
 
-SCREENSHOT
+![screenshot of reply with votes](public/img/vote-on-convincing-reply.png)
 <br/>*voting on this comment gives more weight to vote on video*
 
 ### Responding by Replying
@@ -76,7 +76,7 @@ You can also respond to a convincing reply by replying to it. Replying to a repl
 
 But a reply also gives you a chance to make counter-arguments that might convince people the other way. For example, if you reply with a reason to believe that the video is in fact authentic, and people who consider your counter-argument are more likely to upvote the video (compared to people who only considered the reply claiming the video was fake), then your counter-argument will have a high convincingness score!
 
-SCREENSHOT
+![screenshot of reply with votes](public/img/reply-to-reply.png)
 <br/>*a reply to a convincing reply*
 
 It might seem like this process could go on forever, but it probably won't. As we hope to demonstrate with early Jabble users, we expect most discussions will converge after the strongest arguments have been made on each side of an issue and nobody can find anything to say that further changes minds. 
