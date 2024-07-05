@@ -1,14 +1,20 @@
 import { Link } from '@remix-run/react'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
-import { Direction, type CommentTreeState } from '#app/types/api-types.ts'
+import {
+	Direction,
+	type ImmutableReplyTree,
+	type CommentTreeState,
+} from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { Icon } from './icon.tsx'
 
 export function VoteButtons({
 	postId,
+	replyTree,
 	treeContext,
 }: {
 	postId: number
+	replyTree: ImmutableReplyTree
 	treeContext: TreeContext
 }) {
 	const postState = treeContext.commentTreeState.posts[postId]
@@ -48,6 +54,8 @@ export function VoteButtons({
 	const childrenHidden =
 		treeContext.collapsedState.hideChildren.get(postId) ?? false
 
+	const hasChildren = !replyTree.replies.isEmpty()
+
 	function toggleHideChildren() {
 		treeContext.setCollapsedState({
 			...treeContext.collapsedState,
@@ -83,25 +91,27 @@ export function VoteButtons({
 				>
 					<Icon name="thick-arrow-down" />
 				</button>
-				<div className="mt-auto">
-					{childrenHidden ? (
-						<button
-							title="Expand this comment"
-							className={responsiveSize}
-							onClick={toggleHideChildren}
-						>
-							<Icon name="chevron-right" />
-						</button>
-					) : (
-						<button
-							title="Collapse this comment"
-							className={responsiveSize}
-							onClick={toggleHideChildren}
-						>
-							<Icon name="chevron-down" />
-						</button>
-					)}
-				</div>
+				{hasChildren && (
+					<div className="mt-auto opacity-50">
+						{childrenHidden ? (
+							<button
+								title="Expand this comment"
+								className={responsiveSize}
+								onClick={toggleHideChildren}
+							>
+								<Icon name="chevron-right" />
+							</button>
+						) : (
+							<button
+								title="Collapse this comment"
+								className={responsiveSize}
+								onClick={toggleHideChildren}
+							>
+								<Icon name="chevron-down" />
+							</button>
+						)}
+					</div>
+				)}
 			</div>
 		</>
 	)

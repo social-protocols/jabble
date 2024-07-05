@@ -2,7 +2,7 @@ import { useNavigate } from '@remix-run/react'
 import type * as Immutable from 'immutable'
 import { useRef } from 'react'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
-import { type Post } from '#app/types/api-types.ts'
+import { type ImmutableReplyTree, type Post } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
 import { PostActionBar } from './post-action-bar.tsx'
@@ -13,11 +13,13 @@ import { VoteButtons } from './vote-buttons.tsx'
 export function PostDetails({
 	post,
 	className,
+	replyTree,
 	pathFromTargetPost,
 	treeContext,
 }: {
 	post: Post
 	className?: string
+	replyTree: ImmutableReplyTree
 	pathFromTargetPost: Immutable.List<number>
 	treeContext: TreeContext
 }) {
@@ -44,7 +46,11 @@ export function PostDetails({
 				ref={postDetailsRef}
 			>
 				<div style={{ display: loggedIn ? 'block' : 'none' }}>
-					<VoteButtons postId={post.id} treeContext={treeContext} />
+					<VoteButtons
+						postId={post.id}
+						replyTree={replyTree}
+						treeContext={treeContext}
+					/>
 				</div>
 				<div className={'ml-2 flex w-full min-w-0 flex-col'}>
 					<PostInfoBar post={post} postState={postState} />
