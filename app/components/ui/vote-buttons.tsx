@@ -99,7 +99,7 @@ export function VoteButtons({
 							className="text-[30px] sm:text-base"
 							onClick={toggleHideChildren}
 						>
-							<Icon name="plus-circled" />
+							<Icon name="chevron-right" />
 						</button>
 					) : (
 						<button
@@ -107,7 +107,7 @@ export function VoteButtons({
 							className="text-[30px] sm:text-base"
 							onClick={toggleHideChildren}
 						>
-							<Icon name="minus-circled" />
+							<Icon name="chevron-down" />
 						</button>
 					)}
 				</div>
