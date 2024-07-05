@@ -6,6 +6,7 @@ import {
 	type Post,
 	type ReplyTree,
 	type CommentTreeState,
+	type ImmutableReplyTree,
 } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
@@ -13,11 +14,13 @@ import { Icon } from './icon.tsx'
 
 export function PostActionBar({
 	post,
+	replyTree,
 	pathFromTargetPost,
 	postDetailsRef,
 	treeContext,
 }: {
 	post: Post
+	replyTree: ImmutableReplyTree
 	pathFromTargetPost: Immutable.List<number>
 	postDetailsRef: React.RefObject<HTMLDivElement>
 	treeContext: TreeContext
@@ -70,9 +73,18 @@ export function PostActionBar({
 		}
 	}
 
+	function showChildren() {
+		treeContext.setCollapsedState({
+			...treeContext.collapsedState,
+			hideChildren: treeContext.collapsedState.hideChildren.set(post.id, false),
+		})
+	}
+
 	const isFocused =
 		treeContext.collapsedState.currentlyFocussedPostId === post.id
 	const isDeleted = postState.isDeleted
+	const hideChildren =
+		treeContext.collapsedState.hideChildren.get(post.id) ?? false
 
 	const focusButtonColor = isFocused ? 'bg-rose-800/100 text-white' : ''
 
@@ -116,6 +128,12 @@ export function PostActionBar({
 						onClick={() => setShowReplyForm(false)}
 					>
 						✕
+					</button>
+				)}
+				{hideChildren && (
+					<button className="mr-2" onClick={showChildren}>
+						({replyTree.replies.size}{' '}
+						{replyTree.replies.size == 1 ? 'comment' : 'comments'})
 					</button>
 				)}
 			</div>

@@ -30,54 +30,51 @@ export function PostDetails({
 		`post ${post.id} not found in commentTreeState`,
 	)
 
-	const hidePost = treeContext.collapsedState.hidePost.get(post.id) ?? false
-
 	const navigate = useNavigate()
 
 	const isDeleted = postState.isDeleted
 
-	const postDetailsRef = useRef<HTMLDivElement>(null)
+	const postDetailsRef = useRef<HTMLDivElement>(null) // used for scrolling to this post
 
 	return (
-		!hidePost && (
-			<div
-				id={`post-${post.id}`}
-				className={`flex w-full ${className ?? ''}`}
-				ref={postDetailsRef}
-			>
-				<div style={{ display: loggedIn ? 'block' : 'none' }}>
-					<VoteButtons
-						postId={post.id}
-						replyTree={replyTree}
-						treeContext={treeContext}
-					/>
-				</div>
-				<div className={'ml-2 flex w-full min-w-0 flex-col'}>
-					<PostInfoBar post={post} postState={postState} />
-					{!isDeleted ? (
-						<PostContent
-							content={post.content}
-							deactivateLinks={false}
-							linkTo={`/post/${post.id}`}
-						/>
-					) : (
-						<div
-							style={{ cursor: 'pointer' }}
-							className={'italic text-gray-400'}
-							onClick={() => `/post/${post.id}` && navigate(`/post/${post.id}`)}
-						>
-							This post was deleted.
-						</div>
-					)}
-					<PostActionBar
-						key={`${post.id}-actionbar`}
-						post={post}
-						pathFromTargetPost={pathFromTargetPost}
-						postDetailsRef={postDetailsRef}
-						treeContext={treeContext}
-					/>
-				</div>
+		<div
+			id={`post-${post.id}`}
+			className={`flex w-full ${className ?? ''}`}
+			ref={postDetailsRef}
+		>
+			<div style={{ display: loggedIn ? 'block' : 'none' }}>
+				<VoteButtons
+					postId={post.id}
+					replyTree={replyTree}
+					treeContext={treeContext}
+				/>
 			</div>
-		)
+			<div className={'ml-2 flex w-full min-w-0 flex-col'}>
+				<PostInfoBar post={post} postState={postState} />
+				{!isDeleted ? (
+					<PostContent
+						content={post.content}
+						deactivateLinks={false}
+						linkTo={`/post/${post.id}`}
+					/>
+				) : (
+					<div
+						style={{ cursor: 'pointer' }}
+						className={'italic text-gray-400'}
+						onClick={() => `/post/${post.id}` && navigate(`/post/${post.id}`)}
+					>
+						This post was deleted.
+					</div>
+				)}
+				<PostActionBar
+					key={`${post.id}-actionbar`}
+					post={post}
+					replyTree={replyTree}
+					pathFromTargetPost={pathFromTargetPost}
+					postDetailsRef={postDetailsRef}
+					treeContext={treeContext}
+				/>
+			</div>
+		</div>
 	)
 }

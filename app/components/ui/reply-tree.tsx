@@ -13,33 +13,34 @@ export function PostWithReplies({
 	treeContext: TreeContext
 	className?: string
 }) {
-	// TODO: new replies are not collapsed by focus button?
 	const postId = replyTree.post.id
 
 	const hidePost = treeContext.collapsedState.hidePost.get(postId) ?? false
 	const hideChildren =
-		(treeContext.collapsedState.hideChildren.get(postId) ?? false) || hidePost
+		treeContext.collapsedState.hideChildren.get(postId) ?? false
 
 	return (
-		<>
-			<PostDetails
-				key={`${postId}-postdetails`}
-				post={replyTree.post}
-				className={(hidePost ? '' : 'mb-3 ') + (className ?? '')}
-				replyTree={replyTree}
-				pathFromTargetPost={pathFromTargetPost}
-				treeContext={treeContext}
-			/>
-			{!hideChildren && (
-				<div key={`${postId}-subtree`} className={'ml-2 pl-3'}>
-					<TreeReplies
-						replyTree={replyTree}
-						pathFromTargetPost={pathFromTargetPost}
-						treeContext={treeContext}
-					/>
-				</div>
-			)}
-		</>
+		!hidePost && (
+			<>
+				<PostDetails
+					key={`${postId}-postdetails`}
+					post={replyTree.post}
+					className={'mb-3 ' + (className ?? '')}
+					replyTree={replyTree}
+					pathFromTargetPost={pathFromTargetPost}
+					treeContext={treeContext}
+				/>
+				{!hideChildren && (
+					<div key={`${postId}-subtree`} className={'ml-2 pl-3'}>
+						<TreeReplies
+							replyTree={replyTree}
+							pathFromTargetPost={pathFromTargetPost}
+							treeContext={treeContext}
+						/>
+					</div>
+				)}
+			</>
+		)
 	)
 }
 
