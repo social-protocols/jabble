@@ -130,7 +130,7 @@ export function PostActionBar({
 
 	return (
 		<>
-			<div className="flex w-full items-start gap-2 text-2xl opacity-50 sm:text-base">
+			<div className="flex w-full items-start gap-2 text-xl opacity-50 sm:text-base">
 				{hasChildren &&
 					(childrenHidden ? (
 						<button title="Expand this comment" onClick={toggleHideChildren}>
