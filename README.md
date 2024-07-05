@@ -8,24 +8,109 @@ Read how Jabble makes conversations better below. And signup here to [get notifi
 
 Like many online social platforms, in Jabble users post things and other users can reply. Here's an example:
 
-
-![screenshot of a post with a reply](public/img/post-with-reply.png)
+SCREENSHOT
 <br/>*a post with a reply*
 
 Each post or reply then gets a score, shown as a percentage, based on how many upvotes and downvotes it receives.
 
-
-![screenshot of reply with votes](public/img/post-with-vote.png)
+SCREENSHOT
 <br/>*a reply with votes*
 
 
-**However, not all votes count equally!** Two factors affect the strength of your votes:
+**However, not all votes count equally!**. Your votes on a post get more weight if you **read and acknowledge convincing replies** to that post made by other users.
 
-1) You must earn **reputation** before your votes have any weight.
 
-2) Your votes on a post get more weight if you **read and acknowledge certain replies** to that post made by other users.
+## Convincingness
+
+Jabble scores replies based on *how convincing they appear to be*. A reply is given a high convincingness score if users who have considered that reply are more or less likely to upvote the post being replied to. For example, if a post containing a video has a reply claiming that the video is fake, users who see that reply may be less likely to upvote the video.
+
+SCREENSHOT
+<br/>*a reply with a convincingness score*
+
+Jabble will place the replies with the highest convincingness score at the top, in order to make sure as many people as possible are exposed to the most convincing replies, and have a chance to respond to them.
+
+## The Big Idea: Informed Content
+
+The idea is simple. If one user shares information that might influence other people's votes, then people should have a chance to consider that information when deciding how to vote.
+
+Disinformation, misinformation, clickbait etc. are all fundamentally the same thing: **misinformed content**: information that people spread, but that they wouldn't if they knew more. But the antidote to misinformation is information. 
+
+Jabble combats misinformation, and promotes more informed content, by identifying and promoting:
+
+1. convincing information
+2. posts that people still upvote *after* they have seen the most convincing information
+
+## Responding to Convincing Replies
+
+Of course, a convincing reply may itself be misinformed. So another reason the algorithm puts the most convincing replies at the top is to make sure people have a chance to respond to them.
+
+You can respond to a convincing reply in two ways:
+
+1. By voting on it
+2. By replying to it
+
+### Responding by Voting
+
+Simply voting on a convincing reply gives **more weight** to your vote on the post being replied to. This is because Jabble considers the votes of people who have voted on convincing replies to be more **informed**.
+
+For example, suppose you upvoted the post with the video, but have not seen the reply claiming it is fake. You are in one sense less informed than the users who saw the reply. Voting on the reply signals to Jabble that you have considered it and are thus fully-informed, and so your vote will have more influence on the final score of the video.
+
+Now, suppose you are not convinced by the reply. By downvoting the reply, while not changing your vote on the video, you signal to Jabble that you are informed but unconvinced. Jabble will give more weight to your upvote on the video, resulting in an *increase* it its score (as well as a *decrease* in the score for the reply). 
+
+This means that you can have more influence on the scores of posts, and thus on what posts get more or less attention (and possibly go viral), by making sure to vote on comments with high convincingness scores. 
+
+This will be immediately visible in the UI: when you vote on a reply with a high convincingness score, you will see an immediate change in the score of the post being replied to.
+
+SCREENSHOT
+<br/>*voting on this comment gives more weight to vote on video*
+
+### Responding by Replying
+
+You can also respond to a convincing reply by replying to it. Replying to a reply also signals to Jabble that you have considered it, and thus gives your vote more weight. 
+
+But a reply also gives you a chance to make counter-arguments that might convince people the other way. For example, if you reply with a reason to believe that the video is in fact authentic, and people who consider your counter-argument are more likely to upvote the video (compared to people who only considered the reply claiming the video was fake), then your counter-argument will have a high convincingness score!
+
+SCREENSHOT
+<br/>*a reply to a convincing reply*
+
+It might seem like this process could go on forever, but it probably won't. As we hope to demonstrate with early Jabble users, we expect most discussions will converge after the strongest arguments have been made on each side of an issue and nobody can find anything to say that further changes minds. 
+
+## Deliberation and Informed Opinion
+
+The result, we hope, is a conversation platform that drives constructive **deliberative processes** for discovering **informed opinion**. By focusing attention on convincing replies, and the replies to those replies, the process drives a constructive discussion that surfaces the best arguments on both sides of any controversy. And by scoring posts based on the **informed votes** of users who have considered the most informed argument threads, the algorithm will promote **informed content**, instead of content that gets a lot of upvotes based on initial impressions and knee-jerk reactions.
+
+## Conclusion
+
+The algorithm we've described here is just one part of our vision for improving ranking algorithm for social platforms. It doesn't yet solve certain big problems, such as people voting in bad faith. Or worse: large-scale, coordinated manipulation efforts. 
+
+We hope to address the problem of bad-faith actors using a reputation system, combined with a game-theoretical mechanism called the Bayesian Truth Serum, both of which we discuss in our article on [Deliberative Consensus Protocols].
+
+
+
+
+
+
+
+<!--
+
+
+
+
+## A Change to Respond
+
+Representativeness
+
+
+
+
+
 
 # 1. Information and Fairness
+
+
+
+
+
 
 When certain conditions are met, a reply to a post will be designated a **critical reply**. The critical reply will be indicated by a green dot.
 
@@ -103,8 +188,7 @@ But don't try to harvest karma just by upvoting everything. You also have a *rep
 
 On the other hand, you may gain reputation with the same content in a different community! So when upvoting or downvoting, consider the community. By upvoting, you are *recommending* content to that community, and staking your reputation on the belief not only that it will be popular in that community, but that it will *stand up to scrutiny*: that it is not fake, or misleading, and thus will still have a high score among users who saw the the critical comment thread.
 
-<!--
-TODO: but doesn't the algorithm encourage people to upvoet een if they are in the minority.-->
+----
 
 If you are not sure, you can also just upvote content you like, without specifying a community, and Jabble will find the community for you! This is great for people with a variety of interests. You can upvote content related to your profession, as well as cute pet pics, without worrying about wasting the time and attention of people who aren't interested in one or the other.
 
@@ -130,7 +214,6 @@ TODO: describe prediction market
 
 
 
-<!--
 
 
 
