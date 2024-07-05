@@ -1,6 +1,6 @@
 import { Markdown } from '#app/components/markdown.tsx'
 
-export default function InfoText({ className }: { className?: string }) {
+export function InfoText({ className }: { className?: string }) {
 	const infoText = `
 ### Hey, you are part of our early experiments! 🚀
 

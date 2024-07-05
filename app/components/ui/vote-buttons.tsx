@@ -98,7 +98,7 @@ export function VoteButtons({
 							className={responsiveSize}
 							onClick={toggleHideChildren}
 						>
-							<Icon name="plus-circled" />
+							<Icon name="chevron-right" />
 						</button>
 					) : (
 						<button
@@ -106,7 +106,7 @@ export function VoteButtons({
 							className={responsiveSize}
 							onClick={toggleHideChildren}
 						>
-							<Icon name="minus-circled" />
+							<Icon name="chevron-down" />
 						</button>
 					)}
 				</div>

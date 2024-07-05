@@ -4,21 +4,14 @@ import {
 	json,
 	type MetaFunction,
 	redirect,
-	type LoaderFunctionArgs,
 	type ActionFunctionArgs,
 } from '@remix-run/node'
-import {
-	Form,
-	useActionData,
-	useLoaderData,
-	useSearchParams,
-} from '@remix-run/react'
+import { Form, useActionData, useSearchParams } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
 import { HoneypotInputs } from 'remix-utils/honeypot/react'
 import { safeRedirect } from 'remix-utils/safe-redirect'
 import { z } from 'zod'
 import { CheckboxField, ErrorList, Field } from '#app/components/forms.tsx'
-import { Spacer } from '#app/components/spacer.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { db } from '#app/db.ts'
 import { SITE_NAME } from '#app/site.ts'
@@ -39,10 +32,6 @@ const onboardingEmailSessionKey = 'onboardingEmail'
 const SignupFormSchema = z
 	.object({
 		username: UsernameSchema,
-		agreeToTermsOfServiceAndPrivacyPolicy: z.boolean({
-			required_error:
-				'You must agree to the terms of service and privacy policy',
-		}),
 		remember: z.boolean().optional(),
 		redirectTo: z.string().optional(),
 	})
@@ -58,10 +47,6 @@ async function requireOnboardingEmail(request: Request) {
 		throw redirect('/signup')
 	}
 	return email
-}
-export async function loader({ request }: LoaderFunctionArgs) {
-	const email = await requireOnboardingEmail(request)
-	return json({ email })
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -139,7 +124,6 @@ export const meta: MetaFunction = () => {
 }
 
 export default function SignupRoute() {
-	const data = useLoaderData<typeof loader>()
 	const actionData = useActionData<typeof action>()
 	const isPending = useIsPending()
 	const [searchParams] = useSearchParams()
@@ -157,18 +141,17 @@ export default function SignupRoute() {
 	})
 
 	return (
-		<div className="container flex min-h-full flex-col justify-center pb-32 pt-20">
+		<div className="container flex min-h-full flex-col justify-center pb-32 md:pt-20">
 			<div className="mx-auto w-full max-w-lg">
-				<div className="flex flex-col gap-3 text-center">
-					<h1 className="text-h1">Welcome aboard {data.email}!</h1>
-					<p className="text-body-md text-muted-foreground">
-						Please enter your details.
+				<div className="mb-[16px] flex flex-col text-center md:mb-[64px]">
+					<h1 className="mb-6 text-2xl md:text-h1">Your Account</h1>
+					<p className="text-body-sm text-muted-foreground">
+						Please enter your username and password.
 					</p>
 				</div>
-				<Spacer size="xs" />
 				<Form
 					method="POST"
-					className="mx-auto min-w-[368px] max-w-sm"
+					className="mx-auto min-w-[268px] max-w-sm"
 					{...form.props}
 				>
 					<AuthenticityTokenInput />
@@ -205,18 +188,6 @@ export default function SignupRoute() {
 
 					<CheckboxField
 						labelProps={{
-							htmlFor: fields.agreeToTermsOfServiceAndPrivacyPolicy.id,
-							children:
-								'Do you agree to our Terms of Service and Privacy Policy?',
-						}}
-						buttonProps={conform.input(
-							fields.agreeToTermsOfServiceAndPrivacyPolicy,
-							{ type: 'checkbox' },
-						)}
-						errors={fields.agreeToTermsOfServiceAndPrivacyPolicy.errors}
-					/>
-					<CheckboxField
-						labelProps={{
 							htmlFor: fields.remember.id,
 							children: 'Remember me',
 						}}
@@ -234,7 +205,7 @@ export default function SignupRoute() {
 							type="submit"
 							disabled={isPending}
 						>
-							Create an account
+							Start debating!
 						</StatusButton>
 					</div>
 				</Form>
