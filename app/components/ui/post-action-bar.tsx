@@ -130,7 +130,7 @@ export function PostActionBar({
 
 	return (
 		<>
-			<div className="flex w-full items-start gap-2 text-xl opacity-50 sm:text-base">
+			<div className="flex w-full flex-wrap items-start gap-3 text-xl opacity-50 sm:text-base">
 				{hasChildren &&
 					(childrenHidden ? (
 						<button title="Expand this comment" onClick={toggleHideChildren}>
@@ -168,6 +168,7 @@ export function PostActionBar({
 					<button
 						title={'Downvote'}
 						onClick={async () => await submitVote(Direction.Down)}
+						className="mr-[0.3em]"
 					>
 						<Icon
 							name={
@@ -252,20 +253,22 @@ function AdminFeatureBar({
 	return (
 		<>
 			{!isDeleted ? (
-				<button className="mr-2" onClick={() => handleSetDeletedAt(Date.now())}>
-					<Icon name="trash" className="mt-[-4px]" /> Delete
+				<button onClick={() => handleSetDeletedAt(Date.now())}>
+					<Icon name="trash" className="mt-[-0.1em]" />
+					Delete
 				</button>
 			) : (
-				<button className="mr-2" onClick={() => handleSetDeletedAt(null)}>
-					<Icon name="counter-clockwise-clock" className="mt-[-4px]" /> Restore
+				<button onClick={() => handleSetDeletedAt(null)}>
+					<Icon name="counter-clockwise-clock" className="mt-[-0.1em]" />{' '}
+					Restore
 				</button>
 			)}
 			<button
-				className="mr-2"
 				title="Promote the root post of this discussion to discussion of the day"
 				onClick={handleSetDiscussionOfTheDay}
+				className="shrink-0"
 			>
-				<Icon name="double-arrow-up" className="mt-[-4px]" /> Promote
+				<Icon name="double-arrow-up" className="mt-[-0.1em]" /> Promote
 			</button>
 		</>
 	)
