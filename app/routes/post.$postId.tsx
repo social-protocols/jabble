@@ -201,6 +201,7 @@ function collapseParentSiblingsAndIndirectChildren(
 		// postId must be among currentSubTree.replies
 		currentSubTree.replies.forEach(reply => {
 			if (reply.post.id == postId) {
+				// transitive parent
 				newCollapseState = {
 					...newCollapseState,
 					hidePost: newCollapseState.hidePost.set(reply.post.id, false),
@@ -208,6 +209,7 @@ function collapseParentSiblingsAndIndirectChildren(
 				}
 				currentSubTree = reply
 			} else {
+				// sibling of transitive parent
 				newCollapseState = {
 					...newCollapseState,
 					hidePost: newCollapseState.hidePost.set(reply.post.id, true),
