@@ -1,10 +1,16 @@
-# Jabble: Better Online Conversations
+<h1 align="center" style="border-bottom: none">
+    <div>
+        <a href="https://sn.fly.dev/">
+            Jabble
+        </a>
+    </div>
+    Better Online Conversations
+</h1>
 
-Jabble is a new kind of conversation platform, designed to make conversations on the Internet more intelligent and less polarized.
+> [!NOTE]
+> Jabble is a new kind of conversation platform, designed to make conversations on the Internet more intelligent and less polarized. [Signup here](https://social-protocols.org/social-network/) to get notified when we launch.
 
-Read how Jabble makes conversations better below. And signup here to [get notified when we Launch](https://social-protocols.org/social-network/)
-
-# How Jabble Makes Conversations Better
+## How it Works
 
 Like many online social platforms, in Jabble users post things and other users can reply. Here's an example:
 
@@ -17,23 +23,23 @@ SCREENSHOT
 <br/>*a reply with votes*
 
 
-**However, not all votes count equally!**. Your votes on a post get more weight if you **read and acknowledge convincing replies** to that post made by other users.
+**However, not all votes count equally!** Your votes on a post get more weight if you **read and acknowledge convincing replies** to that post made by other users.
 
 
 ## Convincingness
 
-Jabble scores replies based on *how convincing they appear to be*. A reply is given a high convincingness score if users who have considered that reply are more or less likely to upvote the post being replied to. For example, if a post containing a video has a reply claiming that the video is fake, users who see that reply may be less likely to upvote the video.
+Jabble scores replies based on *how convincing they appear to be*. A reply is given a high convincingness score if users who have considered that reply are more likely to upvote the post being replied to (and vice versa). For example, if a post containing a video has a reply claiming that the video is fake, users who see that reply may be less likely to upvote the video.
 
 SCREENSHOT
 <br/>*a reply with a convincingness score*
 
-Jabble will place the replies with the highest convincingness score at the top, in order to make sure as many people as possible are exposed to the most convincing replies, and have a chance to respond to them.
+Jabble will place the replies with the highest convincingness score at the top, in order to make sure as many people as possible are exposed to the most convincing replies and have a chance to respond to them.
 
 ## The Big Idea: Informed Content
 
 The idea is simple. If one user shares information that might influence other people's votes, then people should have a chance to consider that information when deciding how to vote.
 
-Disinformation, misinformation, clickbait etc. are all fundamentally the same thing: **misinformed content**: information that people spread, but that they wouldn't if they knew more. But the antidote to misinformation is information. 
+Disinformation, misinformation, clickbait etc. are all fundamentally the same thing: **misinformed content**, information that people spread, but that they wouldn't if they knew more. But the antidote to misinformation is information. 
 
 Jabble combats misinformation, and promotes more informed content, by identifying and promoting:
 
@@ -83,7 +89,7 @@ The result, we hope, is a conversation platform that drives constructive **delib
 
 The algorithm we've described here is just one part of our vision for improving ranking algorithm for social platforms. It doesn't yet solve certain big problems, such as people voting in bad faith. Or worse: large-scale, coordinated manipulation efforts. 
 
-We hope to address the problem of bad-faith actors using a reputation system, combined with a game-theoretical mechanism called the Bayesian Truth Serum, both of which we discuss in our article on [Deliberative Consensus Protocols].
+We hope to address the problem of bad-faith actors using a reputation system, combined with a game-theoretical mechanism called the Bayesian Truth Serum, both of which we discuss in our article on [Deliberative Consensus Protocols](https://social-protocols.org/deliberative-consensus-protocols/).
 
 
 
