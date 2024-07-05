@@ -1,7 +1,7 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData, useParams } from '@remix-run/react'
 import * as Immutable from 'immutable'
-import { useState } from 'react'
+import { type Dispatch, type SetStateAction, useState } from 'react'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { DiscussionOfTheDayHeader } from '#app/components/ui/discussion-of-the-day-header.tsx'
@@ -19,8 +19,8 @@ import {
 	getReplyTree,
 	getCommentTreeState,
 	toImmutableReplyTree,
+	addReplyToReplyTree,
 } from '#app/repositories/ranking.ts'
-import { defaultVoteState } from '#app/repositories/vote.ts'
 import {
 	Direction,
 	type ReplyTree,
@@ -30,12 +30,12 @@ import {
 	type CollapsedState,
 } from '#app/types/api-types.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
+import { invariant } from '#app/utils/misc.tsx'
 
 const postIdSchema = z.coerce.number()
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	const userId: string | null = await getUserId(request)
-	const loggedIn = userId !== null
 	const postId = postIdSchema.parse(params.postId)
 
 	const {
@@ -70,7 +70,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		mutableReplyTree,
 		transitiveParents,
 		commentTreeState,
-		loggedIn,
 		isDiscussionOfTheDay,
 	})
 }
@@ -80,7 +79,6 @@ export default function PostPage() {
 		mutableReplyTree,
 		transitiveParents,
 		commentTreeState,
-		loggedIn,
 		isDiscussionOfTheDay,
 	} = useLoaderData<typeof loader>()
 
@@ -96,73 +94,94 @@ export default function PostPage() {
 				mutableReplyTree={mutableReplyTree}
 				transitiveParents={transitiveParents}
 				initialCommentTreeState={commentTreeState}
-				loggedIn={loggedIn}
 			/>
 		</>
 	)
+}
+
+export type TreeContext = {
+	onReplySubmit: (reply: ImmutableReplyTree) => void
+	targetHasVote: boolean
+	targetPostId: number
+	commentTreeState: CommentTreeState
+	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
+	collapsedState: CollapsedState
+	setCollapsedState: Dispatch<SetStateAction<CollapsedState>>
+	onCollapseParentSiblings: (
+		pathFromFocussedPost: Immutable.List<number>,
+	) => void
 }
 
 export function DiscussionView({
 	mutableReplyTree,
 	transitiveParents,
 	initialCommentTreeState,
-	loggedIn,
 }: {
 	mutableReplyTree: ReplyTree
 	transitiveParents: Post[]
 	initialCommentTreeState: CommentTreeState
-	loggedIn: boolean
 }) {
-	const replyTree = toImmutableReplyTree(mutableReplyTree)
+	const initialReplyTree = toImmutableReplyTree(mutableReplyTree)
 
+	const [replyTreeState, setReplyTreeState] = useState(initialReplyTree)
 	const [commentTreeState, setCommentTreeState] = useState<CommentTreeState>(
 		initialCommentTreeState,
 	)
-
-	const postId = replyTree.post.id
-
-	const currentVoteState =
-		commentTreeState.posts[postId]?.voteState || defaultVoteState(postId)
-
 	const [isCollapsedState, setIsCollapsedState] = useState<CollapsedState>({
 		currentlyFocussedPostId: null,
 		hidePost: Immutable.Map<number, boolean>(),
 		hideChildren: Immutable.Map<number, boolean>(),
 	})
 
+	const postId = replyTreeState.post.id
+	const postState = commentTreeState.posts[postId]
+	invariant(
+		postState !== undefined,
+		`post ${postId} not found in commentTreeState`,
+	)
+
+	function onReplySubmit(reply: ImmutableReplyTree) {
+		const newReplyTreeState = addReplyToReplyTree(replyTreeState, reply)
+		setReplyTreeState(newReplyTreeState)
+	}
+
+	const treeContext: TreeContext = {
+		onReplySubmit,
+		targetHasVote: postState.voteState.vote !== Direction.Neutral,
+		targetPostId: postId,
+		commentTreeState: commentTreeState,
+		setCommentTreeState: setCommentTreeState,
+		collapsedState: isCollapsedState,
+		setCollapsedState: setIsCollapsedState,
+		onCollapseParentSiblings: pathFromFocussedPost => {
+			const newCollapseState = collapseParentSiblingsAndIndirectChildren(
+				pathFromFocussedPost,
+				isCollapsedState,
+				replyTreeState,
+			)
+			if (
+				isCollapsedState.currentlyFocussedPostId !==
+				newCollapseState.currentlyFocussedPostId
+			) {
+				setIsCollapsedState(newCollapseState)
+			} else {
+				setIsCollapsedState({
+					currentlyFocussedPostId: null,
+					hidePost: Immutable.Map(),
+					hideChildren: isCollapsedState.hideChildren,
+				})
+			}
+		},
+	}
+
 	return (
 		<>
 			<ParentThread transitiveParents={transitiveParents} />
 			<PostWithReplies
 				className={'mb-2 rounded-sm bg-post p-2'}
-				initialReplyTree={replyTree}
-				targetHasVote={currentVoteState.vote !== Direction.Neutral}
-				loggedIn={loggedIn}
-				focussedPostId={postId}
-				pathFromFocussedPost={Immutable.List([postId])}
-				commentTreeState={commentTreeState}
-				setCommentTreeState={setCommentTreeState}
-				isCollapsedState={isCollapsedState}
-				setIsCollapsedState={setIsCollapsedState}
-				onCollapseParentSiblings={pathFromFocussedPost => {
-					const newCollapseState = collapseParentSiblingsAndIndirectChildren(
-						pathFromFocussedPost,
-						isCollapsedState,
-						replyTree,
-					)
-					if (
-						isCollapsedState.currentlyFocussedPostId !==
-						newCollapseState.currentlyFocussedPostId
-					) {
-						setIsCollapsedState(newCollapseState)
-					} else {
-						setIsCollapsedState({
-							currentlyFocussedPostId: null,
-							hidePost: Immutable.Map(),
-							hideChildren: isCollapsedState.hideChildren,
-						})
-					}
-				}}
+				replyTree={replyTreeState}
+				pathFromTargetPost={Immutable.List([postId])}
+				treeContext={treeContext}
 			/>
 			<div className="h-[300px]" />
 		</>

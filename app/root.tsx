@@ -45,6 +45,7 @@ import {
 import { href as iconsHref, Icon } from './components/ui/icon.tsx'
 import { SITE_NAME } from './site.ts'
 import tailwindStyleSheetUrl from './styles/tailwind.css'
+import { type User } from './types/api-types.ts'
 import { getUserId, logout } from './utils/auth.server.ts'
 import { ClientHintCheck, getHints, useHints } from './utils/client-hints.tsx'
 import { csrf } from './utils/csrf.server.ts'
@@ -100,7 +101,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		desc: 'getUserId in root',
 	})
 
-	const user = userId
+	const user: User | null = userId
 		? await time(
 				() =>
 					db

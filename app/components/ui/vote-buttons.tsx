@@ -1,47 +1,35 @@
 import { Link } from '@remix-run/react'
-import { type Dispatch, type SetStateAction } from 'react'
-import {
-	type CollapsedState,
-	Direction,
-	type CommentTreeState,
-} from '#app/types/api-types.ts'
+import { type TreeContext } from '#app/routes/post.$postId.tsx'
+import { Direction, type CommentTreeState } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { Icon } from './icon.tsx'
 
 export function VoteButtons({
 	postId,
-	focussedPostId,
-	commentTreeState,
-	setCommentTreeState,
-	showInformedProbability,
-	isCollapsedState,
-	setIsCollapsedState,
+	treeContext,
 }: {
 	postId: number
-	focussedPostId: number
-	commentTreeState: CommentTreeState
-	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
-	showInformedProbability: boolean
-	isCollapsedState: CollapsedState
-	setIsCollapsedState: Dispatch<SetStateAction<CollapsedState>>
+	treeContext: TreeContext
 }) {
-	const postState = commentTreeState.posts[postId]
+	const postState = treeContext.commentTreeState.posts[postId]
 	invariant(
 		postState !== undefined,
 		`post ${postId} not found in commentTreeState`,
 	)
 
+	const showInformedProbability = postId == treeContext.targetPostId
+
 	const upClass = postState.voteState.vote == Direction.Up ? '' : 'opacity-30'
 	const downClass =
 		postState.voteState.vote == Direction.Down ? '' : 'opacity-30'
 
-	const pCurrent: number = commentTreeState.posts[postId]?.p || NaN
+	const pCurrent: number = treeContext.commentTreeState.posts[postId]?.p || NaN
 	const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
 
 	const submitVote = async function (direction: Direction) {
 		const payLoad = {
 			postId: postId,
-			focussedPostId: focussedPostId,
+			focussedPostId: treeContext.targetPostId,
 			direction: direction,
 			currentVoteState: postState.voteState.vote,
 		}
@@ -53,23 +41,27 @@ export function VoteButtons({
 			},
 		})
 		const newCommentTreeState = (await response.json()) as CommentTreeState
-		setCommentTreeState(newCommentTreeState)
+		treeContext.setCommentTreeState(newCommentTreeState)
 	}
 
 	const responsiveSize = 'text-[30px] sm:text-lg'
-	const childrenHidden = isCollapsedState.hideChildren.get(postId) ?? false
+	const childrenHidden =
+		treeContext.collapsedState.hideChildren.get(postId) ?? false
 
 	function toggleHideChildren() {
-		setIsCollapsedState({
-			...isCollapsedState,
-			hideChildren: isCollapsedState.hideChildren.set(postId, !childrenHidden),
+		treeContext.setCollapsedState({
+			...treeContext.collapsedState,
+			hideChildren: treeContext.collapsedState.hideChildren.set(
+				postId,
+				!childrenHidden,
+			),
 		})
 	}
 
 	return (
 		<>
 			<div
-				key={`vote-buttons-${focussedPostId}-${postId}`}
+				key={`vote-buttons-${treeContext.targetPostId}-${postId}`}
 				className={'flex h-full w-[32px] flex-col items-center'}
 			>
 				<button

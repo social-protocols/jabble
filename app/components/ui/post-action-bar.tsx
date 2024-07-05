@@ -1,50 +1,43 @@
 import { type Dispatch, type SetStateAction, useState } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { toImmutableReplyTree } from '#app/repositories/ranking.ts'
+import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import {
-	type ImmutableReplyTree,
 	type Post,
 	type ReplyTree,
 	type CommentTreeState,
-	type CollapsedState,
 } from '#app/types/api-types.ts'
+import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
 import { Icon } from './icon.tsx'
 
 export function PostActionBar({
 	post,
-	focussedPostId,
-	loggedIn,
-	isDeleted,
-	setCommentTreeState,
-	onReplySubmit,
-	pathFromFocussedPost,
-	isCollapsedState,
-	onCollapseParentSiblings,
+	pathFromTargetPost,
 	postDetailsRef,
+	treeContext,
 }: {
 	post: Post
-	focussedPostId: number
-	loggedIn: boolean
-	isDeleted: boolean
-	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
-	onReplySubmit: (reply: ImmutableReplyTree) => void
-	pathFromFocussedPost: Immutable.List<number>
-	isCollapsedState: CollapsedState
-	onCollapseParentSiblings: (
-		pathFromFocussedPost: Immutable.List<number>,
-	) => void
+	pathFromTargetPost: Immutable.List<number>
 	postDetailsRef: React.RefObject<HTMLDivElement>
+	treeContext: TreeContext
 }) {
 	const user = useOptionalUser()
+	const loggedIn: boolean = user !== null
 	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
+
+	const postState = treeContext.commentTreeState.posts[post.id]
+	invariant(
+		postState !== undefined,
+		`post ${post.id} not found in commentTreeState`,
+	)
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
 	async function handleSetDeletedAt(deletedAt: number | null) {
 		const payload = {
 			postId: post.id,
-			focussedPostId: focussedPostId,
+			focussedPostId: treeContext.targetPostId,
 			deletedAt: deletedAt,
 		}
 		const response = await fetch('/setDeletedAt', {
@@ -55,7 +48,7 @@ export function PostActionBar({
 			},
 		})
 		const newCommentTreeState = (await response.json()) as CommentTreeState
-		setCommentTreeState(newCommentTreeState)
+		treeContext.setCommentTreeState(newCommentTreeState)
 	}
 
 	async function handleSetDiscussionOfTheDay() {
@@ -77,7 +70,9 @@ export function PostActionBar({
 		}
 	}
 
-	const isFocused = isCollapsedState.currentlyFocussedPostId === post.id
+	const isFocused =
+		treeContext.collapsedState.currentlyFocussedPostId === post.id
+	const isDeleted = postState.isDeleted
 
 	const focusButtonColor = isFocused ? 'bg-rose-800/100 text-white' : ''
 
@@ -90,7 +85,7 @@ export function PostActionBar({
 					}
 					className={`transition-color mr-2 rounded px-1 duration-1000 ${focusButtonColor}`}
 					onClick={() => {
-						onCollapseParentSiblings(pathFromFocussedPost)
+						treeContext.onCollapseParentSiblings(pathFromTargetPost)
 						scrollIntoView()
 					}}
 				>
@@ -129,9 +124,7 @@ export function PostActionBar({
 				<ReplyForm
 					post={post}
 					setShowReplyForm={setShowReplyForm}
-					focussedPostId={focussedPostId}
-					setCommentTreeState={setCommentTreeState}
-					onReplySubmit={onReplySubmit}
+					treeContext={treeContext}
 				/>
 			)}
 		</>
@@ -172,15 +165,11 @@ function AdminFeatureBar({
 function ReplyForm({
 	post,
 	setShowReplyForm,
-	focussedPostId,
-	setCommentTreeState,
-	onReplySubmit,
+	treeContext,
 }: {
 	post: Post
 	setShowReplyForm: Dispatch<SetStateAction<boolean>>
-	focussedPostId: number
-	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
-	onReplySubmit: (reply: ImmutableReplyTree) => void
+	treeContext: TreeContext
 }) {
 	const [contentState, setContentState] = useState<string>('')
 
@@ -188,7 +177,7 @@ function ReplyForm({
 		setShowReplyForm(false)
 		const payload = {
 			parentId: post.id,
-			focussedPostId: focussedPostId,
+			focussedPostId: treeContext.targetPostId,
 			content: contentState,
 			isPrivate: post.isPrivate,
 		}
@@ -203,9 +192,10 @@ function ReplyForm({
 			commentTreeState: CommentTreeState
 			newReplyTree: ReplyTree
 		}
-		setCommentTreeState && setCommentTreeState(responseDecoded.commentTreeState)
-		onReplySubmit &&
-			onReplySubmit(toImmutableReplyTree(responseDecoded.newReplyTree))
+		treeContext.setCommentTreeState(responseDecoded.commentTreeState) // influences scores because reply receives a default vote
+		treeContext.onReplySubmit(
+			toImmutableReplyTree(responseDecoded.newReplyTree),
+		)
 	}
 
 	return (
