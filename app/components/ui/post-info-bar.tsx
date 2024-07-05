@@ -15,15 +15,10 @@ export function PostInfoBar({
 	return (
 		<>
 			<div className="flex w-full items-center space-x-2 pb-1 text-xs sm:items-baseline">
-				{postState.effectOnTargetPost !== null ? (
-					<span
-						title="How much this post changed people's view on the focussed post."
-						className={`${scaleColorConvincing(effectSize)}`}
-					>
-						convincing: {effectSize.toFixed(2)}
+				{postState.effectOnTargetPost !== null && (
+					<span title="Convincingness Score. How much this post changed people's opinion on the target post.">
+						{(effectSize * 100).toFixed(0)}% {convincingnessScale(effectSize)}
 					</span>
-				) : (
-					''
 				)}
 				<span className="opacity-50">{ageString}</span>
 				<span className="opacity-50">{postState.voteCount} votes</span>
@@ -32,23 +27,18 @@ export function PostInfoBar({
 	)
 }
 
-function scaleColorConvincing(effectSize: number): string {
-	// Convert a numeric effect size (in bits) to a color class.
-	// So far, the mapping is arbitrary, we can replace this with a more
-	// sophisticated function once we know what values are common and once we get
-	// a feeling for what values are large or small.
-	const baseClass = 'border-solid border-2 px-1 rounded'
+function convincingnessScale(effectSize: number): string {
 	if (effectSize < 0.1) {
-		return `${baseClass} text-blue-200 border-blue-200 dark:text-blue-900 dark:border-blue-900`
-	} else if (effectSize < 0.2) {
-		return `${baseClass} text-blue-300 border-blue-300 dark:text-blue-800 dark:border-blue-800`
+		return ''
 	} else if (effectSize < 0.3) {
-		return `${baseClass} text-blue-400 border-blue-400 dark:text-blue-700 dark:border-blue-700`
+		return '🔥'
 	} else if (effectSize < 0.5) {
-		return `${baseClass} text-blue-500 border-blue-500 dark:text-blue-600 dark:border-blue-600`
+		return '🔥🔥'
 	} else if (effectSize < 0.7) {
-		return `${baseClass} text-blue-600 border-blue-600 dark:text-blue-500 dark:border-blue-500`
+		return '🔥🔥🔥'
+	} else if (effectSize < 0.9) {
+		return '🔥🔥🔥🔥'
 	} else {
-		return `${baseClass} text-blue-700 border-blue-700 dark:text-blue-400 dark:border-blue-400`
+		return '🔥🔥🔥🔥🔥'
 	}
 }
