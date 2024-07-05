@@ -76,12 +76,15 @@ export function PostActionBar({
 			postDetailsRef.current.scrollIntoView()
 		}
 	}
-	
-	const focusButtonColor = isCollapsedState.currentlyFocussedPostId === post.id ? 'bg-rose-800/100 text-white' : ''
+
+	const focusButtonColor =
+		isCollapsedState.currentlyFocussedPostId === post.id
+			? 'bg-rose-800/100 text-white'
+			: ''
 
 	return (
 		<>
-			<div className="mt-auto flex w-full pt-1 opacity-50 text-md md:text-xs">
+			<div className="text-md mt-auto flex w-full pt-1 opacity-50 md:text-xs">
 				<button
 					title="Collapse unrelated comments"
 					className={`transition-color mr-2 rounded px-1 duration-1000 ${focusButtonColor}`}
@@ -104,13 +107,13 @@ export function PostActionBar({
 						<Icon name="chat-bubble" className="mt-[-4px]" /> Reply
 					</button>
 				)}
-				{isAdminUser &&
+				{isAdminUser && (
 					<AdminFeatureBar
 						isDeleted={isDeleted}
 						handleSetDeletedAt={handleSetDeletedAt}
 						handleSetDiscussionOfTheDay={handleSetDiscussionOfTheDay}
 					/>
-				}
+				)}
 				{showReplyForm && (
 					<button
 						className="ml-auto pr-2"
@@ -146,10 +149,7 @@ function AdminFeatureBar({
 	return (
 		<>
 			{!isDeleted ? (
-				<button
-					className="mr-2"
-					onClick={() => handleSetDeletedAt(Date.now())}
-				>
+				<button className="mr-2" onClick={() => handleSetDeletedAt(Date.now())}>
 					<Icon name="trash" className="mt-[-4px]" /> Delete
 				</button>
 			) : (
@@ -167,7 +167,6 @@ function AdminFeatureBar({
 		</>
 	)
 }
-
 
 function ReplyForm({
 	post,
