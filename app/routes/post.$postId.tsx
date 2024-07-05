@@ -4,12 +4,12 @@ import * as Immutable from 'immutable'
 import { useState } from 'react'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import InfoText from '#app/components/ui/info-text.tsx'
+import { InfoText } from '#app/components/ui/info-text.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/ui/reply-tree.tsx'
 import { db } from '#app/db.ts'
 import { updateHN } from '#app/repositories/hackernews.ts'
-import { getTransitiveParents } from '#app/repositories/post.ts'
+import { getDiscussionOfTheDay, getTransitiveParents } from '#app/repositories/post.ts'
 import {
 	getReplyTree,
 	getCommentTreeState,
@@ -25,6 +25,7 @@ import {
 	type CollapsedState,
 } from '#app/types/api-types.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
+import { DiscussionOfTheDayHeader } from '#app/components/ui/discussion-of-the-day-header.tsx'
 
 const postIdSchema = z.coerce.number()
 
@@ -37,13 +38,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		mutableReplyTree,
 		transitiveParents,
 		commentTreeState,
+		isDiscussionOfTheDay,
 	}: {
 		mutableReplyTree: ReplyTree
 		transitiveParents: Post[]
 		commentTreeState: CommentTreeState
+		isDiscussionOfTheDay: boolean
 	} = await db.transaction().execute(async trx => {
 		await updateHN(trx, postId)
 		const commentTreeState = await getCommentTreeState(trx, postId, userId)
+		const discussionOfTheDayPostId = await getDiscussionOfTheDay(trx)
 		return {
 			mutableReplyTree: await getReplyTree(
 				trx,
@@ -52,7 +56,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 				commentTreeState,
 			),
 			transitiveParents: await getTransitiveParents(trx, postId),
-			commentTreeState,
+			commentTreeState: commentTreeState,
+			isDiscussionOfTheDay: postId === discussionOfTheDayPostId,
 		}
 	})
 
@@ -61,11 +66,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		transitiveParents,
 		commentTreeState,
 		loggedIn,
+		isDiscussionOfTheDay,
 	})
 }
 
 export default function PostPage() {
-	const { mutableReplyTree, transitiveParents, commentTreeState, loggedIn } =
+	const { mutableReplyTree, transitiveParents, commentTreeState, loggedIn, isDiscussionOfTheDay } =
 		useLoaderData<typeof loader>()
 
 	const params = useParams()
@@ -74,6 +80,7 @@ export default function PostPage() {
 	return (
 		<>
 			<InfoText className="mb-8" />
+			{isDiscussionOfTheDay && <DiscussionOfTheDayHeader />}
 			<DiscussionView
 				key={params['postId']}
 				mutableReplyTree={mutableReplyTree}
