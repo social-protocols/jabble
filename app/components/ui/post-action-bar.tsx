@@ -156,7 +156,11 @@ export function PostActionBar({
 					</button>
 				)}
 				{showInformedProbability && (
-					<Link title="Informed upvote probability" to={`/stats/${post.id}`}>
+					<Link
+						title="Informed upvote probability"
+						to={`/stats/${post.id}`}
+						className="mx-[-0.5em]"
+					>
 						{pCurrentString}
 					</Link>
 				)}
