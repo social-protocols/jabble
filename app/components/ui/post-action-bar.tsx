@@ -77,16 +77,17 @@ export function PostActionBar({
 		}
 	}
 
-	const focusButtonColor =
-		isCollapsedState.currentlyFocussedPostId === post.id
-			? 'bg-rose-800/100 text-white'
-			: ''
+	const isFocused = isCollapsedState.currentlyFocussedPostId === post.id
+
+	const focusButtonColor = isFocused ? 'bg-rose-800/100 text-white' : ''
 
 	return (
 		<>
 			<div className="text-md mt-auto flex w-full pt-1 opacity-50 md:text-xs">
 				<button
-					title="Collapse unrelated comments"
+					title={
+						isFocused ? 'Click again to unfocus' : 'Collapse unrelated comments'
+					}
 					className={`transition-color mr-2 rounded px-1 duration-1000 ${focusButtonColor}`}
 					onClick={() => {
 						onCollapseParentSiblings(pathFromFocussedPost)
