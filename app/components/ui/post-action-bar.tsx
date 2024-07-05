@@ -82,13 +82,13 @@ export function PostActionBar({
 			<div className="mt-auto flex w-full pt-1 text-sm">
 				<button
 					title="Collapse unrelated comments"
-					className={`transition-color my-[-2px] mr-2 rounded px-2 text-[30px] duration-1000 sm:text-base ${isCollapsedState.currentlyFocussedPostId === post.id ? 'bg-orange-300 text-black' : ''}`}
+					className={`transition-color mr-2 rounded px-2 text-[30px] duration-1000 sm:text-base ${isCollapsedState.currentlyFocussedPostId === post.id ? 'bg-orange-300 text-black' : ''}`}
 					onClick={() => {
 						onCollapseParentSiblings(pathFromFocussedPost)
 						scrollIntoView()
 					}}
 				>
-					<Icon name="target" /> Focus
+					<Icon name="target" className="mt-[-4px]" /> Focus
 				</button>
 				{!isDeleted && loggedIn && (
 					<button
@@ -99,31 +99,16 @@ export function PostActionBar({
 						className="my-[-2px] text-[30px] sm:text-base"
 						style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
 					>
-						<Icon name="chat-bubble" /> Reply
+						<Icon name="chat-bubble" className="mt-[-4px]" /> Reply
 					</button>
 				)}
 				{isAdminUser &&
-					(!isDeleted ? (
-						<button
-							className="mr-2"
-							onClick={() => handleSetDeletedAt(Date.now())}
-						>
-							<Icon name="trash" /> Delete
-						</button>
-					) : (
-						<button className="mr-2" onClick={() => handleSetDeletedAt(null)}>
-							<Icon name="counter-clockwise-clock" /> Restore
-						</button>
-					))}
-				{isAdminUser && (
-					<button
-						className="mr-2"
-						title="Promote the root post of this discussion to discussion of the day"
-						onClick={handleSetDiscussionOfTheDay}
-					>
-						<Icon name="double-arrow-up" /> Promote
-					</button>
-				)}
+					<AdminFeatureBar
+						isDeleted={isDeleted}
+						handleSetDeletedAt={handleSetDeletedAt}
+						handleSetDiscussionOfTheDay={handleSetDiscussionOfTheDay}
+					/>
+				}
 				{showReplyForm && (
 					<button
 						className="ml-auto pr-2"
@@ -146,6 +131,41 @@ export function PostActionBar({
 		</>
 	)
 }
+
+function AdminFeatureBar({
+	isDeleted,
+	handleSetDeletedAt,
+	handleSetDiscussionOfTheDay,
+}: {
+	isDeleted: boolean
+	handleSetDeletedAt: (deletedAt: number | null) => void
+	handleSetDiscussionOfTheDay: () => void
+}) {
+	return (
+		<>
+			{!isDeleted ? (
+				<button
+					className="mr-2"
+					onClick={() => handleSetDeletedAt(Date.now())}
+				>
+					<Icon name="trash" className="mt-[-4px]" /> Delete
+				</button>
+			) : (
+				<button className="mr-2" onClick={() => handleSetDeletedAt(null)}>
+					<Icon name="counter-clockwise-clock" className="mt-[-4px]" /> Restore
+				</button>
+			)}
+			<button
+				className="mr-2"
+				title="Promote the root post of this discussion to discussion of the day"
+				onClick={handleSetDiscussionOfTheDay}
+			>
+				<Icon name="double-arrow-up" className="mt-[-4px]" /> Promote
+			</button>
+		</>
+	)
+}
+
 
 function ReplyForm({
 	post,
