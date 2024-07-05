@@ -59,6 +59,12 @@ export type CommentTreeState = {
 	}
 }
 
+export type CollapsedState = {
+	currentlyFocussedPostId: number | null
+	hidePost: Immutable.Map<number, boolean>
+	hideChildren: Immutable.Map<number, boolean>
+}
+
 export enum Direction {
 	Up = 1,
 	Down = -1,

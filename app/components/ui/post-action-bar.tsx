@@ -1,4 +1,3 @@
-import { Link } from '@remix-run/react'
 import { type Dispatch, type SetStateAction, useState } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { toImmutableReplyTree } from '#app/repositories/ranking.ts'
@@ -7,29 +6,35 @@ import {
 	type Post,
 	type ReplyTree,
 	type CommentTreeState,
-	type PostState,
+	type CollapsedState,
 } from '#app/types/api-types.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 import { Icon } from './icon.tsx'
 
 export function PostActionBar({
 	post,
-	postState,
-	hasUninformedVote,
 	focussedPostId,
 	loggedIn,
 	isDeleted,
 	setCommentTreeState,
 	onReplySubmit,
+	pathFromFocussedPost,
+	isCollapsedState,
+	onCollapseParentSiblings,
+	postDetailsRef,
 }: {
 	post: Post
-	postState: PostState
-	hasUninformedVote: boolean
 	focussedPostId: number
 	loggedIn: boolean
 	isDeleted: boolean
 	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
 	onReplySubmit: (reply: ImmutableReplyTree) => void
+	pathFromFocussedPost: Immutable.List<number>
+	isCollapsedState: CollapsedState
+	onCollapseParentSiblings: (
+		pathFromFocussedPost: Immutable.List<number>,
+	) => void
+	postDetailsRef: React.RefObject<HTMLDivElement>
 }) {
 	const user = useOptionalUser()
 	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
@@ -66,26 +71,32 @@ export function PostActionBar({
 		})
 	}
 
+	const scrollIntoView = () => {
+		if (postDetailsRef.current) {
+			postDetailsRef.current.scrollIntoView()
+		}
+	}
+
 	return (
 		<>
-			<div className="mt-1 flex w-full text-sm">
-				{hasUninformedVote ? (
-					<Link
-						title="Jump to comment labeled 'Vote here'"
-						to={`/post/${focussedPostId}/#post-${postState.criticalCommentId}`}
-					>
-						<Icon className="mr-2 text-blue-500" name="double-arrow-down" />
-					</Link>
-				) : (
-					''
-				)}
+			<div className="mt-auto flex w-full pt-1 text-sm">
+				<button
+					title="Collapse unrelated comments"
+					className={`transition-color my-[-2px] mr-2 rounded px-2 text-[30px] duration-1000 sm:text-base ${isCollapsedState.currentlyFocussedPostId === post.id ? 'bg-orange-300 text-black' : ''}`}
+					onClick={() => {
+						onCollapseParentSiblings(pathFromFocussedPost)
+						scrollIntoView()
+					}}
+				>
+					<Icon name="target" /> Focus
+				</button>
 				{!isDeleted && loggedIn && (
 					<button
 						onClick={() => {
 							setShowReplyForm(!showReplyForm)
 							return false
 						}}
-						className="mr-2"
+						className="my-[-2px] text-[30px] sm:text-base"
 						style={{ visibility: loggedIn ? 'visible' : 'hidden' }}
 					>
 						<Icon name="chat-bubble" /> Reply

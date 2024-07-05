@@ -1,12 +1,11 @@
 import { useNavigate } from '@remix-run/react'
 import type * as Immutable from 'immutable'
-import { type Map } from 'immutable'
-import { type Dispatch, type SetStateAction } from 'react'
+import { type Dispatch, type SetStateAction, useRef } from 'react'
 import {
-	Direction,
 	type ImmutableReplyTree,
 	type CommentTreeState,
 	type Post,
+	type CollapsedState,
 } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { PostActionBar } from './post-action-bar.tsx'
@@ -42,8 +41,8 @@ export function PostDetails({
 	pathFromFocussedPost: Immutable.List<number>
 	commentTreeState: CommentTreeState
 	setCommentTreeState: Dispatch<SetStateAction<CommentTreeState>>
-	isCollapsedState: Immutable.Map<number, boolean>
-	setIsCollapsedState: Dispatch<SetStateAction<Map<number, boolean>>>
+	isCollapsedState: CollapsedState
+	setIsCollapsedState: Dispatch<SetStateAction<CollapsedState>>
 	onReplySubmit: (reply: ImmutableReplyTree) => void
 	onCollapseParentSiblings: (
 		pathFromFocussedPost: Immutable.List<number>,
@@ -56,11 +55,7 @@ export function PostDetails({
 		`post ${post.id} not found in commentTreeState`,
 	)
 
-	const isCollapsed = isCollapsedState.get(post.id) ?? false
-
-	const hasUninformedVote: boolean =
-		!postState.voteState.isInformed &&
-		postState.voteState.vote !== Direction.Neutral
+	const hidePost = isCollapsedState.hidePost.get(post.id) ?? false
 
 	const navigate = useNavigate()
 
@@ -68,49 +63,27 @@ export function PostDetails({
 
 	const isDeleted = postState.isDeleted
 
-	const targetPostIds = commentTreeState.criticalCommentIdToTargetId[post.id]
-
-	const voteHereIndicator =
-		postState.voteState.vote == Direction.Neutral &&
-		targetPostIds !== undefined && // := is this post a critical comment?
-		targetPostIds.find(id => {
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			return commentTreeState.posts[id]!.voteState.vote !== Direction.Neutral
-		}) !== undefined // := any target has vote?
-
-	const lineColor = voteHereIndicator
-		? 'border-l-blue-500 dark:border-l-[#7dcfff]'
-		: 'border-l-transparent'
-
-	const lineClass =
-		post.id == focussedPostId ? '' : `border-l-4 border-solid pl-2 ${lineColor}`
+	const postDetailsRef = useRef<HTMLDivElement>(null)
 
 	return (
 		<div
 			id={`post-${post.id}`}
-			className={`flex w-full ${lineClass} ${className ?? ''}`}
+			className={`flex w-full ${className ?? ''}`}
+			ref={postDetailsRef}
 		>
-			{isCollapsed ? (
-				<div className={'flex ' + marginLeft}>
-					<PostInfoBar
-						post={post}
-						postState={postState}
-						pathFromFocussedPost={pathFromFocussedPost}
-						isCollapsedState={isCollapsedState}
-						setIsCollapsedState={setIsCollapsedState}
-						onCollapseParentSiblings={onCollapseParentSiblings}
-					/>
-				</div>
+			{hidePost ? (
+				<div className={'flex ' + marginLeft} />
 			) : (
 				<>
 					<div style={{ display: loggedIn ? 'block' : 'none' }}>
 						<VoteButtons
 							postId={post.id}
 							focussedPostId={focussedPostId}
-							hasUninformedVote={hasUninformedVote}
 							commentTreeState={commentTreeState}
 							setCommentTreeState={setCommentTreeState}
 							showInformedProbability={showInformativeProbability}
+							isCollapsedState={isCollapsedState}
+							setIsCollapsedState={setIsCollapsedState}
 						/>
 					</div>
 					<div
@@ -119,14 +92,7 @@ export function PostDetails({
 							(teaser ? ' postteaser' : '')
 						}
 					>
-						<PostInfoBar
-							post={post}
-							postState={postState}
-							pathFromFocussedPost={pathFromFocussedPost}
-							isCollapsedState={isCollapsedState}
-							setIsCollapsedState={setIsCollapsedState}
-							onCollapseParentSiblings={onCollapseParentSiblings}
-						/>
+						<PostInfoBar post={post} postState={postState} />
 						{!isDeleted ? (
 							<PostContent
 								content={post.content}
@@ -146,14 +112,17 @@ export function PostDetails({
 							</div>
 						)}
 						<PostActionBar
+							key={`${post.id}-actionbar`}
 							post={post}
 							focussedPostId={focussedPostId}
-							postState={postState}
-							hasUninformedVote={hasUninformedVote}
 							loggedIn={loggedIn}
 							isDeleted={isDeleted}
 							setCommentTreeState={setCommentTreeState}
 							onReplySubmit={onReplySubmit}
+							pathFromFocussedPost={pathFromFocussedPost}
+							isCollapsedState={isCollapsedState}
+							onCollapseParentSiblings={onCollapseParentSiblings}
+							postDetailsRef={postDetailsRef}
 						/>
 					</div>
 				</>
