@@ -8,7 +8,6 @@ import { HoneypotInputs } from 'remix-utils/honeypot/react'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ErrorList, Field } from '#app/components/forms.tsx'
-import { Spacer } from '#app/components/spacer.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { db } from '#app/db.ts'
 import { handleVerification as handleChangeEmailVerification } from '#app/routes/settings+/profile.change-email.tsx'
@@ -246,8 +245,8 @@ export default function VerifyRoute() {
 
 	const checkEmail = (
 		<>
-			<h1 className="text-h1">Check your email</h1>
-			<p className="mt-3 text-body-md text-muted-foreground">
+			<h1 className="mb-6 text-2xl md:text-h1">Check your email</h1>
+			<p className="mb-6 text-body-md text-muted-foreground">
 				We've sent you a code to verify your email address.
 			</p>
 		</>
@@ -283,18 +282,16 @@ export default function VerifyRoute() {
 	})
 
 	return (
-		<main className="container flex flex-col justify-center pb-32 pt-20">
-			<div className="text-center">
+		<main className="container flex flex-col justify-center pb-32 md:pt-20">
+			<div className="mb-[16px] text-center md:mb-[64px]">
 				{type ? headings[type] : 'Invalid Verification Type'}
 			</div>
 
-			<Spacer size="xs" />
-
-			<div className="mx-auto flex w-72 max-w-full flex-col justify-center gap-1">
+			<div className="mx-auto flex w-72 max-w-full flex-col justify-center">
 				<div>
 					<ErrorList errors={form.errors} id={form.errorId} />
 				</div>
-				<div className="flex w-full gap-2">
+				<div className="flex w-full">
 					<Form method="POST" {...form.props} className="flex-1">
 						<AuthenticityTokenInput />
 						<HoneypotInputs />

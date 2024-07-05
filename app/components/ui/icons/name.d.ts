@@ -7,6 +7,8 @@ export type IconName =
 	| 'camera'
 	| 'chat-bubble'
 	| 'check'
+	| 'chevron-down'
+	| 'chevron-right'
 	| 'clock'
 	| 'counter-clockwise-clock'
 	| 'cross-1'
