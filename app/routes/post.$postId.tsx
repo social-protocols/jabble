@@ -12,6 +12,7 @@ import { db } from '#app/db.ts'
 import { updateHN } from '#app/repositories/hackernews.ts'
 import {
 	getDiscussionOfTheDay,
+	getRootPostId,
 	getTransitiveParents,
 } from '#app/repositories/post.ts'
 import {
@@ -60,7 +61,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 			),
 			transitiveParents: await getTransitiveParents(trx, postId),
 			commentTreeState: commentTreeState,
-			isDiscussionOfTheDay: postId === discussionOfTheDayPostId,
+			isDiscussionOfTheDay:
+				(await getRootPostId(trx, postId)) === discussionOfTheDayPostId,
 		}
 	})
 
