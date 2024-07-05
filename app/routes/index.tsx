@@ -1,7 +1,7 @@
 import { json, type LoaderFunctionArgs, redirect } from '@remix-run/node'
 import { useLoaderData, useParams } from '@remix-run/react'
-import { Markdown } from '#app/components/markdown.tsx'
-import InfoText from '#app/components/ui/info-text.tsx'
+import { DiscussionOfTheDayHeader } from '#app/components/ui/discussion-of-the-day-header.tsx'
+import { InfoText } from '#app/components/ui/info-text.tsx'
 import { db } from '#app/db.ts'
 import { updateHN } from '#app/repositories/hackernews.ts'
 import {
@@ -78,9 +78,7 @@ export default function Index() {
 	return (
 		<>
 			<InfoText />
-			<div className="markdown mb-4 mt-8">
-				<Markdown deactivateLinks={false}>## Discussion of the Day 🔥</Markdown>
-			</div>
+			<DiscussionOfTheDayHeader />
 			<DiscussionView
 				key={params['postId']}
 				mutableReplyTree={mutableReplyTree}
