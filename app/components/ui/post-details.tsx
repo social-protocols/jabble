@@ -59,74 +59,65 @@ export function PostDetails({
 
 	const navigate = useNavigate()
 
-	const marginLeft = loggedIn ? 'ml-[40px]' : 'ml-2'
-
 	const isDeleted = postState.isDeleted
 
 	const postDetailsRef = useRef<HTMLDivElement>(null)
 
 	return (
-		<div
-			id={`post-${post.id}`}
-			className={`flex w-full ${className ?? ''}`}
-			ref={postDetailsRef}
-		>
-			{hidePost ? (
-				<div className={'flex ' + marginLeft} />
-			) : (
-				<>
-					<div style={{ display: loggedIn ? 'block' : 'none' }}>
-						<VoteButtons
-							postId={post.id}
-							focussedPostId={focussedPostId}
-							commentTreeState={commentTreeState}
-							setCommentTreeState={setCommentTreeState}
-							showInformedProbability={showInformativeProbability}
-							isCollapsedState={isCollapsedState}
-							setIsCollapsedState={setIsCollapsedState}
+		!hidePost && (
+			<div
+				id={`post-${post.id}`}
+				className={`flex w-full ${className ?? ''}`}
+				ref={postDetailsRef}
+			>
+				<div style={{ display: loggedIn ? 'block' : 'none' }}>
+					<VoteButtons
+						postId={post.id}
+						focussedPostId={focussedPostId}
+						commentTreeState={commentTreeState}
+						setCommentTreeState={setCommentTreeState}
+						showInformedProbability={showInformativeProbability}
+						isCollapsedState={isCollapsedState}
+						setIsCollapsedState={setIsCollapsedState}
+					/>
+				</div>
+				<div
+					className={
+						'ml-2 flex w-full min-w-0 flex-col' + (teaser ? ' postteaser' : '')
+					}
+				>
+					<PostInfoBar post={post} postState={postState} />
+					{!isDeleted ? (
+						<PostContent
+							content={post.content}
+							maxLines={teaser ? postTeaserMaxLines : undefined}
+							deactivateLinks={false}
+							linkTo={`/post/${post.id}`}
 						/>
-					</div>
-					<div
-						className={
-							'ml-2 flex w-full min-w-0 flex-col' +
-							(teaser ? ' postteaser' : '')
-						}
-					>
-						<PostInfoBar post={post} postState={postState} />
-						{!isDeleted ? (
-							<PostContent
-								content={post.content}
-								maxLines={teaser ? postTeaserMaxLines : undefined}
-								deactivateLinks={false}
-								linkTo={`/post/${post.id}`}
-							/>
-						) : (
-							<div
-								style={{ cursor: 'pointer' }}
-								className={'italic text-gray-400'}
-								onClick={() =>
-									`/post/${post.id}` && navigate(`/post/${post.id}`)
-								}
-							>
-								This post was deleted.
-							</div>
-						)}
-						<PostActionBar
-							key={`${post.id}-actionbar`}
-							post={post}
-							focussedPostId={focussedPostId}
-							loggedIn={loggedIn}
-							isDeleted={isDeleted}
-							setCommentTreeState={setCommentTreeState}
-							onReplySubmit={onReplySubmit}
-							pathFromFocussedPost={pathFromFocussedPost}
-							isCollapsedState={isCollapsedState}
-							onCollapseParentSiblings={onCollapseParentSiblings}
-							postDetailsRef={postDetailsRef}
-						/>
-					</div>
-				</>
-			)}
-		</div>
+					) : (
+						<div
+							style={{ cursor: 'pointer' }}
+							className={'italic text-gray-400'}
+							onClick={() => `/post/${post.id}` && navigate(`/post/${post.id}`)}
+						>
+							This post was deleted.
+						</div>
+					)}
+					<PostActionBar
+						key={`${post.id}-actionbar`}
+						post={post}
+						focussedPostId={focussedPostId}
+						loggedIn={loggedIn}
+						isDeleted={isDeleted}
+						setCommentTreeState={setCommentTreeState}
+						onReplySubmit={onReplySubmit}
+						pathFromFocussedPost={pathFromFocussedPost}
+						isCollapsedState={isCollapsedState}
+						onCollapseParentSiblings={onCollapseParentSiblings}
+						postDetailsRef={postDetailsRef}
+					/>
+				</div>
+			</div>
+		)
 	)
 }
