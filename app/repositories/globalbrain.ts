@@ -1,5 +1,5 @@
 import global_brain from '@socialprotocols/globalbrain-node'
-import { type Transaction, sql } from 'kysely'
+import { type Transaction } from 'kysely'
 import { type DBVoteEvent } from '../types/db-types.ts'
 import { type DB } from '../types/kysely-types.ts'
 
@@ -64,14 +64,6 @@ export async function processScoreEvents(
 			}
 		}),
 	)
-
-	// Ideally, we would update this table incrementally, but for now we just
-	// delete all rows and reinsert them.
-	await sql`delete from CriticalThread`.execute(trx)
-	await sql`
-			insert into CriticalThread
-			select * from CriticalThreadView
-	`.execute(trx)
 
 	if (!gotExpectedScoreEvent) {
 		console.error(
