@@ -14,7 +14,6 @@ import { safeRedirect } from 'remix-utils/safe-redirect'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { CheckboxField, ErrorList, Field } from '#app/components/forms.tsx'
-import { Spacer } from '#app/components/spacer.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { db } from '#app/db.ts'
 import { twoFAVerificationType } from '#app/routes/settings+/profile.two-factor.tsx'
@@ -265,8 +264,8 @@ export default function LoginPage() {
 	return (
 		<div className="flex min-h-full flex-col justify-center pb-32 md:pt-20">
 			<div className="mx-auto w-full max-w-md">
-				<div className="flex flex-col gap-3 text-center mb-[16px] md:mb-[64px]">
-					<h1 className="text-2xl md:text-h1 mb-6">Welcome back!</h1>
+				<div className="mb-[16px] flex flex-col gap-3 text-center md:mb-[64px]">
+					<h1 className="mb-6 text-2xl md:text-h1">Welcome back!</h1>
 				</div>
 
 				<div>

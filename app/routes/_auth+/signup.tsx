@@ -127,7 +127,7 @@ export default function SignupRoute() {
 
 	return (
 		<div className="pt-15 container flex flex-col justify-center pb-32 md:pt-20">
-			<div className="text-center space-y-5 sm:space-y-10 mb-[16px] md:mb-[64px]">
+			<div className="mb-[16px] space-y-5 text-center sm:space-y-10 md:mb-[64px]">
 				<h1 className="text-xl font-bold md:text-h1">Welcome to Jabble!</h1>
 				<p className="text-body-sm text-muted-foreground">
 					Please enter your e-mail.

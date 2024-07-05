@@ -4,20 +4,14 @@ import {
 	json,
 	type MetaFunction,
 	redirect,
-	type LoaderFunctionArgs,
 	type ActionFunctionArgs,
 } from '@remix-run/node'
-import {
-	Form,
-	useActionData,
-	useSearchParams,
-} from '@remix-run/react'
+import { Form, useActionData, useSearchParams } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
 import { HoneypotInputs } from 'remix-utils/honeypot/react'
 import { safeRedirect } from 'remix-utils/safe-redirect'
 import { z } from 'zod'
 import { CheckboxField, ErrorList, Field } from '#app/components/forms.tsx'
-import { Spacer } from '#app/components/spacer.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { db } from '#app/db.ts'
 import { SITE_NAME } from '#app/site.ts'
@@ -149,8 +143,8 @@ export default function SignupRoute() {
 	return (
 		<div className="container flex min-h-full flex-col justify-center pb-32 md:pt-20">
 			<div className="mx-auto w-full max-w-lg">
-				<div className="flex flex-col text-center mb-[16px] md:mb-[64px]">
-					<h1 className="text-2xl md:text-h1 mb-6">Your Account</h1>
+				<div className="mb-[16px] flex flex-col text-center md:mb-[64px]">
+					<h1 className="mb-6 text-2xl md:text-h1">Your Account</h1>
 					<p className="text-body-sm text-muted-foreground">
 						Please enter your username and password.
 					</p>
