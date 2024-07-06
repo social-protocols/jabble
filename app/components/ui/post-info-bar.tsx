@@ -22,7 +22,9 @@ export function PostInfoBar({
 					</span>
 				)}
 				<span className="opacity-50">{ageString}</span>
-				<span className="opacity-50">{postState.voteCount} votes</span>
+				<span className="opacity-50">
+					{postState.voteCount} {postState.voteCount == 1 ? 'vote' : 'votes'}
+				</span>
 			</div>
 		</>
 	)

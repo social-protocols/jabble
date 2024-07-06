@@ -30,6 +30,7 @@ export function PostActionBar({
 	const user = useOptionalUser()
 	const loggedIn: boolean = user !== null
 	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
+	const [showAdminUI, setShowAdminUI] = useState(false)
 
 	const postState = treeContext.commentTreeState.posts[post.id]
 	invariant(
@@ -207,13 +208,21 @@ export function PostActionBar({
 						<Icon name="chat-bubble" className="mt-[-0.1em]" /> Reply
 					</button>
 				)}
-				{isAdminUser && (
-					<AdminFeatureBar
-						isDeleted={isDeleted}
-						handleSetDeletedAt={handleSetDeletedAt}
-						handleSetDiscussionOfTheDay={handleSetDiscussionOfTheDay}
-					/>
-				)}
+				{isAdminUser &&
+					(showAdminUI ? (
+						<AdminFeatureBar
+							isDeleted={isDeleted}
+							handleSetDeletedAt={handleSetDeletedAt}
+							handleSetDiscussionOfTheDay={handleSetDiscussionOfTheDay}
+						/>
+					) : (
+						<button
+							className="self-center"
+							onClick={() => setShowAdminUI(true)}
+						>
+							<Icon name="dots-horizontal" />
+						</button>
+					))}
 				{hideChildren && (
 					<button onClick={showChildren} className="shrink-0">
 						({replyTree.replies.size}{' '}

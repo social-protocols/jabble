@@ -39,7 +39,7 @@ function ParentPost({ parentPost }: { parentPost: Post }) {
 						/>
 					</Link>
 					<button
-						className="shrink-0 px-2 text-[30px] sm:text-base"
+						className="shrink-0 px-2 text-[30px] opacity-50 sm:text-base"
 						title={isCollapsed ? 'Expand' : 'Collapse'}
 						onClick={() => setIsCollapsed(!isCollapsed)}
 					>
