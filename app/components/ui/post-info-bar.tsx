@@ -39,6 +39,7 @@ export function PostInfoBar({
 				<div className="mb-1 flex w-full items-center gap-2 text-xs sm:items-baseline">
 					{effectSize > effectSizeThresholds[0] && (
 						<span title="Convincingness Score. How much this post changed people's opinion on the target post.">
+							<span className="opacity-50">convincing:</span>{' '}
 							{convincingnessScale(effectSize)}
 						</span>
 					)}
