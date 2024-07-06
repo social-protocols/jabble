@@ -1,3 +1,4 @@
+import { Link } from '@remix-run/react'
 import moment from 'moment'
 import invariant from 'tiny-invariant'
 import { effectSizeOnTarget } from '#app/repositories/ranking.ts'
@@ -34,17 +35,19 @@ export function PostInfoBar({
 
 	return (
 		<>
-			<div className="mb-1 flex w-full items-center gap-2 text-xs sm:items-baseline">
-				{effectSize > effectSizeThresholds[0] && (
-					<span title="Convincingness Score. How much this post changed people's opinion on the target post.">
-						{convincingnessScale(effectSize)}
+			<Link to={`/stats/${post.id}`}>
+				<div className="mb-1 flex w-full items-center gap-2 text-xs sm:items-baseline">
+					{effectSize > effectSizeThresholds[0] && (
+						<span title="Convincingness Score. How much this post changed people's opinion on the target post.">
+							{convincingnessScale(effectSize)}
+						</span>
+					)}
+					<span className="opacity-50">
+						{postState.voteCount} {postState.voteCount == 1 ? 'vote' : 'votes'}
 					</span>
-				)}
-				<span className="opacity-50">
-					{postState.voteCount} {postState.voteCount == 1 ? 'vote' : 'votes'}
-				</span>
-				<span className="opacity-50">{ageString}</span>
-			</div>
+					<span className="opacity-50">{ageString}</span>
+				</div>
+			</Link>
 		</>
 	)
 }
