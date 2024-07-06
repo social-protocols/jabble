@@ -8,11 +8,13 @@ export function PostContent({
 	maxLines,
 	linkTo,
 	deactivateLinks,
+	className,
 }: {
 	content: string
 	maxLines?: number
 	deactivateLinks: boolean
 	linkTo?: string
+	className?: string
 }) {
 	const navigate = useNavigate()
 
@@ -22,6 +24,7 @@ export function PostContent({
 		<div
 			style={{ cursor: 'pointer' }}
 			onClick={() => linkTo && navigate(linkTo)}
+			className={className}
 		>
 			<Truncate lines={maxLines}>
 				<Markdown deactivateLinks={deactivateLinks}>
