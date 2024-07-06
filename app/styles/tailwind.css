@@ -194,6 +194,10 @@
 			/*			@apply p-2;*/
 			@apply overflow-x-auto;
 		}
+
+		blockquote {
+			@apply border-l-4 border-l-gray-300 pl-2 opacity-70;
+		}
 	}
 
 	.postparent .markdown {
