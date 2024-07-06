@@ -112,13 +112,30 @@ export function PostActionBar({
 	const hasChildren = !replyTree.replies.isEmpty()
 
 	function toggleHideChildren() {
-		treeContext.setCollapsedState({
-			...treeContext.collapsedState,
-			hideChildren: treeContext.collapsedState.hideChildren.set(
+		if (childrenHidden) {
+			// expand
+			let newHideChildrenState = treeContext.collapsedState.hideChildren.set(
 				post.id,
-				!childrenHidden,
-			),
-		})
+				false,
+			)
+			// collapse direct children
+			replyTree.replies.forEach(reply => {
+				newHideChildrenState = newHideChildrenState.set(reply.post.id, true)
+			})
+			treeContext.setCollapsedState({
+				...treeContext.collapsedState,
+				hideChildren: newHideChildrenState,
+			})
+		} else {
+			// collapse
+			treeContext.setCollapsedState({
+				...treeContext.collapsedState,
+				hideChildren: treeContext.collapsedState.hideChildren.set(
+					post.id,
+					true,
+				),
+			})
+		}
 	}
 
 	const isFocused =
