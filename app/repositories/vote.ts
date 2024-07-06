@@ -104,7 +104,7 @@ export async function getUserVotes(
 		.where(eb => eb('id', 'in', postIds))
 		.leftJoin('Vote as VoteOnCriticalReply', join =>
 			join
-				.onRef('VoteOnCriticalReply.postId', '=', 'criticalThreadId')
+				.onRef('VoteOnCriticalReply.postId', '=', 'criticalThreadId') // TODO: what to do here?
 				.onRef('VoteOnCriticalReply.userId', '=', 'Vote.userId'),
 		)
 		.select('Post.id as postId')
