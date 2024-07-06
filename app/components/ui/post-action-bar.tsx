@@ -118,13 +118,30 @@ export function PostActionBar({
 	const hasChildren = !replyTree.replies.isEmpty()
 
 	function toggleHideChildren() {
-		treeContext.setCollapsedState({
-			...treeContext.collapsedState,
-			hideChildren: treeContext.collapsedState.hideChildren.set(
+		if (childrenHidden) {
+			// expand
+			let newHideChildrenState = treeContext.collapsedState.hideChildren.set(
 				post.id,
-				!childrenHidden,
-			),
-		})
+				false,
+			)
+			// collapse direct children
+			replyTree.replies.forEach(reply => {
+				newHideChildrenState = newHideChildrenState.set(reply.post.id, true)
+			})
+			treeContext.setCollapsedState({
+				...treeContext.collapsedState,
+				hideChildren: newHideChildrenState,
+			})
+		} else {
+			// collapse
+			treeContext.setCollapsedState({
+				...treeContext.collapsedState,
+				hideChildren: treeContext.collapsedState.hideChildren.set(
+					post.id,
+					true,
+				),
+			})
+		}
 	}
 
 	const isFocused =
@@ -162,15 +179,18 @@ export function PostActionBar({
 						/>
 					</button>
 				)}
-				{showInformedProbability && (
-					<Link
-						title="Informed upvote probability"
-						to={`/stats/${post.id}`}
-						className="mx-[-0.5em]"
-					>
-						{pCurrentString}
-					</Link>
-				)}
+				{loggedIn &&
+					(showInformedProbability ? (
+						<Link
+							title="Informed upvote probability"
+							to={`/stats/${post.id}`}
+							className="mx-[-0.5em]"
+						>
+							{pCurrentString}
+						</Link>
+					) : (
+						<span className="mx-[-0.6em]">Vote</span>
+					))}
 				{loggedIn && (
 					<button
 						title={'Downvote'}
