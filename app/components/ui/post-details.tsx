@@ -2,7 +2,11 @@ import { useNavigate } from '@remix-run/react'
 import type * as Immutable from 'immutable'
 import { useRef } from 'react'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
-import { type ImmutableReplyTree, type Post } from '#app/types/api-types.ts'
+import {
+	Direction,
+	type ImmutableReplyTree,
+	type Post,
+} from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { PostActionBar } from './post-action-bar.tsx'
 import { PostContent } from './post-content.tsx'
@@ -33,6 +37,8 @@ export function PostDetails({
 
 	const postDetailsRef = useRef<HTMLDivElement>(null) // used for scrolling to this post
 
+	const userHasVoted = postState.voteState.vote != Direction.Neutral
+
 	return (
 		<div
 			id={`post-${post.id}`}
@@ -43,6 +49,7 @@ export function PostDetails({
 				<PostInfoBar post={post} postState={postState} />
 				{!isDeleted ? (
 					<PostContent
+						className={userHasVoted ? 'opacity-50' : ''}
 						content={post.content}
 						deactivateLinks={false}
 						linkTo={`/post/${post.id}`}
