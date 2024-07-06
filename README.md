@@ -28,7 +28,7 @@ Each post gets a score, shown as a percentage, based on how many upvotes and dow
 
 ## Convincing Replies
 
-Jabble ranks replies based on *how convincing they appear to be*. A reply is considered convincing if users who have considered that reply are more likely or less likely to upvote the post being replied to (and vice versa). For example, if a post containing a video has a reply claiming that the video is fake, users who see that reply may be less likely to upvote the video.
+Jabble ranks replies based on *how convincing they appear to be*. A reply is considered convincing if users who have considered that reply are more likely or less likely to upvote the post being replied to. For example, if a post containing a video has a reply claiming that the video is fake, users who see that reply may be less likely to upvote the video.
 
 ![screenshot of a convincing reply](public/img/convincing-reply.png)
 <br/>**a convincing reply**
