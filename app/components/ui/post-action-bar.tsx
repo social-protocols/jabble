@@ -1,6 +1,6 @@
 import { Link } from '@remix-run/react'
 import { type Dispatch, type SetStateAction, useState } from 'react'
-import { Textarea } from '#app/components/ui/textarea.tsx'
+import TextareaAutosize from 'react-textarea-autosize'
 import { toImmutableReplyTree } from '#app/repositories/ranking.ts'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import {
@@ -321,9 +321,9 @@ function ReplyForm({
 
 	return (
 		<div className="mt-2 flex flex-col items-end">
-			<Textarea
+			<TextareaAutosize
 				name="content"
-				className="mb-2 w-full"
+				className="mb-2 flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid]:border-input-invalid"
 				style={{
 					resize: 'vertical',
 				}}
