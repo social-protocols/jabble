@@ -1,5 +1,11 @@
 import { Link } from '@remix-run/react'
-import { type Dispatch, type SetStateAction, useState } from 'react'
+import {
+	type Dispatch,
+	type SetStateAction,
+	useState,
+	type ChangeEvent,
+	useRef,
+} from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
 import { toImmutableReplyTree } from '#app/repositories/ranking.ts'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
@@ -292,7 +298,20 @@ function ReplyForm({
 	setShowReplyForm: Dispatch<SetStateAction<boolean>>
 	treeContext: TreeContext
 }) {
-	const [contentState, setContentState] = useState<string>('')
+	const storageKey = `reply-${post.id}`
+
+	const [contentState, setContentState] = useState<string>(
+		// read backup from localstorage
+		() => localStorage.getItem(storageKey) ?? '',
+	)
+
+	const debouncedChangeHandler = useDebounce(
+		(event: ChangeEvent<HTMLTextAreaElement>) => {
+			// backup text in localstorage to be robust against reloads and collapses
+			localStorage.setItem(storageKey, event.target.value)
+		},
+		500,
+	)
 
 	const handleReplySubmit = async function () {
 		setShowReplyForm(false)
@@ -313,6 +332,8 @@ function ReplyForm({
 			commentTreeState: CommentTreeState
 			newReplyTree: ReplyTree
 		}
+		// after successful submission, remove from localstorage
+		localStorage.removeItem(storageKey)
 		treeContext.setCommentTreeState(responseDecoded.commentTreeState) // influences scores because reply receives a default vote
 		treeContext.onReplySubmit(
 			toImmutableReplyTree(responseDecoded.newReplyTree),
@@ -329,7 +350,12 @@ function ReplyForm({
 				}}
 				autoFocus={true}
 				placeholder="Enter your reply"
-				onChange={event => setContentState(event.currentTarget.value)}
+				value={contentState}
+				onChange={event => {
+					debouncedChangeHandler(event)
+					const value = event.currentTarget.value
+					setContentState(value)
+				}}
 			/>
 			<button
 				className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700"
@@ -339,4 +365,17 @@ function ReplyForm({
 			</button>
 		</div>
 	)
+}
+
+function useDebounce<T>(callback: (event: T) => void, delay: number) {
+	const timer = useRef<number | null>(null)
+
+	return (event: T) => {
+		if (timer.current) {
+			clearTimeout(timer.current)
+		}
+		timer.current = window.setTimeout(() => {
+			callback(event)
+		}, delay)
+	}
 }
