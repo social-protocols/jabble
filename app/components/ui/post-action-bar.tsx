@@ -173,15 +173,18 @@ export function PostActionBar({
 						/>
 					</button>
 				)}
-				{showInformedProbability && (
-					<Link
-						title="Informed upvote probability"
-						to={`/stats/${post.id}`}
-						className="mx-[-0.5em]"
-					>
-						{pCurrentString}
-					</Link>
-				)}
+				{loggedIn &&
+					(showInformedProbability ? (
+						<Link
+							title="Informed upvote probability"
+							to={`/stats/${post.id}`}
+							className="mx-[-0.5em]"
+						>
+							{pCurrentString}
+						</Link>
+					) : (
+						<span className="mx-[-0.6em]">Vote</span>
+					))}
 				{loggedIn && (
 					<button
 						title={'Downvote'}
