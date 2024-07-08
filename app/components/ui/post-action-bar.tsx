@@ -165,7 +165,7 @@ export function PostActionBar({
 							<Icon name="chevron-down" className="ml-[-0.2em]" />
 						</button>
 					))}
-				{loggedIn && (
+				{loggedIn && !isDeleted && (
 					<button
 						title={'Upvote'}
 						onClick={async () => await submitVote(Direction.Up)}
@@ -179,7 +179,7 @@ export function PostActionBar({
 						/>
 					</button>
 				)}
-				{loggedIn &&
+				{loggedIn && !isDeleted &&
 					(showInformedProbability ? (
 						<Link
 							title="Informed upvote probability"
@@ -191,7 +191,7 @@ export function PostActionBar({
 					) : (
 						<span className="mx-[-0.6em]">Vote</span>
 					))}
-				{loggedIn && (
+				{loggedIn && !isDeleted && (
 					<button
 						title={'Downvote'}
 						onClick={async () => await submitVote(Direction.Down)}
