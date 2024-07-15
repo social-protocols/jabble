@@ -48,7 +48,7 @@ import { useRequestInfo } from './utils/request-info.ts'
 import { getTheme, setTheme, type Theme } from './utils/theme.server.ts'
 import { makeTimings, time } from './utils/timing.server.ts'
 import { getToast } from './utils/toast.server.ts'
-import { useUser } from './utils/user.ts'
+import { useOptionalUser } from './utils/user.ts'
 
 export const links: LinksFunction = () => {
 	return [
@@ -267,7 +267,7 @@ function AppWithProviders() {
 export default withSentry(AppWithProviders)
 
 function UserMenu() {
-	const user = useUser()
+	const user = useOptionalUser()
 	return user ? (
 		<>
 			<span className="text-body-sm font-bold">{user.username}</span>
