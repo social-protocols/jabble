@@ -56,7 +56,7 @@ export function FrontpageFeed({
 	function newDiscussionButton() {
 		return (
 			<Button
-				variant="default"
+				variant="secondary"
 				onClick={() => {
 					setShowNewDiscussionForm(!showNewDiscussionForm)
 					return false
