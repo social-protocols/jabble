@@ -10,7 +10,7 @@ The more you comment and vote in the conversation under a post, the more influen
 
 Everything you see here is work in progress.
 We would love to hear your feedback!
-Please use [this feedback form](https://forms.gle/dzJtsTJwPSsBihPUA) or submit a [GitHub issue](https://github.com/social-protocols/jabble/issues).
+Please use <mailto:mail@social-protocols.org> or submit a [GitHub issue](https://github.com/social-protocols/jabble/issues).
 	`
 
 	return (
