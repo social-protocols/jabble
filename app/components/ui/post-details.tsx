@@ -37,6 +37,8 @@ export function PostDetails({
 
 	const postDetailsRef = useRef<HTMLDivElement>(null) // used for scrolling to this post
 
+	const isTargetPost = treeContext.targetPostId === post.id
+
 	const userHasVoted = postState.voteState.vote != Direction.Neutral
 
 	return (
@@ -49,7 +51,7 @@ export function PostDetails({
 				<PostInfoBar post={post} postState={postState} />
 				{!isDeleted ? (
 					<PostContent
-						className={userHasVoted ? 'opacity-50' : ''}
+						className={!isTargetPost && userHasVoted ? 'opacity-50' : ''}
 						content={post.content}
 						deactivateLinks={false}
 						linkTo={`/post/${post.id}`}
