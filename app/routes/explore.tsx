@@ -2,8 +2,8 @@ import { type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { useState } from 'react'
-import { Markdown } from '#app/components/markdown.tsx'
 import { Button } from '#app/components/ui/button.tsx'
+import { InfoText } from '#app/components/ui/info-text.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
 import { PostForm } from '#app/components/ui/post-form.tsx'
 import { db } from '#app/db.ts'
@@ -37,26 +37,14 @@ export function FrontpageFeed({
 }) {
 	const [showNewDiscussionForm, setShowNewDiscussionForm] = useState(false)
 
-	const infoText = `
-# Welcome to Jabble
-
-Jabble is a new kind of conversation platform, designed to make conversations on the Internet more intelligent and less polarized.
-
-Read [how Jabble makes conversations better](https://github.com/social-protocols/social-network#readme) and [signup here to get notified when we launch](https://social-protocols.org/social-network/).
-	`
-
 	return (
-		<div className="container">
-			<div className="markdown mb-10">
-				<Markdown deactivateLinks={false}>{infoText}</Markdown>
-			</div>
+		<div>
+			<InfoText />
 
 			{showNewDiscussionForm ? (
 				<PostForm className="mb-4" />
 			) : (
-				loggedIn && (
-					<div className="mb-4 flex justify-end">{newDiscussionButton()}</div>
-				)
+				loggedIn && <div className="mb-4">{newDiscussionButton()}</div>
 			)}
 
 			<div className="mx-auto w-full">
@@ -101,21 +89,20 @@ export function TopLevelPost({
 	return (
 		<div
 			className={
-				'postteaser mb-6 flex w-full min-w-0 flex-col ' + (className || '')
+				'mb-2 w-full min-w-0 rounded-sm bg-post px-3 py-2 ' + (className || '')
 			}
 		>
-			<div className="mb-2 text-sm opacity-50">{ageString}</div>
+			<div className="text-sm opacity-50">{ageString}</div>
 			<PostContent
 				content={post.content}
-				maxLines={3}
+				maxLines={2}
 				deactivateLinks={false}
 				linkTo={`/post/${post.id}`}
 			/>
 			<div className="text-sm opacity-50">
 				<Link to={`/post/${post.id}`}>
-					{post.nTransitiveComments} {commentString}
-				</Link>{' '}
-				- {post.oSize} {voteString}
+					{post.nTransitiveComments} {commentString} - {post.oSize} {voteString}
+				</Link>
 			</div>
 		</div>
 	)
