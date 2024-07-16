@@ -50,7 +50,7 @@ type Category = {
 }
 type Claim = {
 	claim: string
-	examples: Example[]
+	// examples: Example[]
 	counter_claims: string[]
 }
 type Example = {
@@ -119,14 +119,15 @@ async function importClaim(parentId: number, claim: Claim) {
 	})
 	console.log(`Inserted claim. post ${postId}: ${wording}`)
 
-	for (const example of claim.examples) {
-		await importExample(postId, example)
-	}
+	// for (const example of claim.examples) {
+	// 	await importExample(postId, example)
+	// }
 	for (const counterClaim of claim.counter_claims) {
 		await importCounterClaim(postId, counterClaim)
 	}
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function importExample(parentId: number, example: Example) {
 	let wording = removePrefix(example.original_example, '[original example] ')
 
