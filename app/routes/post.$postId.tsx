@@ -7,7 +7,7 @@ import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { DiscussionOfTheDayHeader } from '#app/components/ui/discussion-of-the-day-header.tsx'
 import { InfoText } from '#app/components/ui/info-text.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
-import { PostWithReplies } from '#app/components/ui/reply-tree.tsx'
+import { PostWithReplies } from '#app/components/ui/post-with-replies.tsx'
 import { db } from '#app/db.ts'
 import { updateHN } from '#app/repositories/hackernews.ts'
 import {

@@ -32,41 +32,19 @@ export function PostWithReplies({
 				/>
 				{!hideChildren && (
 					<div key={`${postId}-subtree`} className={'ml-2 pl-3'}>
-						<TreeReplies
-							replyTree={replyTree}
-							pathFromTargetPost={pathFromTargetPost}
-							treeContext={treeContext}
-						/>
+						{replyTree.replies.map((tree: ImmutableReplyTree) => {
+							return (
+								<PostWithReplies
+									key={`${treeContext.targetPostId}-${tree.post.id}`}
+									replyTree={tree}
+									pathFromTargetPost={pathFromTargetPost.push(tree.post.id)}
+									treeContext={treeContext}
+								/>
+							)
+						})}
 					</div>
 				)}
 			</>
 		)
-	)
-}
-
-function TreeReplies({
-	replyTree,
-	pathFromTargetPost,
-	treeContext,
-}: {
-	replyTree: ImmutableReplyTree
-	pathFromTargetPost: Immutable.List<number>
-	treeContext: TreeContext
-}) {
-	// The purpose of this component is to be able to give state to its children
-	// so that each one can maintain and update its own children state.
-	return (
-		<>
-			{replyTree.replies.map((tree: ImmutableReplyTree) => {
-				return (
-					<PostWithReplies
-						key={`${treeContext.targetPostId}-${tree.post.id}`}
-						replyTree={tree}
-						pathFromTargetPost={pathFromTargetPost.push(tree.post.id)}
-						treeContext={treeContext}
-					/>
-				)
-			})}
-		</>
 	)
 }
