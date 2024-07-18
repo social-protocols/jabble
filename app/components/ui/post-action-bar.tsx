@@ -249,7 +249,7 @@ export function PostActionBar({
 							<Icon name="dots-horizontal" />
 						</button>
 					))}
-				{hideChildren && (
+				{hideChildren && replyTree.replies.size > 0 && (
 					<button onClick={showChildren} className="shrink-0">
 						({replyTree.replies.size}{' '}
 						{replyTree.replies.size == 1 ? 'comment' : 'comments'})
