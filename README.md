@@ -10,6 +10,13 @@
 > [!NOTE]
 > Jabble is a new kind of conversation platform, designed to make conversations on the Internet more intelligent and less polarized. [Signup here](https://social-protocols.org/social-network/) to get notified when we launch.
 
+
+<div align="center">
+ 
+[![zulip](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://social-protocols.zulipchat.com/join/h7dx5k6o66vxrpn6xt2rxxmq/)
+
+</div>
+
 ## How it Works
 
 Like many online social platforms, in Jabble users post things and other users can reply. Here's an example:
