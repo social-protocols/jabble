@@ -4,13 +4,12 @@ export function InfoText({ className }: { className?: string }) {
 	const infoText = `
 ### Hey, you are part of our early experiments! 🚀
 
-Jabble is designed to make conversations on the Internet more intelligent and less polarized. 
-It does this by ranking content not only by how many votes it received, but according to **how convincing** (🔥) it is. 
-The more you comment and vote in the conversation under a post, the more influence your votes will have ([learn more](https://github.com/social-protocols/social-network#readme)).
+Jabble is a fact-checking platform where everyone can participate. Comments are ranked by how convincing they are (🔥), so make sure to provide short, clear, and strong arguments. The more you vote on comments, the more impact your vote has on the final score.
 
-Everything you see here is work in progress.
+Everything you see here is a work in progress.
 We would love to hear your feedback!
-Please use <mailto:mail@social-protocols.org> or submit a [GitHub issue](https://github.com/social-protocols/jabble/issues).
+Join our [Zulip Chat](https://social-protocols.zulipchat.com/join/vfypnwc6nmr32l7nxjjhymnj/) and don't hesitate to ask any questions or present your ideas.
+You can also contact us at <mailto:mail@social-protocols.org> or open [GitHub issues](https://github.com/social-protocols/jabble/issues).
 	`
 
 	return (
