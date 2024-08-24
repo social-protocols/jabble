@@ -21,6 +21,7 @@ export type PostWithScore = Post & { score: number }
 export type FrontPagePost = Post & {
 	oSize: number
 	nTransitiveComments: number
+	p: number
 }
 
 export type Effect = {

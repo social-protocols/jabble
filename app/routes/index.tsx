@@ -86,23 +86,35 @@ export function TopLevelPost({
 	const commentString = post.nTransitiveComments == 1 ? 'comment' : 'comments'
 	const voteString = post.oSize == 1 ? 'vote' : 'votes'
 
+	const pCurrent: number = post.p || NaN
+	const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
+
 	return (
 		<div
 			className={
 				'mb-2 w-full min-w-0 rounded-sm bg-post px-3 py-2 ' + (className || '')
 			}
 		>
-			<div className="text-sm opacity-50">{ageString}</div>
-			<PostContent
-				content={post.content}
-				maxLines={2}
-				deactivateLinks={false}
-				linkTo={`/post/${post.id}`}
-			/>
-			<div className="text-sm opacity-50">
-				<Link to={`/post/${post.id}`}>
-					{post.nTransitiveComments} {commentString} - {post.oSize} {voteString}
-				</Link>
+			<div className="flex">
+				<div className="w-full">
+					<div className="text-sm opacity-50">{ageString}</div>
+					<PostContent
+						content={post.content}
+						maxLines={2}
+						deactivateLinks={false}
+						linkTo={`/post/${post.id}`}
+					/>
+					<div className="text-sm opacity-50">
+						<Link to={`/post/${post.id}`}>
+							{post.nTransitiveComments} {commentString} - {post.oSize}{' '}
+							{voteString}
+						</Link>
+					</div>
+				</div>
+				<div className="ml-2 mr-1 opacity-50">
+					<div className="text-sm">True:</div>
+					<div className="text-5xl">{pCurrentString}</div>
+				</div>
 			</div>
 		</div>
 	)
