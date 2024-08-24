@@ -26,7 +26,7 @@ export function PostForm({ className }: { className?: string }) {
 		>
 			<div className={`flex flex-col items-end ${className || ''}`}>
 				<Textarea
-					placeholder="What's on your mind?"
+					placeholder="What would you like to fact-check?"
 					name="content"
 					value={textAreaValue}
 					onChange={event => setTextAreaValue(event.target.value)}
@@ -49,7 +49,9 @@ export function PostForm({ className }: { className?: string }) {
 						disabled={replyFetcher.state !== 'idle'}
 						className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700"
 					>
-						{replyFetcher.state === 'idle' ? 'Post' : 'submitting...'}
+						{replyFetcher.state === 'idle'
+							? 'Create Fact-Check'
+							: 'submitting...'}
 					</button>
 				</div>
 			</div>

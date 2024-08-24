@@ -62,7 +62,7 @@ export function FrontpageFeed({
 					return false
 				}}
 			>
-				New Discussion
+				New Fact-Check
 			</Button>
 		)
 	}
