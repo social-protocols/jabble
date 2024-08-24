@@ -88,7 +88,7 @@ export default function PostPage() {
 	return (
 		<>
 			<InfoText className="mb-8" />
-			{isDiscussionOfTheDay && <DiscussionOfTheDayHeader />}
+			{false && isDiscussionOfTheDay && <DiscussionOfTheDayHeader />}
 			<DiscussionView
 				key={params['postId']}
 				mutableReplyTree={mutableReplyTree}
