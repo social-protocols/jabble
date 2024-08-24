@@ -1,4 +1,3 @@
-import { Link } from '@remix-run/react'
 import {
 	type Dispatch,
 	type SetStateAction,
@@ -89,10 +88,7 @@ export function PostActionBar({
 		})
 	}
 
-	const showInformedProbability = post.id == treeContext.targetPostId
-
-	const pCurrent: number = treeContext.commentTreeState.posts[post.id]?.p || NaN
-	const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
+	const isTargetPost = post.id == treeContext.targetPostId
 
 	const submitVote = async function (direction: Direction) {
 		const payLoad = {
@@ -165,47 +161,36 @@ export function PostActionBar({
 							<Icon name="chevron-down" className="ml-[-0.2em]" />
 						</button>
 					))}
-				{loggedIn && (
-					<button
-						title={'Upvote'}
-						onClick={async () => await submitVote(Direction.Up)}
-					>
-						<Icon
-							name={
-								postState.voteState.vote == Direction.Up
-									? 'thick-arrow-up-solid'
-									: 'thick-arrow-up'
-							}
-						/>
-					</button>
-				)}
-				{loggedIn &&
-					(showInformedProbability ? (
-						<Link
-							title="Informed upvote probability"
-							to={`/stats/${post.id}`}
-							className="mx-[-0.5em]"
+				{loggedIn && !isTargetPost && (
+					<>
+						<button
+							title={'Upvote'}
+							onClick={async () => await submitVote(Direction.Up)}
 						>
-							{pCurrentString}
-						</Link>
-					) : (
+							<Icon
+								name={
+									postState.voteState.vote == Direction.Up
+										? 'thick-arrow-up-solid'
+										: 'thick-arrow-up'
+								}
+							/>
+						</button>
 						<span className="mx-[-0.6em]">Vote</span>
-					))}
-				{loggedIn && (
-					<button
-						title={'Downvote'}
-						onClick={async () => await submitVote(Direction.Down)}
-						className="mr-[0.3em]"
-					>
-						<Icon
-							name={
-								postState.voteState.vote == Direction.Down
-									? 'thick-arrow-down-solid'
-									: 'thick-arrow-down'
-							}
-							className="mt-[-0.2em]"
-						/>
-					</button>
+						<button
+							title={'Downvote'}
+							onClick={async () => await submitVote(Direction.Down)}
+							className="mr-[0.3em]"
+						>
+							<Icon
+								name={
+									postState.voteState.vote == Direction.Down
+										? 'thick-arrow-down-solid'
+										: 'thick-arrow-down'
+								}
+								className="mt-[-0.2em]"
+							/>
+						</button>
+					</>
 				)}
 				{false && (
 					<button
