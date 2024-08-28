@@ -4,7 +4,10 @@ export function InfoText({ className }: { className?: string }) {
 	const infoText = `
 ### Hey, you are part of our early experiments! 🚀
 
-Jabble is a fact-checking platform where everyone can participate. Comments are ranked by how convincing they are (🔥), so make sure to provide short, clear, and strong arguments. The more you vote on comments, the more impact your vote has on the final score.
+Jabble is a fact-checking platform where everyone can participate.
+Comments are ranked by how convincing they are (🔥), so make sure to provide short, clear, and strong arguments.
+The more you vote on comments, the more impact your vote has on the final score.
+Comments and votes are anonymous to avoid bias.
 
 Everything you see here is a work in progress.
 We would love to hear your feedback!
