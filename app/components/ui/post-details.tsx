@@ -8,6 +8,7 @@ import {
 	type ImmutableReplyTree,
 	type Post,
 } from '#app/types/api-types.ts'
+import { type FallacyDetection } from '#app/utils/fallacy_detection.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
 import { Button } from './button.tsx'
@@ -17,12 +18,14 @@ import { PostInfoBar } from './post-info-bar.tsx'
 
 export function PostDetails({
 	post,
+	fallacyDetection,
 	className,
 	replyTree,
 	pathFromTargetPost,
 	treeContext,
 }: {
 	post: Post
+	fallacyDetection: FallacyDetection | null
 	className?: string
 	replyTree: ImmutableReplyTree
 	pathFromTargetPost: Immutable.List<number>
@@ -75,7 +78,11 @@ export function PostDetails({
 			ref={postDetailsRef}
 		>
 			<div className={'ml-2 flex w-full min-w-0 flex-col'}>
-				<PostInfoBar post={post} postState={postState} />
+				<PostInfoBar
+					post={post}
+					fallacyDetection={fallacyDetection}
+					postState={postState}
+				/>
 				{!isDeleted ? (
 					<PostContent
 						className={!isTargetPost && userHasVoted ? 'opacity-50' : ''}
@@ -92,32 +99,33 @@ export function PostDetails({
 						This post was deleted.
 					</div>
 				)}
-				{isTargetPost && loggedIn ? (
-					<div className="my-2 space-x-4">
-						<Button
-							title={'Upvote'}
-							onClick={async () => await submitVote(Direction.Up)}
-							className={
-								postState.voteState.vote == Direction.Up ? '' : 'opacity-50'
-							}
-						>
-							True
-						</Button>
-						<Button
-							title={'Downvote'}
-							onClick={async () => await submitVote(Direction.Down)}
-							className={
-								postState.voteState.vote == Direction.Down ? '' : 'opacity-50'
-							}
-						>
-							False
-						</Button>
-					</div>
-				) : (
-					<div className="opacity-50">
-						<Link to="/login">Log in to comment and vote.</Link>
-					</div>
-				)}
+				{isTargetPost &&
+					(loggedIn ? (
+						<div className="my-2 space-x-4">
+							<Button
+								title={'Upvote'}
+								onClick={async () => await submitVote(Direction.Up)}
+								className={
+									postState.voteState.vote == Direction.Up ? '' : 'opacity-50'
+								}
+							>
+								True
+							</Button>
+							<Button
+								title={'Downvote'}
+								onClick={async () => await submitVote(Direction.Down)}
+								className={
+									postState.voteState.vote == Direction.Down ? '' : 'opacity-50'
+								}
+							>
+								False
+							</Button>
+						</div>
+					) : (
+						<div className="opacity-50">
+							<Link to="/login">Log in to comment and vote.</Link>
+						</div>
+					))}
 				<PostActionBar
 					key={`${post.id}-actionbar`}
 					post={post}

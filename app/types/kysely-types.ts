@@ -25,6 +25,10 @@ export type Post = {
 	deletedAt: number | null
 	isPrivate: number
 }
+export type Fallacy = {
+	postId: number
+	detection: string
+}
 export type PostStats = {
 	postId: number
 	replies: number
@@ -145,6 +149,7 @@ export type DB = {
 	Vote: Vote
 	Password: Password
 	Post: Post
+	Fallacy: Fallacy
 	PostStats: PostStats
 	Session: Session
 	User: User
