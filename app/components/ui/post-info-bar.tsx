@@ -37,7 +37,7 @@ export function PostInfoBar({
 
 	invariant(effectSizeThresholds[0] !== undefined)
 	const fallacies = (fallacyDetection?.detected_fallacies || []).filter(
-		f => f.probability >= 0.7,
+		f => f.probability >= 0.5,
 	)
 
 	const [showDetails, setShowDetails] = useState(false)
@@ -57,8 +57,9 @@ export function PostInfoBar({
 				<span className="opacity-50">{ageString}</span>
 				{fallacies.map(f => (
 					<span
-						className="cursor-pointer rounded-lg bg-yellow-400 px-2"
+						className="cursor-pointer rounded-full bg-yellow-300 px-2 pb-0.5 text-black dark:bg-yellow-200"
 						key={f.name}
+						title={`Probability: ${(f.probability * 100).toFixed(0)}%`}
 						onClick={() => setShowDetails(!showDetails)}
 					>
 						{f.name}
@@ -66,14 +67,30 @@ export function PostInfoBar({
 				))}
 			</div>
 			{showDetails && (
-				<div className="mb-4 text-sm">
-					{fallacies.map(f => (
-						<div key={f.name}>
-							<span className="rounded-lg bg-yellow-400 px-2">{f.name}</span>
-							<div>{f.analysis}</div>
-						</div>
-					))}
-				</div>
+				<>
+					<div className="my-2">
+						Detected{' '}
+						<a
+							href="https://en.wikipedia.org/wiki/Fallacy"
+							target="_blank"
+							rel="noreferrer"
+							className="underline"
+						>
+							Fallacies
+						</a>
+						:
+					</div>
+					<ul className="mb-4 list-inside list-disc text-sm">
+						{fallacies.map(f => (
+							<li key={f.name}>
+								<span className="rounded-full bg-yellow-300 px-2 pb-0.5 text-xs text-black dark:bg-yellow-200">
+									{f.name}
+								</span>
+								<div className="mb-4 ml-4 mt-1">{f.analysis}</div>
+							</li>
+						))}
+					</ul>
+				</>
 			)}
 		</>
 	)

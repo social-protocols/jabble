@@ -1,12 +1,12 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { redirect } from '@remix-run/server-runtime'
+import { sql } from 'kysely'
 import { z } from 'zod'
 import { zfd } from 'zod-form-data'
 import { db } from '#app/db.ts'
 import { createPost } from '#app/repositories/post.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
-import { sql } from 'kysely'
 import { fallacyDetection } from '#app/utils/fallacy_detection.ts'
 
 const postDataSchema = zfd.formData({

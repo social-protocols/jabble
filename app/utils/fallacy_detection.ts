@@ -1,6 +1,6 @@
-import { z } from 'zod'
 import OpenAI from 'openai'
 import { zodResponseFormat } from 'openai/helpers/zod'
+import { z } from 'zod'
 import { invariant } from './misc.tsx'
 
 const probEnum = z.enum([
@@ -13,6 +13,7 @@ const probEnum = z.enum([
 
 export const FallacyDetectionSchema = z
 	.object({
+		detected_language: z.string(),
 		initial_guesses: z
 			.object({
 				ad_hominem: probEnum,
@@ -38,36 +39,39 @@ export const FallacyDetectionSchema = z
 				slippery_slope: probEnum,
 				straw_man: probEnum,
 				tu_quoque: probEnum,
+				// rthetorical
+				nimby: probEnum,
 			})
-			.describe('Guess which fallacies might be present in the content.'),
+			.describe('Rough guess which fallacies might be present in the content.'),
 		detected_fallacies: z
 			.array(
 				z
 					.object({
 						name: z.enum([
-							'slippery slope',
-							'hasty generalization',
-							'false analogy',
-							'guilt by association',
-							'causal oversimplification',
-							'ad populum',
-							'circular reasoning',
-							'appeal to fear',
-							'ad hominem',
-							'appeal to (false) authority',
-							'false causality',
-							'fallacy of division',
-							'appeal to ridicule',
-							'appeal to worse problems',
-							'appeal to nature',
-							'false dilemma',
-							'straw man',
-							'appeal to anger',
-							'appeal to positive emotion',
-							'equivocation',
-							'appeal to tradition',
-							'appeal to pity',
-							'tu quoque',
+							'Slippery Slope',
+							'Hasty Generalization',
+							'False Analogy',
+							'Guilt by Association',
+							'Causal Oversimplification',
+							'Ad Populum',
+							'Circular Reasoning',
+							'Appeal to Fear',
+							'Ad Hominem',
+							'Appeal to (False) Authority',
+							'False Causality',
+							'Fallacy of Division',
+							'Appeal to Ridicule',
+							'Appeal to Worse Problems',
+							'Appeal to Nature',
+							'False Dilemma',
+							'Straw Man',
+							'Appeal to Anger',
+							'Appeal to Positive Emotion',
+							'Equivocation',
+							'Appeal to Tradition',
+							'Appeal to Pity',
+							'Tu Quoque',
+							'NIMBY',
 						]),
 						analysis: z
 							.string()
