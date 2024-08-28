@@ -7,6 +7,10 @@ import {
 	type PostWithScore,
 } from '#app/types/api-types.ts'
 import { type DBPost } from '#app/types/db-types.ts'
+import {
+	type FallacyDetection,
+	FallacyDetectionSchema,
+} from '#app/utils/fallacy_detection.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { type DB } from '../types/kysely-types.ts'
 import { checkIsAdminOrThrow } from '../utils/auth.server.ts'
@@ -78,6 +82,21 @@ export async function getPost(
 		.where('Post.id', '=', postId)
 		.selectAll('Post')
 		.executeTakeFirstOrThrow()
+}
+
+export async function getFallacies(
+	trx: Transaction<DB>,
+	postId: number,
+): Promise<FallacyDetection | null> {
+	const fallacies = await trx
+		.selectFrom('Fallacy')
+		.where('postId', '=', postId)
+		.select('detection')
+		.executeTakeFirst()
+	if (fallacies == null) return null
+	else {
+		return FallacyDetectionSchema.parse(JSON.parse(fallacies.detection))
+	}
 }
 
 export async function getPostWithScore(

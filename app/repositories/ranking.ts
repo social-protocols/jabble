@@ -19,6 +19,7 @@ import {
 	getPost,
 	getReplyIds,
 	getPostWithScore,
+	getFallacies,
 } from './post.ts'
 import { defaultVoteState, getUserVotes } from './vote.ts'
 
@@ -189,6 +190,7 @@ export async function getReplyTree(
 
 	return {
 		post: post,
+		fallacyDetection: await getFallacies(trx, postId),
 		replies: replies,
 	}
 }
@@ -256,6 +258,7 @@ export async function getChronologicalToplevelPosts(
 			return {
 				...post,
 				parent: post.parentId ? await getPost(trx, post.parentId) : null,
+				fallacyDetection: await getFallacies(trx, post.id),
 				effects: await getEffects(trx, post.id),
 				nTransitiveComments: await getDescendantCount(trx, post.id),
 			}
