@@ -47,6 +47,8 @@ export function PostDetails({
 
 	const isTargetPost = treeContext.targetPostId === post.id
 
+	const isTopLevelPost = post.parentId === null
+
 	const userHasVoted = postState.voteState.vote != Direction.Neutral
 
 	const pCurrent: number = treeContext.commentTreeState.posts[post.id]?.p || NaN
@@ -99,6 +101,7 @@ export function PostDetails({
 					</div>
 				)}
 				{isTargetPost &&
+					isTopLevelPost &&
 					(loggedIn ? (
 						<div className="my-2 space-x-4">
 							<button
@@ -141,7 +144,7 @@ export function PostDetails({
 				/>
 			</div>
 
-			{isTargetPost && (
+			{isTargetPost && isTopLevelPost && (
 				<div className="mx-2 opacity-50">
 					<div className="text-xs">True:</div>
 					<div className="text-5xl">

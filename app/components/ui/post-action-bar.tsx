@@ -90,6 +90,8 @@ export function PostActionBar({
 
 	const isTargetPost = post.id == treeContext.targetPostId
 
+	const isTopLevelPost = post.parentId === null
+
 	const submitVote = async function (direction: Direction) {
 		const payLoad = {
 			postId: post.id,
@@ -161,7 +163,7 @@ export function PostActionBar({
 							<Icon name="chevron-down" className="ml-[-0.2em]" />
 						</button>
 					))}
-				{loggedIn && !isTargetPost && (
+				{loggedIn && (!isTargetPost || !isTopLevelPost) && (
 					<>
 						<button
 							title={'Upvote'}
