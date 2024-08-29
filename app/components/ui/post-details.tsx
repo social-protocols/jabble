@@ -141,6 +141,7 @@ export function PostDetails({
 					pathFromTargetPost={pathFromTargetPost}
 					postDetailsRef={postDetailsRef}
 					treeContext={treeContext}
+					postState={postState}
 				/>
 			</div>
 
