@@ -11,7 +11,6 @@ import {
 import { type FallacyDetection } from '#app/utils/fallacy_detection.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
-import { Button } from './button.tsx'
 import { PostActionBar } from './post-action-bar.tsx'
 import { PostContent } from './post-content.tsx'
 import { PostInfoBar } from './post-info-bar.tsx'
