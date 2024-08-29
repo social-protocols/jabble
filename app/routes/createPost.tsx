@@ -26,7 +26,7 @@ export const action = async (args: ActionFunctionArgs) => {
 		async trx =>
 			await createPost(trx, null, postData.content, userId, {
 				isPrivate: postData.isPrivate == 1,
-				withUpvote: true,
+				withUpvote: false,
 			}),
 	)
 
