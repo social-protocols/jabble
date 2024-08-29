@@ -11,7 +11,6 @@ import {
 import { type FallacyDetection } from '#app/utils/fallacy_detection.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
-import { Button } from './button.tsx'
 import { PostActionBar } from './post-action-bar.tsx'
 import { PostContent } from './post-content.tsx'
 import { PostInfoBar } from './post-info-bar.tsx'
@@ -105,24 +104,30 @@ export function PostDetails({
 					isTopLevelPost &&
 					(loggedIn ? (
 						<div className="my-2 space-x-4">
-							<Button
+							<button
 								title={'Upvote'}
 								onClick={async () => await submitVote(Direction.Up)}
 								className={
-									postState.voteState.vote == Direction.Up ? '' : 'opacity-50'
+									'rounded-full px-4 py-2 text-primary-foreground ' +
+									(postState.voteState.vote == Direction.Up
+										? 'bg-primary text-primary-foreground'
+										: 'text-secondary-foreground outline outline-2 outline-secondary-foreground')
 								}
 							>
 								True
-							</Button>
-							<Button
+							</button>
+							<button
 								title={'Downvote'}
 								onClick={async () => await submitVote(Direction.Down)}
 								className={
-									postState.voteState.vote == Direction.Down ? '' : 'opacity-50'
+									'rounded-full px-4 py-2 text-primary-foreground ' +
+									(postState.voteState.vote == Direction.Down
+										? 'bg-primary text-primary-foreground'
+										: 'text-secondary-foreground outline outline-2 outline-secondary-foreground')
 								}
 							>
 								False
-							</Button>
+							</button>
 						</div>
 					) : (
 						<div className="opacity-50">

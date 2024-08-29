@@ -35,9 +35,9 @@ export function PostInfoBar({
 	const effectSize = effectSizeOnTarget(postState.effectOnTargetPost)
 
 	invariant(effectSizeThresholds[0] !== undefined)
-	const fallacies = (fallacyDetection?.detected_fallacies || []).filter(
-		f => f.probability >= 0.5,
-	)
+	const fallacies = (fallacyDetection?.detected_fallacies || [])
+		.filter(f => f.probability >= 0.5)
+		.sort((a, b) => b.probability - a.probability)
 
 	const [showDetails, setShowDetails] = useState(false)
 
@@ -83,6 +83,9 @@ export function PostInfoBar({
 						{fallacies.map(f => (
 							<li key={f.name}>
 								<span className={fallacyLabelClassNames}>{f.name}</span>
+								<span className="ml-2">
+									{(f.probability * 100).toFixed(0)}%
+								</span>
 								<div className="mb-4 mt-1">{f.analysis}</div>
 							</li>
 						))}
@@ -94,4 +97,4 @@ export function PostInfoBar({
 }
 
 const fallacyLabelClassNames =
-	'rounded-full bg-yellow-300 px-2 text-black dark:bg-yellow-200'
+	'rounded-full bg-yellow-200 px-2 text-black dark:bg-yellow-200'

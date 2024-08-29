@@ -1,5 +1,5 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { useLoaderData, useParams } from '@remix-run/react'
+import { type MetaFunction, useLoaderData, useParams } from '@remix-run/react'
 import * as Immutable from 'immutable'
 import { type Dispatch, type SetStateAction, useState } from 'react'
 import { z } from 'zod'
@@ -72,6 +72,45 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		commentTreeState,
 		isDiscussionOfTheDay,
 	})
+}
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+	/* <meta property="og:title" content="Your Page Title">
+<meta property="og:description" content="A brief description of your page">
+<meta property="og:image" content="URL_to_image">
+<meta property="og:url" content="URL_of_your_page">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Your Page Title">
+<meta name="twitter:description" content="A brief description of your page">
+<meta name="twitter:image" content="URL_to_image"></meta> */
+	const title = 'Jabble'
+	const description = data?.mutableReplyTree.post.content
+
+	return [
+		{
+			title: title,
+		},
+		{
+			property: 'og:title',
+			content: title,
+		},
+		{
+			property: 'twitter:title',
+			content: title,
+		},
+		{
+			name: 'description',
+			content: description,
+		},
+		{
+			name: 'og:description',
+			content: description,
+		},
+		{
+			name: 'twitter:description',
+			content: description,
+		},
+	]
 }
 
 export default function PostPage() {

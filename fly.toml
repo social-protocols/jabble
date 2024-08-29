@@ -3,6 +3,11 @@ primary_region = "cdg"
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []
+swap_size_mb = 1024
+
+[[vm]]
+size = 'shared-cpu-1x'
+memory = '1GB'
 
 [experimental]
 allowed_public_ports = []
@@ -21,10 +26,10 @@ processes = ["app"]
 protocol = "tcp"
 script_checks = []
 
-[services.concurrency]
-hard_limit = 100
-soft_limit = 80
-type = "requests"
+# [services.concurrency]
+# hard_limit = 100
+# soft_limit = 80
+# type = "requests"
 
 [[services.ports]]
 handlers = ["http"]

@@ -29,5 +29,4 @@ lease:
     key: 'litefs/${FLY_APP_NAME}'
 
 exec:
-  - cmd: node ./other/setup-swap.js
   - cmd: ./startup.sh
