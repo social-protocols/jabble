@@ -43,7 +43,7 @@ export function PostInfoBar({
 
 	return (
 		<>
-			<div className="mb-1 flex w-full items-center gap-2 text-xs sm:items-baseline">
+			<div className="mb-1 flex w-full flex-wrap items-start gap-2 text-xs">
 				{effectSize > effectSizeThresholds[0] && (
 					<span title="Convincingness Score. How much this post changed people's opinion on the target post.">
 						<span className="opacity-50">convincing:</span>{' '}
@@ -56,7 +56,7 @@ export function PostInfoBar({
 				<span className="opacity-50">{ageString}</span>
 				{fallacies.map(f => (
 					<span
-						className="cursor-pointer rounded-full bg-yellow-300 px-2 pb-0.5 text-black dark:bg-yellow-200"
+						className={`cursor-pointer ${fallacyLabelClassNames}`}
 						key={f.name}
 						title={`Probability: ${(f.probability * 100).toFixed(0)}%`}
 						onClick={() => setShowDetails(!showDetails)}
@@ -79,13 +79,11 @@ export function PostInfoBar({
 						</a>
 						:
 					</div>
-					<ul className="mb-4 list-inside list-disc text-sm">
+					<ul className="mb-4 ml-4 list-disc text-sm">
 						{fallacies.map(f => (
 							<li key={f.name}>
-								<span className="rounded-full bg-yellow-300 px-2 pb-0.5 text-xs text-black dark:bg-yellow-200">
-									{f.name}
-								</span>
-								<div className="mb-4 ml-4 mt-1">{f.analysis}</div>
+								<span className={fallacyLabelClassNames}>{f.name}</span>
+								<div className="mb-4 mt-1">{f.analysis}</div>
 							</li>
 						))}
 					</ul>
@@ -94,3 +92,6 @@ export function PostInfoBar({
 		</>
 	)
 }
+
+const fallacyLabelClassNames =
+	'rounded-full bg-yellow-300 px-2 text-black dark:bg-yellow-200'
