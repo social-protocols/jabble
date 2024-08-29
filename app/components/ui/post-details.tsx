@@ -102,24 +102,30 @@ export function PostDetails({
 				{isTargetPost &&
 					(loggedIn ? (
 						<div className="my-2 space-x-4">
-							<Button
+							<button
 								title={'Upvote'}
 								onClick={async () => await submitVote(Direction.Up)}
 								className={
-									postState.voteState.vote == Direction.Up ? '' : 'opacity-50'
+									'rounded-full px-4 py-2 text-primary-foreground ' +
+									(postState.voteState.vote == Direction.Up
+										? 'bg-primary text-primary-foreground'
+										: 'text-secondary-foreground outline outline-2 outline-secondary-foreground')
 								}
 							>
 								True
-							</Button>
-							<Button
+							</button>
+							<button
 								title={'Downvote'}
 								onClick={async () => await submitVote(Direction.Down)}
 								className={
-									postState.voteState.vote == Direction.Down ? '' : 'opacity-50'
+									'rounded-full px-4 py-2 text-primary-foreground ' +
+									(postState.voteState.vote == Direction.Down
+										? 'bg-primary text-primary-foreground'
+										: 'text-secondary-foreground outline outline-2 outline-secondary-foreground')
 								}
 							>
 								False
-							</Button>
+							</button>
 						</div>
 					) : (
 						<div className="opacity-50">
