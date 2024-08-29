@@ -3,6 +3,7 @@ primary_region = "cdg"
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []
+swap_size_mb = 1024
 
 [[vm]]
 size = 'shared-cpu-1x'
