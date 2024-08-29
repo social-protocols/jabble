@@ -97,4 +97,4 @@ export function PostInfoBar({
 }
 
 const fallacyLabelClassNames =
-	'rounded-full bg-yellow-300 px-2 text-black dark:bg-yellow-200'
+	'rounded-full bg-yellow-200 px-2 text-black dark:bg-yellow-200'
