@@ -96,24 +96,26 @@ export function TopLevelPost({
 			}
 		>
 			<div className="flex">
-				<div className="w-full">
-					<div className="text-sm opacity-50">{ageString}</div>
+				<div className="flex w-full flex-col">
+					<div className="mb-2 text-sm opacity-50">{ageString}</div>
 					<PostContent
 						content={post.content}
 						maxLines={2}
 						deactivateLinks={false}
 						linkTo={`/post/${post.id}`}
 					/>
-					<div className="text-sm opacity-50">
+					<div className="mt-auto text-sm opacity-50">
 						<Link to={`/post/${post.id}`}>
-							{post.nTransitiveComments} {commentString} - {post.oSize}{' '}
-							{voteString}
+							{post.nTransitiveComments} {commentString}
 						</Link>
 					</div>
 				</div>
 				<div className="ml-2 mr-1 opacity-50">
 					<div className="text-sm">True:</div>
 					<div className="text-5xl">{pCurrentString}</div>
+					<div className="text-sm">
+						{post.oSize} {voteString}
+					</div>
 				</div>
 			</div>
 		</div>

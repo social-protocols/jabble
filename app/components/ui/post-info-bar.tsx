@@ -34,6 +34,8 @@ export function PostInfoBar({
 	const ageString = moment(post.createdAt).fromNow()
 	const effectSize = effectSizeOnTarget(postState.effectOnTargetPost)
 
+	const isRootPost = post.parentId === null
+
 	invariant(effectSizeThresholds[0] !== undefined)
 	const fallacies = (fallacyDetection?.detected_fallacies || [])
 		.filter(f => f.probability >= 0.5)
@@ -50,9 +52,11 @@ export function PostInfoBar({
 						{convincingnessScale(effectSize)}
 					</span>
 				)}
-				<span className="opacity-50">
-					{postState.voteCount} {postState.voteCount == 1 ? 'vote' : 'votes'}
-				</span>
+				{!isRootPost && (
+					<span className="opacity-50">
+						{postState.voteCount} {postState.voteCount == 1 ? 'vote' : 'votes'}
+					</span>
+				)}
 				<span className="opacity-50">{ageString}</span>
 				{fallacies.map(f => (
 					<span

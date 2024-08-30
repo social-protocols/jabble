@@ -147,14 +147,17 @@ export function PostDetails({
 
 			{isTargetPost && isTopLevelPost && (
 				<div className="mx-2 opacity-50">
-					<div className="text-xs">True:</div>
+					<div className="text-sm">True:</div>
 					<div className="text-5xl">
 						<Link
-							title="Informed probability of truth"
+							title="Informed probability of the claim being true"
 							to={`/stats/${post.id}`}
 						>
 							{pCurrentString}
 						</Link>
+					</div>
+					<div className="text-sm">
+						{postState.voteCount} {postState.voteCount == 1 ? 'vote' : 'votes'}
 					</div>
 				</div>
 			)}
