@@ -10,7 +10,7 @@ Comments and votes are anonymous to avoid bias.
 Everything you see here is a work in progress.
 We would love to hear your feedback!
 Join our [Zulip Chat](https://social-protocols.zulipchat.com/join/vfypnwc6nmr32l7nxjjhymnj/) and don't hesitate to ask any questions or present your ideas.
-You can also contact us at <mailto:mail@social-protocols.org> or open [GitHub issues](https://github.com/social-protocols/jabble/issues).
+You can also contact us at <mailto:mail@social-protocols.org>.
 	`
 
 	return (
