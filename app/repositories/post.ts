@@ -8,8 +8,8 @@ import {
 } from '#app/types/api-types.ts'
 import { type DBPost } from '#app/types/db-types.ts'
 import {
-	type FallacyDetection,
-	FallacyDetectionSchema,
+	type FallacyList,
+	FallacyListSchema,
 } from '#app/utils/fallacy_detection.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { type DB } from '../types/kysely-types.ts'
@@ -87,15 +87,15 @@ export async function getPost(
 export async function getFallacies(
 	trx: Transaction<DB>,
 	postId: number,
-): Promise<FallacyDetection | null> {
+): Promise<FallacyList> {
 	const fallacies = await trx
 		.selectFrom('Fallacy')
 		.where('postId', '=', postId)
-		.select('detection')
+		.select(sql<string>`json(detection)`.as('detection'))
 		.executeTakeFirst()
-	if (fallacies == null) return null
+	if (fallacies == null) return []
 	else {
-		return FallacyDetectionSchema.parse(JSON.parse(fallacies.detection))
+		return FallacyListSchema.parse(JSON.parse(fallacies.detection))
 	}
 }
 

@@ -11,11 +11,62 @@ const probEnum = z.enum([
 	'needs further analysis',
 ])
 
-export const FallacyDetectionSchema = z
+export const FallacyListSchema = z
+	.array(
+		z
+			.object({
+				name: z.enum([
+					// logical fallacies
+					'Slippery Slope',
+					'Hasty Generalization',
+					'False Analogy',
+					'Guilt by Association',
+					'Causal Oversimplification',
+					'Ad Populum',
+					'Circular Reasoning',
+					'Appeal to Fear',
+					'Ad Hominem',
+					'Appeal to (False) Authority',
+					'False Causality',
+					'Fallacy of Division',
+					'Appeal to Ridicule',
+					'Appeal to Worse Problems',
+					'Appeal to Nature',
+					'False Dilemma',
+					'Straw Man',
+					'Appeal to Anger',
+					'Appeal to Positive Emotion',
+					'Equivocation',
+					'Appeal to Tradition',
+					'Appeal to Pity',
+					'Tu Quoque',
+					// rthetorical
+					'NIMBY',
+				]),
+				analysis: z
+					.string()
+					.describe(
+						'Explain why the given fallacy is present and how this leads to a wrong conclusion. Use simple language. Be concise. Write in the language of the content you analyze.',
+					),
+				probability: z
+					.number()
+					.describe(
+						'Probability of the fallacy being present based on the analysis (between 0.0 and 1.0).',
+					),
+			})
+			.strict(),
+	)
+	.describe(
+		'The detected fallacies. If in doubt, conduct the analysis as well.',
+	)
+
+const FallacyDetectionSchema = z
 	.object({
 		detected_language: z.string(),
 		initial_guesses: z
 			.object({
+				// TODO: generate this object from enum
+				// logical fallacies
 				ad_hominem: probEnum,
 				ad_populum: probEnum,
 				appeal_to_anger: probEnum,
@@ -43,60 +94,13 @@ export const FallacyDetectionSchema = z
 				nimby: probEnum,
 			})
 			.describe('Rough guess which fallacies might be present in the content.'),
-		detected_fallacies: z
-			.array(
-				z
-					.object({
-						name: z.enum([
-							'Slippery Slope',
-							'Hasty Generalization',
-							'False Analogy',
-							'Guilt by Association',
-							'Causal Oversimplification',
-							'Ad Populum',
-							'Circular Reasoning',
-							'Appeal to Fear',
-							'Ad Hominem',
-							'Appeal to (False) Authority',
-							'False Causality',
-							'Fallacy of Division',
-							'Appeal to Ridicule',
-							'Appeal to Worse Problems',
-							'Appeal to Nature',
-							'False Dilemma',
-							'Straw Man',
-							'Appeal to Anger',
-							'Appeal to Positive Emotion',
-							'Equivocation',
-							'Appeal to Tradition',
-							'Appeal to Pity',
-							'Tu Quoque',
-							'NIMBY',
-						]),
-						analysis: z
-							.string()
-							.describe(
-								'Explain why the given fallacy is present and how this leads to a wrong conclusion. Use simple language. Be concise. Write in the language of the content you analyze.',
-							),
-						probability: z
-							.number()
-							.describe(
-								'Probability of the fallacy being present based on the analysis (between 0.0 and 1.0).',
-							),
-					})
-					.strict(),
-			)
-			.describe(
-				'The detected fallacies. If in doubt, conduct the analysis as well.',
-			),
+		detected_fallacies: FallacyListSchema,
 	})
 	.strict()
 
-export type FallacyDetection = z.infer<typeof FallacyDetectionSchema>
+export type FallacyList = z.infer<typeof FallacyListSchema>
 
-export async function fallacyDetection(
-	content: string,
-): Promise<FallacyDetection> {
+export async function fallacyDetection(content: string): Promise<FallacyList> {
 	const openai = new OpenAI()
 
 	const completion = await openai.beta.chat.completions.parse({
@@ -207,5 +211,5 @@ E₁ is part of E, E has property P. Therefore, E₁ has property P.
 	invariant(choice != undefined, 'no choice')
 	const event = choice.message.parsed
 	invariant(event != null, 'could not parse result')
-	return event
+	return event.detected_fallacies
 }
