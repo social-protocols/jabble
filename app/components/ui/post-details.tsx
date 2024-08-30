@@ -150,7 +150,7 @@ export function PostDetails({
 					<div className="text-sm">True:</div>
 					<div className="text-5xl">
 						<Link
-							title="Informed probability of the claim being true"
+							title="Probability of the claim being true"
 							to={`/stats/${post.id}`}
 						>
 							{pCurrentString}
