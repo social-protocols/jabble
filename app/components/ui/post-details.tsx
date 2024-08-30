@@ -156,7 +156,10 @@ export function PostDetails({
 							{pCurrentString}
 						</Link>
 					</div>
-					<div className="text-sm">
+					<div
+						title="Number of votes this result is based on"
+						className="text-sm"
+					>
 						{postState.voteCount} {postState.voteCount == 1 ? 'vote' : 'votes'}
 					</div>
 				</div>
