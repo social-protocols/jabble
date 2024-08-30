@@ -226,7 +226,7 @@ export async function storeFallacies(
 		async trx =>
 			await sql`
         insert into Fallacy (postId, detection)
-        values (${postId}, jsonb(${JSON.stringify(detectedFallacies)}))
+        values (${postId}, jsonb(${JSON.stringify(detectedFallacies)})) on conflict(postId) do update set detection = excluded.detection
       `.execute(trx),
 	)
 }
