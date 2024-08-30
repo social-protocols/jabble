@@ -6,7 +6,10 @@ import {
 	useRef,
 } from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
-import { toImmutableReplyTree } from '#app/repositories/ranking.ts'
+import {
+	effectSizeOnTarget,
+	toImmutableReplyTree,
+} from '#app/repositories/ranking.ts'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import {
 	type Post,
@@ -14,6 +17,7 @@ import {
 	type CommentTreeState,
 	type ImmutableReplyTree,
 	Direction,
+	type PostState,
 } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
@@ -25,23 +29,38 @@ export function PostActionBar({
 	pathFromTargetPost,
 	postDetailsRef,
 	treeContext,
+	postState,
 }: {
 	post: Post
 	replyTree: ImmutableReplyTree
 	pathFromTargetPost: Immutable.List<number>
 	postDetailsRef: React.RefObject<HTMLDivElement>
 	treeContext: TreeContext
+	postState: PostState
 }) {
 	const user = useOptionalUser()
 	const loggedIn: boolean = user !== null
 	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
 	const [showAdminUI, setShowAdminUI] = useState(false)
 
-	const postState = treeContext.commentTreeState.posts[post.id]
+	const effectSize = effectSizeOnTarget(postState.effectOnTargetPost)
+	const voteIsImpactful = effectSize > 0.1
+	const userHasVoted = postState.voteState.vote !== Direction.Neutral
+
+	const targetPostState =
+		treeContext.commentTreeState.posts[treeContext.targetPostId]
 	invariant(
-		postState !== undefined,
-		`post ${post.id} not found in commentTreeState`,
+		targetPostState !== undefined,
+		`State for target post ${treeContext.targetPostId} not found`,
 	)
+	const userVotedOnTarget = targetPostState.voteState.vote !== Direction.Neutral
+
+	const voteLabel =
+		userHasVoted && userVotedOnTarget && voteIsImpactful ? '🔥' : 'Vote'
+	const voteLabelTitle =
+		userHasVoted && userVotedOnTarget && voteIsImpactful
+			? 'Your vote here currently has a high impact on the fact-checking result'
+			: 'Click the arrows to vote'
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
@@ -177,7 +196,9 @@ export function PostActionBar({
 								}
 							/>
 						</button>
-						<span className="mx-[-0.6em]">Vote</span>
+						<span className="mx-[-0.6em]" title={voteLabelTitle}>
+							{voteLabel}
+						</span>
 						<button
 							title={'Downvote'}
 							onClick={async () => await submitVote(Direction.Down)}
