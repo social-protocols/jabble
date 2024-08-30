@@ -130,7 +130,7 @@ export function PostDetails({
 							</button>
 						</div>
 					) : (
-						<div className="opacity-50">
+						<div className="mt-2 text-sm opacity-50">
 							<Link to="/login">Log in to comment and vote.</Link>
 						</div>
 					))}

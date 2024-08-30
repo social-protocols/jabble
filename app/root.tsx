@@ -281,9 +281,14 @@ function UserMenu() {
 			</Form>
 		</>
 	) : (
-		<Button asChild variant="secondary" size="sm">
-			<Link to="/login">Log In</Link>
-		</Button>
+		<div className="space-x-2">
+			<Button asChild variant="secondary" size="sm">
+				<Link to="/login">Log In</Link>
+			</Button>
+			<Button asChild variant="secondary" size="sm">
+				<Link to="/signup">Sign Up</Link>
+			</Button>
+		</div>
 	)
 }
 

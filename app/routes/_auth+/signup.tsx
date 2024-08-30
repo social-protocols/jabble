@@ -7,7 +7,7 @@ import {
 	redirect,
 	type ActionFunctionArgs,
 } from '@remix-run/node'
-import { Form, useActionData } from '@remix-run/react'
+import { Form, Link, useActionData } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
 import { HoneypotInputs } from 'remix-utils/honeypot/react'
 import { z } from 'zod'
@@ -129,11 +129,8 @@ export default function SignupRoute() {
 		<div className="pt-15 container flex flex-col justify-center pb-32 md:pt-20">
 			<div className="mb-[16px] space-y-5 text-center sm:space-y-10 md:mb-[64px]">
 				<h1 className="text-xl font-bold md:text-h1">Welcome to Jabble!</h1>
-				<p className="text-body-sm text-muted-foreground">
-					Please enter your e-mail.
-				</p>
 			</div>
-			<div className="mx-auto mt-10 min-w-[268px] max-w-sm">
+			<div className="mx-auto mt-6 min-w-[268px] max-w-sm">
 				<Form method="POST" {...form.props}>
 					<AuthenticityTokenInput />
 					<HoneypotInputs />
@@ -145,6 +142,21 @@ export default function SignupRoute() {
 						inputProps={{ ...conform.input(fields.email), autoFocus: true }}
 						errors={fields.email.errors}
 					/>
+					<div className="mb-4">
+						We will use your email only for account-related purposes and don't
+						give it to any third-parties.
+						<br />
+						<br />
+						By signing up, you agree to our{' '}
+						<Link className="underline" to="/privacy">
+							Privacy Policy
+						</Link>{' '}
+						and{' '}
+						<Link className="underline" to="/tos">
+							Terms of Service
+						</Link>
+						.
+					</div>
 					<ErrorList errors={form.errors} id={form.errorId} />
 					<StatusButton
 						className="w-full"
