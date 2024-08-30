@@ -3,6 +3,8 @@ import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
 import { invariant } from './misc.tsx'
 
+// Fallacy detection based on a paper by Helwe et at. (2023): https://arxiv.org/abs/2311.09761
+
 const probEnum = z.enum([
 	'no',
 	'maybe',
