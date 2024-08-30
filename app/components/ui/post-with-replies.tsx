@@ -25,7 +25,7 @@ export function PostWithReplies({
 				<PostDetails
 					key={`${postId}-postdetails`}
 					post={replyTree.post}
-					fallacyDetection={replyTree.fallacyDetection}
+					fallacyList={replyTree.fallacyList}
 					className={'mb-4 ' + (className ?? '')}
 					replyTree={replyTree}
 					pathFromTargetPost={pathFromTargetPost}

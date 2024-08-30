@@ -1,5 +1,5 @@
 import type * as Immutable from 'immutable'
-import { type FallacyDetection } from '#app/utils/fallacy_detection.js'
+import { type FallacyList } from '#app/utils/fallacy_detection.js'
 
 export type Post = {
 	id: number
@@ -20,7 +20,7 @@ export type User = {
 export type PostWithScore = Post & { score: number }
 
 export type FrontPagePost = Post & {
-	fallacyDetection: FallacyDetection | null
+	fallacyList: FallacyList
 	oSize: number
 	nTransitiveComments: number
 	p: number
@@ -41,13 +41,13 @@ export type Effect = {
 
 export type ReplyTree = {
 	post: PostWithScore
-	fallacyDetection: FallacyDetection | null
+	fallacyList: FallacyList
 	replies: ReplyTree[]
 }
 
 export type ImmutableReplyTree = {
 	post: Post
-	fallacyDetection: FallacyDetection | null
+	fallacyList: FallacyList
 	replies: Immutable.List<ImmutableReplyTree>
 }
 
