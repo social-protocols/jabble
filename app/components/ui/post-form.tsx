@@ -26,7 +26,7 @@ export function PostForm({ className }: { className?: string }) {
 		>
 			<div className={`flex flex-col items-end ${className || ''}`}>
 				<Textarea
-					placeholder="What would you like to fact-check?"
+					placeholder="Something that can be voted to be true or false."
 					name="content"
 					value={textAreaValue}
 					onChange={event => setTextAreaValue(event.target.value)}
