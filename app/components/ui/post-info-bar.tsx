@@ -1,26 +1,7 @@
 import moment from 'moment'
 import { useState } from 'react'
-import invariant from 'tiny-invariant'
-import { effectSizeOnTarget } from '#app/repositories/ranking.ts'
 import { type PostState, type Post } from '#app/types/api-types.ts'
 import { type FallacyDetection } from '#app/utils/fallacy_detection.ts'
-
-const effectSizeThresholds: number[] = [0.1, 0.3, 0.5, 0.7, 0.9]
-
-function convincingnessScale(effectSize: number): string {
-	let numberOfFlames = 0
-
-	for (let i = 0; i < effectSizeThresholds.length; i++) {
-		const threshold = effectSizeThresholds[i]
-		invariant(threshold !== undefined)
-		if (effectSize < threshold) {
-			break
-		}
-		numberOfFlames++
-	}
-
-	return '🔥'.repeat(numberOfFlames)
-}
 
 export function PostInfoBar({
 	post,
@@ -32,9 +13,9 @@ export function PostInfoBar({
 	postState: PostState
 }) {
 	const ageString = moment(post.createdAt).fromNow()
-	const effectSize = effectSizeOnTarget(postState.effectOnTargetPost)
 
-	invariant(effectSizeThresholds[0] !== undefined)
+	const isRootPost = post.parentId === null
+
 	const fallacies = (fallacyDetection?.detected_fallacies || [])
 		.filter(f => f.probability >= 0.5)
 		.sort((a, b) => b.probability - a.probability)
@@ -44,15 +25,11 @@ export function PostInfoBar({
 	return (
 		<>
 			<div className="mb-1 flex w-full flex-wrap items-start gap-2 text-xs">
-				{effectSize > effectSizeThresholds[0] && false && (
-					<span title="Convincingness Score. How much this post changed people's opinion on the target post.">
-						<span className="opacity-50">convincing:</span>{' '}
-						{convincingnessScale(effectSize)}
+				{!isRootPost && (
+					<span className="opacity-50">
+						{postState.voteCount} {postState.voteCount == 1 ? 'vote' : 'votes'}
 					</span>
 				)}
-				<span className="opacity-50">
-					{postState.voteCount} {postState.voteCount == 1 ? 'vote' : 'votes'}
-				</span>
 				<span className="opacity-50">{ageString}</span>
 				{fallacies.map(f => (
 					<span
