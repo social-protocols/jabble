@@ -6,10 +6,7 @@ import {
 	useRef,
 } from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
-import {
-	effectSizeOnTarget,
-	toImmutableReplyTree,
-} from '#app/repositories/ranking.ts'
+import { toImmutableReplyTree } from '#app/repositories/ranking.ts'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import {
 	type Post,
@@ -43,24 +40,12 @@ export function PostActionBar({
 	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
 	const [showAdminUI, setShowAdminUI] = useState(false)
 
-	const effectSize = effectSizeOnTarget(postState.effectOnTargetPost)
-	const voteIsImpactful = effectSize > 0.1
-	const userHasVoted = postState.voteState.vote !== Direction.Neutral
-
 	const targetPostState =
 		treeContext.commentTreeState.posts[treeContext.targetPostId]
 	invariant(
 		targetPostState !== undefined,
 		`State for target post ${treeContext.targetPostId} not found`,
 	)
-	const userVotedOnTarget = targetPostState.voteState.vote !== Direction.Neutral
-
-	const voteLabel =
-		userHasVoted && userVotedOnTarget && voteIsImpactful ? '🔥' : 'Vote'
-	const voteLabelTitle =
-		userHasVoted && userVotedOnTarget && voteIsImpactful
-			? 'Your vote here currently has a high impact on the fact-checking result'
-			: 'Click the arrows to vote'
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
@@ -196,9 +181,7 @@ export function PostActionBar({
 								}
 							/>
 						</button>
-						<span className="mx-[-0.6em]" title={voteLabelTitle}>
-							{voteLabel}
-						</span>
+						<span className="mx-[-0.6em]">Vote</span>
 						<button
 							title={'Downvote'}
 							onClick={async () => await submitVote(Direction.Down)}
