@@ -1,22 +1,22 @@
 import moment from 'moment'
 import { useState } from 'react'
 import { type PostState, type Post } from '#app/types/api-types.ts'
-import { type FallacyDetection } from '#app/utils/fallacy_detection.ts'
+import { type FallacyList } from '#app/utils/fallacy_detection.ts'
 
 export function PostInfoBar({
 	post,
-	fallacyDetection,
+	fallacyList,
 	postState,
 }: {
 	post: Post
-	fallacyDetection: FallacyDetection | null
+	fallacyList: FallacyList
 	postState: PostState
 }) {
 	const ageString = moment(post.createdAt).fromNow()
 
 	const isRootPost = post.parentId === null
 
-	const fallacies = (fallacyDetection?.detected_fallacies || [])
+	const fallacies = fallacyList
 		.filter(f => f.probability >= 0.5)
 		.sort((a, b) => b.probability - a.probability)
 

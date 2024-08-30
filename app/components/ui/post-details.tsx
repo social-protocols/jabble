@@ -8,7 +8,7 @@ import {
 	type ImmutableReplyTree,
 	type Post,
 } from '#app/types/api-types.ts'
-import { type FallacyDetection } from '#app/utils/fallacy_detection.ts'
+import { type FallacyList } from '#app/utils/fallacy_detection.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
 import { PostActionBar } from './post-action-bar.tsx'
@@ -17,14 +17,14 @@ import { PostInfoBar } from './post-info-bar.tsx'
 
 export function PostDetails({
 	post,
-	fallacyDetection,
+	fallacyList,
 	className,
 	replyTree,
 	pathFromTargetPost,
 	treeContext,
 }: {
 	post: Post
-	fallacyDetection: FallacyDetection | null
+	fallacyList: FallacyList
 	className?: string
 	replyTree: ImmutableReplyTree
 	pathFromTargetPost: Immutable.List<number>
@@ -81,7 +81,7 @@ export function PostDetails({
 			<div className={'ml-2 flex w-full min-w-0 flex-col'}>
 				<PostInfoBar
 					post={post}
-					fallacyDetection={fallacyDetection}
+					fallacyList={fallacyList}
 					postState={postState}
 				/>
 				{!isDeleted ? (
