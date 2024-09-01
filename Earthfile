@@ -116,25 +116,26 @@ docker-image:
   COPY --dir migrate.ts migrations startup.sh index.js ./
 
   ENV APP_DATABASE_FILENAME="sqlite.db"
-  ENV APP_DATABASE_PATH="$LITEFS_DIR/$APP_DATABASE_FILENAME"
-  ENV GB_DATABASE_PATH="$LITEFS_DIR/global-brain.db"
+  ENV APP_DATABASE_PATH="/data/$APP_DATABASE_FILENAME"
+  ENV GB_DATABASE_PATH="/data/global-brain.db"
   ENV APP_DATABASE_URL="file:$APP_DATABASE_PATH"
   ENV CACHE_DATABASE_FILENAME="cache.db"
-  ENV CACHE_DATABASE_PATH="/$LITEFS_DIR/$CACHE_DATABASE_FILENAME"
+  ENV CACHE_DATABASE_PATH="/data/$CACHE_DATABASE_FILENAME"
   ENV HTTP_LOG_PATH="/data/http-log.jsonl"
   ENV INTERNAL_PORT="8080"
   ENV PORT="8081"
 
-  RUN find / \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20 \
-   && find /nix/store \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20 \
-   && find /app \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20 \
-   && find /app/node_modules \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20 \
-   && find /root \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20
+  # RUN find / \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20 \
+  #  && find /nix/store \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20 \
+  #  && find /app \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20 \
+  #  && find /app/node_modules \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20 \
+  #  && find /root \( -type f -o -type d \) -mindepth 1 -maxdepth 1 -print0 | xargs -0 du -sh | sort -hr | head -20
 
   # starting the application is defined in litefs.yml
   # test locally without litefs:
   # docker run -e SESSION_SECRET -e INTERNAL_COMMAND_TOKEN -e HONEYPOT_SECRET sha256:xyzxyz /bin/sh startup.sh
-  CMD ["/usr/local/bin/litefs", "mount"]
+  # CMD ["/usr/local/bin/litefs", "mount"]
+  CMD ["/app/startup.sh"]
   SAVE IMAGE jabble:latest
 
 docker-image-e2e-test:

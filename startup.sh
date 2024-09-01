@@ -3,8 +3,8 @@
 set -Eeuo pipefail
 
 echo create a backup before migrating...
-sqlite3 /litefs/data/sqlite.db '.backup /data/backup.db'
-ls -lh /data/backup.db
+sqlite3 /litefs/data/sqlite.db ".backup /data/backup-$(date -Iseconds).db"
+ls -lh /data/backup.*
 
 npm run migrate
 
