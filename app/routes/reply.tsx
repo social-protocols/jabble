@@ -1,12 +1,14 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
-import { sql } from 'kysely'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 import { db } from '#app/db.ts'
 import { createPost } from '#app/repositories/post.ts'
 import { getCommentTreeState, getReplyTree } from '#app/repositories/ranking.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
-import { fallacyDetection } from '#app/utils/fallacy_detection.ts'
+import {
+	fallacyDetection,
+	storeFallacies,
+} from '#app/utils/fallacy_detection.ts'
 
 type ReplyData = {
 	parentId: number
@@ -31,6 +33,7 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	invariant(content, 'content !== undefined')
 
+	console.log('detecting fallacies...')
 	const detectedFallaciesPromise = fallacyDetection(content)
 
 	return await db.transaction().execute(async trx => {
@@ -40,13 +43,8 @@ export const action = async (args: ActionFunctionArgs) => {
 		})
 
 		try {
-			console.log('detecting fallacies...')
 			const detectedFallacies = await detectedFallaciesPromise
-
-			await sql`
-        insert into Fallacy (postId, detection)
-        values (${postId}, ${JSON.stringify(detectedFallacies)})
-      `.execute(trx)
+			await storeFallacies(postId, detectedFallacies)
 		} catch (error) {
 			console.error(error)
 		}

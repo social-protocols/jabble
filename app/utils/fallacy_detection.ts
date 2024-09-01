@@ -1,6 +1,8 @@
+import { sql } from 'kysely'
 import OpenAI from 'openai'
 import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
+import { db } from '#app/db.ts'
 import { invariant } from './misc.tsx'
 
 // Fallacy detection based on a paper by Helwe et at. (2023): https://arxiv.org/abs/2311.09761
@@ -214,4 +216,17 @@ E₁ is part of E, E has property P. Therefore, E₁ has property P.
 	const event = choice.message.parsed
 	invariant(event != null, 'could not parse result')
 	return event.detected_fallacies
+}
+
+export async function storeFallacies(
+	postId: number,
+	detectedFallacies: FallacyList,
+) {
+	await db.transaction().execute(
+		async trx =>
+			await sql`
+        insert into Fallacy (postId, detection)
+        values (${postId}, jsonb(${JSON.stringify(detectedFallacies)})) on conflict(postId) do update set detection = excluded.detection
+      `.execute(trx),
+	)
 }

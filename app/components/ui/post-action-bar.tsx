@@ -79,6 +79,13 @@ export function PostActionBar({
 		})
 	}
 
+	async function handleAdminRefreshPost() {
+		await fetch(`/refresh/${post.id}`, {
+			method: 'POST',
+		})
+		location.reload()
+	}
+
 	const scrollIntoView = () => {
 		if (postDetailsRef.current) {
 			postDetailsRef.current.scrollIntoView()
@@ -231,6 +238,7 @@ export function PostActionBar({
 							isDeleted={isDeleted}
 							handleSetDeletedAt={handleSetDeletedAt}
 							handleSetDiscussionOfTheDay={handleSetDiscussionOfTheDay}
+							handleAdminRefreshPost={handleAdminRefreshPost}
 						/>
 					) : (
 						<button
@@ -271,10 +279,12 @@ function AdminFeatureBar({
 	isDeleted,
 	handleSetDeletedAt,
 	handleSetDiscussionOfTheDay,
+	handleAdminRefreshPost,
 }: {
 	isDeleted: boolean
 	handleSetDeletedAt: (deletedAt: number | null) => void
 	handleSetDiscussionOfTheDay: () => void
+	handleAdminRefreshPost: () => void
 }) {
 	return (
 		<>
@@ -295,6 +305,13 @@ function AdminFeatureBar({
 				className="shrink-0"
 			>
 				<Icon name="double-arrow-up" className="mt-[-0.1em]" /> Promote
+			</button>
+			<button
+				title="refresh labels"
+				onClick={handleAdminRefreshPost}
+				className="shrink-0"
+			>
+				<Icon name="reload" className="mt-[-0.1em]" /> Refresh Labels
 			</button>
 		</>
 	)
