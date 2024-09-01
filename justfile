@@ -123,3 +123,6 @@ replay-vote-events:
 	sqlite3 $APP_DATABASE_PATH "delete from score where 1=1"
 	sqlite3 $APP_DATABASE_PATH "delete from scoreEvent where 1=1"
 	time npx tsx other/replay-vote-events.ts
+
+prod-sessions:
+	flyctl ssh console -C 'bash -c "sqlite3 $APP_DATABASE_PATH \"select datetime(updatedAt / 1000, '"'"'unixepoch'"'"') as updated, email, username from Session join User on Session.UserId = User.id order by updatedAt asc;\""'
