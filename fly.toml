@@ -9,9 +9,6 @@ swap_size_mb = 1024
 size = 'shared-cpu-1x'
 memory = '1GB'
 
-[experimental]
-allowed_public_ports = []
-auto_rollback = true
 
 [mounts]
 source = "data"
