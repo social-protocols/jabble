@@ -95,7 +95,9 @@ export async function getFallacies(
 		.executeTakeFirst()
 	if (fallacies == null) return []
 	else {
-		return FallacyListSchema.parse(JSON.parse(fallacies.detection))
+		return FallacyListSchema.parse(JSON.parse(fallacies.detection)).filter(
+			fallacy => fallacy.probability >= 0.8,
+		)
 	}
 }
 
