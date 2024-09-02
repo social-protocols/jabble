@@ -15,7 +15,17 @@ const probEnum = z.enum([
 	'needs further analysis',
 ])
 
-export const FallacyListSchema = z
+export const FallacyListSchema = z.array(
+	z
+		.object({
+			name: z.string(),
+			analysis: z.string(),
+			probability: z.number(),
+		})
+		.strict(),
+)
+
+const FallacyListSchemaPrompt = z
 	.array(
 		z
 			.object({
@@ -98,7 +108,7 @@ const FallacyDetectionSchema = z
 				nimby: probEnum,
 			})
 			.describe('Rough guess which fallacies might be present in the content.'),
-		detected_fallacies: FallacyListSchema,
+		detected_fallacies: FallacyListSchemaPrompt,
 	})
 	.strict()
 
