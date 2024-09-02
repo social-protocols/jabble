@@ -47,6 +47,7 @@ export const action = async (args: ActionFunctionArgs) => {
 	try {
 		const detectedFallacies = await detectedFallaciesPromise
 		await storeFallacies(postId, detectedFallacies)
+		console.log('stored fallacies', detectedFallacies)
 	} catch (error) {
 		console.error(error)
 	}

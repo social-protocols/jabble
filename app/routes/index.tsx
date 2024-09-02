@@ -35,7 +35,7 @@ export function FrontpageFeed({
 	feed: FrontPagePost[]
 	loggedIn: boolean
 }) {
-	const [showNewDiscussionForm, setShowNewDiscussionForm] = useState(false)
+	const [showNewDiscussionForm, setShowNewDiscussionForm] = useState(true)
 
 	return (
 		<div>

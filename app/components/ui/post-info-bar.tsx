@@ -17,7 +17,7 @@ export function PostInfoBar({
 	const isRootPost = post.parentId === null
 
 	const fallacies = fallacyList
-		.filter(f => f.probability >= 0.8)
+		.filter(f => f.probability >= 0.5)
 		.sort((a, b) => b.probability - a.probability)
 
 	const [showDetails, setShowDetails] = useState(false)
@@ -44,29 +44,7 @@ export function PostInfoBar({
 			</div>
 			{showDetails && (
 				<>
-					<div className="my-2">
-						Detected{' '}
-						<a
-							href="https://en.wikipedia.org/wiki/Fallacy"
-							target="_blank"
-							rel="noreferrer"
-							className="underline"
-						>
-							Fallacies
-						</a>
-						:
-					</div>
-					<ul className="mb-4 ml-4 list-disc text-sm">
-						{fallacies.map(f => (
-							<li key={f.name}>
-								<span className={fallacyLabelClassNames}>{f.name}</span>
-								<span className="ml-2">
-									{(f.probability * 100).toFixed(0)}%
-								</span>
-								<div className="mb-4 mt-1">{f.analysis}</div>
-							</li>
-						))}
-					</ul>
+					<RenderFallacyList fallacies={fallacies} className=" mb-4" />
 				</>
 			)}
 		</>
@@ -75,3 +53,39 @@ export function PostInfoBar({
 
 const fallacyLabelClassNames =
 	'rounded-full bg-yellow-200 px-2 text-black dark:bg-yellow-200'
+export function RenderFallacyList({
+	fallacies,
+	className,
+}: {
+	fallacies: { name: string; analysis: string; probability: number }[]
+	className?: string
+}) {
+	return (
+		<div className={`${className || ''}`}>
+			<div className="my-2">
+				Detected{' '}
+				<a
+					href="https://en.wikipedia.org/wiki/Fallacy"
+					target="_blank"
+					rel="noreferrer"
+					className="underline"
+				>
+					Fallacies
+				</a>
+				:
+			</div>
+			<ul className="ml-4 list-disc text-sm">
+				{fallacies.map(f => (
+					<li key={f.name}>
+						<span className={fallacyLabelClassNames}>{f.name}</span>
+						<span className="ml-2">{(f.probability * 100).toFixed(0)}%</span>
+						<div className="mb-4 mt-1">{f.analysis}</div>
+					</li>
+				))}
+				{fallacies.length == 0 && (
+					<p className="py-6">No fallacies detected.</p>
+				)}
+			</ul>
+		</div>
+	)
+}
