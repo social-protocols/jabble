@@ -17,7 +17,7 @@ export function PostInfoBar({
 	const isRootPost = post.parentId === null
 
 	const fallacies = fallacyList
-		.filter(f => f.probability >= 0.5)
+		.filter(f => f.probability >= 0.8)
 		.sort((a, b) => b.probability - a.probability)
 
 	const [showDetails, setShowDetails] = useState(false)
