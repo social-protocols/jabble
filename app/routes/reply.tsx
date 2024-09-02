@@ -36,19 +36,22 @@ export const action = async (args: ActionFunctionArgs) => {
 	console.log('detecting fallacies...')
 	const detectedFallaciesPromise = fallacyDetection(content)
 
-	return await db.transaction().execute(async trx => {
+	const postId = await db.transaction().execute(async trx => {
 		const postId = await createPost(trx, parentId, content, userId, {
 			isPrivate: Boolean(isPrivate),
 			withUpvote: true,
 		})
+		return postId
+	})
 
-		try {
-			const detectedFallacies = await detectedFallaciesPromise
-			await storeFallacies(postId, detectedFallacies)
-		} catch (error) {
-			console.error(error)
-		}
+	try {
+		const detectedFallacies = await detectedFallaciesPromise
+		await storeFallacies(postId, detectedFallacies)
+	} catch (error) {
+		console.error(error)
+	}
 
+	return await db.transaction().execute(async trx => {
 		if (focussedPostId) {
 			const commentTreeState = await getCommentTreeState(
 				trx,
