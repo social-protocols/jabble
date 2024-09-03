@@ -146,8 +146,8 @@ export function PostDetails({
 			</div>
 
 			{isTargetPost && isTopLevelPost && (
-				<div className="mx-2 opacity-50">
-					<div className="text-sm">True:</div>
+				<div className="mx-2 opacity-50 min-w-32 space-y-1">
+					<div className="text-sm">Accuracy estimate:</div>
 					<div className="text-5xl">
 						<Link
 							title="Probability of the claim being true"
