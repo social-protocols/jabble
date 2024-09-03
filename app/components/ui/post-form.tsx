@@ -68,7 +68,10 @@ export function PostForm({ className }: { className?: string }) {
 					>
 						{isAnalyzing ? 'Analyzing...' : 'Analyze'}
 					</button>
-					<div className="mr-2 mt-2">
+					<div
+						className="mr-2 mt-2"
+						title="If you check this box, your discussion will not appear on the discussion feed."
+					>
 						<input type="hidden" name="isPrivate" value={isPrivate} />
 						<input
 							className={'mr-2'}
@@ -77,7 +80,7 @@ export function PostForm({ className }: { className?: string }) {
 							onChange={handleCheckboxChange}
 						/>
 						<label className={'text-gray-700'} htmlFor="isPrivate">
-							private
+							unlisted
 						</label>
 					</div>
 					<button
