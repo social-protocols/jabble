@@ -1,14 +1,15 @@
 import { useFetcher } from '@remix-run/react'
-import { Dispatch, SetStateAction, useState } from 'react'
+import { type Dispatch, type SetStateAction, useState } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
-import { PlaygroundPost } from '#app/types/api-types.js'
+import { type PlaygroundPost } from '#app/types/api-types.js'
 
 export function AnalyzeForm({
 	setPlaygroundPosts,
-	className
+	className,
 }: {
 	setPlaygroundPosts: Dispatch<SetStateAction<PlaygroundPost[]>>
-	className?: string }) {
+	className?: string
+}) {
 	const [textAreaValue, setTextAreaValue] = useState<string>('')
 	const [isAnalyzing, setIsAnalyzing] = useState(false)
 
@@ -63,4 +64,3 @@ export function AnalyzeForm({
 		</replyFetcher.Form>
 	)
 }
-

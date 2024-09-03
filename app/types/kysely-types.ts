@@ -1,4 +1,3 @@
-import { FallacyList } from '#app/utils/fallacy_detection.js'
 import { type ColumnType } from 'kysely'
 export type Generated<T> =
 	T extends ColumnType<infer S, infer I, infer U>

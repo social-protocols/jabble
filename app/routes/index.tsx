@@ -1,23 +1,27 @@
 import { useLoaderData } from '@remix-run/react'
-import { db } from '#app/db.ts'
-import { AnalyzeForm } from '#app/components/ui/analyze-form.tsx'
-import { getNLatestPlaygroundPosts } from '#app/repositories/playground-post.ts'
-import { type PlaygroundPost } from '#app/types/api-types.ts'
-import { useState } from 'react'
 import moment from 'moment'
+import { useState } from 'react'
+import { Markdown } from '#app/components/markdown.tsx'
+import { AnalyzeForm } from '#app/components/ui/analyze-form.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
 import { RenderFallacyList } from '#app/components/ui/post-info-bar.tsx'
-import { Markdown } from '#app/components/markdown.tsx'
+import { db } from '#app/db.ts'
+import { getNLatestPlaygroundPosts } from '#app/repositories/playground-post.ts'
+import { type PlaygroundPost } from '#app/types/api-types.ts'
 
 export async function loader() {
-	const latestPlaygroundPosts = await db.transaction().execute(async trx => await getNLatestPlaygroundPosts(trx, 5))
+	const latestPlaygroundPosts = await db
+		.transaction()
+		.execute(async trx => await getNLatestPlaygroundPosts(trx, 5))
 	return { latestPlaygroundPosts }
 }
 
 export default function BullShredder() {
 	const { latestPlaygroundPosts } = useLoaderData<typeof loader>()
 
-	const [ playgroundPostFeed, setPlaygroundPostFeed ] = useState<PlaygroundPost[]>(latestPlaygroundPosts)
+	const [playgroundPostFeed, setPlaygroundPostFeed] = useState<
+		PlaygroundPost[]
+	>(latestPlaygroundPosts)
 
 	const infoText = `
 # Welcome to Jabble!
@@ -30,17 +34,29 @@ If you don't want your post to be sent to OpenAI, please don't post.
 	return (
 		<div className="space-y-2">
 			<Markdown deactivateLinks={false}>{infoText}</Markdown>
-			<AnalyzeForm setPlaygroundPosts={setPlaygroundPostFeed} className='mb-6' />
+			<AnalyzeForm
+				setPlaygroundPosts={setPlaygroundPostFeed}
+				className="mb-6"
+			/>
 			<div className="space-y-7">
 				{playgroundPostFeed.map(post => {
-					return <FrontpagePlaygroundPost playgroundPost={post} />
+					return (
+						<FrontpagePlaygroundPost
+							key={`playground-post-` + post.id}
+							playgroundPost={post}
+						/>
+					)
 				})}
 			</div>
 		</div>
 	)
 }
 
-function FrontpagePlaygroundPost({ playgroundPost }: { playgroundPost: PlaygroundPost }) {
+function FrontpagePlaygroundPost({
+	playgroundPost,
+}: {
+	playgroundPost: PlaygroundPost
+}) {
 	return (
 		<div>
 			<PlaygroundPostInfoBar playgroundPost={playgroundPost} />
@@ -49,10 +65,15 @@ function FrontpagePlaygroundPost({ playgroundPost }: { playgroundPost: Playgroun
 	)
 }
 
-function PlaygroundPostInfoBar({ playgroundPost }: {  playgroundPost: PlaygroundPost }) {
+function PlaygroundPostInfoBar({
+	playgroundPost,
+}: {
+	playgroundPost: PlaygroundPost
+}) {
 	const ageString = moment(playgroundPost.createdAt).fromNow()
 	const [showDetails, setShowDetails] = useState(false)
-	const fallacyLabelClassNames = 'rounded-full bg-yellow-200 px-2 text-black dark:bg-yellow-200'
+	const fallacyLabelClassNames =
+		'rounded-full bg-yellow-200 px-2 text-black dark:bg-yellow-200'
 	return (
 		<>
 			<div className="mb-1 flex w-full flex-wrap items-start gap-2 text-xs">
@@ -67,7 +88,12 @@ function PlaygroundPostInfoBar({ playgroundPost }: {  playgroundPost: Playground
 						{f.name}
 					</span>
 				))}
-				{showDetails && <RenderFallacyList fallacies={playgroundPost.detection} className="mb-4" />}
+				{showDetails && (
+					<RenderFallacyList
+						fallacies={playgroundPost.detection}
+						className="mb-4"
+					/>
+				)}
 			</div>
 		</>
 	)

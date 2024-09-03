@@ -1,15 +1,21 @@
-import { DB } from "#app/types/kysely-types.ts";
-import { PlaygroundPost } from "#app/types/api-types.ts";
-import { FallacyList, FallacyListSchema } from "#app/utils/fallacy_detection.ts";
-import { Transaction } from "kysely";
+import { type Transaction } from 'kysely'
+import { type PlaygroundPost } from '#app/types/api-types.ts'
+import { type DB } from '#app/types/kysely-types.ts'
+import {
+	type FallacyList,
+	FallacyListSchema,
+} from '#app/utils/fallacy_detection.ts'
 
-export async function storePlaygroundPost(trx: Transaction<DB>, content: string, detection: FallacyList): Promise<PlaygroundPost> {
-	
+export async function storePlaygroundPost(
+	trx: Transaction<DB>,
+	content: string,
+	detection: FallacyList,
+): Promise<PlaygroundPost> {
 	const playgroundPost = await trx
-		.insertInto("PlaygroundPost")
+		.insertInto('PlaygroundPost')
 		.values({
 			content: content,
-			detection: JSON.stringify(detection)
+			detection: JSON.stringify(detection),
 		})
 		.returningAll()
 		.executeTakeFirstOrThrow()
@@ -22,10 +28,13 @@ export async function storePlaygroundPost(trx: Transaction<DB>, content: string,
 	}
 }
 
-export async function getNLatestPlaygroundPosts(trx: Transaction<DB>, n: number) {
+export async function getNLatestPlaygroundPosts(
+	trx: Transaction<DB>,
+	n: number,
+) {
 	const results = await trx
-		.selectFrom("PlaygroundPost")
-		.orderBy("createdAt desc")
+		.selectFrom('PlaygroundPost')
+		.orderBy('createdAt desc')
 		.limit(n)
 		.selectAll()
 		.execute()

@@ -12,4 +12,3 @@ export async function up(db: Kysely<any>): Promise<void> {
 		`.execute(trx)
 	})
 }
-
