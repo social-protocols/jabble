@@ -1,3 +1,4 @@
+import { FallacyList } from '#app/utils/fallacy_detection.js'
 import { type ColumnType } from 'kysely'
 export type Generated<T> =
 	T extends ColumnType<infer S, infer I, infer U>
@@ -145,6 +146,13 @@ export type DiscussionOfTheDay = {
 	promotedAt: number
 }
 
+export type PlaygroundPost = {
+	id: Generated<number>
+	content: string
+	detection: string
+	createdAt: Generated<number>
+}
+
 export type DB = {
 	Vote: Vote
 	Password: Password
@@ -165,4 +173,5 @@ export type DB = {
 	Lineage: Lineage
 	HNItem: HNItem
 	DiscussionOfTheDay: DiscussionOfTheDay
+	PlaygroundPost: PlaygroundPost
 }

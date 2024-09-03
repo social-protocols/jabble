@@ -29,6 +29,7 @@ export type IconName =
 	| 'moon'
 	| 'pencil-1'
 	| 'pencil-2'
+	| 'person'
 	| 'plus-circled'
 	| 'plus'
 	| 'question-mark-circled'

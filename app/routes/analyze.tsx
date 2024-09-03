@@ -2,6 +2,8 @@ import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { zfd } from 'zod-form-data'
 
+import { getNLatestPlaygroundPosts, storePlaygroundPost } from '#app/repositories/playground-post.ts'
+import { db } from '#app/db.ts'
 import { fallacyDetection } from '#app/utils/fallacy_detection.ts'
 
 const postDataSchema = zfd.formData({
@@ -14,6 +16,8 @@ export const action = async (args: ActionFunctionArgs) => {
 	const postData = postDataSchema.parse(await request.json())
 
 	console.log('detecting fallacies...')
-	const detectedFallacies = await fallacyDetection(postData.content)
-	return detectedFallacies
+	const detection = await fallacyDetection(postData.content)
+	await db.transaction().execute(trx => storePlaygroundPost(trx, postData.content, detection))
+
+	return await db.transaction().execute(async trx => await getNLatestPlaygroundPosts(trx, 5))
 }
