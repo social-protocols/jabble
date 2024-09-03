@@ -37,7 +37,10 @@ export function AnalyzeForm({
 		}
 	}
 
-	const disclaimer = `**Disclaimer**: Your text will be sent to the OpenAI API for analysis.`
+	const disclaimer = `
+Press **Ctrl + Enter** to analyze.  
+**Disclaimer**: Your text will be sent to the OpenAI API for analysis.
+`
 
 	return (
 		<replyFetcher.Form
@@ -53,12 +56,21 @@ export function AnalyzeForm({
 					value={textAreaValue}
 					onChange={event => setTextAreaValue(event.target.value)}
 					className="mb-2 w-full min-h-[150px]"
+					onKeyDown={
+						(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+							if (event.ctrlKey && event.key === 'Enter') {
+								event.preventDefault(); // Prevent default behavior if needed
+								handleAnalyze();
+							}
+						}
+					}
 				/>
 				<div className={'flex flex-row'}>
 					<div className="text-gray-500 mr-auto self-end">
 						<Markdown deactivateLinks={false}>{disclaimer}</Markdown>
 					</div>
 					<button
+						title="Ctrl + Enter"
 						disabled={isAnalyzing}
 						className="rounded bg-yellow-200 px-4 py-2 text-base font-bold text-black dark:bg-yellow-200"
 						onClick={e => {
