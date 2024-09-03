@@ -1,123 +1,120 @@
-import { type LoaderFunctionArgs } from '@remix-run/node'
-import { Link, useLoaderData } from '@remix-run/react'
+import { useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { useState } from 'react'
-import { Button } from '#app/components/ui/button.tsx'
-import { InfoText } from '#app/components/ui/info-text.tsx'
+import { Markdown } from '#app/components/markdown.tsx'
+import { AnalyzeForm } from '#app/components/ui/analyze-form.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
-import { PostForm } from '#app/components/ui/post-form.tsx'
+import { RenderFallacyList } from '#app/components/ui/post-info-bar.tsx'
 import { db } from '#app/db.ts'
-import * as rankingTs from '#app/repositories/ranking.ts'
-import { type FrontPagePost } from '#app/types/api-types.ts'
-import { getUserId } from '#app/utils/auth.server.ts'
+import { getNLatestPlaygroundPosts } from '#app/repositories/playground-post.ts'
+import { type PlaygroundPost } from '#app/types/api-types.ts'
 
-export async function loader({ request }: LoaderFunctionArgs) {
-	const userId: string | null = await getUserId(request)
-	const loggedIn = userId !== null
-	const feed = await db.transaction().execute(async trx => {
-		return await rankingTs.getChronologicalToplevelPosts(trx)
-	})
-	return { loggedIn, feed }
+export async function loader() {
+	const latestPlaygroundPosts = await db
+		.transaction()
+		.execute(async trx => await getNLatestPlaygroundPosts(trx, 10))
+	return { latestPlaygroundPosts }
 }
 
-export default function Explore() {
-	// due to the loader, this component will never be rendered, but we'll return
-	// the error boundary just in case.
-	let data = useLoaderData<typeof loader>()
+export default function BullShredder() {
+	const { latestPlaygroundPosts } = useLoaderData<typeof loader>()
 
-	return <FrontpageFeed feed={data.feed} loggedIn={data.loggedIn} />
-}
+	const [playgroundPostFeed, setPlaygroundPostFeed] = useState<
+		PlaygroundPost[]
+	>(latestPlaygroundPosts)
 
-export function FrontpageFeed({
-	feed,
-	loggedIn,
-}: {
-	feed: FrontPagePost[]
-	loggedIn: boolean
-}) {
-	const [showNewDiscussionForm, setShowNewDiscussionForm] = useState(true)
+	const infoText = `
+# Welcome to Jabble!
+
+This tool analyzes your posts for [rhetorical fallacies](https://en.wikipedia.org/wiki/Fallacy).
+You can use it to review your own social media posts or to detect whether someone else is trying to manipulate you.
+	`
+
+	const [currentAnalysis, setCurrentAnalysis] = useState<PlaygroundPost | null>(
+		null,
+	)
 
 	return (
 		<div>
-			<InfoText />
-
-			{showNewDiscussionForm ? (
-				<PostForm className="mb-4" />
-			) : (
-				loggedIn && <div className="mb-4">{newDiscussionButton()}</div>
-			)}
-
-			<div className="mx-auto w-full">
-				<PostList feed={feed} />
+			<div className="mb-4 space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
+				<Markdown deactivateLinks={false}>{infoText}</Markdown>
+				<AnalyzeForm
+					setPlaygroundPosts={setPlaygroundPostFeed}
+					setCurrentAnalysis={setCurrentAnalysis}
+					className="mb-6"
+				/>
+				{currentAnalysis && (
+					<div>
+						<div className="mb-1 flex w-full flex-wrap items-start gap-2">
+							<RenderFallacyList
+								fallacies={currentAnalysis.detection}
+								className="mb-4"
+							/>
+						</div>
+					</div>
+				)}
+			</div>
+			<div className="p-4">
+				<Markdown deactivateLinks={true}>{'## Recent Fallacy Checks'}</Markdown>
+				<div className="mt-3 space-y-7">
+					{playgroundPostFeed.map(post => {
+						return (
+							<FrontpagePlaygroundPost
+								key={`playground-post-` + post.id}
+								playgroundPost={post}
+							/>
+						)
+					})}
+				</div>
 			</div>
 		</div>
 	)
-
-	function newDiscussionButton() {
-		return (
-			<Button
-				variant="secondary"
-				onClick={() => {
-					setShowNewDiscussionForm(!showNewDiscussionForm)
-					return false
-				}}
-			>
-				New Fact-Check
-			</Button>
-		)
-	}
 }
 
-function PostList({ feed }: { feed: FrontPagePost[] }) {
-	const filteredFeed = feed.filter(post => !post.isPrivate)
-	return filteredFeed.map(post => {
-		return <TopLevelPost key={post.id} post={post} className="flex-1" />
-	})
-}
-
-export function TopLevelPost({
-	post,
-	className,
+function FrontpagePlaygroundPost({
+	playgroundPost,
 }: {
-	post: FrontPagePost
-	className?: string
+	playgroundPost: PlaygroundPost
 }) {
-	const ageString = moment(post.createdAt).fromNow()
-	const commentString = post.nTransitiveComments == 1 ? 'comment' : 'comments'
-	const voteString = post.oSize == 1 ? 'vote' : 'votes'
+	return (
+		<div>
+			<PlaygroundPostInfoBar playgroundPost={playgroundPost} />
+			<PostContent content={playgroundPost.content} deactivateLinks={true} />
+		</div>
+	)
+}
 
-	const pCurrent: number = post.p || NaN
-	const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
+function PlaygroundPostInfoBar({
+	playgroundPost,
+}: {
+	playgroundPost: PlaygroundPost
+}) {
+	const ageString = moment(playgroundPost.createdAt).fromNow()
+	const [showDetails, setShowDetails] = useState(false)
+	const fallacyLabelClassNames =
+		'rounded-full bg-yellow-200 px-2 text-black dark:bg-yellow-200'
 
 	return (
-		<div
-			className={
-				'mb-2 w-full min-w-0 rounded-sm bg-post px-3 py-2 ' + (className || '')
-			}
-		>
-			<div className="flex">
-				<div className="flex w-full flex-col">
-					<div className="mb-2 text-sm opacity-50">{ageString}</div>
-					<PostContent
-						content={post.content}
-						maxLines={2}
-						deactivateLinks={false}
-						linkTo={`/post/${post.id}`}
+		<>
+			<div className="mb-1 flex w-full flex-wrap items-start gap-2 text-xs">
+				<span className="opacity-50">{ageString}</span>
+				{playgroundPost.detection.map(f => (
+					<span
+						className={`cursor-pointer ${fallacyLabelClassNames}`}
+						key={f.name}
+						title={`Probability: ${(f.probability * 100).toFixed(0)}%`}
+						onClick={() => setShowDetails(!showDetails)}
+					>
+						{f.name}
+					</span>
+				))}
+				{showDetails && (
+					<RenderFallacyList
+						fallacies={playgroundPost.detection}
+						className="mb-4 text-sm"
 					/>
-					<div className="mt-auto text-sm opacity-50">
-						<Link to={`/post/${post.id}`}>
-							{post.nTransitiveComments} {commentString}
-						</Link>
-					</div>
-				</div>
-				<div className="ml-2 mr-1 min-w-32 space-y-1 opacity-50">
-					<div className="text-sm">Accuracy estimate:</div>
-					<div className="text-4xl">{pCurrentString}</div>
-					<div className="text-sm">
-						{post.oSize} {voteString}
-					</div>
-				</div>
+				)}
 			</div>
-		</div>
+		</>
 	)
 }

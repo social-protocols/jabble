@@ -1,16 +1,9 @@
 import { useFetcher } from '@remix-run/react'
 import { type ChangeEvent, useState, type FormEvent } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
-import {
-	type FallacyList,
-	FallacyListSchema,
-} from '#app/utils/fallacy_detection.ts'
-import { RenderFallacyList } from './post-info-bar.tsx'
 
 export function PostForm({ className }: { className?: string }) {
 	const [textAreaValue, setTextAreaValue] = useState<string>('')
-	const [analysis, setAnalysis] = useState<FallacyList | null>(null)
-	const [isAnalyzing, setIsAnalyzing] = useState(false)
 
 	const [isPrivate, setIsPrivate] = useState<number>(0)
 
@@ -24,24 +17,6 @@ export function PostForm({ className }: { className?: string }) {
 		setIsPrivate(Number(event.target.checked))
 	}
 
-	async function handleAnalyze() {
-		setIsAnalyzing(true)
-		try {
-			const payload = {
-				content: textAreaValue,
-			}
-			const response = await fetch('/analyze', {
-				method: 'POST',
-				body: JSON.stringify(payload),
-				headers: { 'Content-Type': 'application/json' },
-			})
-
-			setAnalysis(FallacyListSchema.parse(await response.json()))
-		} finally {
-			setIsAnalyzing(false)
-		}
-	}
-
 	return (
 		<replyFetcher.Form
 			id="create-post"
@@ -49,7 +24,7 @@ export function PostForm({ className }: { className?: string }) {
 			action="/createPost"
 			onSubmit={handleSubmit}
 		>
-			<div className={`flex flex-col ${className || ''}`}>
+			<div className={`flex flex-col items-end ${className || ''}`}>
 				<Textarea
 					placeholder="Something that can be voted to be true or false."
 					name="content"
@@ -57,17 +32,7 @@ export function PostForm({ className }: { className?: string }) {
 					onChange={event => setTextAreaValue(event.target.value)}
 					className="mb-2 w-full"
 				/>
-				<div className={'flex w-full flex-row'}>
-					<button
-						disabled={isAnalyzing}
-						className=" mr-auto rounded  bg-yellow-200 px-4 py-2 text-base font-bold  text-black dark:bg-yellow-200"
-						onClick={e => {
-							e.preventDefault()
-							handleAnalyze()
-						}}
-					>
-						{isAnalyzing ? 'Analyzing...' : 'Analyze'}
-					</button>
+				<div className={'flex flex-row'}>
 					<div
 						className="mr-2 mt-2"
 						title="If you check this box, your discussion will not appear on the discussion feed. Anyone with the link can still join the discussion."
@@ -92,9 +57,6 @@ export function PostForm({ className }: { className?: string }) {
 							: 'submitting...'}
 					</button>
 				</div>
-				{analysis && (
-					<RenderFallacyList className="mb-4 mt-4" fallacies={analysis} />
-				)}
 			</div>
 		</replyFetcher.Form>
 	)

@@ -268,10 +268,12 @@ export default withSentry(AppWithProviders)
 
 function UserMenu() {
 	const user = useOptionalUser()
-	return user ? (
+
+	const accountManagementComponents = user ? (
 		<>
-			<span className="text-body-sm font-bold">{user.username}</span>
-			{/*<Link to={'/activities/myVotes'}>🔎 Review</Link>*/}
+			<Icon className="text-body-md" name="person">
+				{user.username}
+			</Icon>
 			<Form action="/logout" method="POST">
 				<button type="submit">
 					<Icon className="text-body-md" name="exit">
@@ -289,6 +291,15 @@ function UserMenu() {
 				<Link to="/signup">Sign Up</Link>
 			</Button>
 		</div>
+	)
+
+	return (
+		<>
+			<Link to="/discuss" className="underline">
+				<Icon name="chat-bubble">Discussions</Icon>
+			</Link>
+			{accountManagementComponents}
+		</>
 	)
 }
 
