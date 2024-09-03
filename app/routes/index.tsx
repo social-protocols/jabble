@@ -34,7 +34,7 @@ You can use it to review your own social media posts or to detect whether someon
 
 	return (
 		<div>
-			<div className="mb-4 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm space-y-2">
+			<div className="mb-4 rounded-xl border-2 border-solid border-gray-200 dark:border-gray-700 p-4 text-sm space-y-2">
 				<Markdown deactivateLinks={false}>{infoText}</Markdown>
 				<AnalyzeForm
 					setPlaygroundPosts={setPlaygroundPostFeed}
