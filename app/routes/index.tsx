@@ -110,7 +110,7 @@ export function TopLevelPost({
 						</Link>
 					</div>
 				</div>
-				<div className="ml-2 mr-1 opacity-50 min-w-32 space-y-1">
+				<div className="ml-2 mr-1 min-w-32 space-y-1 opacity-50">
 					<div className="text-sm">Accuracy estimate:</div>
 					<div className="text-4xl">{pCurrentString}</div>
 					<div className="text-sm">
