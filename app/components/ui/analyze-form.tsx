@@ -1,13 +1,16 @@
 import { useFetcher } from '@remix-run/react'
 import { type Dispatch, type SetStateAction, useState } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
-import { type PlaygroundPost } from '#app/types/api-types.js'
+import { type PlaygroundPost } from '#app/types/api-types.ts'
+import { Markdown } from '../markdown.tsx'
 
 export function AnalyzeForm({
 	setPlaygroundPosts,
+	setCurrentAnalysis,
 	className,
 }: {
 	setPlaygroundPosts: Dispatch<SetStateAction<PlaygroundPost[]>>
+	setCurrentAnalysis: Dispatch<SetStateAction<PlaygroundPost | null>>
 	className?: string
 }) {
 	const [textAreaValue, setTextAreaValue] = useState<string>('')
@@ -26,12 +29,15 @@ export function AnalyzeForm({
 				body: JSON.stringify(payload),
 				headers: { 'Content-Type': 'application/json' },
 			})
-			setPlaygroundPosts((await response.json()) as PlaygroundPost[])
-			setTextAreaValue('')
+			const responseJson = await response.json() as { newPlaygroundPost: PlaygroundPost, nLatestPlaygroundPosts: PlaygroundPost[] }
+			setPlaygroundPosts(responseJson.nLatestPlaygroundPosts)
+			setCurrentAnalysis(responseJson.newPlaygroundPost)
 		} finally {
 			setIsAnalyzing(false)
 		}
 	}
+
+	const disclaimer = `**Disclaimer**: Your text will be sent to the OpenAI API for analysis.`
 
 	return (
 		<replyFetcher.Form
@@ -40,18 +46,21 @@ export function AnalyzeForm({
 			action="/analyze"
 			onSubmit={handleAnalyze}
 		>
-			<div className={`flex flex-col items-end ${className || ''}`}>
+			<div className={`flex flex-col ${className || ''}`}>
 				<Textarea
 					placeholder="Something you want to be analyzed for fallacies."
 					name="content"
 					value={textAreaValue}
 					onChange={event => setTextAreaValue(event.target.value)}
-					className="mb-2 w-full"
+					className="mb-2 w-full min-h-[150px]"
 				/>
 				<div className={'flex flex-row'}>
+					<div className="text-gray-500 mr-auto self-end">
+						<Markdown deactivateLinks={false}>{disclaimer}</Markdown>
+					</div>
 					<button
 						disabled={isAnalyzing}
-						className="mr-auto rounded bg-yellow-200 px-4 py-2 text-base font-bold text-black dark:bg-yellow-200"
+						className="rounded bg-yellow-200 px-4 py-2 text-base font-bold text-black dark:bg-yellow-200"
 						onClick={e => {
 							e.preventDefault()
 							handleAnalyze()

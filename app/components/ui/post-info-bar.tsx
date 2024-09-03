@@ -44,7 +44,7 @@ export function PostInfoBar({
 			</div>
 			{showDetails && (
 				<>
-					<RenderFallacyList fallacies={fallacies} className=" mb-4" />
+					<RenderFallacyList fallacies={fallacies} className="mb-4 text-sm" />
 				</>
 			)}
 		</>
@@ -74,7 +74,7 @@ export function RenderFallacyList({
 				</a>
 				:
 			</div>
-			<ul className="ml-4 list-disc text-sm">
+			<ul className="ml-4 list-disc">
 				{fallacies.map(f => (
 					<li key={f.name}>
 						<span className={fallacyLabelClassNames}>{f.name}</span>

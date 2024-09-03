@@ -18,13 +18,18 @@ export const action = async (args: ActionFunctionArgs) => {
 
 	const postData = postDataSchema.parse(await request.json())
 
+	const nLatestPlaygroundPosts = await db
+		.transaction()
+		.execute(async trx => await getNLatestPlaygroundPosts(trx, 10))
+
 	console.log('detecting fallacies...')
 	const detection = await fallacyDetection(postData.content)
-	await db
+	const newPlaygroundPost = await db
 		.transaction()
 		.execute(trx => storePlaygroundPost(trx, postData.content, detection))
 
-	return await db
-		.transaction()
-		.execute(async trx => await getNLatestPlaygroundPosts(trx, 5))
+	return {
+		newPlaygroundPost,
+		nLatestPlaygroundPosts,
+	}
 }
