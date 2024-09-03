@@ -30,11 +30,13 @@ This tool analyzes your posts for [rhetorical fallacies](https://en.wikipedia.or
 You can use it to review your own social media posts or to detect whether someone else is trying to manipulate you.
 	`
 
-	const [currentAnalysis, setCurrentAnalysis] = useState<PlaygroundPost | null>(null)
+	const [currentAnalysis, setCurrentAnalysis] = useState<PlaygroundPost | null>(
+		null,
+	)
 
 	return (
 		<div>
-			<div className="mb-4 rounded-xl border-2 border-solid border-gray-200 dark:border-gray-700 p-4 text-sm space-y-2">
+			<div className="mb-4 space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
 				<Markdown deactivateLinks={false}>{infoText}</Markdown>
 				<AnalyzeForm
 					setPlaygroundPosts={setPlaygroundPostFeed}
@@ -53,8 +55,8 @@ You can use it to review your own social media posts or to detect whether someon
 				)}
 			</div>
 			<div className="p-4">
-				<Markdown deactivateLinks={true}>{"## Recent Fallacy Checks"}</Markdown>
-				<div className="space-y-7 mt-3">
+				<Markdown deactivateLinks={true}>{'## Recent Fallacy Checks'}</Markdown>
+				<div className="mt-3 space-y-7">
 					{playgroundPostFeed.map(post => {
 						return (
 							<FrontpagePlaygroundPost

@@ -29,7 +29,10 @@ export function AnalyzeForm({
 				body: JSON.stringify(payload),
 				headers: { 'Content-Type': 'application/json' },
 			})
-			const responseJson = await response.json() as { newPlaygroundPost: PlaygroundPost, nLatestPlaygroundPosts: PlaygroundPost[] }
+			const responseJson = (await response.json()) as {
+				newPlaygroundPost: PlaygroundPost
+				nLatestPlaygroundPosts: PlaygroundPost[]
+			}
 			setPlaygroundPosts(responseJson.nLatestPlaygroundPosts)
 			setCurrentAnalysis(responseJson.newPlaygroundPost)
 		} finally {
@@ -55,18 +58,16 @@ Press **Ctrl + Enter** to analyze.
 					name="content"
 					value={textAreaValue}
 					onChange={event => setTextAreaValue(event.target.value)}
-					className="mb-2 w-full min-h-[150px]"
-					onKeyDown={
-						(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-							if (event.ctrlKey && event.key === 'Enter') {
-								event.preventDefault(); // Prevent default behavior if needed
-								handleAnalyze();
-							}
+					className="mb-2 min-h-[150px] w-full"
+					onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+						if (event.ctrlKey && event.key === 'Enter') {
+							event.preventDefault() // Prevent default behavior if needed
+							handleAnalyze()
 						}
-					}
+					}}
 				/>
 				<div className={'flex flex-row'}>
-					<div className="text-gray-500 mr-auto self-end">
+					<div className="mr-auto self-end text-gray-500">
 						<Markdown deactivateLinks={false}>{disclaimer}</Markdown>
 					</div>
 					<button
