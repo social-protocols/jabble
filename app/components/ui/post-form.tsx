@@ -70,7 +70,7 @@ export function PostForm({ className }: { className?: string }) {
 					</button>
 					<div
 						className="mr-2 mt-2"
-						title="If you check this box, your discussion will not appear on the discussion feed."
+						title="If you check this box, your discussion will not appear on the discussion feed. Anyone with the link can still join the discussion."
 					>
 						<input type="hidden" name="isPrivate" value={isPrivate} />
 						<input
