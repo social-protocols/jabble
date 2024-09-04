@@ -7,8 +7,8 @@
 	html {
 		/* adds a margin of the same size as the scrollbar */
 		/* https://aykevl.nl/2014/09/fix-jumping-scrollbar */
-		margin-left: calc(100vw - 100%);
-		margin-right: 0;
+		/*margin-left: calc(100vw - 100%);*/
+		/*margin-right: 0;*/
 		line-height: 1.2;
 	}
 }
