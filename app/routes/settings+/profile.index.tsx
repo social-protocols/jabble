@@ -129,22 +129,6 @@ export default function EditUserProfile() {
 	return (
 		<div className="flex flex-col gap-12">
 			<div className="flex justify-center">
-				<div className="relative h-52 w-52">
-					<Button
-						asChild
-						variant="outline"
-						className="absolute -right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full p-0"
-					>
-						<Link
-							preventScrollReset
-							to="photo"
-							title="Change profile photo"
-							aria-label="Change profile photo"
-						>
-							<Icon name="camera" className="h-4 w-4" />
-						</Link>
-					</Button>
-				</div>
 			</div>
 			<UpdateProfile />
 
@@ -157,7 +141,7 @@ export default function EditUserProfile() {
 						</Icon>
 					</Link>
 				</div>
-				<div>
+				{/*<div>
 					<Link to="two-factor">
 						{data.isTwoFactorEnabled ? (
 							<Icon name="lock-closed">2FA is enabled</Icon>
@@ -165,7 +149,7 @@ export default function EditUserProfile() {
 							<Icon name="lock-open-1">Enable 2FA</Icon>
 						)}
 					</Link>
-				</div>
+				</div>*/}
 				<div>
 					<Link to={data.hasPassword ? 'password' : 'password/create'}>
 						<Icon name="dots-horizontal">
@@ -239,7 +223,7 @@ function UpdateProfile() {
 	return (
 		<fetcher.Form method="POST" {...form.props}>
 			<AuthenticityTokenInput />
-			<div className="grid grid-cols-6 gap-x-10">
+			<div>
 				<Field
 					className="col-span-3"
 					labelProps={{
@@ -248,12 +232,6 @@ function UpdateProfile() {
 					}}
 					inputProps={conform.input(fields.username)}
 					errors={fields.username.errors}
-				/>
-				<Field
-					className="col-span-3"
-					labelProps={{ htmlFor: fields.name.id, children: 'Name' }}
-					inputProps={conform.input(fields.name)}
-					errors={fields.name.errors}
 				/>
 			</div>
 

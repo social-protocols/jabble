@@ -21,6 +21,7 @@ import {
 	useFetcher,
 	useFetchers,
 	useLoaderData,
+	useLocation,
 } from '@remix-run/react'
 import { withSentry } from '@sentry/remix'
 import { AuthenticityTokenProvider } from 'remix-utils/csrf/react'
@@ -226,17 +227,18 @@ function App() {
 			<div className="flex h-screen flex-col">
 				<header className="px-2 py-6">
 					<nav>
-						<div className="flex flex-wrap items-center justify-between gap-4 sm:flex-nowrap md:gap-8">
+						<div className="flex flex-wrap items-center gap-4 sm:flex-nowrap md:gap-8">
 							<Link to="/">
 								<div className="font-bold">
 									{SITE_NAME} <span className="opacity-50">alpha</span>
 								</div>
 							</Link>
-							<div className="ml-auto hidden max-w-sm flex-1 sm:block">
+							{/*<div className="ml-auto hidden max-w-sm flex-1 sm:block">
 								{searchBar}
-							</div>
+							</div>*/}
 							{/* <ThemeSwitch userPreference={data.requestInfo.userPrefs.theme} /> */}
-							<div className="flex items-center gap-10">
+							<NavigationMenu/>
+							<div className="flex items-center gap-10 ml-auto">
 								<UserMenu />
 							</div>
 							<div className="block w-full sm:hidden">{searchBar}</div>
@@ -266,16 +268,41 @@ function AppWithProviders() {
 
 export default withSentry(AppWithProviders)
 
+function NavigationMenu() {
+	const location = useLocation()
+	
+	const baseNavigationClassName = "rounded py-1 px-2 hover:bg-post"
+	const fallacyDetectionClassName = location.pathname == "/" ? "bg-post" : ""
+	const discussionsClassName = location.pathname == "/discuss" ? "bg-post" : ""
+
+	return (
+		<>
+			<Link to="/" className={baseNavigationClassName + " " + fallacyDetectionClassName}>
+				<Icon name="magic-wand">Fallacy Detection</Icon>
+			</Link>
+			<Link to="/discuss" className={baseNavigationClassName + " " + discussionsClassName}>
+				<Icon name="chat-bubble">Discussions</Icon>
+			</Link>
+		</>
+	)
+}
+
 function UserMenu() {
 	const user = useOptionalUser()
+	const location = useLocation()
 
-	const accountManagementComponents = user ? (
+	const baseNavigationClassName = "rounded py-1 px-2 hover:bg-post"
+	const userSettingsClassName = location.pathname == "/settings/profile" ? "bg-post" : ""
+	const loginClassName = location.pathname == "/login" ? "bg-post" : ""
+	const signupClassName = location.pathname == "/signup" ? "bg-post" : ""
+
+	return user ? (
 		<>
-			<Icon className="text-body-md" name="person">
-				{user.username}
-			</Icon>
+			<Link to="/settings/profile" className={baseNavigationClassName + " " + userSettingsClassName}>
+				<Icon name="person">{user.username}</Icon>
+			</Link>
 			<Form action="/logout" method="POST">
-				<button type="submit">
+				<button type="submit" className={baseNavigationClassName}>
 					<Icon className="text-body-md" name="exit">
 						Logout
 					</Icon>
@@ -283,22 +310,13 @@ function UserMenu() {
 			</Form>
 		</>
 	) : (
-		<div className="space-x-2">
-			<Button asChild variant="secondary" size="sm">
-				<Link to="/login">Log In</Link>
-			</Button>
-			<Button asChild variant="secondary" size="sm">
-				<Link to="/signup">Sign Up</Link>
-			</Button>
-		</div>
-	)
-
-	return (
 		<>
-			<Link to="/discuss" className="underline">
-				<Icon name="chat-bubble">Discussions</Icon>
+			<Link to="/login" className={baseNavigationClassName + " " + loginClassName}>
+				<Icon name="enter">Log In</Icon>
 			</Link>
-			{accountManagementComponents}
+			<Link to="/signup" className={baseNavigationClassName + " " + signupClassName}>
+				<Icon name="hand">Sign Up</Icon>
+			</Link>
 		</>
 	)
 }
