@@ -10,7 +10,6 @@ import { Link, useFetcher, useLoaderData } from '@remix-run/react'
 import { AuthenticityTokenInput } from 'remix-utils/csrf/react'
 import { z } from 'zod'
 import { ErrorList, Field } from '#app/components/forms.tsx'
-import { Button } from '#app/components/ui/button.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { StatusButton } from '#app/components/ui/status-button.tsx'
 import { db } from '#app/db.ts'
@@ -33,27 +32,6 @@ const ProfileFormSchema = z.object({
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId = await requireUserId(request)
-	// const user = await prisma.user.findUniqueOrThrow({
-	// 	where: { id: userId },
-	// 	select: {
-	// 		id: true,
-	// 		name: true,
-	// 		username: true,
-	// 		email: true,
-	// 		image: {
-	// 			select: { id: true },
-	// 		},
-	// 		_count: {
-	// 			select: {
-	// 				sessions: {
-	// 					where: {
-	// 						expirationDate: { gt: new Date() },
-	// 					},
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// })
 
 	const currentDate = new Date()
 
@@ -128,8 +106,6 @@ export default function EditUserProfile() {
 
 	return (
 		<div className="flex flex-col gap-12">
-			<div className="flex justify-center">
-			</div>
 			<UpdateProfile />
 
 			<div className="col-span-6 my-6 h-1 border-b-[1.5px] border-foreground" />
@@ -141,15 +117,6 @@ export default function EditUserProfile() {
 						</Icon>
 					</Link>
 				</div>
-				{/*<div>
-					<Link to="two-factor">
-						{data.isTwoFactorEnabled ? (
-							<Icon name="lock-closed">2FA is enabled</Icon>
-						) : (
-							<Icon name="lock-open-1">Enable 2FA</Icon>
-						)}
-					</Link>
-				</div>*/}
 				<div>
 					<Link to={data.hasPassword ? 'password' : 'password/create'}>
 						<Icon name="dots-horizontal">
