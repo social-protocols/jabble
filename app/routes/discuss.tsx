@@ -1,11 +1,8 @@
 import { type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
-import { useState } from 'react'
-import { Button } from '#app/components/ui/button.tsx'
-import { InfoText } from '#app/components/ui/info-text.tsx'
+import { Markdown } from '#app/components/markdown.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
-import { PostForm } from '#app/components/ui/post-form.tsx'
 import { db } from '#app/db.ts'
 import * as rankingTs from '#app/repositories/ranking.ts'
 import { type FrontPagePost } from '#app/types/api-types.ts'
@@ -25,47 +22,29 @@ export default function Explore() {
 	// the error boundary just in case.
 	let data = useLoaderData<typeof loader>()
 
-	return <FrontpageFeed feed={data.feed} loggedIn={data.loggedIn} />
+	return <FrontpageFeed feed={data.feed} />
 }
 
-export function FrontpageFeed({
-	feed,
-	loggedIn,
-}: {
-	feed: FrontPagePost[]
-	loggedIn: boolean
-}) {
-	const [showNewDiscussionForm, setShowNewDiscussionForm] = useState(true)
+export function FrontpageFeed({ feed }: { feed: FrontPagePost[] }) {
+	const infoText = `# Jabble Discussions`
+	const disclaimer = `**Disclaimer:** Some text disclaiming something`
 
 	return (
 		<div>
-			<InfoText />
-
-			{showNewDiscussionForm ? (
-				<PostForm className="mb-4" />
-			) : (
-				loggedIn && <div className="mb-4">{newDiscussionButton()}</div>
-			)}
-
-			<div className="mx-auto w-full">
-				<PostList feed={feed} />
+			<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
+				<div className="mb-4">
+					<Markdown deactivateLinks={false}>{infoText}</Markdown>
+				</div>
+				<div className="mb-6 mr-auto flex flex-row self-end text-gray-500">
+					<Markdown deactivateLinks={false}>{disclaimer}</Markdown>
+				</div>
 			</div>
+			<div className="mx-auto mb-4 w-full px-4">
+				<Markdown deactivateLinks={false}># Recent Discussions</Markdown>
+			</div>
+			<PostList feed={feed} />
 		</div>
 	)
-
-	function newDiscussionButton() {
-		return (
-			<Button
-				variant="secondary"
-				onClick={() => {
-					setShowNewDiscussionForm(!showNewDiscussionForm)
-					return false
-				}}
-			>
-				New Fact-Check
-			</Button>
-		)
-	}
 }
 
 function PostList({ feed }: { feed: FrontPagePost[] }) {
