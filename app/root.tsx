@@ -272,6 +272,7 @@ function NavigationMenu() {
 
 	const baseNavigationClassName = 'rounded py-1 px-2 hover:bg-post'
 	const fallacyDetectionClassName = location.pathname == '/' ? 'bg-post' : ''
+	const claimExtractionClassName = location.pathname == '/claimExtraction' ? 'bg-post' : ''
 	const discussionsClassName = location.pathname == '/discuss' ? 'bg-post' : ''
 
 	return (
@@ -280,7 +281,13 @@ function NavigationMenu() {
 				to="/"
 				className={baseNavigationClassName + ' ' + fallacyDetectionClassName}
 			>
-				<Icon name="magic-wand">Fallacy Detection</Icon>
+				<Icon name="lightning-bolt">Fallacy Detection</Icon>
+			</Link>
+			<Link
+				to="/claimExtraction"
+				className={baseNavigationClassName + ' ' + claimExtractionClassName}
+			>
+				<Icon name="magic-wand">Claim Extraction</Icon>
 			</Link>
 			<Link
 				to="/discuss"

@@ -23,6 +23,7 @@ export type IconName =
 	| 'github-logo'
 	| 'hand'
 	| 'laptop'
+	| 'lightning-bolt'
 	| 'link-2'
 	| 'lock-closed'
 	| 'lock-open-1'
