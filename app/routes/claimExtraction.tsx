@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
 import { ClaimList } from '#app/utils/claim-extraction.ts'
+import { Link } from '@remix-run/react'
 
 export default function ClaimExtraction() {
 
@@ -82,7 +83,6 @@ Press **Ctrl + Enter** to extract claims.
 	)
 }
 
-
 type ClaimDTO = {
 	claim: string
 	context: string
@@ -96,12 +96,13 @@ function ExtractedClaimList({
 }: {
 	claims: ClaimList
 }) {
-
 	return claims.extracted_claims.length == 0 ? (
 		<></>
 	) : (
 		<>
-			<Markdown deactivateLinks={false}>{"## Extracted Claims"}</Markdown>
+			<div className="px-4">
+				<Markdown deactivateLinks={false}>{"## Extracted Claims"}</Markdown>
+			</div>
 			<div className="mt-5">
 				{claims.extracted_claims.map(claim => {
 					return <ExtractedClaim claim={claim} />
@@ -142,27 +143,28 @@ function ExtractedClaim({
 			setIsSubmitting(false)
 		}
 	}
-	
+
 	return (
-		<div className="mb-5 border-2 border-solid p-2 rounded-md">
-			<div><span className="font-bold">Claim: </span>{claim.claim}</div>
-			<div className="flex flex-row mb-6">
-				<button
-					title="Ctrl + Enter"
-					disabled={isSubmitting}
-					className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black dark:bg-yellow-200"
-					onClick={e => {
-						e.preventDefault()
-						handleSubmit(claim)
-					}}
-				>
-					{isSubmitting ? 'Submitting...' : 'Create Fact Check'}
-				</button>
-				<div>submitted: {String(submitted)}</div>
-				<div>newPostId: {String(newSubmissionPostId)}</div>
+		<div className="flex flex-col mb-5 border-2 border-solid p-4 rounded-xl">
+			<div>{claim.claim}</div>
+			<div className="flex flex-row w-full">
+				{!submitted && (
+					<button
+						title="Ctrl + Enter"
+						disabled={isSubmitting}
+						className="rounded bg-purple-200 ml-auto px-4 py-2 mt-2 text-base font-bold text-black dark:bg-yellow-200"
+						onClick={e => {
+							e.preventDefault()
+							handleSubmit(claim)
+						}}
+					>
+						{isSubmitting ? 'Submitting...' : 'Create Fact Check'}
+					</button>
+				)}
+				{submitted && (
+					<Link className="ml-auto px-4 py-2 mt-2 rounded hover:underline hover:bg-post" to={`/post/${newSubmissionPostId}`}>Go to discussion</Link>
+				)}
 			</div>
 		</div>
 	)
-
 }
-
