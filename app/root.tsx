@@ -272,7 +272,8 @@ function NavigationMenu() {
 
 	const baseNavigationClassName = 'rounded py-1 px-2 hover:bg-post'
 	const fallacyDetectionClassName = location.pathname == '/' ? 'bg-post' : ''
-	const claimExtractionClassName = location.pathname == '/claimExtraction' ? 'bg-post' : ''
+	const claimExtractionClassName =
+		location.pathname == '/claimExtraction' ? 'bg-post' : ''
 	const discussionsClassName = location.pathname == '/discuss' ? 'bg-post' : ''
 
 	return (

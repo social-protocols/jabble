@@ -1,11 +1,10 @@
-import { useState } from 'react'
-import { Textarea } from '#app/components/ui/textarea.tsx'
-import { Markdown } from '#app/components/markdown.tsx'
-import { ClaimList } from '#app/utils/claim-extraction.ts'
 import { Link } from '@remix-run/react'
+import { useState } from 'react'
+import { Markdown } from '#app/components/markdown.tsx'
+import { Textarea } from '#app/components/ui/textarea.tsx'
+import { type ClaimList } from '#app/utils/claim-extraction.ts'
 
 export default function ClaimExtraction() {
-
 	const [textAreaValue, setTextAreaValue] = useState<string>('')
 	const [isExtractingClaims, setIsExtractingClaims] = useState(false)
 
@@ -22,7 +21,7 @@ export default function ClaimExtraction() {
 				body: JSON.stringify(payload),
 				headers: { 'Content-Type': 'application/json' },
 			})
-			const newExtractedClaims = await response.json() as ClaimList
+			const newExtractedClaims = (await response.json()) as ClaimList
 			setClaims(newExtractedClaims)
 		} finally {
 			setIsExtractingClaims(false)
@@ -44,7 +43,7 @@ Press **Ctrl + Enter** to extract claims.
 
 	return (
 		<div>
-			<div className="flex flex-col mb-4 space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
+			<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
 				<div className="mb-4">
 					<Markdown deactivateLinks={false}>{infoText}</Markdown>
 				</div>
@@ -61,7 +60,7 @@ Press **Ctrl + Enter** to extract claims.
 						}
 					}}
 				/>
-				<div className="flex flex-row mb-6">
+				<div className="mb-6 flex flex-row">
 					<div className="mr-auto self-end text-gray-500">
 						<Markdown deactivateLinks={false}>{disclaimer}</Markdown>
 					</div>
@@ -78,7 +77,7 @@ Press **Ctrl + Enter** to extract claims.
 					</button>
 				</div>
 			</div>
-			<ExtractedClaimList claims={claims}/>
+			<ExtractedClaimList claims={claims} />
 		</div>
 	)
 }
@@ -91,35 +90,29 @@ type ClaimDTO = {
 	contains_judgment: boolean
 }
 
-function ExtractedClaimList({
-	claims,
-}: {
-	claims: ClaimList
-}) {
+function ExtractedClaimList({ claims }: { claims: ClaimList }) {
 	return claims.extracted_claims.length == 0 ? (
 		<></>
 	) : (
 		<>
 			<div className="px-4">
-				<Markdown deactivateLinks={false}>{"## Extracted Claims"}</Markdown>
+				<Markdown deactivateLinks={false}>{'## Extracted Claims'}</Markdown>
 			</div>
 			<div className="mt-5">
-				{claims.extracted_claims.map(claim => {
-					return <ExtractedClaim claim={claim} />
+				{claims.extracted_claims.map((claim, index) => {
+					return <ExtractedClaim key={'claim-' + String(index)} claim={claim} />
 				})}
 			</div>
 		</>
 	)
 }
 
-function ExtractedClaim({
-	claim,
-} : {
-	claim: ClaimDTO
-}) {
+function ExtractedClaim({ claim }: { claim: ClaimDTO }) {
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 	const [submitted, setSubmitted] = useState<boolean>(false)
-	const [newSubmissionPostId, setNewSubmissionPostId] = useState<number | null>(null)
+	const [newSubmissionPostId, setNewSubmissionPostId] = useState<number | null>(
+		null,
+	)
 
 	async function handleSubmit(claim: ClaimDTO) {
 		setIsSubmitting(true)
@@ -136,7 +129,7 @@ function ExtractedClaim({
 				body: JSON.stringify(payload),
 				headers: { 'Content-Type': 'application/json' },
 			})
-			const newPostId = await response.json() as number
+			const newPostId = (await response.json()) as number
 			setSubmitted(true)
 			setNewSubmissionPostId(newPostId)
 		} finally {
@@ -145,14 +138,14 @@ function ExtractedClaim({
 	}
 
 	return (
-		<div className="flex flex-col mb-5 border-2 border-solid p-4 rounded-xl">
+		<div className="mb-5 flex flex-col rounded-xl border-2 border-solid p-4">
 			<div>{claim.claim}</div>
-			<div className="flex flex-row w-full">
+			<div className="flex w-full flex-row">
 				{!submitted && (
 					<button
 						title="Ctrl + Enter"
 						disabled={isSubmitting}
-						className="rounded bg-purple-200 ml-auto px-4 py-2 mt-2 text-base font-bold text-black dark:bg-yellow-200"
+						className="ml-auto mt-2 rounded bg-purple-200 px-4 py-2 text-base font-bold text-black dark:bg-yellow-200"
 						onClick={e => {
 							e.preventDefault()
 							handleSubmit(claim)
@@ -162,7 +155,12 @@ function ExtractedClaim({
 					</button>
 				)}
 				{submitted && (
-					<Link className="ml-auto px-4 py-2 mt-2 rounded hover:underline hover:bg-post" to={`/post/${newSubmissionPostId}`}>Go to discussion</Link>
+					<Link
+						className="ml-auto mt-2 rounded px-4 py-2 hover:bg-post hover:underline"
+						to={`/post/${newSubmissionPostId}`}
+					>
+						Go to discussion
+					</Link>
 				)}
 			</div>
 		</div>
