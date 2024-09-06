@@ -8,6 +8,7 @@ import { db } from '#app/db.ts'
 import { getChronologicalFactCheckPosts } from '#app/repositories/ranking.ts'
 import { type FrontPagePost } from '#app/types/api-types.ts'
 import { type ClaimList } from '#app/utils/claim-extraction.ts'
+import { useOptionalUser } from '#app/utils/user.ts'
 
 export async function loader() {
 	const feed = await db.transaction().execute(async trx => {
@@ -151,6 +152,8 @@ function ExtractedClaim({ claim, context }: { claim: Claim; context: string }) {
 		null,
 	)
 
+	const user = useOptionalUser()
+
 	async function handleSubmit(claim: Claim, context: string) {
 		setIsSubmitting(true)
 		try {
@@ -177,29 +180,43 @@ function ExtractedClaim({ claim, context }: { claim: Claim; context: string }) {
 	return (
 		<div className="mb-5 flex flex-col rounded-xl border-2 border-solid bg-post p-4">
 			<div>{claim.claim}</div>
-			<div className="flex w-full flex-row">
-				{!submitted && (
-					<button
-						title="Ctrl + Enter"
-						disabled={isSubmitting}
-						className="ml-auto mt-2 rounded bg-purple-200 px-4 py-2 text-base font-bold text-black dark:bg-yellow-200"
-						onClick={e => {
-							e.preventDefault()
-							handleSubmit(claim, context)
-						}}
-					>
-						{isSubmitting ? 'Submitting...' : 'Create Fact Check'}
-					</button>
-				)}
-				{submitted && (
-					<Link
-						className="ml-auto mt-2 rounded px-4 py-2 hover:bg-post hover:underline"
-						to={`/post/${newSubmissionPostId}`}
-					>
-						Go to discussion
-					</Link>
-				)}
-			</div>
+			{user && (
+				<div className="flex w-full flex-row">
+					{!submitted && (
+						<button
+							title="Ctrl + Enter"
+							disabled={isSubmitting}
+							className="ml-auto mt-2 rounded bg-purple-200 px-4 py-2 text-base font-bold text-black dark:bg-yellow-200"
+							onClick={e => {
+								e.preventDefault()
+								handleSubmit(claim, context)
+							}}
+						>
+							{isSubmitting ? 'Submitting...' : 'Create Fact Check'}
+						</button>
+					)}
+					{submitted && (
+						<Link
+							className="ml-auto mt-2 rounded px-4 py-2 hover:bg-post hover:underline"
+							to={`/post/${newSubmissionPostId}`}
+						>
+							Go to discussion
+						</Link>
+					)}
+				</div>
+			)}
+			{!user && (
+				<div className="mt-2">
+					<Link className="underline" to="/login">
+						Login
+					</Link>{' '}
+					or{' '}
+					<Link className="underline" to="/signup">
+						signup
+					</Link>{' '}
+					to submit fact checks
+				</div>
+			)}
 		</div>
 	)
 }
