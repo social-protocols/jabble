@@ -387,7 +387,7 @@ function ReplyForm({
 				}}
 			/>
 			<button
-				className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700"
+				className="rounded bg-blue-200 px-4 py-2 text-base font-bold hover:bg-blue-300"
 				onClick={handleReplySubmit}
 			>
 				Reply

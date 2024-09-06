@@ -118,7 +118,11 @@ type Claim = {
 }
 
 function ExtractedClaimList({ claims }: { claims: ClaimList }) {
-	return claims.extracted_claims.length == 0 ? (
+	const filteredClaims = claims.extracted_claims.filter(
+		claim => !claim.contains_judgment,
+	)
+
+	return filteredClaims.length == 0 ? (
 		<></>
 	) : (
 		<>
@@ -131,7 +135,7 @@ function ExtractedClaimList({ claims }: { claims: ClaimList }) {
 				</div>
 			</div>
 			<div className="mt-5">
-				{claims.extracted_claims.map((claim, index) => {
+				{filteredClaims.map((claim, index) => {
 					return (
 						<ExtractedClaim
 							key={'claim-' + String(index)}

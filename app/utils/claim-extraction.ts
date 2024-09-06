@@ -38,7 +38,9 @@ export const ClaimExtractionSchema = z.object({
 				})
 				.strict(),
 		)
-		.describe('All the claims made in the text.'),
+		.describe(
+			'All the claims made in the text. Be exhaustive and really include ALL claims made in the text. Restate them as neutral facts, remove the subjective perspective of the author. The claim itself should be understandable in isolation, without the context.',
+		),
 })
 
 export type ClaimList = z.infer<typeof ClaimExtractionSchema>
