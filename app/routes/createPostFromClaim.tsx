@@ -1,33 +1,34 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { db } from '#app/db.ts'
-import { createPost } from '#app/repositories/post.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
+import { createFactCheck } from '#app/utils/claim-extraction.ts'
 
-const postDataSchema = z.object({
-	claim: z.coerce.string(),
+const ClaimDtoSchema = z.object({
 	context: z.coerce.string(),
+	claim: z.coerce.string(),
 	factOrOpinion: z.coerce.string(),
 	verifiableOrDebatable: z.coerce.string(),
 	containsJudgment: z.coerce.boolean(),
 })
 
 export const action = async (args: ActionFunctionArgs) => {
-	let request = args.request
-
-	const postData = postDataSchema.parse(await request.json())
-
-	console.log(postData)
-
+	const request = args.request
+	const claimDto = ClaimDtoSchema.parse(await request.json())
 	const userId: string = await requireUserId(request)
 
-	const postId = await db.transaction().execute(
-		async trx =>
-			await createPost(trx, null, postData.claim, userId, {
-				isPrivate: false,
-				withUpvote: false,
-			}),
-	)
+	const post = await db
+		.transaction()
+		.execute(
+			async trx =>
+				await createFactCheck(
+					trx,
+					userId,
+					claimDto.claim,
+					claimDto.context,
+					null,
+				),
+		)
 
-	return postId
+	return post.id
 }

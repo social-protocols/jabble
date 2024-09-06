@@ -1,14 +1,29 @@
-import { Link } from '@remix-run/react'
+import { Link, useLoaderData } from '@remix-run/react'
 import { useState } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
+import { db } from '#app/db.ts'
+import { getChronologicalFactCheckPosts } from '#app/repositories/ranking.ts'
 import { type ClaimList } from '#app/utils/claim-extraction.ts'
+import { TopLevelPost } from './discuss.tsx'
+
+export async function loader() {
+	const feed = await db.transaction().execute(async trx => {
+		return await getChronologicalFactCheckPosts(trx)
+	})
+	return { feed }
+}
 
 export default function ClaimExtraction() {
+	const { feed } = useLoaderData<typeof loader>()
+
 	const [textAreaValue, setTextAreaValue] = useState<string>('')
 	const [isExtractingClaims, setIsExtractingClaims] = useState(false)
 
-	const [claims, setClaims] = useState<ClaimList>({ extracted_claims: [] })
+	const [claims, setClaims] = useState<ClaimList>({
+		claim_context: '',
+		extracted_claims: [],
+	})
 
 	async function handleExtractClaims() {
 		setIsExtractingClaims(true)
@@ -29,7 +44,7 @@ export default function ClaimExtraction() {
 	}
 
 	const infoText = `
-## Jabble Claim Extractor
+## Jabble Fact Checking
 
 Copy and paste something you want to fact-check here.
 We'll do our best to extract claims that you can fact-check from it.
@@ -78,13 +93,19 @@ Press **Ctrl + Enter** to extract claims.
 				</div>
 			</div>
 			<ExtractedClaimList claims={claims} />
+			<div>
+				{feed.map((post, index) => {
+					return (
+						<TopLevelPost key={'fact-check-' + String(index)} post={post} />
+					)
+				})}
+			</div>
 		</div>
 	)
 }
 
-type ClaimDTO = {
+type Claim = {
 	claim: string
-	context: string
 	fact_or_opinion: string
 	verifiable_or_debatable: string
 	contains_judgment: boolean
@@ -97,29 +118,40 @@ function ExtractedClaimList({ claims }: { claims: ClaimList }) {
 		<>
 			<div className="px-4">
 				<Markdown deactivateLinks={false}>{'## Extracted Claims'}</Markdown>
+				<div className="mt-4">
+					<Markdown deactivateLinks={false}>
+						{'**Context:** ' + claims.claim_context}
+					</Markdown>
+				</div>
 			</div>
 			<div className="mt-5">
 				{claims.extracted_claims.map((claim, index) => {
-					return <ExtractedClaim key={'claim-' + String(index)} claim={claim} />
+					return (
+						<ExtractedClaim
+							key={'claim-' + String(index)}
+							claim={claim}
+							context={claims.claim_context}
+						/>
+					)
 				})}
 			</div>
 		</>
 	)
 }
 
-function ExtractedClaim({ claim }: { claim: ClaimDTO }) {
+function ExtractedClaim({ claim, context }: { claim: Claim; context: string }) {
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 	const [submitted, setSubmitted] = useState<boolean>(false)
 	const [newSubmissionPostId, setNewSubmissionPostId] = useState<number | null>(
 		null,
 	)
 
-	async function handleSubmit(claim: ClaimDTO) {
+	async function handleSubmit(claim: Claim, context: string) {
 		setIsSubmitting(true)
 		try {
 			const payload = {
+				context: context,
 				claim: claim.claim,
-				context: claim.context,
 				factOrOpinion: claim.fact_or_opinion,
 				verifiableOrDebatable: claim.verifiable_or_debatable,
 				containsJudgment: String(claim.contains_judgment),
@@ -148,7 +180,7 @@ function ExtractedClaim({ claim }: { claim: ClaimDTO }) {
 						className="ml-auto mt-2 rounded bg-purple-200 px-4 py-2 text-base font-bold text-black dark:bg-yellow-200"
 						onClick={e => {
 							e.preventDefault()
-							handleSubmit(claim)
+							handleSubmit(claim, context)
 						}}
 					>
 						{isSubmitting ? 'Submitting...' : 'Create Fact Check'}

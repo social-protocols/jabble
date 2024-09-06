@@ -267,3 +267,39 @@ export async function getChronologicalToplevelPosts(
 
 	return res
 }
+
+// TODO: refactor (almost same functionality as getChronologicalToplevelPosts)
+export async function getChronologicalFactCheckPosts(
+	trx: Transaction<DB>,
+): Promise<FrontPagePost[]> {
+	let query = trx
+		.selectFrom('Post')
+		.where('Post.parentId', 'is', null)
+		.where('Post.deletedAt', 'is', null)
+		.innerJoin('FactCheck', 'FactCheck.postId', 'Post.id')
+		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
+		.leftJoin('PostStats', join =>
+			join.onRef('PostStats.postId', '=', 'Post.id'),
+		)
+		.selectAll('Post')
+		.selectAll('FullScore')
+		.select(sql<number>`replies`.as('nReplies'))
+		.orderBy('Post.createdAt', 'desc')
+		.limit(MAX_POSTS_PER_PAGE)
+
+	const scoredPosts = await query.execute()
+
+	const res = await Promise.all(
+		scoredPosts.map(async post => {
+			return {
+				...post,
+				parent: post.parentId ? await getPost(trx, post.parentId) : null,
+				fallacyList: await getFallacies(trx, post.id),
+				effects: await getEffects(trx, post.id),
+				nTransitiveComments: await getDescendantCount(trx, post.id),
+			}
+		}),
+	)
+
+	return res
+}

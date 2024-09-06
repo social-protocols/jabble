@@ -1,9 +1,18 @@
+import { type Transaction, sql } from 'kysely'
 import OpenAI from 'openai'
 import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
+import { createPost, getPost } from '#app/repositories/post.ts'
+import { type Post } from '#app/types/api-types.ts'
+import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from './misc.tsx'
 
 export const ClaimExtractionSchema = z.object({
+	claim_context: z
+		.string()
+		.describe(
+			'A neutral description of the original text, explaining the context of where the claim was made.',
+		),
 	extracted_claims: z
 		.array(
 			z
@@ -13,9 +22,6 @@ export const ClaimExtractionSchema = z.object({
 						.describe(
 							'A claim made in the text. No personal opinions of the author, just statements of fact. The claim should be understandable in isolation.',
 						),
-					context: z
-						.string()
-						.describe('Important context to understand the claim.'),
 					contains_judgment: z
 						.boolean()
 						.describe(
@@ -55,4 +61,47 @@ export async function extractClaims(content: string): Promise<ClaimList> {
 	invariant(event != null, 'could not parse result')
 
 	return event
+}
+
+export async function createFactCheck(
+	trx: Transaction<DB>,
+	userId: string,
+	claim: string,
+	context: string,
+	origin: string | null,
+): Promise<Post> {
+	const postContent = `
+**Claim:** ${claim}
+
+**Context:** ${context}
+`.trim()
+
+	const postId = await createPost(trx, null, postContent, userId, {
+		isPrivate: false,
+		withUpvote: false,
+	})
+
+	const claimId: { id: number } = await trx
+		.insertInto('Claim')
+		.values({ claim })
+		.returning('id')
+		.executeTakeFirstOrThrow()
+
+	const claimContextId: { id: number } = await trx
+		.insertInto('ClaimContext')
+		.values({ context, origin })
+		.returning('id')
+		.executeTakeFirstOrThrow()
+
+	await sql`
+		insert or ignore into ClaimToClaimContext
+		values (${claimId.id}, ${claimContextId.id})
+	`.execute(trx)
+
+	await sql`
+		insert or ignore into FactCheck
+		values (${claimId.id}, ${claimContextId.id}, ${postId})
+	`.execute(trx)
+
+	return await getPost(trx, postId)
 }
