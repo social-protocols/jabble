@@ -242,9 +242,11 @@ export async function getChronologicalToplevelPosts(
 		.where('Post.parentId', 'is', null)
 		.where('Post.deletedAt', 'is', null)
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
+		.leftJoin('FactCheck', 'FactCheck.postId', 'Post.id')
 		.leftJoin('PostStats', join =>
 			join.onRef('PostStats.postId', '=', 'Post.id'),
 		)
+		.where('FactCheck.claimId', 'is', null)
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.select(sql<number>`replies`.as('nReplies'))
@@ -268,7 +270,6 @@ export async function getChronologicalToplevelPosts(
 	return res
 }
 
-// TODO: refactor (almost same functionality as getChronologicalToplevelPosts)
 export async function getChronologicalFactCheckPosts(
 	trx: Transaction<DB>,
 ): Promise<FrontPagePost[]> {

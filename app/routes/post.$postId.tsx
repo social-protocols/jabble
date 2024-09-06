@@ -126,7 +126,6 @@ export default function PostPage() {
 	// subcomponent and key needed for react to not preserve state on page changes
 	return (
 		<>
-			<InfoText className="mb-8" />
 			{false && isDiscussionOfTheDay && <DiscussionOfTheDayHeader />}
 			<DiscussionView
 				key={params['postId']}

@@ -7,6 +7,7 @@ import { db } from '#app/db.ts'
 import * as rankingTs from '#app/repositories/ranking.ts'
 import { type FrontPagePost } from '#app/types/api-types.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
+import { PostForm } from '#app/components/ui/post-form.tsx'
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId: string | null = await getUserId(request)
@@ -27,7 +28,6 @@ export default function Explore() {
 
 export function FrontpageFeed({ feed }: { feed: FrontPagePost[] }) {
 	const infoText = `# Jabble Discussions`
-	const disclaimer = `**Disclaimer:** Some text disclaiming something`
 
 	return (
 		<div>
@@ -35,9 +35,7 @@ export function FrontpageFeed({ feed }: { feed: FrontPagePost[] }) {
 				<div className="mb-4">
 					<Markdown deactivateLinks={false}>{infoText}</Markdown>
 				</div>
-				<div className="mb-6 mr-auto flex flex-row self-end text-gray-500">
-					<Markdown deactivateLinks={false}>{disclaimer}</Markdown>
-				</div>
+				<PostForm />
 			</div>
 			<div className="mx-auto mb-4 w-full px-4">
 				<Markdown deactivateLinks={false}># Recent Discussions</Markdown>
@@ -63,10 +61,10 @@ export function TopLevelPost({
 }) {
 	const ageString = moment(post.createdAt).fromNow()
 	const commentString = post.nTransitiveComments == 1 ? 'comment' : 'comments'
-	const voteString = post.oSize == 1 ? 'vote' : 'votes'
 
-	const pCurrent: number = post.p || NaN
-	const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
+	// const voteString = post.oSize == 1 ? 'vote' : 'votes'
+	// const pCurrent: number = post.p || NaN
+	// const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
 
 	return (
 		<div
@@ -87,13 +85,6 @@ export function TopLevelPost({
 						<Link to={`/post/${post.id}`}>
 							{post.nTransitiveComments} {commentString}
 						</Link>
-					</div>
-				</div>
-				<div className="ml-2 mr-1 min-w-32 space-y-1 opacity-50">
-					<div className="text-sm">Accuracy estimate:</div>
-					<div className="text-4xl">{pCurrentString}</div>
-					<div className="text-sm">
-						{post.oSize} {voteString}
 					</div>
 				</div>
 			</div>

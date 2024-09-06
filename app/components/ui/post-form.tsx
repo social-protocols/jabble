@@ -26,11 +26,11 @@ export function PostForm({ className }: { className?: string }) {
 		>
 			<div className={`flex flex-col items-end ${className || ''}`}>
 				<Textarea
-					placeholder="Something that can be voted to be true or false."
+					placeholder="What would you like to discuss?"
 					name="content"
 					value={textAreaValue}
 					onChange={event => setTextAreaValue(event.target.value)}
-					className="mb-2 w-full"
+					className="mb-2 w-full min-h-[150px]"
 				/>
 				<div className={'flex flex-row'}>
 					<div
@@ -50,11 +50,11 @@ export function PostForm({ className }: { className?: string }) {
 					</div>
 					<button
 						disabled={replyFetcher.state !== 'idle'}
-						className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700"
+						className="rounded bg-blue-200 px-4 py-2 text-base font-bold hover:bg-blue-300"
 					>
 						{replyFetcher.state === 'idle'
-							? 'Create Fact-Check'
-							: 'submitting...'}
+							? 'Discuss'
+							: 'Submitting...'}
 					</button>
 				</div>
 			</div>
