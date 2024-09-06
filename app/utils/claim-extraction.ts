@@ -4,7 +4,7 @@ import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
 import { createPost, getPost } from '#app/repositories/post.ts'
 import { type Post } from '#app/types/api-types.ts'
-import { type DB } from '#app/types/kysely-types.ts'
+import { type FactCheck, type DB } from '#app/types/kysely-types.ts'
 import { invariant } from './misc.tsx'
 
 export const ClaimExtractionSchema = z.object({
@@ -104,4 +104,21 @@ export async function createFactCheck(
 	`.execute(trx)
 
 	return await getPost(trx, postId)
+}
+
+export async function isFactCheckDiscussion(
+	trx: Transaction<DB>,
+	postId: number,
+): Promise<boolean> {
+	const existingFactCheck: FactCheck[] = await trx
+		.selectFrom('FactCheck')
+		.where('postId', '=', postId)
+		.selectAll()
+		.execute()
+
+	if (existingFactCheck.length !== 0) {
+		return true
+	}
+
+	return false
 }

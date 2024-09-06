@@ -1,13 +1,13 @@
 import { Link, useLoaderData } from '@remix-run/react'
+import moment from 'moment'
 import { useState } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
+import { PostContent } from '#app/components/ui/post-content.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { db } from '#app/db.ts'
 import { getChronologicalFactCheckPosts } from '#app/repositories/ranking.ts'
-import { type ClaimList } from '#app/utils/claim-extraction.ts'
 import { type FrontPagePost } from '#app/types/api-types.ts'
-import { PostContent } from '#app/components/ui/post-content.tsx'
-import moment from 'moment'
+import { type ClaimList } from '#app/utils/claim-extraction.ts'
 
 export async function loader() {
 	const feed = await db.transaction().execute(async trx => {
@@ -84,7 +84,7 @@ Press **Ctrl + Enter** to extract claims.
 					<button
 						title="Ctrl + Enter"
 						disabled={isExtractingClaims}
-						className="rounded bg-purple-200 hover:bg-purple-300 px-4 py-2 text-base font-bold text-black dark:bg-yellow-200"
+						className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300 dark:bg-yellow-200"
 						onClick={e => {
 							e.preventDefault()
 							handleExtractClaims()
@@ -96,7 +96,7 @@ Press **Ctrl + Enter** to extract claims.
 				<ExtractedClaimList claims={claims} />
 			</div>
 			<div>
-				<div className="px-4 mb-5">
+				<div className="mb-5 px-4">
 					<Markdown deactivateLinks={false}>{'## Recent Fact Checks'}</Markdown>
 				</div>
 				{feed.map((post, index) => {
@@ -175,7 +175,7 @@ function ExtractedClaim({ claim, context }: { claim: Claim; context: string }) {
 	}
 
 	return (
-		<div className="mb-5 flex flex-col rounded-xl bg-post border-2 border-solid p-4">
+		<div className="mb-5 flex flex-col rounded-xl border-2 border-solid bg-post p-4">
 			<div>{claim.claim}</div>
 			<div className="flex w-full flex-row">
 				{!submitted && (
@@ -221,7 +221,8 @@ function FactCheckPost({
 	return (
 		<div
 			className={
-				'mb-2 w-full min-w-0 rounded-xl bg-post border-solid border-2 px-3 py-2 ' + (className || '')
+				'mb-2 w-full min-w-0 rounded-xl border-2 border-solid bg-post px-3 py-2 ' +
+				(className || '')
 			}
 		>
 			<div className="flex">

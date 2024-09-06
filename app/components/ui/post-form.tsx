@@ -30,7 +30,7 @@ export function PostForm({ className }: { className?: string }) {
 					name="content"
 					value={textAreaValue}
 					onChange={event => setTextAreaValue(event.target.value)}
-					className="mb-2 w-full min-h-[150px]"
+					className="mb-2 min-h-[150px] w-full"
 				/>
 				<div className={'flex flex-row'}>
 					<div
@@ -52,9 +52,7 @@ export function PostForm({ className }: { className?: string }) {
 						disabled={replyFetcher.state !== 'idle'}
 						className="rounded bg-blue-200 px-4 py-2 text-base font-bold hover:bg-blue-300"
 					>
-						{replyFetcher.state === 'idle'
-							? 'Discuss'
-							: 'Submitting...'}
+						{replyFetcher.state === 'idle' ? 'Discuss' : 'Submitting...'}
 					</button>
 				</div>
 			</div>

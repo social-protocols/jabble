@@ -294,7 +294,7 @@ function NavigationMenu() {
 				to="/discuss"
 				className={baseNavigationClassName + ' ' + discussionsClassName}
 			>
-				<Icon name="chat-bubble">Discussions</Icon>
+				<Icon name="chat-bubble">Open Discussions</Icon>
 			</Link>
 		</>
 	)

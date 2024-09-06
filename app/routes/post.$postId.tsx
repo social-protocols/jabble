@@ -5,7 +5,6 @@ import { type Dispatch, type SetStateAction, useState } from 'react'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { DiscussionOfTheDayHeader } from '#app/components/ui/discussion-of-the-day-header.tsx'
-import { InfoText } from '#app/components/ui/info-text.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/ui/post-with-replies.tsx'
 import { db } from '#app/db.ts'
@@ -30,6 +29,7 @@ import {
 	type CollapsedState,
 } from '#app/types/api-types.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
+import { isFactCheckDiscussion } from '#app/utils/claim-extraction.ts'
 import { invariant } from '#app/utils/misc.tsx'
 
 const postIdSchema = z.coerce.number()
@@ -43,11 +43,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		transitiveParents,
 		commentTreeState,
 		isDiscussionOfTheDay,
+		isFactCheck,
 	}: {
 		mutableReplyTree: ReplyTree
 		transitiveParents: Post[]
 		commentTreeState: CommentTreeState
 		isDiscussionOfTheDay: boolean
+		isFactCheck: boolean
 	} = await db.transaction().execute(async trx => {
 		await updateHN(trx, postId)
 		const commentTreeState = await getCommentTreeState(trx, postId, userId)
@@ -63,6 +65,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 			commentTreeState: commentTreeState,
 			isDiscussionOfTheDay:
 				(await getRootPostId(trx, postId)) === discussionOfTheDayPostId,
+			isFactCheck: await isFactCheckDiscussion(trx, postId),
 		}
 	})
 
@@ -71,6 +74,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		transitiveParents,
 		commentTreeState,
 		isDiscussionOfTheDay,
+		isFactCheck,
 	})
 }
 
@@ -119,6 +123,7 @@ export default function PostPage() {
 		transitiveParents,
 		commentTreeState,
 		isDiscussionOfTheDay,
+		isFactCheck,
 	} = useLoaderData<typeof loader>()
 
 	const params = useParams()
@@ -132,6 +137,7 @@ export default function PostPage() {
 				mutableReplyTree={mutableReplyTree}
 				transitiveParents={transitiveParents}
 				initialCommentTreeState={commentTreeState}
+				isFactCheck={isFactCheck}
 			/>
 		</>
 	)
@@ -148,16 +154,19 @@ export type TreeContext = {
 	onCollapseParentSiblings: (
 		pathFromFocussedPost: Immutable.List<number>,
 	) => void
+	isFactCheck: boolean
 }
 
 export function DiscussionView({
 	mutableReplyTree,
 	transitiveParents,
 	initialCommentTreeState,
+	isFactCheck,
 }: {
 	mutableReplyTree: ReplyTree
 	transitiveParents: Post[]
 	initialCommentTreeState: CommentTreeState
+	isFactCheck: boolean
 }) {
 	const initialReplyTree = toImmutableReplyTree(mutableReplyTree)
 
@@ -210,6 +219,7 @@ export function DiscussionView({
 				})
 			}
 		},
+		isFactCheck: isFactCheck,
 	}
 
 	return (

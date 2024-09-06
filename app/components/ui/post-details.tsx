@@ -102,6 +102,7 @@ export function PostDetails({
 				)}
 				{isTargetPost &&
 					isTopLevelPost &&
+					treeContext.isFactCheck &&
 					(loggedIn ? (
 						<div className="my-2 space-x-4">
 							<button
@@ -145,7 +146,7 @@ export function PostDetails({
 				/>
 			</div>
 
-			{isTargetPost && isTopLevelPost && (
+			{isTargetPost && isTopLevelPost && treeContext.isFactCheck && (
 				<div className="mx-2 min-w-32 space-y-1 opacity-50">
 					<div className="text-sm">Accuracy estimate:</div>
 					<div className="text-5xl">

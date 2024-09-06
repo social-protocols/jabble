@@ -3,11 +3,11 @@ import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { Markdown } from '#app/components/markdown.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
+import { PostForm } from '#app/components/ui/post-form.tsx'
 import { db } from '#app/db.ts'
 import * as rankingTs from '#app/repositories/ranking.ts'
 import { type FrontPagePost } from '#app/types/api-types.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
-import { PostForm } from '#app/components/ui/post-form.tsx'
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const userId: string | null = await getUserId(request)
