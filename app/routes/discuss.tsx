@@ -27,7 +27,11 @@ export default function Explore() {
 }
 
 export function FrontpageFeed({ feed }: { feed: FrontPagePost[] }) {
-	const infoText = `# Jabble Discussions`
+	const infoText = `
+# Jabble Discussions
+
+This is a place to have open discussions.
+`.trim()
 
 	return (
 		<div>
@@ -69,7 +73,7 @@ export function TopLevelPost({
 	return (
 		<div
 			className={
-				'mb-2 w-full min-w-0 rounded-sm bg-post px-3 py-2 ' + (className || '')
+				'mb-2 w-full min-w-0 rounded-xl bg-post border-solid border-2 px-3 py-2 ' + (className || '')
 			}
 		>
 			<div className="flex">

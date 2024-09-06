@@ -186,7 +186,7 @@ function ExtractedClaim({ claim, context }: { claim: Claim; context: string }) {
 						<button
 							title="Ctrl + Enter"
 							disabled={isSubmitting}
-							className="ml-auto mt-2 rounded bg-purple-200 px-4 py-2 text-base font-bold text-black dark:bg-yellow-200"
+							className="ml-auto mt-2 rounded bg-purple-200 hover:bg-purple-300 px-4 py-2 text-base font-bold text-black dark:bg-yellow-200"
 							onClick={e => {
 								e.preventDefault()
 								handleSubmit(claim, context)

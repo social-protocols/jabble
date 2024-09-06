@@ -73,7 +73,7 @@ Press **Ctrl + Enter** to analyze.
 					<button
 						title="Ctrl + Enter"
 						disabled={isAnalyzing}
-						className="rounded bg-yellow-200 px-4 py-2 text-base font-bold text-black dark:bg-yellow-200"
+						className="rounded bg-yellow-200 hover:bg-yellow-300 px-4 py-2 text-base font-bold text-black dark:bg-yellow-200"
 						onClick={e => {
 							e.preventDefault()
 							handleAnalyze()
