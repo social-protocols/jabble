@@ -73,7 +73,8 @@ export function TopLevelPost({
 	return (
 		<div
 			className={
-				'mb-2 w-full min-w-0 rounded-xl bg-post border-solid border-2 px-3 py-2 ' + (className || '')
+				'mb-2 w-full min-w-0 rounded-xl border-2 border-solid bg-post px-3 py-2 ' +
+				(className || '')
 			}
 		>
 			<div className="flex">
