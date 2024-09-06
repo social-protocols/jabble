@@ -5,7 +5,9 @@ import { Textarea } from '#app/components/ui/textarea.tsx'
 import { db } from '#app/db.ts'
 import { getChronologicalFactCheckPosts } from '#app/repositories/ranking.ts'
 import { type ClaimList } from '#app/utils/claim-extraction.ts'
-import { TopLevelPost } from './discuss.tsx'
+import { type FrontPagePost } from '#app/types/api-types.ts'
+import { PostContent } from '#app/components/ui/post-content.tsx'
+import moment from 'moment'
 
 export async function loader() {
 	const feed = await db.transaction().execute(async trx => {
@@ -82,7 +84,7 @@ Press **Ctrl + Enter** to extract claims.
 					<button
 						title="Ctrl + Enter"
 						disabled={isExtractingClaims}
-						className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black dark:bg-yellow-200"
+						className="rounded bg-purple-200 hover:bg-purple-300 px-4 py-2 text-base font-bold text-black dark:bg-yellow-200"
 						onClick={e => {
 							e.preventDefault()
 							handleExtractClaims()
@@ -91,12 +93,15 @@ Press **Ctrl + Enter** to extract claims.
 						{isExtractingClaims ? 'Extracting Claims...' : 'Extract Claims'}
 					</button>
 				</div>
+				<ExtractedClaimList claims={claims} />
 			</div>
-			<ExtractedClaimList claims={claims} />
 			<div>
+				<div className="px-4 mb-5">
+					<Markdown deactivateLinks={false}>{'## Recent Fact Checks'}</Markdown>
+				</div>
 				{feed.map((post, index) => {
 					return (
-						<TopLevelPost key={'fact-check-' + String(index)} post={post} />
+						<FactCheckPost key={'fact-check-' + String(index)} post={post} />
 					)
 				})}
 			</div>
@@ -116,7 +121,7 @@ function ExtractedClaimList({ claims }: { claims: ClaimList }) {
 		<></>
 	) : (
 		<>
-			<div className="px-4">
+			<div className="mt-6">
 				<Markdown deactivateLinks={false}>{'## Extracted Claims'}</Markdown>
 				<div className="mt-4">
 					<Markdown deactivateLinks={false}>
@@ -156,7 +161,7 @@ function ExtractedClaim({ claim, context }: { claim: Claim; context: string }) {
 				verifiableOrDebatable: claim.verifiable_or_debatable,
 				containsJudgment: String(claim.contains_judgment),
 			}
-			const response = await fetch('/createPostFromClaim', {
+			const response = await fetch('/createFactCheck', {
 				method: 'POST',
 				body: JSON.stringify(payload),
 				headers: { 'Content-Type': 'application/json' },
@@ -170,7 +175,7 @@ function ExtractedClaim({ claim, context }: { claim: Claim; context: string }) {
 	}
 
 	return (
-		<div className="mb-5 flex flex-col rounded-xl border-2 border-solid p-4">
+		<div className="mb-5 flex flex-col rounded-xl bg-post border-2 border-solid p-4">
 			<div>{claim.claim}</div>
 			<div className="flex w-full flex-row">
 				{!submitted && (
@@ -194,6 +199,52 @@ function ExtractedClaim({ claim, context }: { claim: Claim; context: string }) {
 						Go to discussion
 					</Link>
 				)}
+			</div>
+		</div>
+	)
+}
+
+function FactCheckPost({
+	post,
+	className,
+}: {
+	post: FrontPagePost
+	className?: string
+}) {
+	const ageString = moment(post.createdAt).fromNow()
+	const commentString = post.nTransitiveComments == 1 ? 'comment' : 'comments'
+	const voteString = post.oSize == 1 ? 'vote' : 'votes'
+
+	const pCurrent: number = post.p || NaN
+	const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
+
+	return (
+		<div
+			className={
+				'mb-2 w-full min-w-0 rounded-xl bg-post border-solid border-2 px-3 py-2 ' + (className || '')
+			}
+		>
+			<div className="flex">
+				<div className="flex w-full flex-col">
+					<div className="mb-2 text-sm opacity-50">{ageString}</div>
+					<PostContent
+						content={post.content}
+						deactivateLinks={false}
+						linkTo={`/post/${post.id}`}
+					/>
+					<div className="mt-auto text-sm opacity-50">
+						<Link to={`/post/${post.id}`}>
+							{post.nTransitiveComments} {commentString}
+						</Link>
+					</div>
+				</div>
+				<div className="ml-2 mr-1 min-w-32 space-y-1 opacity-50">
+					<div className="text-sm">Accuracy estimate:</div>
+					<div className="text-4xl">{pCurrentString}</div>
+					<div className="text-sm">
+						{post.oSize} {voteString}
+					</div>
+				</div>
 			</div>
 		</div>
 	)
