@@ -105,7 +105,7 @@ use-production-data:
 	just replay-vote-events
 
 production-db:
-	fly ssh console -C 'sqlite3 /litefs/data/sqlite.db'
+	fly ssh console -C 'sqlite3 /data/sqlite.db'
 
 
 install-node-extension-from-earthly:
