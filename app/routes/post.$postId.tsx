@@ -7,10 +7,9 @@ import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/ui/post-with-replies.tsx'
 import { db } from '#app/db.ts'
+import { isFactCheckDiscussion } from '#app/repositories/fact-checking.ts'
 import { updateHN } from '#app/repositories/hackernews.ts'
-import {
-	getTransitiveParents,
-} from '#app/repositories/post.ts'
+import { getTransitiveParents } from '#app/repositories/post.ts'
 import {
 	getReplyTree,
 	getCommentTreeState,
@@ -26,7 +25,6 @@ import {
 	type CollapsedState,
 } from '#app/types/api-types.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
-import { isFactCheckDiscussion } from '#app/repositories/fact-checking.ts'
 import { invariant } from '#app/utils/misc.tsx'
 
 const postIdSchema = z.coerce.number()
@@ -109,12 +107,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 }
 
 export default function PostPage() {
-	const {
-		mutableReplyTree,
-		transitiveParents,
-		commentTreeState,
-		isFactCheck,
-	} = useLoaderData<typeof loader>()
+	const { mutableReplyTree, transitiveParents, commentTreeState, isFactCheck } =
+		useLoaderData<typeof loader>()
 
 	const params = useParams()
 

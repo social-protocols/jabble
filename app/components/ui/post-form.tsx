@@ -46,13 +46,11 @@ export function PostForm({ className }: { className?: string }) {
 							name="isPrivateCheckbox"
 							onChange={handleCheckboxChange}
 						/>
-						<label htmlFor="isPrivate">
-							unlisted
-						</label>
+						<label htmlFor="isPrivate">unlisted</label>
 					</div>
 					<button
 						disabled={replyFetcher.state !== 'idle'}
-						className="rounded bg-blue-200 px-4 py-2 text-base text-black font-bold hover:bg-blue-300"
+						className="rounded bg-blue-200 px-4 py-2 text-base font-bold text-black hover:bg-blue-300"
 					>
 						{replyFetcher.state === 'idle' ? 'Discuss' : 'Submitting...'}
 					</button>

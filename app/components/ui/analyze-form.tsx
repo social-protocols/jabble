@@ -1,9 +1,9 @@
 import { useFetcher } from '@remix-run/react'
 import { type Dispatch, type SetStateAction, useState } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
+import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { type PlaygroundPost } from '#app/types/api-types.ts'
 import { Markdown } from '../markdown.tsx'
-import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 
 export function AnalyzeForm({
 	setPlaygroundPosts,

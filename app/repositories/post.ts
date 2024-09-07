@@ -1,4 +1,5 @@
 import { sql, type Transaction } from 'kysely'
+import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { vote } from '#app/repositories/vote.ts'
 import {
 	Direction,
@@ -14,7 +15,6 @@ import {
 import { invariant } from '#app/utils/misc.tsx'
 import { type DB } from '../types/kysely-types.ts'
 import { checkIsAdminOrThrow } from '../utils/auth.server.ts'
-import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 
 export async function createPost(
 	trx: Transaction<DB>,
@@ -23,7 +23,6 @@ export async function createPost(
 	authorId: string,
 	options?: { isPrivate: boolean; withUpvote?: boolean; createdAt?: number },
 ): Promise<number> {
-
 	invariant(content.length <= MAX_CHARS_PER_POST, 'Post content too long')
 	invariant(content.length > 0, 'Post content too short')
 

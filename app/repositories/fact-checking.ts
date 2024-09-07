@@ -2,11 +2,11 @@ import { type Transaction, sql } from 'kysely'
 import OpenAI from 'openai'
 import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
+import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { createPost, getPost } from '#app/repositories/post.ts'
 import { type Post } from '#app/types/api-types.ts'
 import { type FactCheck, type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 
 export const ClaimExtractionSchema = z.object({
 	claim_context: z
@@ -47,7 +47,6 @@ export const ClaimExtractionSchema = z.object({
 export type ClaimList = z.infer<typeof ClaimExtractionSchema>
 
 export async function extractClaims(content: string): Promise<ClaimList> {
-
 	invariant(content.length <= MAX_CHARS_PER_POST, 'Post content too long')
 	invariant(content.length > 0, 'Post content too short')
 

@@ -6,6 +6,7 @@ import {
 	useRef,
 } from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
+import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { toImmutableReplyTree } from '#app/repositories/ranking.ts'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import {
@@ -19,7 +20,6 @@ import {
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
 import { Icon } from './icon.tsx'
-import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 
 export function PostActionBar({
 	post,
@@ -366,7 +366,7 @@ function ReplyForm({
 				}}
 			/>
 			<button
-				className="rounded bg-blue-200 px-4 py-2 text-base text-black font-bold hover:bg-blue-300"
+				className="rounded bg-blue-200 px-4 py-2 text-base font-bold text-black hover:bg-blue-300"
 				onClick={handleReplySubmit}
 			>
 				Reply
