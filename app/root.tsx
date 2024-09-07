@@ -271,21 +271,15 @@ function NavigationMenu() {
 	const location = useLocation()
 
 	const baseNavigationClassName = 'rounded py-1 px-2 hover:bg-post'
-	const fallacyDetectionClassName = location.pathname == '/' ? 'bg-post' : ''
+	const fallacyDetectionClassName = location.pathname == '/fallacyDetection' ? 'bg-post' : ''
 	const factCheckingClassName =
-		location.pathname == '/factChecking' ? 'bg-post' : ''
+		location.pathname == '/' ? 'bg-post' : ''
 	const discussionsClassName = location.pathname == '/discuss' ? 'bg-post' : ''
 
 	return (
 		<>
 			<Link
 				to="/"
-				className={baseNavigationClassName + ' ' + fallacyDetectionClassName}
-			>
-				<Icon name="magic-wand">Fallacy Detection</Icon>
-			</Link>
-			<Link
-				to="/factChecking"
 				className={baseNavigationClassName + ' ' + factCheckingClassName}
 			>
 				<Icon name="lightning-bolt">Fact Checking</Icon>
@@ -295,6 +289,12 @@ function NavigationMenu() {
 				className={baseNavigationClassName + ' ' + discussionsClassName}
 			>
 				<Icon name="chat-bubble">Open Discussions</Icon>
+			</Link>
+			<Link
+				to="/fallacyDetection"
+				className={baseNavigationClassName + ' ' + fallacyDetectionClassName}
+			>
+				<Icon name="magic-wand">Fallacy Detection</Icon>
 			</Link>
 		</>
 	)
