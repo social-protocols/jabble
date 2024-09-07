@@ -271,9 +271,9 @@ function NavigationMenu() {
 	const location = useLocation()
 
 	const baseNavigationClassName = 'rounded py-1 px-2 hover:bg-post'
-	const fallacyDetectionClassName = location.pathname == '/fallacyDetection' ? 'bg-post' : ''
-	const factCheckingClassName =
-		location.pathname == '/' ? 'bg-post' : ''
+	const fallacyDetectionClassName =
+		location.pathname == '/fallacyDetection' ? 'bg-post' : ''
+	const factCheckingClassName = location.pathname == '/' ? 'bg-post' : ''
 	const discussionsClassName = location.pathname == '/discuss' ? 'bg-post' : ''
 
 	return (
