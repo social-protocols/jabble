@@ -3,6 +3,7 @@ import { type Dispatch, type SetStateAction, useState } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { type PlaygroundPost } from '#app/types/api-types.ts'
 import { Markdown } from '../markdown.tsx'
+import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 
 export function AnalyzeForm({
 	setPlaygroundPosts,
@@ -57,6 +58,7 @@ Press **Ctrl + Enter** to analyze.
 					placeholder="Something you want to be analyzed for fallacies."
 					name="content"
 					value={textAreaValue}
+					maxLength={MAX_CHARS_PER_POST}
 					onChange={event => setTextAreaValue(event.target.value)}
 					className="mb-2 min-h-[150px] w-full"
 					onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {

@@ -19,6 +19,7 @@ import {
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
 import { Icon } from './icon.tsx'
+import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 
 export function PostActionBar({
 	post,
@@ -380,6 +381,7 @@ function ReplyForm({
 				autoFocus={true}
 				placeholder="Enter your reply"
 				value={contentState}
+				maxLength={MAX_CHARS_PER_POST}
 				onChange={event => {
 					debouncedChangeHandler(event)
 					const value = event.currentTarget.value

@@ -9,6 +9,7 @@ import { getChronologicalFactCheckPosts } from '#app/repositories/ranking.ts'
 import { type FrontPagePost } from '#app/types/api-types.ts'
 import { type ClaimList } from '#app/utils/claim-extraction.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
+import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 
 export async function loader() {
 	const feed = await db.transaction().execute(async trx => {
@@ -69,6 +70,7 @@ Press **Ctrl + Enter** to extract claims.
 					placeholder="Something you want claims to be extracted from."
 					name="content"
 					value={textAreaValue}
+					maxLength={MAX_CHARS_PER_POST}
 					onChange={event => setTextAreaValue(event.target.value)}
 					className="mb-2 min-h-[150px] w-full"
 					onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {

@@ -1,6 +1,7 @@
 import { useFetcher } from '@remix-run/react'
 import { type ChangeEvent, useState, type FormEvent } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
+import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 
 export function PostForm({ className }: { className?: string }) {
 	const [textAreaValue, setTextAreaValue] = useState<string>('')
@@ -29,6 +30,7 @@ export function PostForm({ className }: { className?: string }) {
 					placeholder="What would you like to discuss?"
 					name="content"
 					value={textAreaValue}
+					maxLength={MAX_CHARS_PER_POST}
 					onChange={event => setTextAreaValue(event.target.value)}
 					className="mb-2 min-h-[150px] w-full"
 				/>
