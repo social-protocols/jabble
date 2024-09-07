@@ -4,14 +4,11 @@ import * as Immutable from 'immutable'
 import { type Dispatch, type SetStateAction, useState } from 'react'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { DiscussionOfTheDayHeader } from '#app/components/ui/discussion-of-the-day-header.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/ui/post-with-replies.tsx'
 import { db } from '#app/db.ts'
 import { updateHN } from '#app/repositories/hackernews.ts'
 import {
-	getDiscussionOfTheDay,
-	getRootPostId,
 	getTransitiveParents,
 } from '#app/repositories/post.ts'
 import {
@@ -42,18 +39,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		mutableReplyTree,
 		transitiveParents,
 		commentTreeState,
-		isDiscussionOfTheDay,
 		isFactCheck,
 	}: {
 		mutableReplyTree: ReplyTree
 		transitiveParents: Post[]
 		commentTreeState: CommentTreeState
-		isDiscussionOfTheDay: boolean
 		isFactCheck: boolean
 	} = await db.transaction().execute(async trx => {
 		await updateHN(trx, postId)
 		const commentTreeState = await getCommentTreeState(trx, postId, userId)
-		const discussionOfTheDayPostId = await getDiscussionOfTheDay(trx)
 		return {
 			mutableReplyTree: await getReplyTree(
 				trx,
@@ -63,8 +57,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 			),
 			transitiveParents: await getTransitiveParents(trx, postId),
 			commentTreeState: commentTreeState,
-			isDiscussionOfTheDay:
-				(await getRootPostId(trx, postId)) === discussionOfTheDayPostId,
 			isFactCheck: await isFactCheckDiscussion(trx, postId),
 		}
 	})
@@ -73,7 +65,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		mutableReplyTree,
 		transitiveParents,
 		commentTreeState,
-		isDiscussionOfTheDay,
 		isFactCheck,
 	})
 }
@@ -122,7 +113,6 @@ export default function PostPage() {
 		mutableReplyTree,
 		transitiveParents,
 		commentTreeState,
-		isDiscussionOfTheDay,
 		isFactCheck,
 	} = useLoaderData<typeof loader>()
 
@@ -131,7 +121,6 @@ export default function PostPage() {
 	// subcomponent and key needed for react to not preserve state on page changes
 	return (
 		<>
-			{false && isDiscussionOfTheDay && <DiscussionOfTheDayHeader />}
 			<DiscussionView
 				key={params['postId']}
 				mutableReplyTree={mutableReplyTree}

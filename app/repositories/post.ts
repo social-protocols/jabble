@@ -275,33 +275,3 @@ export async function getRootPostId(
 	)?.parentId
 	return parentId == null ? postId : await getRootPostId(trx, parentId)
 }
-
-export async function setDiscussionOfTheDay(
-	trx: Transaction<DB>,
-	postId: number,
-	userId: string,
-) {
-	checkIsAdminOrThrow(userId)
-	const rootPostId = await getRootPostId(trx, postId)
-	await trx
-		.insertInto('DiscussionOfTheDay')
-		.values({
-			postId: rootPostId,
-			promotedAt: Date.now(),
-		})
-		.returningAll()
-		.execute()
-}
-
-export async function getDiscussionOfTheDay(
-	trx: Transaction<DB>,
-): Promise<number | undefined> {
-	const discussionOfTheDayPostId: number | undefined = (
-		await trx
-			.selectFrom('DiscussionOfTheDay')
-			.orderBy('promotedAt', 'desc')
-			.selectAll()
-			.executeTakeFirst()
-	)?.postId
-	return discussionOfTheDayPostId
-}

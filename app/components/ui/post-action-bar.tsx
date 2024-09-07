@@ -67,19 +67,6 @@ export function PostActionBar({
 		treeContext.setCommentTreeState(newCommentTreeState)
 	}
 
-	async function handleSetDiscussionOfTheDay() {
-		const payload = {
-			postId: post.id,
-		}
-		await fetch('/promoteDiscussionOfTheDay', {
-			method: 'POST',
-			body: JSON.stringify(payload),
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		})
-	}
-
 	async function handleAdminRefreshPost() {
 		await fetch(`/refresh/${post.id}`, {
 			method: 'POST',
@@ -239,7 +226,6 @@ export function PostActionBar({
 						<AdminFeatureBar
 							isDeleted={isDeleted}
 							handleSetDeletedAt={handleSetDeletedAt}
-							handleSetDiscussionOfTheDay={handleSetDiscussionOfTheDay}
 							handleAdminRefreshPost={handleAdminRefreshPost}
 						/>
 					) : (
@@ -280,12 +266,10 @@ export function PostActionBar({
 function AdminFeatureBar({
 	isDeleted,
 	handleSetDeletedAt,
-	handleSetDiscussionOfTheDay,
 	handleAdminRefreshPost,
 }: {
 	isDeleted: boolean
 	handleSetDeletedAt: (deletedAt: number | null) => void
-	handleSetDiscussionOfTheDay: () => void
 	handleAdminRefreshPost: () => void
 }) {
 	return (
@@ -301,13 +285,6 @@ function AdminFeatureBar({
 					Restore
 				</button>
 			)}
-			<button
-				title="Promote the root post of this discussion to discussion of the day"
-				onClick={handleSetDiscussionOfTheDay}
-				className="shrink-0"
-			>
-				<Icon name="double-arrow-up" className="mt-[-0.1em]" /> Promote
-			</button>
 			<button
 				title="refresh labels"
 				onClick={handleAdminRefreshPost}
