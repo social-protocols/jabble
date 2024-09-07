@@ -2,7 +2,7 @@ import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { db } from '#app/db.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
-import { createFactCheck } from '#app/utils/claim-extraction.ts'
+import { createFactCheck } from '#app/repositories/fact-checking.ts'
 
 const ClaimDtoSchema = z.object({
 	context: z.coerce.string(),

@@ -29,7 +29,7 @@ import {
 	type CollapsedState,
 } from '#app/types/api-types.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
-import { isFactCheckDiscussion } from '#app/utils/claim-extraction.ts'
+import { isFactCheckDiscussion } from '#app/repositories/fact-checking.ts'
 import { invariant } from '#app/utils/misc.tsx'
 
 const postIdSchema = z.coerce.number()

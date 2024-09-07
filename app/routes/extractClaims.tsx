@@ -1,7 +1,7 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { zfd } from 'zod-form-data'
-import { extractClaims } from '#app/utils/claim-extraction.ts'
+import { extractClaims } from '#app/repositories/fact-checking.ts'
 
 const claimExtractionSchema = zfd.formData({
 	content: z.coerce.string(),

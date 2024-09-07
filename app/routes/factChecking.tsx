@@ -7,7 +7,7 @@ import { Textarea } from '#app/components/ui/textarea.tsx'
 import { db } from '#app/db.ts'
 import { getChronologicalFactCheckPosts } from '#app/repositories/ranking.ts'
 import { type FrontPagePost } from '#app/types/api-types.ts'
-import { type ClaimList } from '#app/utils/claim-extraction.ts'
+import { type ClaimList } from '#app/repositories/fact-checking.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 
