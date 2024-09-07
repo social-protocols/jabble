@@ -87,7 +87,7 @@ Press **Ctrl + Enter** to extract claims.
 					<button
 						title="Ctrl + Enter"
 						disabled={isExtractingClaims}
-						className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300 dark:bg-yellow-200"
+						className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
 						onClick={e => {
 							e.preventDefault()
 							handleExtractClaims()
@@ -192,7 +192,7 @@ function ExtractedClaim({ claim, context }: { claim: Claim; context: string }) {
 						<button
 							title="Ctrl + Enter"
 							disabled={isSubmitting}
-							className="ml-auto mt-2 rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300 dark:bg-yellow-200"
+							className="ml-auto mt-2 rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
 							onClick={e => {
 								e.preventDefault()
 								handleSubmit(claim, context)
@@ -244,7 +244,7 @@ function FactCheckPost({
 	return (
 		<div
 			className={
-				'mb-2 w-full min-w-0 rounded-xl border-2 border-solid bg-post px-3 py-2 ' +
+				'mb-2 w-full min-w-0 rounded-xl border-2 border-solid border-gray-200 bg-post px-3 py-2 dark:border-gray-700 ' +
 				(className || '')
 			}
 		>

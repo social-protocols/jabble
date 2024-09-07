@@ -73,7 +73,7 @@ export function TopLevelPost({
 	return (
 		<div
 			className={
-				'mb-2 w-full min-w-0 rounded-xl border-2 border-solid bg-post px-3 py-2 ' +
+				'mb-2 w-full min-w-0 rounded-xl border-2 border-solid border-gray-200 bg-post px-3 py-2 dark:border-gray-700 ' +
 				(className || '')
 			}
 		>
