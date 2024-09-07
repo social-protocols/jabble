@@ -21,4 +21,3 @@ export type DBVoteEvent = Selectable<schema.VoteEvent>
 export type DBVote = Selectable<schema.Vote>
 export type DBInsertableVoteEvent = Insertable<schema.VoteEvent>
 export type DBHNItem = Selectable<schema.HNItem>
-export type DBDiscussionOfTheDay = Selectable<schema.DiscussionOfTheDay>

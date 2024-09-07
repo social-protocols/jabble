@@ -1,6 +1,7 @@
 import { useFetcher } from '@remix-run/react'
 import { type Dispatch, type SetStateAction, useState } from 'react'
 import { Textarea } from '#app/components/ui/textarea.tsx'
+import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { type PlaygroundPost } from '#app/types/api-types.ts'
 import { Markdown } from '../markdown.tsx'
 
@@ -57,6 +58,7 @@ Press **Ctrl + Enter** to analyze.
 					placeholder="Something you want to be analyzed for fallacies."
 					name="content"
 					value={textAreaValue}
+					maxLength={MAX_CHARS_PER_POST}
 					onChange={event => setTextAreaValue(event.target.value)}
 					className="mb-2 min-h-[150px] w-full"
 					onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -73,7 +75,7 @@ Press **Ctrl + Enter** to analyze.
 					<button
 						title="Ctrl + Enter"
 						disabled={isAnalyzing}
-						className="rounded bg-yellow-200 px-4 py-2 text-base font-bold text-black dark:bg-yellow-200"
+						className="rounded bg-yellow-200 px-4 py-2 text-base font-bold text-black hover:bg-yellow-300 dark:bg-yellow-200"
 						onClick={e => {
 							e.preventDefault()
 							handleAnalyze()

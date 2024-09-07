@@ -140,16 +140,29 @@ export type HNItem = {
 	postId: number
 }
 
-export type DiscussionOfTheDay = {
-	postId: number
-	promotedAt: number
-}
-
 export type PlaygroundPost = {
 	id: Generated<number>
 	content: string
 	detection: string
 	createdAt: Generated<number>
+}
+
+export type Claim = {
+	id: Generated<number>
+	claim: string
+}
+
+export type ClaimContext = {
+	id: Generated<number>
+	context: string
+	origin: string | null
+	createdAt: Generated<number>
+}
+
+export type FactCheck = {
+	claimId: number
+	claimContextId: number
+	postId: number
 }
 
 export type DB = {
@@ -171,6 +184,8 @@ export type DB = {
 	FullScore: FullScore
 	Lineage: Lineage
 	HNItem: HNItem
-	DiscussionOfTheDay: DiscussionOfTheDay
 	PlaygroundPost: PlaygroundPost
+	Claim: Claim
+	ClaimContext: ClaimContext
+	FactCheck: FactCheck
 }

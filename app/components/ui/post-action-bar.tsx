@@ -6,6 +6,7 @@ import {
 	useRef,
 } from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
+import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { toImmutableReplyTree } from '#app/repositories/ranking.ts'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import {
@@ -64,19 +65,6 @@ export function PostActionBar({
 		})
 		const newCommentTreeState = (await response.json()) as CommentTreeState
 		treeContext.setCommentTreeState(newCommentTreeState)
-	}
-
-	async function handleSetDiscussionOfTheDay() {
-		const payload = {
-			postId: post.id,
-		}
-		await fetch('/promoteDiscussionOfTheDay', {
-			method: 'POST',
-			body: JSON.stringify(payload),
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		})
 	}
 
 	async function handleAdminRefreshPost() {
@@ -174,37 +162,38 @@ export function PostActionBar({
 							<Icon name="chevron-down" className="ml-[-0.2em]" />
 						</button>
 					))}
-				{loggedIn && (!isTargetPost || !isTopLevelPost) && (
-					<>
-						<button
-							title={'Upvote'}
-							onClick={async () => await submitVote(Direction.Up)}
-						>
-							<Icon
-								name={
-									postState.voteState.vote == Direction.Up
-										? 'thick-arrow-up-solid'
-										: 'thick-arrow-up'
-								}
-							/>
-						</button>
-						<span className="mx-[-0.6em]">Vote</span>
-						<button
-							title={'Downvote'}
-							onClick={async () => await submitVote(Direction.Down)}
-							className="mr-[0.3em]"
-						>
-							<Icon
-								name={
-									postState.voteState.vote == Direction.Down
-										? 'thick-arrow-down-solid'
-										: 'thick-arrow-down'
-								}
-								className="mt-[-0.2em]"
-							/>
-						</button>
-					</>
-				)}
+				{loggedIn &&
+					(!isTargetPost || !isTopLevelPost || !treeContext.isFactCheck) && (
+						<>
+							<button
+								title={'Upvote'}
+								onClick={async () => await submitVote(Direction.Up)}
+							>
+								<Icon
+									name={
+										postState.voteState.vote == Direction.Up
+											? 'thick-arrow-up-solid'
+											: 'thick-arrow-up'
+									}
+								/>
+							</button>
+							<span className="mx-[-0.6em]">Vote</span>
+							<button
+								title={'Downvote'}
+								onClick={async () => await submitVote(Direction.Down)}
+								className="mr-[0.3em]"
+							>
+								<Icon
+									name={
+										postState.voteState.vote == Direction.Down
+											? 'thick-arrow-down-solid'
+											: 'thick-arrow-down'
+									}
+									className="mt-[-0.2em]"
+								/>
+							</button>
+						</>
+					)}
 				{false && (
 					<button
 						title={
@@ -237,7 +226,6 @@ export function PostActionBar({
 						<AdminFeatureBar
 							isDeleted={isDeleted}
 							handleSetDeletedAt={handleSetDeletedAt}
-							handleSetDiscussionOfTheDay={handleSetDiscussionOfTheDay}
 							handleAdminRefreshPost={handleAdminRefreshPost}
 						/>
 					) : (
@@ -278,12 +266,10 @@ export function PostActionBar({
 function AdminFeatureBar({
 	isDeleted,
 	handleSetDeletedAt,
-	handleSetDiscussionOfTheDay,
 	handleAdminRefreshPost,
 }: {
 	isDeleted: boolean
 	handleSetDeletedAt: (deletedAt: number | null) => void
-	handleSetDiscussionOfTheDay: () => void
 	handleAdminRefreshPost: () => void
 }) {
 	return (
@@ -299,13 +285,6 @@ function AdminFeatureBar({
 					Restore
 				</button>
 			)}
-			<button
-				title="Promote the root post of this discussion to discussion of the day"
-				onClick={handleSetDiscussionOfTheDay}
-				className="shrink-0"
-			>
-				<Icon name="double-arrow-up" className="mt-[-0.1em]" /> Promote
-			</button>
 			<button
 				title="refresh labels"
 				onClick={handleAdminRefreshPost}
@@ -379,6 +358,7 @@ function ReplyForm({
 				autoFocus={true}
 				placeholder="Enter your reply"
 				value={contentState}
+				maxLength={MAX_CHARS_PER_POST}
 				onChange={event => {
 					debouncedChangeHandler(event)
 					const value = event.currentTarget.value
@@ -386,7 +366,7 @@ function ReplyForm({
 				}}
 			/>
 			<button
-				className="rounded bg-blue-500 px-4 py-2 text-base font-bold text-white hover:bg-blue-700"
+				className="rounded bg-blue-200 px-4 py-2 text-base font-bold text-black hover:bg-blue-300"
 				onClick={handleReplySubmit}
 			>
 				Reply

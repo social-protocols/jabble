@@ -3,9 +3,6 @@
   "private": true,
   "sideEffects": false,
   "type": "module",
-  "imports": {
-    "#*": "./*"
-  },
   "scripts": {
     "build": "run-s build:*",
     "build:icons": "tsx ./other/build-icons.ts",

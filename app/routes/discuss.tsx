@@ -1,9 +1,7 @@
 import { type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
-import { useState } from 'react'
-import { Button } from '#app/components/ui/button.tsx'
-import { InfoText } from '#app/components/ui/info-text.tsx'
+import { Markdown } from '#app/components/markdown.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
 import { PostForm } from '#app/components/ui/post-form.tsx'
 import { db } from '#app/db.ts'
@@ -25,47 +23,30 @@ export default function Explore() {
 	// the error boundary just in case.
 	let data = useLoaderData<typeof loader>()
 
-	return <FrontpageFeed feed={data.feed} loggedIn={data.loggedIn} />
+	return <FrontpageFeed feed={data.feed} />
 }
 
-export function FrontpageFeed({
-	feed,
-	loggedIn,
-}: {
-	feed: FrontPagePost[]
-	loggedIn: boolean
-}) {
-	const [showNewDiscussionForm, setShowNewDiscussionForm] = useState(true)
+export function FrontpageFeed({ feed }: { feed: FrontPagePost[] }) {
+	const infoText = `
+# Jabble Discussions
+
+This is a place to have open discussions.
+`.trim()
 
 	return (
 		<div>
-			<InfoText />
-
-			{showNewDiscussionForm ? (
-				<PostForm className="mb-4" />
-			) : (
-				loggedIn && <div className="mb-4">{newDiscussionButton()}</div>
-			)}
-
-			<div className="mx-auto w-full">
-				<PostList feed={feed} />
+			<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
+				<div className="mb-4">
+					<Markdown deactivateLinks={false}>{infoText}</Markdown>
+				</div>
+				<PostForm />
 			</div>
+			<div className="mx-auto mb-4 w-full px-4">
+				<Markdown deactivateLinks={false}># Recent Discussions</Markdown>
+			</div>
+			<PostList feed={feed} />
 		</div>
 	)
-
-	function newDiscussionButton() {
-		return (
-			<Button
-				variant="secondary"
-				onClick={() => {
-					setShowNewDiscussionForm(!showNewDiscussionForm)
-					return false
-				}}
-			>
-				New Fact-Check
-			</Button>
-		)
-	}
 }
 
 function PostList({ feed }: { feed: FrontPagePost[] }) {
@@ -84,15 +65,16 @@ export function TopLevelPost({
 }) {
 	const ageString = moment(post.createdAt).fromNow()
 	const commentString = post.nTransitiveComments == 1 ? 'comment' : 'comments'
-	const voteString = post.oSize == 1 ? 'vote' : 'votes'
 
-	const pCurrent: number = post.p || NaN
-	const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
+	// const voteString = post.oSize == 1 ? 'vote' : 'votes'
+	// const pCurrent: number = post.p || NaN
+	// const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
 
 	return (
 		<div
 			className={
-				'mb-2 w-full min-w-0 rounded-sm bg-post px-3 py-2 ' + (className || '')
+				'mb-2 w-full min-w-0 rounded-xl border-2 border-solid border-gray-200 bg-post px-3 py-2 dark:border-gray-700 ' +
+				(className || '')
 			}
 		>
 			<div className="flex">
@@ -108,13 +90,6 @@ export function TopLevelPost({
 						<Link to={`/post/${post.id}`}>
 							{post.nTransitiveComments} {commentString}
 						</Link>
-					</div>
-				</div>
-				<div className="ml-2 mr-1 min-w-32 space-y-1 opacity-50">
-					<div className="text-sm">Accuracy estimate:</div>
-					<div className="text-4xl">{pCurrentString}</div>
-					<div className="text-sm">
-						{post.oSize} {voteString}
 					</div>
 				</div>
 			</div>

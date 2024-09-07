@@ -1,4 +1,5 @@
 import { sql, type Transaction } from 'kysely'
+import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { vote } from '#app/repositories/vote.ts'
 import {
 	Direction,
@@ -22,6 +23,9 @@ export async function createPost(
 	authorId: string,
 	options?: { isPrivate: boolean; withUpvote?: boolean; createdAt?: number },
 ): Promise<number> {
+	invariant(content.length <= MAX_CHARS_PER_POST, 'Post content too long')
+	invariant(content.length > 0, 'Post content too short')
+
 	const persistedPost: DBPost = await trx
 		.insertInto('Post')
 		.values({
@@ -269,34 +273,4 @@ export async function getRootPostId(
 			.executeTakeFirst()
 	)?.parentId
 	return parentId == null ? postId : await getRootPostId(trx, parentId)
-}
-
-export async function setDiscussionOfTheDay(
-	trx: Transaction<DB>,
-	postId: number,
-	userId: string,
-) {
-	checkIsAdminOrThrow(userId)
-	const rootPostId = await getRootPostId(trx, postId)
-	await trx
-		.insertInto('DiscussionOfTheDay')
-		.values({
-			postId: rootPostId,
-			promotedAt: Date.now(),
-		})
-		.returningAll()
-		.execute()
-}
-
-export async function getDiscussionOfTheDay(
-	trx: Transaction<DB>,
-): Promise<number | undefined> {
-	const discussionOfTheDayPostId: number | undefined = (
-		await trx
-			.selectFrom('DiscussionOfTheDay')
-			.orderBy('promotedAt', 'desc')
-			.selectAll()
-			.executeTakeFirst()
-	)?.postId
-	return discussionOfTheDayPostId
 }

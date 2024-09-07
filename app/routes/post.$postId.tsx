@@ -4,17 +4,12 @@ import * as Immutable from 'immutable'
 import { type Dispatch, type SetStateAction, useState } from 'react'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
-import { DiscussionOfTheDayHeader } from '#app/components/ui/discussion-of-the-day-header.tsx'
-import { InfoText } from '#app/components/ui/info-text.tsx'
 import { ParentThread } from '#app/components/ui/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/ui/post-with-replies.tsx'
 import { db } from '#app/db.ts'
+import { isFactCheckDiscussion } from '#app/repositories/fact-checking.ts'
 import { updateHN } from '#app/repositories/hackernews.ts'
-import {
-	getDiscussionOfTheDay,
-	getRootPostId,
-	getTransitiveParents,
-} from '#app/repositories/post.ts'
+import { getTransitiveParents } from '#app/repositories/post.ts'
 import {
 	getReplyTree,
 	getCommentTreeState,
@@ -42,16 +37,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		mutableReplyTree,
 		transitiveParents,
 		commentTreeState,
-		isDiscussionOfTheDay,
+		isFactCheck,
 	}: {
 		mutableReplyTree: ReplyTree
 		transitiveParents: Post[]
 		commentTreeState: CommentTreeState
-		isDiscussionOfTheDay: boolean
+		isFactCheck: boolean
 	} = await db.transaction().execute(async trx => {
 		await updateHN(trx, postId)
 		const commentTreeState = await getCommentTreeState(trx, postId, userId)
-		const discussionOfTheDayPostId = await getDiscussionOfTheDay(trx)
 		return {
 			mutableReplyTree: await getReplyTree(
 				trx,
@@ -61,8 +55,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 			),
 			transitiveParents: await getTransitiveParents(trx, postId),
 			commentTreeState: commentTreeState,
-			isDiscussionOfTheDay:
-				(await getRootPostId(trx, postId)) === discussionOfTheDayPostId,
+			isFactCheck: await isFactCheckDiscussion(trx, postId),
 		}
 	})
 
@@ -70,7 +63,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		mutableReplyTree,
 		transitiveParents,
 		commentTreeState,
-		isDiscussionOfTheDay,
+		isFactCheck,
 	})
 }
 
@@ -114,25 +107,20 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 }
 
 export default function PostPage() {
-	const {
-		mutableReplyTree,
-		transitiveParents,
-		commentTreeState,
-		isDiscussionOfTheDay,
-	} = useLoaderData<typeof loader>()
+	const { mutableReplyTree, transitiveParents, commentTreeState, isFactCheck } =
+		useLoaderData<typeof loader>()
 
 	const params = useParams()
 
 	// subcomponent and key needed for react to not preserve state on page changes
 	return (
 		<>
-			<InfoText className="mb-8" />
-			{false && isDiscussionOfTheDay && <DiscussionOfTheDayHeader />}
 			<DiscussionView
 				key={params['postId']}
 				mutableReplyTree={mutableReplyTree}
 				transitiveParents={transitiveParents}
 				initialCommentTreeState={commentTreeState}
+				isFactCheck={isFactCheck}
 			/>
 		</>
 	)
@@ -149,16 +137,19 @@ export type TreeContext = {
 	onCollapseParentSiblings: (
 		pathFromFocussedPost: Immutable.List<number>,
 	) => void
+	isFactCheck: boolean
 }
 
 export function DiscussionView({
 	mutableReplyTree,
 	transitiveParents,
 	initialCommentTreeState,
+	isFactCheck,
 }: {
 	mutableReplyTree: ReplyTree
 	transitiveParents: Post[]
 	initialCommentTreeState: CommentTreeState
+	isFactCheck: boolean
 }) {
 	const initialReplyTree = toImmutableReplyTree(mutableReplyTree)
 
@@ -211,6 +202,7 @@ export function DiscussionView({
 				})
 			}
 		},
+		isFactCheck: isFactCheck,
 	}
 
 	return (

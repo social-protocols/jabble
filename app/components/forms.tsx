@@ -1,5 +1,6 @@
 import { useInputEvent } from '@conform-to/react'
 import React, { useId, useRef } from 'react'
+import { type TextareaAutosizeProps } from 'react-textarea-autosize'
 import { Checkbox, type CheckboxProps } from './ui/checkbox.tsx'
 import { Input } from './ui/input.tsx'
 import { Label } from './ui/label.tsx'
@@ -64,7 +65,7 @@ export function TextareaField({
 	className,
 }: {
 	labelProps: React.LabelHTMLAttributes<HTMLLabelElement>
-	textareaProps: React.TextareaHTMLAttributes<HTMLTextAreaElement>
+	textareaProps: TextareaAutosizeProps
 	errors?: ListOfErrors
 	className?: string
 }) {
