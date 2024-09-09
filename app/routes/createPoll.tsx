@@ -8,6 +8,7 @@ import { requireUserId } from '#app/utils/auth.server.ts'
 const ClaimDtoSchema = z.object({
 	context: z.coerce.string(),
 	claim: z.coerce.string(),
+	origin: z.coerce.string().nullable(),
 	pollType: z.nativeEnum(PollType),
 })
 
@@ -25,7 +26,7 @@ export const action = async (args: ActionFunctionArgs) => {
 					userId,
 					claimDto.claim,
 					claimDto.context,
-					null,
+					claimDto.origin,
 					claimDto.pollType,
 				),
 		)

@@ -279,7 +279,7 @@ export async function getChronologicalToplevelPosts(
 	return res
 }
 
-export async function getChronologicalFactCheckPosts(
+export async function getChronologicalPolls(
 	trx: Transaction<DB>,
 ): Promise<FrontPagePost[]> {
 	let query = trx
@@ -291,7 +291,7 @@ export async function getChronologicalFactCheckPosts(
 		.leftJoin('PostStats', join =>
 			join.onRef('PostStats.postId', '=', 'Post.id'),
 		)
-		.where('Poll.pollType', '=', 'factCheck')
+		.where('Poll.pollType', 'is not', null)
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.selectAll('Poll')

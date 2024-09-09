@@ -8,13 +8,13 @@ import { Textarea } from '#app/components/ui/textarea.tsx'
 import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { db } from '#app/db.ts'
 import { type ClaimList } from '#app/repositories/fact-checking.ts'
-import { getChronologicalFactCheckPosts } from '#app/repositories/ranking.ts'
+import { getChronologicalPolls } from '#app/repositories/ranking.ts'
 import { PollType, type FrontPagePost } from '#app/types/api-types.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 
 export async function loader() {
 	const feed = await db.transaction().execute(async trx => {
-		return await getChronologicalFactCheckPosts(trx)
+		return await getChronologicalPolls(trx)
 	})
 	return { feed }
 }
@@ -22,9 +22,9 @@ export async function loader() {
 export default function ClaimExtraction() {
 	const { feed } = useLoaderData<typeof loader>()
 
-	const [textAreaValue, setTextAreaValue] = useState<string>('')
+	const [statementValue, setStatementValue] = useState<string>('')
+	const [originValue, setOriginValue] = useState<string>('')
 	const [isExtractingClaims, setIsExtractingClaims] = useState(false)
-
 	const [claims, setClaims] = useState<ClaimList>({
 		claim_context: '',
 		extracted_claims: [],
@@ -34,7 +34,7 @@ export default function ClaimExtraction() {
 		setIsExtractingClaims(true)
 		try {
 			const payload = {
-				content: textAreaValue,
+				content: statementValue,
 			}
 			const response = await fetch('/extractClaims', {
 				method: 'POST',
@@ -49,11 +49,14 @@ export default function ClaimExtraction() {
 	}
 
 	const infoText = `
-## Jabble Fact Checking
+## Jabble Polls
 
-Copy and paste something you want to fact-check here.
-We'll do our best to extract claims that you can fact-check from it.
-You can then decide if you want to post them for discussion.
+You can create either **opinion polls** (*agree/disagree*) or **fact check polls** (*true/false*).
+
+Copy and paste something you want to fact-check or discuss here.
+We use an LLM to extract claims that you can post as opinion or fact-check polls.
+You can then decide which ones you want to post.
+You can also add an origin (for example a URL) to give context to where you found the statement.
 `
 
 	const disclaimer = `
@@ -68,12 +71,25 @@ Press **Ctrl + Enter** to extract claims.
 					<Markdown deactivateLinks={false}>{infoText}</Markdown>
 				</div>
 				<Textarea
-					placeholder="Something you want claims to be extracted from."
+					placeholder="A statement to extract claims from."
 					name="content"
-					value={textAreaValue}
+					value={statementValue}
 					maxLength={MAX_CHARS_PER_POST}
-					onChange={event => setTextAreaValue(event.target.value)}
+					onChange={event => setStatementValue(event.target.value)}
 					className="mb-2 min-h-[150px] w-full"
+					onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+						if (event.ctrlKey && event.key === 'Enter') {
+							event.preventDefault() // Prevent default behavior if needed
+							handleExtractClaims()
+						}
+					}}
+				/>
+				<Textarea
+					placeholder="Origin = where the statement was made (optional, for example a URL)"
+					name="origin-url"
+					value={originValue}
+					onChange={event => setOriginValue(event.target.value)}
+					className="mb-2 h-4 w-full"
 					onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
 						if (event.ctrlKey && event.key === 'Enter') {
 							event.preventDefault() // Prevent default behavior if needed
@@ -97,11 +113,11 @@ Press **Ctrl + Enter** to extract claims.
 						{isExtractingClaims ? 'Extracting Claims...' : 'Extract Claims'}
 					</button>
 				</div>
-				<ExtractedClaimList claims={claims} />
+				<ExtractedClaimList claims={claims} origin={originValue} />
 			</div>
 			<div>
 				<div className="mb-5 px-4">
-					<Markdown deactivateLinks={false}>{'## Recent Fact Checks'}</Markdown>
+					<Markdown deactivateLinks={false}>{'## Recent Polls'}</Markdown>
 				</div>
 				{feed.map((post, index) => {
 					return <PollPost key={'fact-check-' + String(index)} post={post} />
@@ -117,7 +133,13 @@ type Claim = {
 	normative_or_descriptive: string
 }
 
-function ExtractedClaimList({ claims }: { claims: ClaimList }) {
+function ExtractedClaimList({
+	claims,
+	origin,
+}: {
+	claims: ClaimList
+	origin?: string
+}) {
 	return claims.extracted_claims.length == 0 ? (
 		<></>
 	) : (
@@ -137,6 +159,7 @@ function ExtractedClaimList({ claims }: { claims: ClaimList }) {
 							key={'claim-' + String(index)}
 							claim={claim}
 							context={claims.claim_context}
+							origin={origin}
 						/>
 					)
 				})}
@@ -145,7 +168,15 @@ function ExtractedClaimList({ claims }: { claims: ClaimList }) {
 	)
 }
 
-function ExtractedClaim({ claim, context }: { claim: Claim; context: string }) {
+function ExtractedClaim({
+	claim,
+	context,
+	origin,
+}: {
+	claim: Claim
+	context: string
+	origin?: string
+}) {
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 	const [submitted, setSubmitted] = useState<boolean>(false)
 	const [newSubmissionPostId, setNewSubmissionPostId] = useState<number | null>(
@@ -164,6 +195,7 @@ function ExtractedClaim({ claim, context }: { claim: Claim; context: string }) {
 			const payload = {
 				context: context,
 				claim: claim.claim_without_indirection,
+				origin: origin,
 				pollType: pollType,
 			}
 			const response = await fetch('/createPoll', {
@@ -259,7 +291,7 @@ function PollPost({
 						deactivateLinks={false}
 						linkTo={`/post/${post.id}`}
 					/>
-					<div className="mt-auto text-sm opacity-50">
+					<div className="mt-2 text-sm opacity-50">
 						<Link to={`/post/${post.id}`}>
 							{post.nTransitiveComments} {commentString}
 						</Link>
