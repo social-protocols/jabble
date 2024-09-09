@@ -114,17 +114,12 @@ Press **Ctrl + Enter** to extract claims.
 
 type Claim = {
 	claim: string
-	fact_or_opinion: string
-	verifiable_or_debatable: string
-	contains_judgment: boolean
+	claim_without_indirection: string
+	normative_or_descriptive: string
 }
 
 function ExtractedClaimList({ claims }: { claims: ClaimList }) {
-	const filteredClaims = claims.extracted_claims.filter(
-		claim => !claim.contains_judgment,
-	)
-
-	return filteredClaims.length == 0 ? (
+	return claims.extracted_claims.length == 0 ? (
 		<></>
 	) : (
 		<>
@@ -137,7 +132,7 @@ function ExtractedClaimList({ claims }: { claims: ClaimList }) {
 				</div>
 			</div>
 			<div className="mt-5">
-				{filteredClaims.map((claim, index) => {
+				{claims.extracted_claims.map((claim, index) => {
 					return (
 						<ExtractedClaim
 							key={'claim-' + String(index)}
@@ -165,10 +160,7 @@ function ExtractedClaim({ claim, context }: { claim: Claim; context: string }) {
 		try {
 			const payload = {
 				context: context,
-				claim: claim.claim,
-				factOrOpinion: claim.fact_or_opinion,
-				verifiableOrDebatable: claim.verifiable_or_debatable,
-				containsJudgment: String(claim.contains_judgment),
+				claim: claim.claim_without_indirection,
 			}
 			const response = await fetch('/createFactCheck', {
 				method: 'POST',
@@ -185,7 +177,7 @@ function ExtractedClaim({ claim, context }: { claim: Claim; context: string }) {
 
 	return (
 		<div className="mb-5 flex flex-col rounded-xl border-2 border-solid bg-post p-4 dark:border-gray-700">
-			<div>{claim.claim}</div>
+			<div>{claim.claim_without_indirection}</div>
 			{user && (
 				<div className="flex w-full flex-row">
 					{!submitted && (

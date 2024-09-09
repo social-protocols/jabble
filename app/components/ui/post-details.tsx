@@ -7,6 +7,7 @@ import {
 	Direction,
 	type ImmutableReplyTree,
 	type Post,
+    PollType,
 } from '#app/types/api-types.ts'
 import { type FallacyList } from '#app/utils/fallacy_detection.ts'
 import { invariant } from '#app/utils/misc.tsx'
@@ -102,7 +103,7 @@ export function PostDetails({
 				)}
 				{isTargetPost &&
 					isTopLevelPost &&
-					treeContext.isFactCheck &&
+					post.pollType == PollType.FactCheck &&
 					(loggedIn ? (
 						<div className="my-2 space-x-4">
 							<button
@@ -146,7 +147,7 @@ export function PostDetails({
 				/>
 			</div>
 
-			{isTargetPost && isTopLevelPost && treeContext.isFactCheck && (
+			{isTargetPost && isTopLevelPost && (post.pollType == PollType.FactCheck) && (
 				<div className="mx-2 min-w-32 space-y-1 opacity-50">
 					<div className="text-sm">Accuracy estimate:</div>
 					<div className="text-5xl">

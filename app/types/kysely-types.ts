@@ -159,10 +159,11 @@ export type ClaimContext = {
 	createdAt: Generated<number>
 }
 
-export type FactCheck = {
+export type Poll = {
 	claimId: number
 	claimContextId: number
 	postId: number
+	pollType: string
 }
 
 export type DB = {
@@ -187,5 +188,5 @@ export type DB = {
 	PlaygroundPost: PlaygroundPost
 	Claim: Claim
 	ClaimContext: ClaimContext
-	FactCheck: FactCheck
+	Poll: Poll
 }

@@ -16,6 +16,7 @@ import {
 	type ImmutableReplyTree,
 	Direction,
 	type PostState,
+    PollType,
 } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
@@ -163,7 +164,7 @@ export function PostActionBar({
 						</button>
 					))}
 				{loggedIn &&
-					(!isTargetPost || !isTopLevelPost || !treeContext.isFactCheck) && (
+					(!isTargetPost || !isTopLevelPost || !(post.pollType == PollType.FactCheck)) && (
 						<>
 							<button
 								title={'Upvote'}

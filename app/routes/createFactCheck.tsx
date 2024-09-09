@@ -3,13 +3,11 @@ import { z } from 'zod'
 import { db } from '#app/db.ts'
 import { createFactCheck } from '#app/repositories/fact-checking.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
+import { PollType } from '#app/types/api-types.ts'
 
 const ClaimDtoSchema = z.object({
 	context: z.coerce.string(),
 	claim: z.coerce.string(),
-	factOrOpinion: z.coerce.string(),
-	verifiableOrDebatable: z.coerce.string(),
-	containsJudgment: z.coerce.boolean(),
 })
 
 export const action = async (args: ActionFunctionArgs) => {
@@ -27,6 +25,7 @@ export const action = async (args: ActionFunctionArgs) => {
 					claimDto.claim,
 					claimDto.context,
 					null,
+					PollType.FactCheck,
 				),
 		)
 
