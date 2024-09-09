@@ -4,7 +4,7 @@ import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
 import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { createPost, getPost } from '#app/repositories/post.ts'
-import { PollType, type Post } from '#app/types/api-types.ts'
+import { type PollType, type Post } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 
@@ -30,10 +30,14 @@ export const ClaimExtractionSchema = z.object({
 						),
 					normative_or_descriptive: z
 						.enum(['normative', 'descriptive'])
-						.describe('Whether the claim makes a normative statement (something should be a certain way) or a descriptive statement (something is a certain way).'),
+						.describe(
+							'Whether the claim makes a normative statement (something should be a certain way) or a descriptive statement (something is a certain way).',
+						),
 					contains_judgment: z
 						.boolean()
-						.describe('Whether the claim contains any judgment by the author. Is an opinion about the content of the claim expressed?')
+						.describe(
+							'Whether the claim contains any judgment by the author. Is an opinion about the content of the claim expressed?',
+						),
 				})
 				.strict(),
 		)
@@ -63,7 +67,7 @@ Don't use the passive form.
 		top_p: 1,
 		messages: [
 			{ role: 'system', content: systemMessage },
-			{ role: 'user', content: content }
+			{ role: 'user', content: content },
 		],
 		response_format: zodResponseFormat(ClaimExtractionSchema, 'event'),
 	})
@@ -76,7 +80,7 @@ Don't use the passive form.
 	return event
 }
 
-export async function createFactCheck(
+export async function createPoll(
 	trx: Transaction<DB>,
 	userId: string,
 	claim: string,

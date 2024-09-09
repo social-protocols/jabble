@@ -2,13 +2,14 @@ import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { useState } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
+import PollResult from '#app/components/ui/poll-result.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { db } from '#app/db.ts'
 import { type ClaimList } from '#app/repositories/fact-checking.ts'
 import { getChronologicalFactCheckPosts } from '#app/repositories/ranking.ts'
-import { type FrontPagePost } from '#app/types/api-types.ts'
+import { PollType, type FrontPagePost } from '#app/types/api-types.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 
 export async function loader() {
@@ -103,9 +104,7 @@ Press **Ctrl + Enter** to extract claims.
 					<Markdown deactivateLinks={false}>{'## Recent Fact Checks'}</Markdown>
 				</div>
 				{feed.map((post, index) => {
-					return (
-						<FactCheckPost key={'fact-check-' + String(index)} post={post} />
-					)
+					return <PollPost key={'fact-check-' + String(index)} post={post} />
 				})}
 			</div>
 		</div>
@@ -155,14 +154,19 @@ function ExtractedClaim({ claim, context }: { claim: Claim; context: string }) {
 
 	const user = useOptionalUser()
 
-	async function handleSubmit(claim: Claim, context: string) {
+	async function handleSubmit(
+		claim: Claim,
+		context: string,
+		pollType: PollType,
+	) {
 		setIsSubmitting(true)
 		try {
 			const payload = {
 				context: context,
 				claim: claim.claim_without_indirection,
+				pollType: pollType,
 			}
-			const response = await fetch('/createFactCheck', {
+			const response = await fetch('/createPoll', {
 				method: 'POST',
 				body: JSON.stringify(payload),
 				headers: { 'Content-Type': 'application/json' },
@@ -182,15 +186,26 @@ function ExtractedClaim({ claim, context }: { claim: Claim; context: string }) {
 				<div className="flex w-full flex-row">
 					{!submitted && (
 						<button
-							title="Ctrl + Enter"
 							disabled={isSubmitting}
 							className="ml-auto mt-2 rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
 							onClick={e => {
 								e.preventDefault()
-								handleSubmit(claim, context)
+								handleSubmit(claim, context, PollType.FactCheck)
 							}}
 						>
 							{isSubmitting ? 'Submitting...' : 'Create Fact Check'}
+						</button>
+					)}
+					{!submitted && (
+						<button
+							disabled={isSubmitting}
+							className="ml-2 mt-2 rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
+							onClick={e => {
+								e.preventDefault()
+								handleSubmit(claim, context, PollType.Opinion)
+							}}
+						>
+							{isSubmitting ? 'Submitting...' : 'Create Opinion Poll'}
 						</button>
 					)}
 					{submitted && (
@@ -219,7 +234,7 @@ function ExtractedClaim({ claim, context }: { claim: Claim; context: string }) {
 	)
 }
 
-function FactCheckPost({
+function PollPost({
 	post,
 	className,
 }: {
@@ -228,10 +243,6 @@ function FactCheckPost({
 }) {
 	const ageString = moment(post.createdAt).fromNow()
 	const commentString = post.nTransitiveComments == 1 ? 'comment' : 'comments'
-	const voteString = post.oSize == 1 ? 'vote' : 'votes'
-
-	const pCurrent: number = post.p || NaN
-	const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
 
 	return (
 		<div
@@ -254,13 +265,12 @@ function FactCheckPost({
 						</Link>
 					</div>
 				</div>
-				<div className="ml-2 mr-1 min-w-32 space-y-1 opacity-50">
-					<div className="text-sm">Accuracy estimate:</div>
-					<div className="text-4xl">{pCurrentString}</div>
-					<div className="text-sm">
-						{post.oSize} {voteString}
-					</div>
-				</div>
+				<PollResult
+					postId={post.id}
+					pCurrent={post.p || NaN}
+					voteCount={post.oSize}
+					pollType={post.pollType}
+				/>
 			</div>
 		</div>
 	)

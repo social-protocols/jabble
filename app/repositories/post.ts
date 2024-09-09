@@ -6,7 +6,7 @@ import {
 	type StatsPost,
 	type Post,
 	type PostWithScore,
-	PollType,
+	type PollType,
 } from '#app/types/api-types.ts'
 import { type DBPost } from '#app/types/db-types.ts'
 import {
@@ -92,7 +92,7 @@ export async function getPost(
 
 	return {
 		...result,
-		pollType: result.pollType ? result.pollType as PollType : null,
+		pollType: result.pollType ? (result.pollType as PollType) : null,
 	}
 }
 
@@ -126,7 +126,7 @@ export async function getPostWithScore(
 
 	return {
 		...scoredPost,
-		pollType: scoredPost.pollType ? scoredPost.pollType as PollType : null,
+		pollType: scoredPost.pollType ? (scoredPost.pollType as PollType) : null,
 	}
 }
 
@@ -158,7 +158,7 @@ export async function getStatsPost(
 
 	return {
 		...scoredPost,
-		pollType: scoredPost.pollType ? scoredPost.pollType as PollType : null,
+		pollType: scoredPost.pollType ? (scoredPost.pollType as PollType) : null,
 	}
 }
 
@@ -259,7 +259,7 @@ export async function getTransitiveParents(
 			createdAt: post.createdAt,
 			deletedAt: post.deletedAt,
 			isPrivate: post.isPrivate,
-			pollType: post.pollType ? post.pollType as PollType : null,
+			pollType: post.pollType ? (post.pollType as PollType) : null,
 		}
 	})
 

@@ -1,13 +1,14 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { db } from '#app/db.ts'
-import { createFactCheck } from '#app/repositories/fact-checking.ts'
-import { requireUserId } from '#app/utils/auth.server.ts'
+import { createPoll } from '#app/repositories/fact-checking.ts'
 import { PollType } from '#app/types/api-types.ts'
+import { requireUserId } from '#app/utils/auth.server.ts'
 
 const ClaimDtoSchema = z.object({
 	context: z.coerce.string(),
 	claim: z.coerce.string(),
+	pollType: z.nativeEnum(PollType),
 })
 
 export const action = async (args: ActionFunctionArgs) => {
@@ -19,13 +20,13 @@ export const action = async (args: ActionFunctionArgs) => {
 		.transaction()
 		.execute(
 			async trx =>
-				await createFactCheck(
+				await createPoll(
 					trx,
 					userId,
 					claimDto.claim,
 					claimDto.context,
 					null,
-					PollType.FactCheck,
+					claimDto.pollType,
 				),
 		)
 

@@ -8,7 +8,7 @@ import {
 	type ImmutableReplyTree,
 	type CommentTreeState,
 	type FrontPagePost,
-	PollType,
+	type PollType,
 } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { type DBEffect } from '../types/db-types.ts'
@@ -266,7 +266,7 @@ export async function getChronologicalToplevelPosts(
 				createdAt: post.createdAt,
 				deletedAt: post.deletedAt,
 				isPrivate: post.isPrivate,
-				pollType: post.pollType ? post.pollType as PollType : null,
+				pollType: post.pollType ? (post.pollType as PollType) : null,
 				parent: post.parentId ? await getPost(trx, post.parentId) : null,
 				fallacyList: await getFallacies(trx, post.id),
 				oSize: post.oSize,
@@ -310,7 +310,7 @@ export async function getChronologicalFactCheckPosts(
 				createdAt: post.createdAt,
 				deletedAt: post.deletedAt,
 				isPrivate: post.isPrivate,
-				pollType: post.pollType ? post.pollType as PollType : null,
+				pollType: post.pollType ? (post.pollType as PollType) : null,
 				parent: post.parentId ? await getPost(trx, post.parentId) : null,
 				fallacyList: await getFallacies(trx, post.id),
 				oSize: post.oSize,
