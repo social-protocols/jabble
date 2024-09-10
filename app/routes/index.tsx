@@ -55,9 +55,9 @@ export default function ClaimExtraction() {
 You can create either **opinion polls** (*agree/disagree*) or **fact check polls** (*true/false*).
 
 Copy and paste something you want to fact-check or discuss here.
-We use an LLM to extract claims that you can post as opinion or fact-check polls.
+We use an LLM to extract claims.
 You can then decide which ones you want to post.
-You can also add an origin (for example a URL) to give context to where you found the statement.
+You can also add an origin URL to give context to where you found the statement.
 `
 
 	const disclaimer = `
