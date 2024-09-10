@@ -114,7 +114,6 @@ install-node-extension-from-earthly:
   (cd ./GlobalBrain.jl/globalbrain-node && npm install)
   npm install --ignore-scripts --save './GlobalBrain.jl/globalbrain-node'
 
-# replay all vote events (rebuild global-brain.db based on vote events)
 replay-vote-events:
 	rm -f $SOCIAL_PROTOCOLS_DATADIR/global-brain.db
 	sqlite3 $APP_DATABASE_PATH "delete from effectEvent where 1=1"
