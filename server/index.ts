@@ -96,27 +96,29 @@ app.use(
 app.use(express.static('public', { maxAge: '1h' }))
 
 const httpLogPath = process.env.HTTP_LOG_PATH
-const logger = pino(pino.destination(httpLogPath))
+if (httpLogPath !== undefined) {
+	const logger = pino(pino.destination(httpLogPath))
 
-// Use pino-http middleware with custom logging
-app.use(
-	pinoHttp({
-		logger,
-		serializers: {
-			// https://github.com/pinojs/pino-http/issues/5#issuecomment-955748053
-			res: pino.stdSerializers.wrapResponseSerializer((res: any) => {
-				return {
-					statusCode: res.raw.statusCode,
-					// Allowlist useful headers
-					headers: {
-						'content-type': res.raw.headers['content-type'],
-						'content-length': res.raw.headers['content-length'],
-					},
-				}
-			}),
-		},
-	}),
-)
+	// Use pino-http middleware with custom logging
+	app.use(
+		pinoHttp({
+			logger,
+			serializers: {
+				// https://github.com/pinojs/pino-http/issues/5#issuecomment-955748053
+				res: pino.stdSerializers.wrapResponseSerializer((res: any) => {
+					return {
+						statusCode: res.raw.statusCode,
+						// Allowlist useful headers
+						headers: {
+							'content-type': res.raw.headers['content-type'],
+							'content-length': res.raw.headers['content-length'],
+						},
+					}
+				}),
+			},
+		}),
+	)
+}
 
 app.get(['/build/*', '/img/*', '/fonts/*', '/favicons/*'], (req, res) => {
 	// if we made it past the express.static for these, then we're missing something.
