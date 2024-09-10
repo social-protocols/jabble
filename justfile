@@ -114,10 +114,6 @@ install-node-extension-from-earthly:
   (cd ./GlobalBrain.jl/globalbrain-node && npm install)
   npm install --ignore-scripts --save './GlobalBrain.jl/globalbrain-node'
 
-# show a list of recent production logins
-recent-sessions:
-	fly ssh console -C 'other/recent-sessions.sh'
-
 # replay all vote events (rebuild global-brain.db based on vote events)
 replay-vote-events:
 	rm -f $SOCIAL_PROTOCOLS_DATADIR/global-brain.db
