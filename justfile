@@ -86,6 +86,7 @@ docker-run:
 docker-exec:
 	docker exec -it deploy-sn /bin/bash
 
+# download a copy of the production database to $SOCIAL_PROTOCOLS_DATADIR/production/. will not override local database unless you run use-production-data 
 download-production-data:
 	# todo: use sqlite .backup command and download copy
 	rm -rf $SOCIAL_PROTOCOLS_DATADIR/production/
@@ -95,6 +96,7 @@ download-production-data:
 	fly ssh sftp get /data/sqlite.db $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db-wal
 	fly ssh sftp get /data/global-brain.db $SOCIAL_PROTOCOLS_DATADIR/production/global-brain.db-wal
 
+# use the data in $SOCIAL_PROTOCOLS_DATADIR/production/ locally. Run download-production-data first
 use-production-data:
 	cp -f $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db $SOCIAL_PROTOCOLS_DATADIR/
 	cp -f $SOCIAL_PROTOCOLS_DATADIR/production/global-brain.db $SOCIAL_PROTOCOLS_DATADIR/
@@ -103,18 +105,20 @@ use-production-data:
 	just migrate
 	just replay-vote-events
 
+# open sqlite3 console on production database
 production-db:
 	fly ssh console -C 'sqlite3 /data/sqlite.db'
-
 
 install-node-extension-from-earthly:
   earthly --artifact +globalbrain-node-package/artifact ./GlobalBrain.jl/globalbrain-node
   (cd ./GlobalBrain.jl/globalbrain-node && npm install)
   npm install --ignore-scripts --save './GlobalBrain.jl/globalbrain-node'
 
+# show a list of recent production logins
 recent-sessions:
 	fly ssh console -C 'other/recent-sessions.sh'
 
+# replay all vote events (rebuild global-brain.db based on vote events)
 replay-vote-events:
 	rm -f $SOCIAL_PROTOCOLS_DATADIR/global-brain.db
 	sqlite3 $APP_DATABASE_PATH "delete from effectEvent where 1=1"
@@ -123,5 +127,6 @@ replay-vote-events:
 	sqlite3 $APP_DATABASE_PATH "delete from scoreEvent where 1=1"
 	time npx tsx other/replay-vote-events.ts
 
+# show a list of recently active sessions in production
 prod-sessions:
 	flyctl ssh console -C 'bash -c "sqlite3 $APP_DATABASE_PATH \"select datetime(updatedAt / 1000, '"'"'unixepoch'"'"') as updated, email, username from Session join User on Session.UserId = User.id order by updatedAt asc;\""'
