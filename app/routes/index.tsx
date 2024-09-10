@@ -29,6 +29,7 @@ export default function ClaimExtraction() {
 		claim_context: '',
 		extracted_claims: [],
 	})
+	const [urlError, setUrlError] = useState<boolean>(false)
 
 	async function handleExtractClaims() {
 		setIsExtractingClaims(true)
@@ -85,11 +86,19 @@ Press **Ctrl + Enter** to extract claims.
 					}}
 				/>
 				<Textarea
-					placeholder="Origin = where the statement was made (optional, for example a URL)"
+					placeholder="URL (optional, where the statement was made)"
 					name="origin-url"
 					value={originValue}
-					onChange={event => setOriginValue(event.target.value)}
-					className="mb-2 h-4 w-full"
+					onChange={event => {
+						setOriginValue(event.target.value)
+						isValidUrl(event.target.value)
+							? setUrlError(false)
+							: setUrlError(true)
+					}}
+					className={
+						'mb-2 h-4 w-full ' +
+						(urlError && originValue !== '' ? 'border-2 border-red-500' : '')
+					}
 					onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
 						if (event.ctrlKey && event.key === 'Enter') {
 							event.preventDefault() // Prevent default behavior if needed
@@ -97,6 +106,9 @@ Press **Ctrl + Enter** to extract claims.
 						}
 					}}
 				/>
+				{urlError && originValue !== '' && (
+					<div className="text-sm text-red-500">Please enter a valid URL.</div>
+				)}
 				<div className="mb-6 flex flex-row">
 					<div className="mr-auto self-end text-gray-500">
 						<Markdown deactivateLinks={false}>{disclaimer}</Markdown>
@@ -306,4 +318,13 @@ function PollPost({
 			</div>
 		</div>
 	)
+}
+
+function isValidUrl(url: string): boolean {
+	try {
+		new URL(url)
+		return true
+	} catch (_) {
+		return false
+	}
 }
