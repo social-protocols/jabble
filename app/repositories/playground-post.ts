@@ -1,10 +1,10 @@
 import { type Transaction } from 'kysely'
-import { type PlaygroundPost } from '#app/types/api-types.ts'
-import { type DB } from '#app/types/kysely-types.ts'
 import {
 	type FallacyList,
 	FallacyListSchema,
 } from '#app/repositories/fallacy-detection.ts'
+import { type PlaygroundPost } from '#app/types/api-types.ts'
+import { type DB } from '#app/types/kysely-types.ts'
 
 export async function storePlaygroundPost(
 	trx: Transaction<DB>,

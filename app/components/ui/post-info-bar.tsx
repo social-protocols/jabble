@@ -1,7 +1,7 @@
 import moment from 'moment'
 import { useState } from 'react'
-import { type PostState, type Post } from '#app/types/api-types.ts'
 import { type FallacyList } from '#app/repositories/fallacy-detection.ts'
+import { type PostState, type Post } from '#app/types/api-types.ts'
 
 export function PostInfoBar({
 	post,

@@ -1,6 +1,7 @@
 import { Link, useNavigate } from '@remix-run/react'
 import type * as Immutable from 'immutable'
 import { useRef } from 'react'
+import { type FallacyList } from '#app/repositories/fallacy-detection.ts'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import {
 	type CommentTreeState,
@@ -10,7 +11,6 @@ import {
 	PollType,
 	type PostState,
 } from '#app/types/api-types.ts'
-import { type FallacyList } from '#app/repositories/fallacy-detection.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
 import PollResult from './poll-result.tsx'
