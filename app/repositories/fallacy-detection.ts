@@ -4,7 +4,7 @@ import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
 import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { db } from '#app/db.ts'
-import { invariant } from './misc.tsx'
+import { invariant } from '#app/utils/misc.tsx'
 
 // Fallacy detection based on a paper by Helwe et at. (2023): https://arxiv.org/abs/2311.09761
 

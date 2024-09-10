@@ -2,13 +2,13 @@ import { type ActionFunctionArgs } from '@remix-run/node'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 import { db } from '#app/db.ts'
-import { createPost } from '#app/repositories/post.ts'
-import { getCommentTreeState, getReplyTree } from '#app/repositories/ranking.ts'
-import { requireUserId } from '#app/utils/auth.server.ts'
 import {
 	fallacyDetection,
 	storeFallacies,
-} from '#app/utils/fallacy_detection.ts'
+} from '#app/repositories/fallacy-detection.ts'
+import { createPost } from '#app/repositories/post.ts'
+import { getCommentTreeState, getReplyTree } from '#app/repositories/ranking.ts'
+import { requireUserId } from '#app/utils/auth.server.ts'
 
 type ReplyData = {
 	parentId: number

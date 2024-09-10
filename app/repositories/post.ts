@@ -1,5 +1,9 @@
 import { sql, type Transaction } from 'kysely'
 import { MAX_CHARS_PER_POST } from '#app/constants.ts'
+import {
+	type FallacyList,
+	FallacyListSchema,
+} from '#app/repositories/fallacy-detection.ts'
 import { vote } from '#app/repositories/vote.ts'
 import {
 	Direction,
@@ -9,10 +13,6 @@ import {
 	type PollType,
 } from '#app/types/api-types.ts'
 import { type DBPost } from '#app/types/db-types.ts'
-import {
-	type FallacyList,
-	FallacyListSchema,
-} from '#app/utils/fallacy_detection.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { type DB } from '../types/kysely-types.ts'
 import { checkIsAdminOrThrow } from '../utils/auth.server.ts'

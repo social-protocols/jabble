@@ -3,13 +3,12 @@ import { redirect } from '@remix-run/server-runtime'
 import { z } from 'zod'
 import { zfd } from 'zod-form-data'
 import { db } from '#app/db.ts'
-import { createPost } from '#app/repositories/post.ts'
-import { requireUserId } from '#app/utils/auth.server.ts'
-
 import {
 	fallacyDetection,
 	storeFallacies,
-} from '#app/utils/fallacy_detection.ts'
+} from '#app/repositories/fallacy-detection.ts'
+import { createPost } from '#app/repositories/post.ts'
+import { requireUserId } from '#app/utils/auth.server.ts'
 
 const postDataSchema = zfd.formData({
 	content: z.coerce.string(),
