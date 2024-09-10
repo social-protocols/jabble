@@ -7,7 +7,7 @@ import {
 	getNLatestPlaygroundPosts,
 	storePlaygroundPost,
 } from '#app/repositories/playground-post.ts'
-import { fallacyDetection } from '#app/utils/fallacy_detection.ts'
+import { fallacyDetection } from '#app/repositories/fallacy-detection.ts'
 
 const postDataSchema = zfd.formData({
 	content: z.coerce.string(),

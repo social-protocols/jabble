@@ -12,7 +12,7 @@ import { type DBPost } from '#app/types/db-types.ts'
 import {
 	type FallacyList,
 	FallacyListSchema,
-} from '#app/utils/fallacy_detection.ts'
+} from '#app/repositories/fallacy-detection.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { type DB } from '../types/kysely-types.ts'
 import { checkIsAdminOrThrow } from '../utils/auth.server.ts'

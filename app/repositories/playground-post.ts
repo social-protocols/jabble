@@ -4,7 +4,7 @@ import { type DB } from '#app/types/kysely-types.ts'
 import {
 	type FallacyList,
 	FallacyListSchema,
-} from '#app/utils/fallacy_detection.ts'
+} from '#app/repositories/fallacy-detection.ts'
 
 export async function storePlaygroundPost(
 	trx: Transaction<DB>,

@@ -10,7 +10,7 @@ import {
 	PollType,
 	type PostState,
 } from '#app/types/api-types.ts'
-import { type FallacyList } from '#app/utils/fallacy_detection.ts'
+import { type FallacyList } from '#app/repositories/fallacy-detection.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
 import PollResult from './poll-result.tsx'

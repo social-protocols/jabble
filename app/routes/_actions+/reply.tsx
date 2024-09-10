@@ -8,7 +8,7 @@ import { requireUserId } from '#app/utils/auth.server.ts'
 import {
 	fallacyDetection,
 	storeFallacies,
-} from '#app/utils/fallacy_detection.ts'
+} from '#app/repositories/fallacy-detection.ts'
 
 type ReplyData = {
 	parentId: number
