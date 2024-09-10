@@ -66,7 +66,7 @@ download-prod-db:
   rm -f "$APP_DATABASE_PATH"
   rm -f "$APP_DATABASE_PATH"-shm
   rm -f "$APP_DATABASE_PATH"-wal
-  flyctl ssh console -C "sqlite3 /litefs/data/sqlite.db '.backup /data/backup.db'"
+  flyctl ssh console -C "sqlite3 /data/sqlite.db '.backup /data/backup.db'"
   flyctl ssh sftp get /data/backup.db "$APP_DATABASE_PATH" || true
 
 # build the docker container
@@ -90,11 +90,10 @@ download-production-data:
 	# todo: use sqlite .backup command and download copy
 	rm -rf $SOCIAL_PROTOCOLS_DATADIR/production/
 	mkdir -p $SOCIAL_PROTOCOLS_DATADIR/production/
-	fly ssh sftp get /litefs/data/sqlite.db $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db
-	fly ssh sftp get /litefs/data/global-brain.db $SOCIAL_PROTOCOLS_DATADIR/production/global-brain.db
-	fly ssh sftp get /litefs/data/sqlite.db $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db-wal
-	fly ssh sftp get /litefs/data/global-brain.db $SOCIAL_PROTOCOLS_DATADIR/production/global-brain.db-wal
-
+	fly ssh sftp get /data/sqlite.db $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db
+	fly ssh sftp get /data/global-brain.db $SOCIAL_PROTOCOLS_DATADIR/production/global-brain.db
+	fly ssh sftp get /data/sqlite.db $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db-wal
+	fly ssh sftp get /data/global-brain.db $SOCIAL_PROTOCOLS_DATADIR/production/global-brain.db-wal
 
 use-production-data:
 	cp -f $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db $SOCIAL_PROTOCOLS_DATADIR/
