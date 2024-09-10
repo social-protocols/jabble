@@ -53,7 +53,6 @@ export type ImmutableReplyTree = {
 }
 
 export type PostState = {
-	criticalCommentId: number | null
 	voteState: VoteState
 	voteCount: number
 	p: number | null
@@ -63,9 +62,6 @@ export type PostState = {
 
 export type CommentTreeState = {
 	targetPostId: number
-	criticalCommentIdToTargetId: {
-		[key: number]: number[]
-	}
 	posts: {
 		[key: number]: PostState
 	}
@@ -107,8 +103,6 @@ export type StatsPost = Post & {
 	qSize: number
 	r: number
 	weight: number
-
-	criticalThreadId: number | null
 }
 
 export type PlaygroundPost = {

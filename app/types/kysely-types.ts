@@ -124,10 +124,7 @@ export type EffectEvent = Effect & {
 	voteEventTime: number
 }
 
-export type FullScore = Score &
-	Effect & {
-		criticalThreadId: number | null
-	}
+export type FullScore = Score & Effect
 
 export type Lineage = {
 	ancestorId: number
