@@ -6,6 +6,7 @@ import {
 	type StatsPost,
 	type Post,
 	type PostWithScore,
+	type PollType,
 } from '#app/types/api-types.ts'
 import { type DBPost } from '#app/types/db-types.ts'
 import {
@@ -81,11 +82,18 @@ export async function getPost(
 	trx: Transaction<DB>,
 	postId: number,
 ): Promise<Post> {
-	return await trx
+	const result = await trx
 		.selectFrom('Post')
+		.leftJoin('Poll', 'Poll.postId', 'Post.id')
 		.where('Post.id', '=', postId)
 		.selectAll('Post')
+		.select(['pollType'])
 		.executeTakeFirstOrThrow()
+
+	return {
+		...result,
+		pollType: result.pollType ? (result.pollType as PollType) : null,
+	}
 }
 
 export async function getFallacies(
@@ -107,15 +115,19 @@ export async function getPostWithScore(
 	trx: Transaction<DB>,
 	postId: number,
 ): Promise<PostWithScore> {
-	const scoredPost: PostWithScore = await trx
+	const scoredPost = await trx
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
+		.leftJoin('Poll', 'Poll.postId', 'Post.id')
 		.where('Post.id', '=', postId)
 		.selectAll('Post')
-		.select(['oSize', 'score'])
+		.select(['pollType', 'oSize', 'score'])
 		.executeTakeFirstOrThrow()
 
-	return scoredPost
+	return {
+		...scoredPost,
+		pollType: scoredPost.pollType ? (scoredPost.pollType as PollType) : null,
+	}
 }
 
 export async function getStatsPost(
@@ -129,8 +141,10 @@ export async function getStatsPost(
 		.leftJoin('PostStats', join =>
 			join.onRef('PostStats.postId', '=', 'Post.id'),
 		)
+		.leftJoin('Poll', 'Poll.postId', 'Post.id')
 		.selectAll('Post')
 		.selectAll('FullScore')
+		.selectAll('Poll')
 		.select(eb =>
 			eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'),
 		)
@@ -142,7 +156,10 @@ export async function getStatsPost(
 		throw new Error(`Failed to read scored post postId=${postId}`)
 	}
 
-	return scoredPost
+	return {
+		...scoredPost,
+		pollType: scoredPost.pollType ? (scoredPost.pollType as PollType) : null,
+	}
 }
 
 export async function getReplyIds(
@@ -195,7 +212,7 @@ export async function getTransitiveParents(
 	trx: Transaction<DB>,
 	id: number,
 ): Promise<Post[]> {
-	let result: DBPost[] = await trx
+	const result = await trx
 		.withRecursive('transitive_parents', db =>
 			db
 				.selectFrom('Post')
@@ -225,14 +242,28 @@ export async function getTransitiveParents(
 				),
 		)
 		.selectFrom('transitive_parents')
-		.selectAll()
+		.leftJoin('Poll', 'Poll.postId', 'transitive_parents.id')
+		.selectAll('transitive_parents')
+		.selectAll('Poll')
 		.execute()
 
 	// the topmost parent is the first element in the array
 	// skip the first element, which is the post itself
-	let resultReversed = result.slice(1).reverse()
+	const resultReversed = result.slice(1).reverse()
 
-	return resultReversed
+	const transitiveParents = resultReversed.map(post => {
+		return {
+			id: post.id,
+			parentId: post.parentId,
+			content: post.content,
+			createdAt: post.createdAt,
+			deletedAt: post.deletedAt,
+			isPrivate: post.isPrivate,
+			pollType: post.pollType ? (post.pollType as PollType) : null,
+		}
+	})
+
+	return transitiveParents
 }
 
 export async function getDescendantCount(

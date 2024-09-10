@@ -8,6 +8,7 @@ import {
 	type ImmutableReplyTree,
 	type CommentTreeState,
 	type FrontPagePost,
+	type PollType,
 } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { type DBEffect } from '../types/db-types.ts'
@@ -242,13 +243,14 @@ export async function getChronologicalToplevelPosts(
 		.where('Post.parentId', 'is', null)
 		.where('Post.deletedAt', 'is', null)
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
-		.leftJoin('FactCheck', 'FactCheck.postId', 'Post.id')
+		.leftJoin('Poll', 'Poll.postId', 'Post.id')
 		.leftJoin('PostStats', join =>
 			join.onRef('PostStats.postId', '=', 'Post.id'),
 		)
-		.where('FactCheck.claimId', 'is', null)
+		.where('Poll.pollType', 'is', null)
 		.selectAll('Post')
 		.selectAll('FullScore')
+		.selectAll('Poll')
 		.select(sql<number>`replies`.as('nReplies'))
 		.orderBy('Post.createdAt', 'desc')
 		.limit(MAX_POSTS_PER_PAGE)
@@ -258,11 +260,18 @@ export async function getChronologicalToplevelPosts(
 	const res = await Promise.all(
 		scoredPosts.map(async post => {
 			return {
-				...post,
+				id: post.id,
+				parentId: post.parentId,
+				content: post.content,
+				createdAt: post.createdAt,
+				deletedAt: post.deletedAt,
+				isPrivate: post.isPrivate,
+				pollType: post.pollType ? (post.pollType as PollType) : null,
 				parent: post.parentId ? await getPost(trx, post.parentId) : null,
 				fallacyList: await getFallacies(trx, post.id),
-				effects: await getEffects(trx, post.id),
+				oSize: post.oSize,
 				nTransitiveComments: await getDescendantCount(trx, post.id),
+				p: post.p,
 			}
 		}),
 	)
@@ -270,20 +279,22 @@ export async function getChronologicalToplevelPosts(
 	return res
 }
 
-export async function getChronologicalFactCheckPosts(
+export async function getChronologicalPolls(
 	trx: Transaction<DB>,
 ): Promise<FrontPagePost[]> {
 	let query = trx
 		.selectFrom('Post')
 		.where('Post.parentId', 'is', null)
 		.where('Post.deletedAt', 'is', null)
-		.innerJoin('FactCheck', 'FactCheck.postId', 'Post.id')
+		.innerJoin('Poll', 'Poll.postId', 'Post.id')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
 		.leftJoin('PostStats', join =>
 			join.onRef('PostStats.postId', '=', 'Post.id'),
 		)
+		.where('Poll.pollType', 'is not', null)
 		.selectAll('Post')
 		.selectAll('FullScore')
+		.selectAll('Poll')
 		.select(sql<number>`replies`.as('nReplies'))
 		.orderBy('Post.createdAt', 'desc')
 		.limit(MAX_POSTS_PER_PAGE)
@@ -293,11 +304,18 @@ export async function getChronologicalFactCheckPosts(
 	const res = await Promise.all(
 		scoredPosts.map(async post => {
 			return {
-				...post,
+				id: post.id,
+				parentId: post.parentId,
+				content: post.content,
+				createdAt: post.createdAt,
+				deletedAt: post.deletedAt,
+				isPrivate: post.isPrivate,
+				pollType: post.pollType ? (post.pollType as PollType) : null,
 				parent: post.parentId ? await getPost(trx, post.parentId) : null,
 				fallacyList: await getFallacies(trx, post.id),
-				effects: await getEffects(trx, post.id),
+				oSize: post.oSize,
 				nTransitiveComments: await getDescendantCount(trx, post.id),
+				p: post.p,
 			}
 		}),
 	)

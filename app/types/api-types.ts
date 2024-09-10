@@ -9,6 +9,7 @@ export type Post = {
 	createdAt: number
 	deletedAt: number | null
 	isPrivate: number
+	pollType: PollType | null
 }
 
 export type User = {
@@ -115,4 +116,9 @@ export type PlaygroundPost = {
 	content: string
 	detection: FallacyList
 	createdAt: number
+}
+
+export enum PollType {
+	FactCheck = 'factCheck',
+	Opinion = 'opinion',
 }

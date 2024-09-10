@@ -162,38 +162,37 @@ export function PostActionBar({
 							<Icon name="chevron-down" className="ml-[-0.2em]" />
 						</button>
 					))}
-				{loggedIn &&
-					(!isTargetPost || !isTopLevelPost || !treeContext.isFactCheck) && (
-						<>
-							<button
-								title={'Upvote'}
-								onClick={async () => await submitVote(Direction.Up)}
-							>
-								<Icon
-									name={
-										postState.voteState.vote == Direction.Up
-											? 'thick-arrow-up-solid'
-											: 'thick-arrow-up'
-									}
-								/>
-							</button>
-							<span className="mx-[-0.6em]">Vote</span>
-							<button
-								title={'Downvote'}
-								onClick={async () => await submitVote(Direction.Down)}
-								className="mr-[0.3em]"
-							>
-								<Icon
-									name={
-										postState.voteState.vote == Direction.Down
-											? 'thick-arrow-down-solid'
-											: 'thick-arrow-down'
-									}
-									className="mt-[-0.2em]"
-								/>
-							</button>
-						</>
-					)}
+				{loggedIn && (!isTargetPost || !isTopLevelPost || !post.pollType) && (
+					<>
+						<button
+							title={'Upvote'}
+							onClick={async () => await submitVote(Direction.Up)}
+						>
+							<Icon
+								name={
+									postState.voteState.vote == Direction.Up
+										? 'thick-arrow-up-solid'
+										: 'thick-arrow-up'
+								}
+							/>
+						</button>
+						<span className="mx-[-0.6em]">Vote</span>
+						<button
+							title={'Downvote'}
+							onClick={async () => await submitVote(Direction.Down)}
+							className="mr-[0.3em]"
+						>
+							<Icon
+								name={
+									postState.voteState.vote == Direction.Down
+										? 'thick-arrow-down-solid'
+										: 'thick-arrow-down'
+								}
+								className="mt-[-0.2em]"
+							/>
+						</button>
+					</>
+				)}
 				{false && (
 					<button
 						title={

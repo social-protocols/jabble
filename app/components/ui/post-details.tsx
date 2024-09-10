@@ -7,10 +7,13 @@ import {
 	Direction,
 	type ImmutableReplyTree,
 	type Post,
+	PollType,
+	type PostState,
 } from '#app/types/api-types.ts'
 import { type FallacyList } from '#app/utils/fallacy_detection.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
+import PollResult from './poll-result.tsx'
 import { PostActionBar } from './post-action-bar.tsx'
 import { PostContent } from './post-content.tsx'
 import { PostInfoBar } from './post-info-bar.tsx'
@@ -30,9 +33,6 @@ export function PostDetails({
 	pathFromTargetPost: Immutable.List<number>
 	treeContext: TreeContext
 }) {
-	const user = useOptionalUser()
-	const loggedIn: boolean = user !== null
-
 	const postState = treeContext.commentTreeState.posts[post.id]
 	invariant(
 		postState !== undefined,
@@ -50,27 +50,6 @@ export function PostDetails({
 	const isTopLevelPost = post.parentId === null
 
 	const userHasVoted = postState.voteState.vote != Direction.Neutral
-
-	const pCurrent: number = treeContext.commentTreeState.posts[post.id]?.p || NaN
-	const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
-
-	const submitVote = async function (direction: Direction) {
-		const payLoad = {
-			postId: post.id,
-			focussedPostId: treeContext.targetPostId,
-			direction: direction,
-			currentVoteState: postState.voteState.vote,
-		}
-		const response = await fetch('/vote', {
-			method: 'POST',
-			body: JSON.stringify(payLoad),
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		})
-		const newCommentTreeState = (await response.json()) as CommentTreeState
-		treeContext.setCommentTreeState(newCommentTreeState)
-	}
 
 	return (
 		<div
@@ -100,41 +79,13 @@ export function PostDetails({
 						This post was deleted.
 					</div>
 				)}
-				{isTargetPost &&
-					isTopLevelPost &&
-					treeContext.isFactCheck &&
-					(loggedIn ? (
-						<div className="my-2 space-x-4">
-							<button
-								title={'Upvote'}
-								onClick={async () => await submitVote(Direction.Up)}
-								className={
-									'rounded-full px-4 py-2 text-primary-foreground ' +
-									(postState.voteState.vote == Direction.Up
-										? 'bg-primary text-primary-foreground'
-										: 'text-secondary-foreground outline outline-2 outline-secondary-foreground')
-								}
-							>
-								True
-							</button>
-							<button
-								title={'Downvote'}
-								onClick={async () => await submitVote(Direction.Down)}
-								className={
-									'rounded-full px-4 py-2 text-primary-foreground ' +
-									(postState.voteState.vote == Direction.Down
-										? 'bg-primary text-primary-foreground'
-										: 'text-secondary-foreground outline outline-2 outline-secondary-foreground')
-								}
-							>
-								False
-							</button>
-						</div>
-					) : (
-						<div className="mt-2 text-sm opacity-50">
-							<Link to="/login">Log in to comment and vote.</Link>
-						</div>
-					))}
+				{isTargetPost && isTopLevelPost && post.pollType && (
+					<PollVoteButtons
+						post={post}
+						postState={postState}
+						treeContext={treeContext}
+					/>
+				)}
 				<PostActionBar
 					key={`${post.id}-actionbar`}
 					post={post}
@@ -146,25 +97,85 @@ export function PostDetails({
 				/>
 			</div>
 
-			{isTargetPost && isTopLevelPost && treeContext.isFactCheck && (
-				<div className="mx-2 min-w-32 space-y-1 opacity-50">
-					<div className="text-sm">Accuracy estimate:</div>
-					<div className="text-5xl">
-						<Link
-							title="Probability of the claim being true"
-							to={`/stats/${post.id}`}
-						>
-							{pCurrentString}
-						</Link>
-					</div>
-					<div
-						title="Number of votes this result is based on"
-						className="text-sm"
-					>
-						{postState.voteCount} {postState.voteCount == 1 ? 'vote' : 'votes'}
-					</div>
-				</div>
+			{isTargetPost && isTopLevelPost && post.pollType && (
+				<PollResult
+					postId={post.id}
+					pCurrent={postState.p || NaN}
+					voteCount={postState.voteCount}
+					pollType={post.pollType}
+				/>
 			)}
+		</div>
+	)
+}
+
+function PollVoteButtons({
+	post,
+	postState,
+	treeContext,
+}: {
+	post: Post
+	postState: PostState
+	treeContext: TreeContext
+}) {
+	const user = useOptionalUser()
+	const loggedIn: boolean = user !== null
+
+	const submitVote = async function (direction: Direction) {
+		const payLoad = {
+			postId: post.id,
+			focussedPostId: treeContext.targetPostId,
+			direction: direction,
+			currentVoteState: postState.voteState.vote,
+		}
+		const response = await fetch('/vote', {
+			method: 'POST',
+			body: JSON.stringify(payLoad),
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		})
+		const newCommentTreeState = (await response.json()) as CommentTreeState
+		treeContext.setCommentTreeState(newCommentTreeState)
+	}
+
+	// TODO: handle else case properly
+	const upvoteLabel = post.pollType == PollType.FactCheck ? 'True' : 'Agree'
+
+	// todo: handle else case properly
+	const downvoteLabel =
+		post.pollType == PollType.FactCheck ? 'False' : 'Disagree'
+
+	return loggedIn ? (
+		<div className="my-2 space-x-4">
+			<button
+				title={'Upvote'}
+				onClick={async () => await submitVote(Direction.Up)}
+				className={
+					'rounded-full px-4 py-2 text-primary-foreground ' +
+					(postState.voteState.vote == Direction.Up
+						? 'bg-primary text-primary-foreground'
+						: 'text-secondary-foreground outline outline-2 outline-secondary-foreground')
+				}
+			>
+				{upvoteLabel}
+			</button>
+			<button
+				title={'Downvote'}
+				onClick={async () => await submitVote(Direction.Down)}
+				className={
+					'rounded-full px-4 py-2 text-primary-foreground ' +
+					(postState.voteState.vote == Direction.Down
+						? 'bg-primary text-primary-foreground'
+						: 'text-secondary-foreground outline outline-2 outline-secondary-foreground')
+				}
+			>
+				{downvoteLabel}
+			</button>
+		</div>
+	) : (
+		<div className="mt-2 text-sm opacity-50">
+			<Link to="/login">Log in to comment and vote.</Link>
 		</div>
 	)
 }
