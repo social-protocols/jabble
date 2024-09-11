@@ -24,7 +24,7 @@ export default function BullShredder() {
 	>(latestPlaygroundPosts)
 
 	const infoText = `
-# Welcome to Jabble!
+# Jabble Fallacy Detection
 
 This tool analyzes your posts for [rhetorical fallacies](https://en.wikipedia.org/wiki/Fallacy).
 You can use it to review your own social media posts or to detect whether someone else is trying to manipulate you.

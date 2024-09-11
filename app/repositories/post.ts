@@ -19,7 +19,7 @@ import { checkIsAdminOrThrow } from '../utils/auth.server.ts'
 
 export async function createPost(
 	trx: Transaction<DB>,
-	parentId: number | null, // TODO: use parentId?: number
+	parentId: number | null,
 	content: string,
 	authorId: string,
 	options?: { isPrivate: boolean; withUpvote?: boolean; createdAt?: number },
@@ -52,18 +52,6 @@ export async function createPost(
 	return persistedPost.id
 }
 
-export async function initPostStats(trx: Transaction<DB>, postId: number) {
-	await trx
-		.insertInto('PostStats')
-		.values({
-			postId: postId,
-			replies: 0,
-		})
-		// ignore conflict
-		.onConflict(oc => oc.column('postId').doNothing())
-		.execute()
-}
-
 export async function incrementReplyCount(
 	trx: Transaction<DB>,
 	postId: number,
@@ -75,6 +63,17 @@ export async function incrementReplyCount(
 			replies: eb('replies', '+', 1),
 		}))
 		.where('postId', '=', postId)
+		.execute()
+}
+
+export async function initPostStats(trx: Transaction<DB>, postId: number) {
+	await trx
+		.insertInto('PostStats')
+		.values({
+			postId: postId,
+			replies: 0,
+		})
+		.onConflict(oc => oc.column('postId').doNothing())
 		.execute()
 }
 
@@ -137,17 +136,10 @@ export async function getStatsPost(
 	let query = trx
 		.selectFrom('Post')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
-		// TODO: check if this join is even necessary
-		.leftJoin('PostStats', join =>
-			join.onRef('PostStats.postId', '=', 'Post.id'),
-		)
 		.leftJoin('Poll', 'Poll.postId', 'Post.id')
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.selectAll('Poll')
-		.select(eb =>
-			eb.fn.coalesce(sql<number>`replies`, sql<number>`0`).as('nReplies'),
-		)
 		.where('Post.id', '=', postId)
 
 	const scoredPost = (await query.execute())[0]
@@ -279,7 +271,7 @@ export async function getDescendantCount(
 	return result.count
 }
 
-export async function getDescendants(
+export async function getDescendantIds(
 	trx: Transaction<DB>,
 	postId: number,
 ): Promise<number[]> {

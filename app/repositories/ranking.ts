@@ -16,7 +16,7 @@ import { type DB } from '../types/kysely-types.ts'
 import { relativeEntropy } from '../utils/entropy.ts'
 import {
 	getDescendantCount,
-	getDescendants,
+	getDescendantIds,
 	getPost,
 	getReplyIds,
 	getPostWithScore,
@@ -52,7 +52,7 @@ export async function getCommentTreeState(
 	targetPostId: number,
 	userId: string | null,
 ): Promise<CommentTreeState> {
-	const descendantIds = await getDescendants(trx, targetPostId)
+	const descendantIds = await getDescendantIds(trx, targetPostId)
 
 	const results = await trx
 		.selectFrom('Post')
