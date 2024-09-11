@@ -5,7 +5,7 @@ import { Markdown } from '#app/components/markdown.tsx'
 import PollResult from '#app/components/ui/poll-result.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
-import { MAX_CHARS_PER_POST } from '#app/constants.ts'
+import { MAX_CHARS_PER_DOCUMENT } from '#app/constants.ts'
 import { db } from '#app/db.ts'
 import { type ClaimList } from '#app/repositories/fact-checking.ts'
 import { getChronologicalPolls } from '#app/repositories/ranking.ts'
@@ -75,7 +75,7 @@ Press **Ctrl + Enter** to extract claims.
 					placeholder="A statement to extract claims from."
 					name="content"
 					value={statementValue}
-					maxLength={MAX_CHARS_PER_POST}
+					maxLength={MAX_CHARS_PER_DOCUMENT}
 					onChange={event => setStatementValue(event.target.value)}
 					className="mb-2 min-h-[150px] w-full"
 					onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {

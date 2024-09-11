@@ -2,7 +2,7 @@ import { type Transaction, sql } from 'kysely'
 import OpenAI from 'openai'
 import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
-import { MAX_CHARS_PER_POST } from '#app/constants.ts'
+import { MAX_CHARS_PER_DOCUMENT } from '#app/constants.ts'
 import { createPost, getPost } from '#app/repositories/post.ts'
 import { type PollType, type Post } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
@@ -49,8 +49,14 @@ export const ClaimExtractionSchema = z.object({
 export type ClaimList = z.infer<typeof ClaimExtractionSchema>
 
 export async function extractClaims(content: string): Promise<ClaimList> {
-	invariant(content.length <= MAX_CHARS_PER_POST, 'Post content too long')
-	invariant(content.length > 0, 'Post content too short')
+	invariant(
+		content.length <= MAX_CHARS_PER_DOCUMENT,
+		'Document for claim extraction is content too long',
+	)
+	invariant(
+		content.length > 0,
+		'Document for claim extraction is  content too short',
+	)
 
 	const openai = new OpenAI()
 
@@ -58,6 +64,7 @@ export async function extractClaims(content: string): Promise<ClaimList> {
 Extract all the claims made in the provided piece of content.
 Claims should be direct: For example, if a speaker makes claim X, extract "X", not "Speaker claims X".
 Don't use the passive form.
+If a speaker uses the personal pronoun "I", try to infer the person's name and restate the claim in the third person.
 	`
 
 	const completion = await openai.beta.chat.completions.parse({
