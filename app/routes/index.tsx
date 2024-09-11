@@ -2,6 +2,7 @@ import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { type ChangeEvent, useState } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
+import { Icon } from '#app/components/ui/icon.tsx'
 import PollResult from '#app/components/ui/poll-result.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
@@ -34,13 +35,48 @@ You can then decide which ones you want to post.
 You can also add an origin URL to give context to where you found the statement.
 `
 
+	const [showClaimExtractionForm, setShowClaimExtractionForm] =
+		useState<boolean>(false)
+
 	return (
 		<div>
 			<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
 				<div className="mb-4">
 					<Markdown deactivateLinks={false}>{infoText}</Markdown>
 				</div>
-				<ClaimExtractionForm />
+				<div className="text-md flex w-full">
+					<button
+						onClick={() => {
+							setShowClaimExtractionForm(!showClaimExtractionForm)
+							return false
+						}}
+						className="shrink-0 font-bold text-purple-700 dark:text-purple-200"
+					>
+						{showClaimExtractionForm ? (
+							<Icon name="chevron-down">Start extracting claims</Icon>
+						) : (
+							<Icon name="chevron-right">Start extracting claims</Icon>
+						)}
+					</button>
+					{showClaimExtractionForm && (
+						<button
+							className="ml-auto self-center pr-2"
+							onClick={() => setShowClaimExtractionForm(false)}
+						>
+							✕
+						</button>
+					)}
+				</div>
+				{
+					/* 
+						This is a hack. The localStorage object is only accessible on the
+						client-side, so we have to make sure this component is not rendered on
+						the server. There are other ways to do this (which are also hacky), but
+						for the time being, it's easiest to just hide this form and render it on
+						click on a button.
+					*/
+					showClaimExtractionForm && <ClaimExtractionForm />
+				}
 			</div>
 			<div>
 				<div className="mb-5 px-4">
