@@ -1,6 +1,6 @@
 import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
-import { useState } from 'react'
+import { type ChangeEvent, useState } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
 import PollResult from '#app/components/ui/poll-result.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
@@ -10,6 +10,7 @@ import { db } from '#app/db.ts'
 import { type ClaimList } from '#app/repositories/fact-checking.ts'
 import { getChronologicalPolls } from '#app/repositories/ranking.ts'
 import { PollType, type FrontPagePost } from '#app/types/api-types.ts'
+import { useDebounce } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
 
 export async function loader() {
@@ -22,14 +23,77 @@ export async function loader() {
 export default function ClaimExtraction() {
 	const { feed } = useLoaderData<typeof loader>()
 
-	const [statementValue, setStatementValue] = useState<string>('')
-	const [originValue, setOriginValue] = useState<string>('')
-	const [isExtractingClaims, setIsExtractingClaims] = useState(false)
-	const [claims, setClaims] = useState<ClaimList>({
-		claim_context: '',
-		extracted_claims: [],
+	const infoText = `
+## Jabble Polls
+
+You can create either **opinion polls** (*agree/disagree*) or **fact check polls** (*true/false*).
+
+Copy and paste something you want to fact-check or discuss here.
+We use an LLM to extract claims.
+You can then decide which ones you want to post.
+You can also add an origin URL to give context to where you found the statement.
+`
+
+	return (
+		<div>
+			<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
+				<div className="mb-4">
+					<Markdown deactivateLinks={false}>{infoText}</Markdown>
+				</div>
+				<ClaimExtractionForm />
+			</div>
+			<div>
+				<div className="mb-5 px-4">
+					<Markdown deactivateLinks={false}>{'## Recent Polls'}</Markdown>
+				</div>
+				{feed.map((post, index) => {
+					return <PollPost key={'fact-check-' + String(index)} post={post} />
+				})}
+			</div>
+		</div>
+	)
+}
+
+function ClaimExtractionForm() {
+	const statementValueStorageKey = 'claim-extraction-statement'
+	const [statementValue, setStatementValue] = useState<string>(
+		() => localStorage.getItem(statementValueStorageKey) ?? '',
+	)
+	const statementValueChangeHandler = useDebounce(
+		(event: ChangeEvent<HTMLTextAreaElement>) => {
+			localStorage.removeItem(claimsStorageKey)
+			localStorage.setItem(statementValueStorageKey, event.target.value)
+		},
+		500,
+	)
+
+	const originValueStorageKey = 'claim-extraction-origin'
+	const [originValue, setOriginValue] = useState<string>(
+		() => localStorage.getItem(originValueStorageKey) ?? '',
+	)
+	const originValueChangeHandler = useDebounce(
+		(event: ChangeEvent<HTMLTextAreaElement>) => {
+			localStorage.setItem(originValueStorageKey, event.target.value)
+		},
+		500,
+	)
+
+	const claimsStorageKey = 'extracted-claims'
+	const [claims, setClaims] = useState<ClaimList>(() => {
+		const claimsFromLocalStorage = localStorage.getItem(claimsStorageKey)
+		if (claimsFromLocalStorage == null) {
+			return {
+				claim_context: '',
+				extracted_claims: [],
+			}
+		}
+		return JSON.parse(claimsFromLocalStorage) as ClaimList
 	})
-	const [urlError, setUrlError] = useState<boolean>(false)
+
+	const [isExtractingClaims, setIsExtractingClaims] = useState(false)
+	const [urlError, setUrlError] = useState<boolean>(
+		() => (!isValidUrl(originValue) && !(originValue == '')) || false,
+	)
 
 	async function handleExtractClaims() {
 		setIsExtractingClaims(true)
@@ -44,21 +108,11 @@ export default function ClaimExtraction() {
 			})
 			const newExtractedClaims = (await response.json()) as ClaimList
 			setClaims(newExtractedClaims)
+			localStorage.setItem(claimsStorageKey, JSON.stringify(newExtractedClaims))
 		} finally {
 			setIsExtractingClaims(false)
 		}
 	}
-
-	const infoText = `
-## Jabble Polls
-
-You can create either **opinion polls** (*agree/disagree*) or **fact check polls** (*true/false*).
-
-Copy and paste something you want to fact-check or discuss here.
-We use an LLM to extract claims.
-You can then decide which ones you want to post.
-You can also add an origin URL to give context to where you found the statement.
-`
 
 	const disclaimer = `
 Press **Ctrl + Enter** to extract claims.  
@@ -66,76 +120,67 @@ Press **Ctrl + Enter** to extract claims.
 `
 
 	return (
-		<div>
-			<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
-				<div className="mb-4">
-					<Markdown deactivateLinks={false}>{infoText}</Markdown>
-				</div>
-				<Textarea
-					placeholder="A statement to extract claims from."
-					name="content"
-					value={statementValue}
-					maxLength={MAX_CHARS_PER_DOCUMENT}
-					onChange={event => setStatementValue(event.target.value)}
-					className="mb-2 min-h-[150px] w-full"
-					onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-						if (event.ctrlKey && event.key === 'Enter') {
-							event.preventDefault() // Prevent default behavior if needed
-							handleExtractClaims()
-						}
-					}}
-				/>
-				<Textarea
-					placeholder="URL (optional, where the statement was made)"
-					name="origin-url"
-					value={originValue}
-					onChange={event => {
-						setOriginValue(event.target.value)
-						isValidUrl(event.target.value)
-							? setUrlError(false)
-							: setUrlError(true)
-					}}
-					className={
-						'mb-2 h-4 w-full ' +
-						(urlError && originValue !== '' ? 'border-2 border-red-500' : '')
+		<>
+			<Textarea
+				placeholder="A statement to extract claims from."
+				name="content"
+				value={statementValue}
+				maxLength={MAX_CHARS_PER_DOCUMENT}
+				onChange={event => {
+					statementValueChangeHandler(event)
+					setStatementValue(event.target.value)
+				}}
+				className="mb-2 min-h-[150px] w-full"
+				onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+					if (event.ctrlKey && event.key === 'Enter') {
+						event.preventDefault() // Prevent default behavior if needed
+						handleExtractClaims()
 					}
-					onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-						if (event.ctrlKey && event.key === 'Enter') {
-							event.preventDefault() // Prevent default behavior if needed
-							handleExtractClaims()
-						}
+				}}
+			/>
+			<Textarea
+				placeholder="URL (optional, where the statement was made)"
+				name="origin-url"
+				value={originValue}
+				onChange={event => {
+					originValueChangeHandler(event)
+					setOriginValue(event.target.value)
+					isValidUrl(event.target.value)
+						? setUrlError(false)
+						: setUrlError(true)
+				}}
+				className={
+					'mb-2 h-4 w-full ' +
+					(urlError && originValue !== '' ? 'border-2 border-red-500' : '')
+				}
+				onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+					if (event.ctrlKey && event.key === 'Enter') {
+						event.preventDefault() // Prevent default behavior if needed
+						handleExtractClaims()
+					}
+				}}
+			/>
+			{urlError && originValue !== '' && (
+				<div className="text-sm text-red-500">Please enter a valid URL.</div>
+			)}
+			<div className="mb-6 flex flex-row">
+				<div className="mr-auto self-end text-gray-500">
+					<Markdown deactivateLinks={false}>{disclaimer}</Markdown>
+				</div>
+				<button
+					title="Ctrl + Enter"
+					disabled={isExtractingClaims}
+					className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
+					onClick={e => {
+						e.preventDefault()
+						handleExtractClaims()
 					}}
-				/>
-				{urlError && originValue !== '' && (
-					<div className="text-sm text-red-500">Please enter a valid URL.</div>
-				)}
-				<div className="mb-6 flex flex-row">
-					<div className="mr-auto self-end text-gray-500">
-						<Markdown deactivateLinks={false}>{disclaimer}</Markdown>
-					</div>
-					<button
-						title="Ctrl + Enter"
-						disabled={isExtractingClaims}
-						className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
-						onClick={e => {
-							e.preventDefault()
-							handleExtractClaims()
-						}}
-					>
-						{isExtractingClaims ? 'Extracting Claims...' : 'Extract Claims'}
-					</button>
-				</div>
-				<ExtractedClaimList claims={claims} origin={originValue} />
+				>
+					{isExtractingClaims ? 'Extracting Claims...' : 'Extract Claims'}
+				</button>
 			</div>
-			<div>
-				<div className="mb-5 px-4">
-					<Markdown deactivateLinks={false}>{'## Recent Polls'}</Markdown>
-				</div>
-				{feed.map((post, index) => {
-					return <PollPost key={'fact-check-' + String(index)} post={post} />
-				})}
-			</div>
-		</div>
+			<ExtractedClaimList claims={claims} origin={originValue} />
+		</>
 	)
 }
 
