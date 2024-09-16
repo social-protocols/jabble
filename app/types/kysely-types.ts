@@ -152,18 +152,29 @@ export type Claim = {
 	claim: string
 }
 
-export type ClaimContext = {
+export type Poll = {
+	claimId: number
+	postId: number
+	pollType: string
+}
+
+export type Artefact = {
 	id: Generated<number>
-	context: string
-	origin: string | null
+	url: string
+	description: string | null
 	createdAt: Generated<number>
 }
 
-export type Poll = {
+export type Quote = {
+	id: Generated<number>
+	artefactId: number
+	quote: string
+	createdAt: Generated<number>
+}
+
+export type ClaimToArtefact = {
 	claimId: number
-	claimContextId: number
-	postId: number
-	pollType: string
+	artefactId: number
 }
 
 export type DB = {
@@ -187,6 +198,8 @@ export type DB = {
 	HNItem: HNItem
 	PlaygroundPost: PlaygroundPost
 	Claim: Claim
-	ClaimContext: ClaimContext
 	Poll: Poll
+	Artefact: Artefact
+	Quote: Quote
+	ClaimToArtefact: ClaimToArtefact
 }

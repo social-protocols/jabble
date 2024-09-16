@@ -106,7 +106,5 @@ export async function up(db: Kysely<any>): Promise<void> {
 		await sql`
 			drop table PollDeprecated__TMP
 		`.execute(trx)
-
 	})
 }
-

@@ -291,7 +291,7 @@ function ExtractedClaim({
 				origin: origin,
 				pollType: pollType,
 			}
-			const response = await fetch('/createPoll', {
+			const response = await fetch('/create-poll', {
 				method: 'POST',
 				body: JSON.stringify(payload),
 				headers: { 'Content-Type': 'application/json' },

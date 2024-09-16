@@ -122,3 +122,15 @@ export enum PollType {
 	FactCheck = 'factCheck',
 	Opinion = 'opinion',
 }
+
+export type Artefact = {
+	id: number
+	url: string
+	description: string | null
+	createdAt: number
+}
+
+export type Claim = {
+	id: number
+	claim: string
+}

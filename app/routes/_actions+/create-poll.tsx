@@ -1,14 +1,13 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { db } from '#app/db.ts'
-import { createPoll } from '#app/repositories/fact-checking.ts'
+import { createPoll } from '#app/repositories/polls.ts'
 import { PollType } from '#app/types/api-types.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
 const ClaimDtoSchema = z.object({
-	context: z.coerce.string(),
 	claim: z.coerce.string(),
-	origin: z.coerce.string().nullable(),
+	artefactId: z.coerce.number().nullable(),
 	pollType: z.nativeEnum(PollType),
 })
 
@@ -25,8 +24,7 @@ export const action = async (args: ActionFunctionArgs) => {
 					trx,
 					userId,
 					claimDto.claim,
-					claimDto.context,
-					claimDto.origin,
+					claimDto.artefactId,
 					claimDto.pollType,
 				),
 		)

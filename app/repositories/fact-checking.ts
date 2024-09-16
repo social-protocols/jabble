@@ -1,11 +1,7 @@
-import { type Transaction, sql } from 'kysely'
 import OpenAI from 'openai'
 import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
 import { MAX_CHARS_PER_DOCUMENT } from '#app/constants.ts'
-import { createPost, getPost } from '#app/repositories/post.ts'
-import { type PollType, type Post } from '#app/types/api-types.ts'
-import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 
 export const ClaimExtractionSchema = z.object({
@@ -85,48 +81,4 @@ If a speaker uses the personal pronoun "I", try to infer the person's name and r
 	invariant(event != null, 'could not parse result')
 
 	return event
-}
-
-export async function createPoll(
-	trx: Transaction<DB>,
-	userId: string,
-	claim: string,
-	context: string,
-	origin: string | null,
-	pollType: PollType,
-): Promise<Post> {
-	const postContent = `
-**Claim:** ${claim}
-
-**Context:** ${context}
-`.trim()
-
-	const postId = await createPost(trx, null, postContent, userId, {
-		isPrivate: false,
-		withUpvote: false,
-	})
-
-	const claimId: { id: number } = await trx
-		.insertInto('Claim')
-		.values({ claim })
-		.returning('id')
-		.executeTakeFirstOrThrow()
-
-	const claimContextId: { id: number } = await trx
-		.insertInto('ClaimContext')
-		.values({ context, origin })
-		.returning('id')
-		.executeTakeFirstOrThrow()
-
-	await sql`
-		insert or ignore into ClaimToClaimContext
-		values (${claimId.id}, ${claimContextId.id})
-	`.execute(trx)
-
-	await sql`
-		insert or ignore into Poll (claimId, contextId, postId, pollType)
-		values (${claimId.id}, ${claimContextId.id}, ${postId}, ${pollType})
-	`.execute(trx)
-
-	return await getPost(trx, postId)
 }
