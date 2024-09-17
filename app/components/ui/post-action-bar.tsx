@@ -50,13 +50,13 @@ export function PostActionBar({
 
 	const [showReplyForm, setShowReplyForm] = useState(false)
 
-	async function handleSetDeletedAt(deletedAt: number | null) {
+	async function handleDeletePost(deletedAt: number | null) {
 		const payload = {
 			postId: post.id,
 			focussedPostId: treeContext.targetPostId,
 			deletedAt: deletedAt,
 		}
-		const response = await fetch('/setDeletedAt', {
+		const response = await fetch('/delete-post', {
 			method: 'POST',
 			body: JSON.stringify(payload),
 			headers: {
@@ -224,7 +224,7 @@ export function PostActionBar({
 					(showAdminUI ? (
 						<AdminFeatureBar
 							isDeleted={isDeleted}
-							handleSetDeletedAt={handleSetDeletedAt}
+							handleDeletePost={handleDeletePost}
 							handleAdminRefreshPost={handleAdminRefreshPost}
 						/>
 					) : (
@@ -264,22 +264,22 @@ export function PostActionBar({
 
 function AdminFeatureBar({
 	isDeleted,
-	handleSetDeletedAt,
+	handleDeletePost,
 	handleAdminRefreshPost,
 }: {
 	isDeleted: boolean
-	handleSetDeletedAt: (deletedAt: number | null) => void
+	handleDeletePost: (deletedAt: number | null) => void
 	handleAdminRefreshPost: () => void
 }) {
 	return (
 		<>
 			{!isDeleted ? (
-				<button onClick={() => handleSetDeletedAt(Date.now())}>
+				<button onClick={() => handleDeletePost(Date.now())}>
 					<Icon name="trash" className="mt-[-0.1em]" />
 					Delete
 				</button>
 			) : (
-				<button onClick={() => handleSetDeletedAt(null)}>
+				<button onClick={() => handleDeletePost(null)}>
 					<Icon name="counter-clockwise-clock" className="mt-[-0.1em]" />{' '}
 					Restore
 				</button>

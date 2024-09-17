@@ -272,23 +272,23 @@ function NavigationMenu() {
 
 	const baseNavigationClassName = 'rounded py-1 px-2 hover:bg-post'
 	const fallacyDetectionClassName =
-		location.pathname == '/fallacyDetection' ? 'bg-post' : ''
-	const pollsClassName = location.pathname == '/' ? 'bg-post' : ''
-	const discussionsClassName = location.pathname == '/discuss' ? 'bg-post' : ''
+		location.pathname == '/fallacy-detection' ? 'bg-post' : ''
+	const pollsClassName = location.pathname == '/polls' ? 'bg-post' : ''
+	const discussionsClassName = location.pathname == '/discussions' ? 'bg-post' : ''
 
 	return (
 		<>
-			<Link to="/" className={baseNavigationClassName + ' ' + pollsClassName}>
+			<Link to="/polls" className={baseNavigationClassName + ' ' + pollsClassName}>
 				<Icon name="lightning-bolt">Polls</Icon>
 			</Link>
 			<Link
-				to="/discuss"
+				to="/discussions"
 				className={baseNavigationClassName + ' ' + discussionsClassName}
 			>
 				<Icon name="chat-bubble">Open Discussions</Icon>
 			</Link>
 			<Link
-				to="/fallacyDetection"
+				to="/fallacy-detection"
 				className={baseNavigationClassName + ' ' + fallacyDetectionClassName}
 			>
 				<Icon name="magic-wand">Fallacy Detection</Icon>

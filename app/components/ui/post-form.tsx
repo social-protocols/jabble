@@ -22,7 +22,7 @@ export function PostForm({ className }: { className?: string }) {
 		<replyFetcher.Form
 			id="create-post"
 			method="post"
-			action="/createPost"
+			action="/create-post"
 			onSubmit={handleSubmit}
 		>
 			<div className={`flex flex-col items-end ${className || ''}`}>
