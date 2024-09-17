@@ -1,27 +1,36 @@
-import { Markdown } from "#app/components/markdown.tsx"
-import { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from "react"
-import { useDebounce } from '#app/utils/misc.tsx'
+import { Link } from '@remix-run/react'
+import {
+	type ChangeEvent,
+	type Dispatch,
+	type SetStateAction,
+	useEffect,
+	useState,
+} from 'react'
+import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { MAX_CHARS_PER_DOCUMENT } from '#app/constants.ts'
-import { type ClaimList } from '#app/repositories/fact-checking.ts'
-import { useOptionalUser } from "#app/utils/user.ts"
-import { PollType } from "#app/types/api-types.ts"
-import { Link } from "@remix-run/react"
+import { type ExtractedClaim } from '#app/repositories/fact-checking.ts'
+import { PollType } from '#app/types/api-types.ts'
+import { useDebounce } from '#app/utils/misc.tsx'
+import { useOptionalUser } from '#app/utils/user.ts'
+
+enum SubmitFactCheckWizardStep {
+	QuoteInput = 0,
+	ClaimSubmission = 1,
+}
 
 export default function SubmitFactCheckWizard() {
 	const quoteStateStorageKey = 'claim-extraction-statement'
 	const claimsStorageKey = 'extracted-claims'
 	const originUrlStorageKey = 'claim-extraction-origin'
 
-	const [submissionStepState, setSubmissionStepState] = useState<number>(0)
+	const [submissionStepState, setSubmissionStepState] =
+		useState<SubmitFactCheckWizardStep>(SubmitFactCheckWizardStep.QuoteInput)
 
 	const [quoteState, setQuoteState] = useState<string>('')
 	const [originUrlState, setOriginUrlState] = useState<string>('')
 
-	const [claimsState, setClaimsState] = useState<ClaimList>({
-		claim_context: '',
-		extracted_claims: [],
-	})
+	const [claimsState, setClaimsState] = useState<ExtractedClaim[]>([])
 
 	useEffect(() => {
 		const storedQuoteState = localStorage.getItem(quoteStateStorageKey)
@@ -36,14 +45,14 @@ export default function SubmitFactCheckWizard() {
 
 		const storedClaimsState = localStorage.getItem(claimsStorageKey)
 		if (storedClaimsState !== null) {
-			setClaimsState(JSON.parse(storedClaimsState) as ClaimList)
+			setClaimsState(JSON.parse(storedClaimsState) as ExtractedClaim[])
 		}
 	}, [])
 
-	return(
+	return (
 		<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
-			{(submissionStepState == 0) && (
-				<ClaimExtractionForm
+			{submissionStepState == SubmitFactCheckWizardStep.QuoteInput && (
+				<QuoteInputStep
 					quoteState={quoteState}
 					setQuoteState={setQuoteState}
 					quoteStateStorageKey={quoteStateStorageKey}
@@ -52,16 +61,17 @@ export default function SubmitFactCheckWizard() {
 					originUrlStorageKey={originUrlStorageKey}
 					claimsStorageKey={claimsStorageKey}
 					setClaimsState={setClaimsState}
+					setSubmissionStepState={setSubmissionStepState}
 				/>
 			)}
-			{(submissionStepState == 1) && (
-				<ExtractedClaimList claims={claimsState} origin={originUrlState} />
+			{submissionStepState == SubmitFactCheckWizardStep.ClaimSubmission && (
+				<SubmitFactChecksStep claims={claimsState} origin={originUrlState} />
 			)}
 		</div>
 	)
 }
 
-function ClaimExtractionForm({
+function QuoteInputStep({
 	quoteState,
 	setQuoteState,
 	quoteStateStorageKey,
@@ -70,6 +80,7 @@ function ClaimExtractionForm({
 	originUrlStorageKey,
 	claimsStorageKey,
 	setClaimsState,
+	setSubmissionStepState,
 }: {
 	quoteState: string
 	setQuoteState: Dispatch<SetStateAction<string>>
@@ -78,7 +89,8 @@ function ClaimExtractionForm({
 	setOriginUrlState: Dispatch<SetStateAction<string>>
 	originUrlStorageKey: string
 	claimsStorageKey: string
-	setClaimsState: Dispatch<SetStateAction<ClaimList>>
+	setClaimsState: Dispatch<SetStateAction<ExtractedClaim[]>>
+	setSubmissionStepState: Dispatch<SetStateAction<SubmitFactCheckWizardStep>>
 }) {
 	const quoteStateChangeHandler = useDebounce(
 		(event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -87,36 +99,41 @@ function ClaimExtractionForm({
 		},
 		500,
 	)
-	
+
 	const originUrlChangeHandler = useDebounce(
 		(event: ChangeEvent<HTMLTextAreaElement>) => {
 			localStorage.setItem(originUrlStorageKey, event.target.value)
 		},
 		500,
 	)
-	
+
 	const [urlError, setUrlError] = useState<boolean>(
 		() => (!isValidUrl(originUrlState) && !(originUrlState == '')) || false,
 	)
 
 	const [isExtractingClaims, setIsExtractingClaims] = useState(false)
 
-	async function handleExtractClaims(quote: string) {
+	async function handleExtractClaims(quote: string, originUrl: string) {
+		const description = null // TODO: argument to this function, optional submission
+
 		setIsExtractingClaims(true)
 		try {
 			const payload = {
+				url: originUrl,
+				description: description,
 				quote: quote,
 			}
-			const response = await fetch('/extract-claims', {
+			const response = await fetch('/analyze-artefact', {
 				method: 'POST',
 				body: JSON.stringify(payload),
 				headers: { 'Content-Type': 'application/json' },
 			})
-			const newExtractedClaims = (await response.json()) as ClaimList
+			const newExtractedClaims = (await response.json()) as ExtractedClaim[]
 			setClaimsState(newExtractedClaims)
 			localStorage.setItem(claimsStorageKey, JSON.stringify(newExtractedClaims))
 		} finally {
 			setIsExtractingClaims(false)
+			setSubmissionStepState(SubmitFactCheckWizardStep.ClaimSubmission)
 		}
 	}
 
@@ -151,7 +168,7 @@ Press **Ctrl + Enter** to extract claims.
 				onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
 					if (event.ctrlKey && event.key === 'Enter') {
 						event.preventDefault() // Prevent default behavior if needed
-						handleExtractClaims(quoteState)
+						handleExtractClaims(quoteState, originUrlState)
 					}
 				}}
 			/>
@@ -173,7 +190,7 @@ Press **Ctrl + Enter** to extract claims.
 				onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
 					if (event.ctrlKey && event.key === 'Enter') {
 						event.preventDefault() // Prevent default behavior if needed
-						handleExtractClaims(quoteState)
+						handleExtractClaims(quoteState, originUrlState)
 					}
 				}}
 			/>
@@ -190,7 +207,7 @@ Press **Ctrl + Enter** to extract claims.
 					className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
 					onClick={e => {
 						e.preventDefault()
-						handleExtractClaims(quoteState)
+						handleExtractClaims(quoteState, originUrlState)
 					}}
 				>
 					{isExtractingClaims ? 'Extracting Claims...' : 'Extract Claims'}
@@ -200,32 +217,24 @@ Press **Ctrl + Enter** to extract claims.
 	)
 }
 
-function ExtractedClaimList({
+function SubmitFactChecksStep({
 	claims,
 	origin,
 }: {
-	claims: ClaimList
+	claims: ExtractedClaim[]
 	origin?: string
 }) {
-	return claims.extracted_claims.length == 0 ? (
+	return claims.length == 0 ? (
 		<></>
 	) : (
 		<>
-			<div>
-				<Markdown deactivateLinks={false}>{'## Extracted Claims'}</Markdown>
-				<div className="mt-4">
-					<Markdown deactivateLinks={false}>
-						{'**Context:** ' + claims.claim_context}
-					</Markdown>
-				</div>
-			</div>
+			<Markdown deactivateLinks={false}>{'## Extracted Claims'}</Markdown>
 			<div className="mt-5">
-				{claims.extracted_claims.map((claim, index) => {
+				{claims.map((claim, index) => {
 					return (
 						<ExtractedClaim
 							key={'claim-' + String(index)}
 							claim={claim}
-							context={claims.claim_context}
 							origin={origin}
 						/>
 					)
@@ -235,19 +244,11 @@ function ExtractedClaimList({
 	)
 }
 
-type Claim = {
-	claim: string
-	claim_without_indirection: string
-	normative_or_descriptive: string
-}
-
 function ExtractedClaim({
 	claim,
-	context,
 	origin,
 }: {
-	claim: Claim
-	context: string
+	claim: ExtractedClaim
 	origin?: string
 }) {
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
@@ -258,15 +259,10 @@ function ExtractedClaim({
 
 	const user = useOptionalUser()
 
-	async function handleSubmit(
-		claim: Claim,
-		context: string,
-		pollType: PollType,
-	) {
+	async function handleSubmit(claim: ExtractedClaim, pollType: PollType) {
 		setIsSubmitting(true)
 		try {
 			const payload = {
-				context: context,
 				claim: claim.claim_without_indirection,
 				origin: origin,
 				pollType: pollType,
@@ -295,7 +291,7 @@ function ExtractedClaim({
 							className="ml-auto mt-2 rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
 							onClick={e => {
 								e.preventDefault()
-								handleSubmit(claim, context, PollType.FactCheck)
+								handleSubmit(claim, PollType.FactCheck)
 							}}
 						>
 							{isSubmitting ? 'Submitting...' : 'Create Fact Check'}
@@ -307,7 +303,7 @@ function ExtractedClaim({
 							className="ml-2 mt-2 rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
 							onClick={e => {
 								e.preventDefault()
-								handleSubmit(claim, context, PollType.Opinion)
+								handleSubmit(claim, PollType.Opinion)
 							}}
 						>
 							{isSubmitting ? 'Submitting...' : 'Create Opinion Poll'}
@@ -347,4 +343,3 @@ function isValidUrl(url: string): boolean {
 		return false
 	}
 }
-

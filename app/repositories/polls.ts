@@ -1,6 +1,7 @@
 import { type Transaction } from 'kysely'
 import { createPost, getPost } from '#app/repositories/post.ts'
 import {
+	type Quote,
 	type Artefact,
 	type Claim,
 	type PollType,
@@ -8,12 +9,21 @@ import {
 } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
 
-export async function createArtefact(
+export async function getOrCreateArtefact(
 	trx: Transaction<DB>,
 	url: string,
 	description: string | null,
-	quote: string | null,
 ): Promise<Artefact> {
+	const existingArtefact: Artefact | undefined = await trx
+		.selectFrom('Artefact')
+		.where('url', '=', url)
+		.selectAll()
+		.executeTakeFirst()
+
+	if (existingArtefact !== undefined) {
+		return existingArtefact
+	}
+
 	const createdArtefact = await trx
 		.insertInto('Artefact')
 		.values({
@@ -23,22 +33,38 @@ export async function createArtefact(
 		.returningAll()
 		.executeTakeFirstOrThrow()
 
-	if (quote !== null) {
-		await trx
-			.insertInto('Quote')
-			.values({
-				artefactId: createdArtefact.id,
-				quote: quote,
-			})
-			.execute()
-	}
-
 	return {
 		id: createdArtefact.id,
 		url: createdArtefact.url,
 		description: createdArtefact.description,
 		createdAt: createdArtefact.createdAt,
 	}
+}
+
+export async function getOrCreateQuote(
+	trx: Transaction<DB>,
+	artefactId: number,
+	quote: string,
+): Promise<Quote> {
+	const existingQuote: Quote | undefined = await trx
+		.selectFrom('Quote')
+		.where('quote', '=', quote)
+		.where('artefactId', '=', artefactId)
+		.selectAll()
+		.executeTakeFirst()
+
+	if (existingQuote !== undefined) {
+		return existingQuote
+	}
+
+	return await trx
+		.insertInto('Quote')
+		.values({
+			artefactId: artefactId,
+			quote: quote,
+		})
+		.returningAll()
+		.executeTakeFirstOrThrow()
 }
 
 export async function createClaim(

@@ -134,3 +134,10 @@ export type Claim = {
 	id: number
 	claim: string
 }
+
+export type Quote = {
+	id: number
+	artefactId: number
+	quote: string
+	createdAt: number
+}

@@ -42,9 +42,12 @@ export const ClaimExtractionSchema = z.object({
 		),
 })
 
-export type ClaimList = z.infer<typeof ClaimExtractionSchema>
+export type ClaimExtraction = z.infer<typeof ClaimExtractionSchema>
 
-export async function extractClaims(content: string): Promise<ClaimList> {
+export async function extractClaims(
+	artefactId: number,
+	content: string,
+): Promise<ExtractedClaim[]> {
 	invariant(
 		content.length <= MAX_CHARS_PER_DOCUMENT,
 		'Document for claim extraction is content too long',
@@ -80,5 +83,21 @@ If a speaker uses the personal pronoun "I", try to infer the person's name and r
 	const event = choice.message.parsed
 	invariant(event != null, 'could not parse result')
 
-	return event
+	const extractedClaims: ExtractedClaim[] = event.extracted_claims.map(
+		claim => {
+			return {
+				claim: claim.claim,
+				claim_without_indirection: claim.claim_without_indirection,
+				normative_or_descriptive: claim.normative_or_descriptive,
+			}
+		},
+	)
+
+	return extractedClaims
+}
+
+export type ExtractedClaim = {
+	claim: string
+	claim_without_indirection: string
+	normative_or_descriptive: string
 }

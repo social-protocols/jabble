@@ -274,11 +274,15 @@ function NavigationMenu() {
 	const fallacyDetectionClassName =
 		location.pathname == '/fallacy-detection' ? 'bg-post' : ''
 	const pollsClassName = location.pathname == '/polls' ? 'bg-post' : ''
-	const discussionsClassName = location.pathname == '/discussions' ? 'bg-post' : ''
+	const discussionsClassName =
+		location.pathname == '/discussions' ? 'bg-post' : ''
 
 	return (
 		<>
-			<Link to="/polls" className={baseNavigationClassName + ' ' + pollsClassName}>
+			<Link
+				to="/polls"
+				className={baseNavigationClassName + ' ' + pollsClassName}
+			>
 				<Icon name="lightning-bolt">Polls</Icon>
 			</Link>
 			<Link

@@ -1,7 +1,7 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { db } from '#app/db.ts'
-import { createArtefact } from '#app/repositories/polls.ts'
+import { getOrCreateArtefact } from '#app/repositories/polls.ts'
 
 const ArtefactDtoSchema = z.object({
 	url: z.string(),
@@ -16,7 +16,7 @@ export const action = async (args: ActionFunctionArgs) => {
 		.transaction()
 		.execute(
 			async trx =>
-				await createArtefact(
+				await getOrCreateArtefact(
 					trx,
 					artefactDto.url,
 					artefactDto.description,
