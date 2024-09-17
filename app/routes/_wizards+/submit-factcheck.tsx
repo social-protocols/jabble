@@ -1,6 +1,5 @@
 import { Markdown } from "#app/components/markdown.tsx"
-import { Icon } from "#app/components/ui/icon.tsx"
-import { ChangeEvent, useState } from "react"
+import { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from "react"
 import { useDebounce } from '#app/utils/misc.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { MAX_CHARS_PER_DOCUMENT } from '#app/constants.ts'
@@ -10,6 +9,116 @@ import { PollType } from "#app/types/api-types.ts"
 import { Link } from "@remix-run/react"
 
 export default function SubmitFactCheckWizard() {
+	const quoteStateStorageKey = 'claim-extraction-statement'
+	const claimsStorageKey = 'extracted-claims'
+	const originUrlStorageKey = 'claim-extraction-origin'
+
+	const [submissionStepState, setSubmissionStepState] = useState<number>(0)
+
+	const [quoteState, setQuoteState] = useState<string>('')
+	const [originUrlState, setOriginUrlState] = useState<string>('')
+
+	const [claimsState, setClaimsState] = useState<ClaimList>({
+		claim_context: '',
+		extracted_claims: [],
+	})
+
+	useEffect(() => {
+		const storedQuoteState = localStorage.getItem(quoteStateStorageKey)
+		if (storedQuoteState !== null) {
+			setQuoteState(storedQuoteState)
+		}
+
+		const storedOriginValue = localStorage.getItem(originUrlStorageKey)
+		if (storedOriginValue !== null) {
+			setOriginUrlState(storedOriginValue)
+		}
+
+		const storedClaimsState = localStorage.getItem(claimsStorageKey)
+		if (storedClaimsState !== null) {
+			setClaimsState(JSON.parse(storedClaimsState) as ClaimList)
+		}
+	}, [])
+
+	return(
+		<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
+			{(submissionStepState == 0) && (
+				<ClaimExtractionForm
+					quoteState={quoteState}
+					setQuoteState={setQuoteState}
+					quoteStateStorageKey={quoteStateStorageKey}
+					originUrlState={originUrlState}
+					setOriginUrlState={setOriginUrlState}
+					originUrlStorageKey={originUrlStorageKey}
+					claimsStorageKey={claimsStorageKey}
+					setClaimsState={setClaimsState}
+				/>
+			)}
+			{(submissionStepState == 1) && (
+				<ExtractedClaimList claims={claimsState} origin={originUrlState} />
+			)}
+		</div>
+	)
+}
+
+function ClaimExtractionForm({
+	quoteState,
+	setQuoteState,
+	quoteStateStorageKey,
+	originUrlState,
+	setOriginUrlState,
+	originUrlStorageKey,
+	claimsStorageKey,
+	setClaimsState,
+}: {
+	quoteState: string
+	setQuoteState: Dispatch<SetStateAction<string>>
+	quoteStateStorageKey: string
+	originUrlState: string
+	setOriginUrlState: Dispatch<SetStateAction<string>>
+	originUrlStorageKey: string
+	claimsStorageKey: string
+	setClaimsState: Dispatch<SetStateAction<ClaimList>>
+}) {
+	const quoteStateChangeHandler = useDebounce(
+		(event: ChangeEvent<HTMLTextAreaElement>) => {
+			localStorage.removeItem(claimsStorageKey)
+			localStorage.setItem(quoteStateStorageKey, event.target.value)
+		},
+		500,
+	)
+	
+	const originUrlChangeHandler = useDebounce(
+		(event: ChangeEvent<HTMLTextAreaElement>) => {
+			localStorage.setItem(originUrlStorageKey, event.target.value)
+		},
+		500,
+	)
+	
+	const [urlError, setUrlError] = useState<boolean>(
+		() => (!isValidUrl(originUrlState) && !(originUrlState == '')) || false,
+	)
+
+	const [isExtractingClaims, setIsExtractingClaims] = useState(false)
+
+	async function handleExtractClaims(quote: string) {
+		setIsExtractingClaims(true)
+		try {
+			const payload = {
+				quote: quote,
+			}
+			const response = await fetch('/extract-claims', {
+				method: 'POST',
+				body: JSON.stringify(payload),
+				headers: { 'Content-Type': 'application/json' },
+			})
+			const newExtractedClaims = (await response.json()) as ClaimList
+			setClaimsState(newExtractedClaims)
+			localStorage.setItem(claimsStorageKey, JSON.stringify(newExtractedClaims))
+		} finally {
+			setIsExtractingClaims(false)
+		}
+	}
 
 	const infoText = `
 ## Submit a Request
@@ -19,111 +128,6 @@ We use an LLM to extract the claims made in the statement.
 You can then decide which ones you want to post as fact-check or discussion polls.
 `
 
-	const [showClaimExtractionForm, setShowClaimExtractionForm] =
-		useState<boolean>(false)
-
-	return(
-			<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
-				<div className="mb-4">
-					<Markdown deactivateLinks={false}>{infoText}</Markdown>
-				</div>
-				<div className="text-md flex w-full">
-					<button
-						onClick={() => {
-							setShowClaimExtractionForm(!showClaimExtractionForm)
-							return false
-						}}
-						className="shrink-0 font-bold text-purple-700 dark:text-purple-200"
-					>
-						{showClaimExtractionForm ? (
-							<Icon name="chevron-down">Start extracting claims</Icon>
-						) : (
-							<Icon name="chevron-right">Start extracting claims</Icon>
-						)}
-					</button>
-					{showClaimExtractionForm && (
-						<button
-							className="ml-auto self-center pr-2"
-							onClick={() => setShowClaimExtractionForm(false)}
-						>
-							✕
-						</button>
-					)}
-				</div>
-				{
-					/* 
-						This is a hack. The localStorage object is only accessible on the
-						client-side, so we have to make sure this component is not rendered on
-						the server. There are other ways to do this (which are also hacky), but
-						for the time being, it's easiest to just hide this form and render it on
-						click on a button.
-					*/
-					showClaimExtractionForm && <ClaimExtractionForm />
-				}
-			</div>
-	)
-}
-
-function ClaimExtractionForm() {
-	const statementValueStorageKey = 'claim-extraction-statement'
-	const [statementValue, setStatementValue] = useState<string>(
-		() => localStorage.getItem(statementValueStorageKey) ?? '',
-	)
-	const statementValueChangeHandler = useDebounce(
-		(event: ChangeEvent<HTMLTextAreaElement>) => {
-			localStorage.removeItem(claimsStorageKey)
-			localStorage.setItem(statementValueStorageKey, event.target.value)
-		},
-		500,
-	)
-
-	const originValueStorageKey = 'claim-extraction-origin'
-	const [originValue, setOriginValue] = useState<string>(
-		() => localStorage.getItem(originValueStorageKey) ?? '',
-	)
-	const originValueChangeHandler = useDebounce(
-		(event: ChangeEvent<HTMLTextAreaElement>) => {
-			localStorage.setItem(originValueStorageKey, event.target.value)
-		},
-		500,
-	)
-
-	const claimsStorageKey = 'extracted-claims'
-	const [claims, setClaims] = useState<ClaimList>(() => {
-		const claimsFromLocalStorage = localStorage.getItem(claimsStorageKey)
-		if (claimsFromLocalStorage == null) {
-			return {
-				claim_context: '',
-				extracted_claims: [],
-			}
-		}
-		return JSON.parse(claimsFromLocalStorage) as ClaimList
-	})
-
-	const [isExtractingClaims, setIsExtractingClaims] = useState(false)
-	const [urlError, setUrlError] = useState<boolean>(
-		() => (!isValidUrl(originValue) && !(originValue == '')) || false,
-	)
-
-	async function handleExtractClaims() {
-		setIsExtractingClaims(true)
-		try {
-			const payload = {
-				content: statementValue,
-			}
-			const response = await fetch('/extract-claims', {
-				method: 'POST',
-				body: JSON.stringify(payload),
-				headers: { 'Content-Type': 'application/json' },
-			})
-			const newExtractedClaims = (await response.json()) as ClaimList
-			setClaims(newExtractedClaims)
-			localStorage.setItem(claimsStorageKey, JSON.stringify(newExtractedClaims))
-		} finally {
-			setIsExtractingClaims(false)
-		}
-	}
-
 	const disclaimer = `
 Press **Ctrl + Enter** to extract claims.  
 **Disclaimer**: Your text will be sent to the OpenAI API for analysis.
@@ -131,46 +135,49 @@ Press **Ctrl + Enter** to extract claims.
 
 	return (
 		<>
+			<div className="mb-4">
+				<Markdown deactivateLinks={false}>{infoText}</Markdown>
+			</div>
 			<Textarea
-				placeholder="A statement to extract claims from."
+				placeholder="Something on the Internet you want fact-checked"
 				name="content"
-				value={statementValue}
+				value={quoteState}
 				maxLength={MAX_CHARS_PER_DOCUMENT}
 				onChange={event => {
-					statementValueChangeHandler(event)
-					setStatementValue(event.target.value)
+					quoteStateChangeHandler(event)
+					setQuoteState(event.target.value)
 				}}
 				className="mb-2 min-h-[150px] w-full"
 				onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
 					if (event.ctrlKey && event.key === 'Enter') {
 						event.preventDefault() // Prevent default behavior if needed
-						handleExtractClaims()
+						handleExtractClaims(quoteState)
 					}
 				}}
 			/>
 			<Textarea
-				placeholder="URL (optional, where the statement was made)"
+				placeholder="Where you found it (URL, optional)"
 				name="origin-url"
-				value={originValue}
+				value={originUrlState}
 				onChange={event => {
-					originValueChangeHandler(event)
-					setOriginValue(event.target.value)
+					originUrlChangeHandler(event)
+					setOriginUrlState(event.target.value)
 					isValidUrl(event.target.value)
 						? setUrlError(false)
 						: setUrlError(true)
 				}}
 				className={
 					'mb-2 h-4 w-full ' +
-					(urlError && originValue !== '' ? 'border-2 border-red-500' : '')
+					(urlError && originUrlState !== '' ? 'border-2 border-red-500' : '')
 				}
 				onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
 					if (event.ctrlKey && event.key === 'Enter') {
 						event.preventDefault() // Prevent default behavior if needed
-						handleExtractClaims()
+						handleExtractClaims(quoteState)
 					}
 				}}
 			/>
-			{urlError && originValue !== '' && (
+			{urlError && originUrlState !== '' && (
 				<div className="text-sm text-red-500">Please enter a valid URL.</div>
 			)}
 			<div className="mb-6 flex flex-row">
@@ -183,13 +190,12 @@ Press **Ctrl + Enter** to extract claims.
 					className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
 					onClick={e => {
 						e.preventDefault()
-						handleExtractClaims()
+						handleExtractClaims(quoteState)
 					}}
 				>
 					{isExtractingClaims ? 'Extracting Claims...' : 'Extract Claims'}
 				</button>
 			</div>
-			{/*<ExtractedClaimList claims={claims} origin={originValue} />*/}
 		</>
 	)
 }
@@ -205,7 +211,7 @@ function ExtractedClaimList({
 		<></>
 	) : (
 		<>
-			<div className="mt-6">
+			<div>
 				<Markdown deactivateLinks={false}>{'## Extracted Claims'}</Markdown>
 				<div className="mt-4">
 					<Markdown deactivateLinks={false}>
