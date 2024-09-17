@@ -8,10 +8,10 @@ export async function up(db: Kysely<any>): Promise<void> {
 
 		await sql`
 			create table Artefact (
-				  id          integer not null    primary key autoincrement
-				, url         text    not null    unique
-				, description text                default null
-				, createdAt   integer not null    default (unixepoch('subsec')*1000)
+				  id          integer not null primary key autoincrement
+				, url         text    not null unique
+				, description text             default null
+				, createdAt   integer not null default (unixepoch('subsec')*1000)
 			)
 		`.execute(trx)
 
@@ -29,6 +29,8 @@ export async function up(db: Kysely<any>): Promise<void> {
 		/*
 		 * Preserve `ClaimToArtifact` relation
 		 */
+
+		// We use the first submission of an artefact.
 
 		await sql`
 			insert into Artefact (
@@ -57,9 +59,9 @@ export async function up(db: Kysely<any>): Promise<void> {
 				  claimId
 				, artefactId
 			)
-			select
-				a.id as artefactId
-				, c2cc.claimid as claimId
+			select distinct
+				  c2cc.claimid as claimId
+				, a.id as artefactId
 			from claimcontext cc
 			join artefact a
 			on a.url = cc.origin
