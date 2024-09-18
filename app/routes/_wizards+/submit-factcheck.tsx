@@ -13,6 +13,7 @@ import { type FallacyList } from '#app/repositories/fallacy-detection.ts'
 import { PollType, type CandidateClaim } from '#app/types/api-types.ts'
 import { useDebounce } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '#app/components/ui/tabs.tsx'
 
 enum SubmitFactCheckWizardStep {
 	QuoteInput = 0,
@@ -54,7 +55,6 @@ export default function SubmitFactCheckWizard() {
 
 	return (
 		<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
-			<div>{JSON.stringify(fallaciesState)}</div>
 			{submissionStepState == SubmitFactCheckWizardStep.QuoteInput && (
 				<QuoteInputStep
 					quoteState={quoteState}
@@ -70,7 +70,7 @@ export default function SubmitFactCheckWizard() {
 				/>
 			)}
 			{submissionStepState == SubmitFactCheckWizardStep.ClaimSubmission && (
-				<SubmitFactChecksStep claims={claimsState} />
+				<SubmitFactChecksStep claims={claimsState} fallacies={fallaciesState} />
 			)}
 		</div>
 	)
@@ -229,17 +229,32 @@ Press **Ctrl + Enter** to extract claims.
 	)
 }
 
-function SubmitFactChecksStep({ claims }: { claims: CandidateClaim[] }) {
+function SubmitFactChecksStep({
+	claims,
+	fallacies,
+}: {
+	claims: CandidateClaim[],
+	fallacies: FallacyList | undefined,
+}) {
 	return claims.length == 0 ? (
 		<></>
 	) : (
 		<>
-			<Markdown deactivateLinks={false}>{'## Extracted Claims'}</Markdown>
-			<div className="mt-5">
-				{claims.map((claim, index) => {
-					return <ExtractedClaim key={'claim-' + String(index)} claim={claim} />
-				})}
-			</div>
+			<Tabs defaultValue="fallacies" className="w-full">
+				<TabsList className="w-full">
+					<TabsTrigger value="fallacies" className="w-full">Fallacies</TabsTrigger>
+					<TabsTrigger value="claims" className="w-full">Claims</TabsTrigger>
+				</TabsList>
+				<TabsContent value="fallacies">{JSON.stringify(fallacies)}</TabsContent>
+				<TabsContent value="claims">
+					<Markdown deactivateLinks={false}>{'## Extracted Claims'}</Markdown>
+					<div className="mt-5">
+						{claims.map((claim, index) => {
+							return <ExtractedClaim key={'claim-' + String(index)} claim={claim} />
+						})}
+					</div>
+				</TabsContent>
+			</Tabs>
 		</>
 	)
 }
