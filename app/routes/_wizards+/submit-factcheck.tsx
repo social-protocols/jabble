@@ -262,8 +262,8 @@ function ExtractedClaim({
 		setIsSubmitting(true)
 		try {
 			const payload = {
-				claim: claim.claim,
-				origin: origin,
+				candidateClaimId: claim.id,
+				artefactId: claim.artefactId,
 				pollType: pollType,
 			}
 			const response = await fetch('/create-poll', {

@@ -182,6 +182,7 @@ export type CandidateClaim = {
 	artefactId: number
 	quoteId: number
 	claim: string
+	claimId: number | null
 	createdAt: Generated<number>
 }
 

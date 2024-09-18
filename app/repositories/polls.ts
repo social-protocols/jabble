@@ -8,6 +8,7 @@ import {
 	type Post,
 } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
+import { getCandidateClaim } from './fact-checking.ts'
 
 export async function getOrCreateArtefact(
 	trx: Transaction<DB>,
@@ -86,11 +87,12 @@ export async function createClaim(
 export async function createPoll(
 	trx: Transaction<DB>,
 	userId: string,
-	claim: string,
+	candidateClaimId: number,
 	artefactId: number | null,
 	pollType: PollType,
 ): Promise<Post> {
-	const persistedClaim = await createClaim(trx, claim)
+	const candidateClaim = await getCandidateClaim(trx, candidateClaimId)
+	const persistedClaim = await createClaim(trx, candidateClaim.claim)
 
 	if (artefactId !== null) {
 		await trx

@@ -115,7 +115,8 @@ export async function up(db: Kysely<any>): Promise<void> {
 				, artefactId integer not null references Artefact(id)
 				, quoteId    integer not null references Quote(id)
 				, claim      text    not null
-				, createdAt	 integer not null default (unixepoch('subsec')*1000)
+				, claimId    number           references Claim(id) default null
+				, createdAt  integer not null default (unixepoch('subsec')*1000)
 			)
 		`.execute(trx)
 	})

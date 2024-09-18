@@ -1,4 +1,4 @@
-import { type Transaction } from 'kysely'
+import { sql, type Transaction } from 'kysely'
 import OpenAI from 'openai'
 import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
@@ -144,6 +144,23 @@ async function getCandidateClaims(
 		.where('quoteId', '=', quoteId)
 		.selectAll()
 		.execute()
+}
+
+export async function getCandidateClaim(trx: Transaction<DB>, candidateClaimId: number): Promise<CandidateClaim> {
+	return await trx
+		.selectFrom('CandidateClaim')
+		.where('id', '=', candidateClaimId)
+		.selectAll()
+		.executeTakeFirstOrThrow()
+}
+
+export async function updateClaimIdOnCandidateClaim(trx: Transaction<DB>, candidateClaimId: number, claimId: number): Promise<CandidateClaim> {
+	return await trx
+		.updateTable('CandidateClaim')
+		.set({ claimId: claimId })
+		.where('id', '=', candidateClaimId)
+		.returningAll()
+		.executeTakeFirstOrThrow()
 }
 
 export type ExtractedClaim = {
