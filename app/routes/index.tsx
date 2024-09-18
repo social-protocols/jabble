@@ -1,4 +1,7 @@
-import { Link, useLoaderData } from '@remix-run/react'
+import {
+	Link,
+	// useLoaderData,
+} from '@remix-run/react'
 
 // export async function loader() {
 // 	const testContent = "TEST CONTENT"

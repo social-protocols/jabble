@@ -2,7 +2,7 @@ import { sql } from 'kysely'
 import OpenAI from 'openai'
 import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
-import { MAX_CHARS_PER_POST } from '#app/constants.ts'
+import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
 import { db } from '#app/db.ts'
 import { invariant } from '#app/utils/misc.tsx'
 
@@ -116,8 +116,8 @@ const FallacyDetectionSchema = z
 export type FallacyList = z.infer<typeof FallacyListSchema>
 
 export async function fallacyDetection(content: string): Promise<FallacyList> {
-	invariant(content.length <= MAX_CHARS_PER_POST, 'Post content too long')
-	invariant(content.length > 0, 'Post content too short')
+	invariant(content.length <= MAX_CHARS_PER_QUOTE, 'Quote content too long')
+	invariant(content.length > 0, 'Quote content too short')
 
 	const openai = new OpenAI()
 

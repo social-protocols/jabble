@@ -147,6 +147,6 @@ export type CandidateClaim = {
 	artefactId: number
 	quoteId: number
 	claim: string
-	claimId: number | null
+	postId: number | null
 	createdAt: number
 }

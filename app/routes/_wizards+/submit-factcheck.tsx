@@ -9,6 +9,7 @@ import {
 import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
+import { type FallacyList } from '#app/repositories/fallacy-detection.ts'
 import { PollType, type CandidateClaim } from '#app/types/api-types.ts'
 import { useDebounce } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
@@ -30,6 +31,9 @@ export default function SubmitFactCheckWizard() {
 	const [originUrlState, setOriginUrlState] = useState<string>('')
 
 	const [claimsState, setClaimsState] = useState<CandidateClaim[]>([])
+	const [fallaciesState, setFallaciesState] = useState<
+		FallacyList | undefined
+	>()
 
 	useEffect(() => {
 		const storedQuoteState = localStorage.getItem(quoteStateStorageKey)
@@ -50,6 +54,7 @@ export default function SubmitFactCheckWizard() {
 
 	return (
 		<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
+			<div>{JSON.stringify(fallaciesState)}</div>
 			{submissionStepState == SubmitFactCheckWizardStep.QuoteInput && (
 				<QuoteInputStep
 					quoteState={quoteState}
@@ -61,10 +66,11 @@ export default function SubmitFactCheckWizard() {
 					claimsStorageKey={claimsStorageKey}
 					setClaimsState={setClaimsState}
 					setSubmissionStepState={setSubmissionStepState}
+					setFallaciesState={setFallaciesState}
 				/>
 			)}
 			{submissionStepState == SubmitFactCheckWizardStep.ClaimSubmission && (
-				<SubmitFactChecksStep claims={claimsState} origin={originUrlState} />
+				<SubmitFactChecksStep claims={claimsState} />
 			)}
 		</div>
 	)
@@ -80,6 +86,7 @@ function QuoteInputStep({
 	claimsStorageKey,
 	setClaimsState,
 	setSubmissionStepState,
+	setFallaciesState,
 }: {
 	quoteState: string
 	setQuoteState: Dispatch<SetStateAction<string>>
@@ -90,6 +97,7 @@ function QuoteInputStep({
 	claimsStorageKey: string
 	setClaimsState: Dispatch<SetStateAction<CandidateClaim[]>>
 	setSubmissionStepState: Dispatch<SetStateAction<SubmitFactCheckWizardStep>>
+	setFallaciesState: Dispatch<SetStateAction<FallacyList | undefined>>
 }) {
 	const quoteStateChangeHandler = useDebounce(
 		(event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -127,9 +135,14 @@ function QuoteInputStep({
 				body: JSON.stringify(payload),
 				headers: { 'Content-Type': 'application/json' },
 			})
-			const newExtractedClaims = (await response.json()) as CandidateClaim[]
-			setClaimsState(newExtractedClaims)
-			localStorage.setItem(claimsStorageKey, JSON.stringify(newExtractedClaims))
+			const { detectedFallacies, candidateClaims } =
+				(await response.json()) as {
+					detectedFallacies: FallacyList
+					candidateClaims: CandidateClaim[]
+				}
+			setClaimsState(candidateClaims)
+			setFallaciesState(detectedFallacies)
+			localStorage.setItem(claimsStorageKey, JSON.stringify(candidateClaims))
 		} finally {
 			setIsExtractingClaims(false)
 			setSubmissionStepState(SubmitFactCheckWizardStep.ClaimSubmission)
@@ -216,13 +229,7 @@ Press **Ctrl + Enter** to extract claims.
 	)
 }
 
-function SubmitFactChecksStep({
-	claims,
-	origin,
-}: {
-	claims: CandidateClaim[]
-	origin?: string
-}) {
+function SubmitFactChecksStep({ claims }: { claims: CandidateClaim[] }) {
 	return claims.length == 0 ? (
 		<></>
 	) : (
@@ -230,26 +237,14 @@ function SubmitFactChecksStep({
 			<Markdown deactivateLinks={false}>{'## Extracted Claims'}</Markdown>
 			<div className="mt-5">
 				{claims.map((claim, index) => {
-					return (
-						<ExtractedClaim
-							key={'claim-' + String(index)}
-							claim={claim}
-							origin={origin}
-						/>
-					)
+					return <ExtractedClaim key={'claim-' + String(index)} claim={claim} />
 				})}
 			</div>
 		</>
 	)
 }
 
-function ExtractedClaim({
-	claim,
-	origin,
-}: {
-	claim: CandidateClaim
-	origin?: string
-}) {
+function ExtractedClaim({ claim }: { claim: CandidateClaim }) {
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 	const [submitted, setSubmitted] = useState<boolean>(false)
 	const [newSubmissionPostId, setNewSubmissionPostId] = useState<number | null>(

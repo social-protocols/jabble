@@ -8,7 +8,10 @@ import {
 	type Post,
 } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
-import { getCandidateClaim } from './fact-checking.ts'
+import {
+	getCandidateClaim,
+	updatePostIdOnCandidateClaim,
+} from './claim-extraction.ts'
 
 export async function getOrCreateArtefact(
 	trx: Transaction<DB>,
@@ -104,10 +107,13 @@ export async function createPoll(
 			.execute()
 	}
 
+	// TODO: createPost should return the entire post
 	const postId = await createPost(trx, null, persistedClaim.claim, userId, {
 		isPrivate: false,
 		withUpvote: false,
 	})
+
+	await updatePostIdOnCandidateClaim(trx, candidateClaimId, postId)
 
 	await trx
 		.insertInto('Poll')

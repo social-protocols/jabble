@@ -1,7 +1,8 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { db } from '#app/db.ts'
-import { extractClaims } from '#app/repositories/fact-checking.ts'
+import { extractClaims } from '#app/repositories/claim-extraction.ts'
+import { fallacyDetection } from '#app/repositories/fallacy-detection.ts'
 import {
 	getOrCreateArtefact,
 	getOrCreateQuote,
@@ -31,9 +32,16 @@ export const action = async (args: ActionFunctionArgs) => {
 			)
 			return { persistedArtefact, persistedQuote }
 		})
-	return await extractClaims(
+
+	const detectedFallacies = await fallacyDetection(persistedQuote.quote)
+	const extractedClaims = await extractClaims(
 		persistedArtefact.id,
 		persistedQuote.id,
 		persistedQuote.quote,
 	)
+
+	return {
+		detectedFallacies: detectedFallacies,
+		candidateClaims: extractedClaims,
+	}
 }
