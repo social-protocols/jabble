@@ -1,7 +1,11 @@
+import { type Transaction } from 'kysely'
 import OpenAI from 'openai'
 import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
-import { MAX_CHARS_PER_DOCUMENT } from '#app/constants.ts'
+import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
+import { db } from '#app/db.ts'
+import { type CandidateClaim } from '#app/types/api-types.ts'
+import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 
 export const ClaimExtractionSchema = z.object({
@@ -46,16 +50,26 @@ export type ClaimExtraction = z.infer<typeof ClaimExtractionSchema>
 
 export async function extractClaims(
 	artefactId: number,
+	quoteId: number,
 	content: string,
-): Promise<ExtractedClaim[]> {
+): Promise<CandidateClaim[]> {
 	invariant(
-		content.length <= MAX_CHARS_PER_DOCUMENT,
+		content.length <= MAX_CHARS_PER_QUOTE,
 		'Document for claim extraction is content too long',
 	)
 	invariant(
 		content.length > 0,
 		'Document for claim extraction is  content too short',
 	)
+
+	const existingCandidateClaims: CandidateClaim[] = await Promise.all(
+		await db
+			.transaction()
+			.execute(async trx => await getCandidateClaims(trx, artefactId, quoteId)),
+	)
+	if (existingCandidateClaims.length > 0) {
+		return existingCandidateClaims
+	}
 
 	const openai = new OpenAI()
 
@@ -83,20 +97,57 @@ If a speaker uses the personal pronoun "I", try to infer the person's name and r
 	const event = choice.message.parsed
 	invariant(event != null, 'could not parse result')
 
-	const extractedClaims: ExtractedClaim[] = event.extracted_claims.map(
-		claim => {
-			return {
-				claim: claim.claim,
-				claim_without_indirection: claim.claim_without_indirection,
-				normative_or_descriptive: claim.normative_or_descriptive,
-			}
-		},
+	const candidateClaims: CandidateClaim[] = await Promise.all(
+		event.extracted_claims.map(async claim => {
+			return await db
+				.transaction()
+				.execute(
+					async trx =>
+						await insertCandidateClaim(
+							trx,
+							artefactId,
+							quoteId,
+							claim.claim_without_indirection,
+						),
+				)
+		}),
 	)
 
-	return extractedClaims
+	return candidateClaims
+}
+
+async function insertCandidateClaim(
+	trx: Transaction<DB>,
+	artefactId: number,
+	quoteId: number,
+	claim: string,
+): Promise<CandidateClaim> {
+	return await trx
+		.insertInto('CandidateClaim')
+		.values({
+			artefactId: artefactId,
+			quoteId: quoteId,
+			claim: claim,
+		})
+		.returningAll()
+		.executeTakeFirstOrThrow()
+}
+
+async function getCandidateClaims(
+	trx: Transaction<DB>,
+	artefactId: number,
+	quoteId: number,
+): Promise<CandidateClaim[]> {
+	return await trx
+		.selectFrom('CandidateClaim')
+		.where('artefactId', '=', artefactId)
+		.where('quoteId', '=', quoteId)
+		.selectAll()
+		.execute()
 }
 
 export type ExtractedClaim = {
+	artefactId: number
 	claim: string
 	claim_without_indirection: string
 	normative_or_descriptive: string

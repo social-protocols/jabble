@@ -177,6 +177,14 @@ export type ClaimToArtefact = {
 	artefactId: number
 }
 
+export type CandidateClaim = {
+	id: Generated<number>
+	artefactId: number
+	quoteId: number
+	claim: string
+	createdAt: Generated<number>
+}
+
 export type DB = {
 	Vote: Vote
 	Password: Password
@@ -202,4 +210,5 @@ export type DB = {
 	Artefact: Artefact
 	Quote: Quote
 	ClaimToArtefact: ClaimToArtefact
+	CandidateClaim: CandidateClaim
 }

@@ -108,5 +108,15 @@ export async function up(db: Kysely<any>): Promise<void> {
 		await sql`
 			drop table PollDeprecated__TMP
 		`.execute(trx)
+
+		await sql`
+			create table CandidateClaim (
+				  id         integer not null primary key autoincrement
+				, artefactId integer not null references Artefact(id)
+				, quoteId    integer not null references Quote(id)
+				, claim      text    not null
+				, createdAt	 integer not null default (unixepoch('subsec')*1000)
+			)
+		`.execute(trx)
 	})
 }

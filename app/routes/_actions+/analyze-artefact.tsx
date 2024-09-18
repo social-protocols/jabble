@@ -16,14 +16,24 @@ const quoteDtoSchema = z.object({
 export const action = async (args: ActionFunctionArgs) => {
 	let request = args.request
 	const quoteDto = quoteDtoSchema.parse(await request.json())
-	const artefact = await db.transaction().execute(async trx => {
-		const persistedArtefact = await getOrCreateArtefact(
-			trx,
-			quoteDto.url,
-			quoteDto.description,
-		)
-		await getOrCreateQuote(trx, persistedArtefact.id, quoteDto.quote)
-		return persistedArtefact
-	})
-	return await extractClaims(artefact.id, quoteDto.quote)
+	const { persistedArtefact, persistedQuote } = await db
+		.transaction()
+		.execute(async trx => {
+			const persistedArtefact = await getOrCreateArtefact(
+				trx,
+				quoteDto.url,
+				quoteDto.description,
+			)
+			const persistedQuote = await getOrCreateQuote(
+				trx,
+				persistedArtefact.id,
+				quoteDto.quote,
+			)
+			return { persistedArtefact, persistedQuote }
+		})
+	return await extractClaims(
+		persistedArtefact.id,
+		persistedQuote.id,
+		persistedQuote.quote,
+	)
 }

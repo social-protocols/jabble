@@ -141,3 +141,11 @@ export type Quote = {
 	quote: string
 	createdAt: number
 }
+
+export type CandidateClaim = {
+	id: number
+	artefactId: number
+	quoteId: number
+	claim: string
+	createdAt: number
+}

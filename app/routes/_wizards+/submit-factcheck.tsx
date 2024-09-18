@@ -8,9 +8,8 @@ import {
 } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
-import { MAX_CHARS_PER_DOCUMENT } from '#app/constants.ts'
-import { type ExtractedClaim } from '#app/repositories/fact-checking.ts'
-import { PollType } from '#app/types/api-types.ts'
+import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
+import { PollType, type CandidateClaim } from '#app/types/api-types.ts'
 import { useDebounce } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
 
@@ -30,7 +29,7 @@ export default function SubmitFactCheckWizard() {
 	const [quoteState, setQuoteState] = useState<string>('')
 	const [originUrlState, setOriginUrlState] = useState<string>('')
 
-	const [claimsState, setClaimsState] = useState<ExtractedClaim[]>([])
+	const [claimsState, setClaimsState] = useState<CandidateClaim[]>([])
 
 	useEffect(() => {
 		const storedQuoteState = localStorage.getItem(quoteStateStorageKey)
@@ -45,7 +44,7 @@ export default function SubmitFactCheckWizard() {
 
 		const storedClaimsState = localStorage.getItem(claimsStorageKey)
 		if (storedClaimsState !== null) {
-			setClaimsState(JSON.parse(storedClaimsState) as ExtractedClaim[])
+			setClaimsState(JSON.parse(storedClaimsState) as CandidateClaim[])
 		}
 	}, [])
 
@@ -89,7 +88,7 @@ function QuoteInputStep({
 	setOriginUrlState: Dispatch<SetStateAction<string>>
 	originUrlStorageKey: string
 	claimsStorageKey: string
-	setClaimsState: Dispatch<SetStateAction<ExtractedClaim[]>>
+	setClaimsState: Dispatch<SetStateAction<CandidateClaim[]>>
 	setSubmissionStepState: Dispatch<SetStateAction<SubmitFactCheckWizardStep>>
 }) {
 	const quoteStateChangeHandler = useDebounce(
@@ -128,7 +127,7 @@ function QuoteInputStep({
 				body: JSON.stringify(payload),
 				headers: { 'Content-Type': 'application/json' },
 			})
-			const newExtractedClaims = (await response.json()) as ExtractedClaim[]
+			const newExtractedClaims = (await response.json()) as CandidateClaim[]
 			setClaimsState(newExtractedClaims)
 			localStorage.setItem(claimsStorageKey, JSON.stringify(newExtractedClaims))
 		} finally {
@@ -159,7 +158,7 @@ Press **Ctrl + Enter** to extract claims.
 				placeholder="Something on the Internet you want fact-checked"
 				name="content"
 				value={quoteState}
-				maxLength={MAX_CHARS_PER_DOCUMENT}
+				maxLength={MAX_CHARS_PER_QUOTE}
 				onChange={event => {
 					quoteStateChangeHandler(event)
 					setQuoteState(event.target.value)
@@ -221,7 +220,7 @@ function SubmitFactChecksStep({
 	claims,
 	origin,
 }: {
-	claims: ExtractedClaim[]
+	claims: CandidateClaim[]
 	origin?: string
 }) {
 	return claims.length == 0 ? (
@@ -248,7 +247,7 @@ function ExtractedClaim({
 	claim,
 	origin,
 }: {
-	claim: ExtractedClaim
+	claim: CandidateClaim
 	origin?: string
 }) {
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
@@ -259,11 +258,11 @@ function ExtractedClaim({
 
 	const user = useOptionalUser()
 
-	async function handleSubmit(claim: ExtractedClaim, pollType: PollType) {
+	async function handleSubmit(claim: CandidateClaim, pollType: PollType) {
 		setIsSubmitting(true)
 		try {
 			const payload = {
-				claim: claim.claim_without_indirection,
+				claim: claim.claim,
 				origin: origin,
 				pollType: pollType,
 			}
@@ -282,7 +281,7 @@ function ExtractedClaim({
 
 	return (
 		<div className="mb-5 flex flex-col rounded-xl border-2 border-solid bg-post p-4 dark:border-gray-700">
-			<div>{claim.claim_without_indirection}</div>
+			<div>{claim.claim}</div>
 			{user && (
 				<div className="flex w-full flex-row">
 					{!submitted && (
