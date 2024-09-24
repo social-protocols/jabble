@@ -10,10 +10,11 @@ import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
 import { type FallacyList } from '#app/repositories/fallacy-detection.ts'
-import { PollType, type CandidateClaim } from '#app/types/api-types.ts'
+import { Artefact, PollType, type CandidateClaim } from '#app/types/api-types.ts'
 import { useDebounce } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#app/components/ui/tabs.tsx'
+import { Icon } from '#app/components/ui/icon.tsx'
 
 enum SubmitFactCheckWizardStep {
 	QuoteInput = 0,
@@ -35,6 +36,7 @@ export default function SubmitFactCheckWizard() {
 	const [fallaciesState, setFallaciesState] = useState<
 		FallacyList | undefined
 	>()
+	const [artefactState, setArtefactState] = useState<Artefact | undefined>()
 
 	useEffect(() => {
 		const storedQuoteState = localStorage.getItem(quoteStateStorageKey)
@@ -67,10 +69,11 @@ export default function SubmitFactCheckWizard() {
 					setClaimsState={setClaimsState}
 					setSubmissionStepState={setSubmissionStepState}
 					setFallaciesState={setFallaciesState}
+					setArtefactState={setArtefactState}
 				/>
 			)}
-			{submissionStepState == SubmitFactCheckWizardStep.ClaimSubmission && (
-				<SubmitFactChecksStep claims={claimsState} fallacies={fallaciesState} />
+			{submissionStepState == SubmitFactCheckWizardStep.ClaimSubmission && artefactState && (
+				<SubmitFactChecksAndFallaciesStep artefact={artefactState} quote={quoteState} claims={claimsState} fallacies={fallaciesState} />
 			)}
 		</div>
 	)
@@ -87,6 +90,7 @@ function QuoteInputStep({
 	setClaimsState,
 	setSubmissionStepState,
 	setFallaciesState,
+	setArtefactState,
 }: {
 	quoteState: string
 	setQuoteState: Dispatch<SetStateAction<string>>
@@ -98,6 +102,7 @@ function QuoteInputStep({
 	setClaimsState: Dispatch<SetStateAction<CandidateClaim[]>>
 	setSubmissionStepState: Dispatch<SetStateAction<SubmitFactCheckWizardStep>>
 	setFallaciesState: Dispatch<SetStateAction<FallacyList | undefined>>
+	setArtefactState: Dispatch<SetStateAction<Artefact | undefined>>
 }) {
 	const quoteStateChangeHandler = useDebounce(
 		(event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -135,13 +140,15 @@ function QuoteInputStep({
 				body: JSON.stringify(payload),
 				headers: { 'Content-Type': 'application/json' },
 			})
-			const { detectedFallacies, candidateClaims } =
+			const { artefact, detectedFallacies, candidateClaims } =
 				(await response.json()) as {
+					artefact: Artefact
 					detectedFallacies: FallacyList
 					candidateClaims: CandidateClaim[]
 				}
 			setClaimsState(candidateClaims)
 			setFallaciesState(detectedFallacies)
+			setArtefactState(artefact)
 			localStorage.setItem(claimsStorageKey, JSON.stringify(candidateClaims))
 		} finally {
 			setIsExtractingClaims(false)
@@ -229,25 +236,40 @@ Press **Ctrl + Enter** to extract claims.
 	)
 }
 
-function SubmitFactChecksStep({
+function SubmitFactChecksAndFallaciesStep({
+	artefact,
+	quote,
 	claims,
 	fallacies,
 }: {
+	artefact: Artefact
+	quote: string
 	claims: CandidateClaim[],
 	fallacies: FallacyList | undefined,
 }) {
+
 	return claims.length == 0 ? (
 		<></>
 	) : (
 		<>
+			<div className="mb-2">
+				<div className="flex flex-col p-4 bg-post rounded-xl">
+					<Icon name="quote" size="xl" className="mr-auto mb-2" />
+					{quote}
+					<div className="mt-2 ml-auto">
+						<Link to={artefact.url} className="text-blue-500 underline">Go to source</Link>
+					</div>
+				</div>
+			</div>
 			<Tabs defaultValue="fallacies" className="w-full">
 				<TabsList className="w-full">
-					<TabsTrigger value="fallacies" className="w-full">Fallacies</TabsTrigger>
-					<TabsTrigger value="claims" className="w-full">Claims</TabsTrigger>
+					<TabsTrigger value="fallacies" className="w-full">Detected Fallacies</TabsTrigger>
+					<TabsTrigger value="claims" className="w-full">Extracted Claims</TabsTrigger>
 				</TabsList>
-				<TabsContent value="fallacies">{JSON.stringify(fallacies)}</TabsContent>
+				<TabsContent value="fallacies">
+					{fallacies && <DetectedFallacies fallacies={fallacies}/>}
+				</TabsContent>
 				<TabsContent value="claims">
-					<Markdown deactivateLinks={false}>{'## Extracted Claims'}</Markdown>
 					<div className="mt-5">
 						{claims.map((claim, index) => {
 							return <ExtractedClaim key={'claim-' + String(index)} claim={claim} />
@@ -255,7 +277,35 @@ function SubmitFactChecksStep({
 					</div>
 				</TabsContent>
 			</Tabs>
+			<Link
+				to="/polls"
+				className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300 text-center"
+			>
+				Finish
+			</Link>
 		</>
+	)
+}
+
+function DetectedFallacies({ fallacies }: { fallacies: FallacyList }) {
+	const fallacyLabelClassNames =
+		'rounded-full bg-yellow-200 px-2 text-black dark:bg-yellow-200'
+
+	return (
+		<div>
+			<ul className="ml-4 list-disc">
+				{fallacies.map(f => (
+					<li key={f.name}>
+						<span className={fallacyLabelClassNames}>{f.name}</span>
+						<span className="ml-2">{(f.probability * 100).toFixed(0)}%</span>
+						<div className="mb-4 mt-1">{f.analysis}</div>
+					</li>
+				))}
+				{fallacies.length == 0 && (
+					<p className="py-6">No fallacies detected.</p>
+				)}
+			</ul>
+		</div>
 	)
 }
 

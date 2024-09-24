@@ -37,6 +37,7 @@ export type IconName =
 	| 'plus-circled'
 	| 'plus'
 	| 'question-mark-circled'
+	| 'quote'
 	| 'reload'
 	| 'reset'
 	| 'sun'

@@ -41,6 +41,7 @@ export const action = async (args: ActionFunctionArgs) => {
 	)
 
 	return {
+		artefact: persistedArtefact,
 		detectedFallacies: detectedFallacies,
 		candidateClaims: extractedClaims,
 	}
