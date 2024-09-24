@@ -5,7 +5,6 @@ export type Post = {
 	id: number
 	parentId: number | null
 	content: string
-	// authorId: string
 	createdAt: number
 	deletedAt: number | null
 	isPrivate: number
