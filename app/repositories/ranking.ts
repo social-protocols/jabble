@@ -9,11 +9,13 @@ import {
 	type CommentTreeState,
 	type FrontPagePost,
 	type PollType,
+	type PollPagePost,
 } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { type DBEffect } from '../types/db-types.ts'
 import { type DB } from '../types/kysely-types.ts'
 import { relativeEntropy } from '../utils/entropy.ts'
+import { getArtefact, getOrCreateArtefact, getQuote } from './polls.ts'
 import {
 	getDescendantCount,
 	getDescendantIds,
@@ -281,7 +283,7 @@ export async function getChronologicalToplevelPosts(
 
 export async function getChronologicalPolls(
 	trx: Transaction<DB>,
-): Promise<FrontPagePost[]> {
+): Promise<PollPagePost[]> {
 	let query = trx
 		.selectFrom('Post')
 		.where('Post.parentId', 'is', null)
@@ -291,10 +293,14 @@ export async function getChronologicalPolls(
 		.leftJoin('PostStats', join =>
 			join.onRef('PostStats.postId', '=', 'Post.id'),
 		)
+		.leftJoin('ClaimToArtefact', 'ClaimToArtefact.claimId', 'Poll.claimId')
+		.leftJoin('Artefact', 'Artefact.id', 'ClaimToArtefact.artefactId')
+		.leftJoin('Quote', 'Quote.artefactId', 'Artefact.id')
 		.where('Poll.pollType', 'is not', null)
 		.selectAll('Post')
 		.selectAll('FullScore')
 		.selectAll('Poll')
+		.select(['Artefact.id as artefactId', 'Quote.id as quoteId'])
 		.select(sql<number>`replies`.as('nReplies'))
 		.orderBy('Post.createdAt', 'desc')
 		.limit(MAX_POSTS_PER_PAGE)
@@ -312,7 +318,12 @@ export async function getChronologicalPolls(
 				isPrivate: post.isPrivate,
 				pollType: post.pollType ? (post.pollType as PollType) : null,
 				parent: post.parentId ? await getPost(trx, post.parentId) : null,
-				fallacyList: await getFallacies(trx, post.id),
+				context: post.artefactId
+					? {
+							artefact: await getArtefact(trx, post.artefactId),
+							quote: post.quoteId ? await getQuote(trx, post.quoteId) : null,
+						}
+					: null,
 				oSize: post.oSize,
 				nTransitiveComments: await getDescendantCount(trx, post.id),
 				p: post.p,

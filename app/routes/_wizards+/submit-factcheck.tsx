@@ -7,14 +7,23 @@ import {
 	useState,
 } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
+import { Icon } from '#app/components/ui/icon.tsx'
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from '#app/components/ui/tabs.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
 import { type FallacyList } from '#app/repositories/fallacy-detection.ts'
-import { Artefact, PollType, type CandidateClaim } from '#app/types/api-types.ts'
+import {
+	type Artefact,
+	PollType,
+	type CandidateClaim,
+} from '#app/types/api-types.ts'
 import { useDebounce } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '#app/components/ui/tabs.tsx'
-import { Icon } from '#app/components/ui/icon.tsx'
 
 enum SubmitFactCheckWizardStep {
 	QuoteInput = 0,
@@ -72,9 +81,15 @@ export default function SubmitFactCheckWizard() {
 					setArtefactState={setArtefactState}
 				/>
 			)}
-			{submissionStepState == SubmitFactCheckWizardStep.ClaimSubmission && artefactState && (
-				<SubmitFactChecksAndFallaciesStep artefact={artefactState} quote={quoteState} claims={claimsState} fallacies={fallaciesState} />
-			)}
+			{submissionStepState == SubmitFactCheckWizardStep.ClaimSubmission &&
+				artefactState && (
+					<SubmitFactChecksAndFallaciesStep
+						artefact={artefactState}
+						quote={quoteState}
+						claims={claimsState}
+						fallacies={fallaciesState}
+					/>
+				)}
 		</div>
 	)
 }
@@ -244,42 +259,49 @@ function SubmitFactChecksAndFallaciesStep({
 }: {
 	artefact: Artefact
 	quote: string
-	claims: CandidateClaim[],
-	fallacies: FallacyList | undefined,
+	claims: CandidateClaim[]
+	fallacies: FallacyList | undefined
 }) {
-
 	return claims.length == 0 ? (
 		<></>
 	) : (
 		<>
 			<div className="mb-2">
-				<div className="flex flex-col p-4 bg-post rounded-xl">
-					<Icon name="quote" size="xl" className="mr-auto mb-2" />
+				<div className="flex flex-col rounded-xl bg-post p-4">
+					<Icon name="quote" size="xl" className="mb-2 mr-auto" />
 					{quote}
-					<div className="mt-2 ml-auto">
-						<Link to={artefact.url} className="text-blue-500 underline">Go to source</Link>
+					<div className="ml-auto mt-2">
+						<Link to={artefact.url} className="text-blue-500 underline">
+							Go to source
+						</Link>
 					</div>
 				</div>
 			</div>
 			<Tabs defaultValue="fallacies" className="w-full">
 				<TabsList className="w-full">
-					<TabsTrigger value="fallacies" className="w-full">Detected Fallacies</TabsTrigger>
-					<TabsTrigger value="claims" className="w-full">Extracted Claims</TabsTrigger>
+					<TabsTrigger value="fallacies" className="w-full">
+						Detected Fallacies
+					</TabsTrigger>
+					<TabsTrigger value="claims" className="w-full">
+						Extracted Claims
+					</TabsTrigger>
 				</TabsList>
 				<TabsContent value="fallacies">
-					{fallacies && <DetectedFallacies fallacies={fallacies}/>}
+					{fallacies && <DetectedFallacies fallacies={fallacies} />}
 				</TabsContent>
 				<TabsContent value="claims">
 					<div className="mt-5">
 						{claims.map((claim, index) => {
-							return <ExtractedClaim key={'claim-' + String(index)} claim={claim} />
+							return (
+								<ExtractedClaim key={'claim-' + String(index)} claim={claim} />
+							)
 						})}
 					</div>
 				</TabsContent>
 			</Tabs>
 			<Link
 				to="/polls"
-				className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300 text-center"
+				className="rounded bg-purple-200 px-4 py-2 text-center text-base font-bold text-black hover:bg-purple-300"
 			>
 				Finish
 			</Link>

@@ -26,6 +26,16 @@ export type FrontPagePost = Post & {
 	p: number
 }
 
+export type PollPagePost = Post & {
+	context: {
+		artefact: Artefact
+		quote: Quote | null
+	} | null
+	oSize: number
+	nTransitiveComments: number
+	p: number
+}
+
 export type Effect = {
 	postId: number
 	commentId: number | null

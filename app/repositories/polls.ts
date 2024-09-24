@@ -45,6 +45,24 @@ export async function getOrCreateArtefact(
 	}
 }
 
+export async function getArtefact(
+	trx: Transaction<DB>,
+	id: number,
+): Promise<Artefact> {
+	const result = await trx
+		.selectFrom('Artefact')
+		.where('id', '=', id)
+		.selectAll()
+		.executeTakeFirstOrThrow()
+
+	return {
+		id: result.id,
+		url: result.url,
+		description: result.description,
+		createdAt: result.createdAt,
+	}
+}
+
 export async function getOrCreateQuote(
 	trx: Transaction<DB>,
 	artefactId: number,
@@ -69,6 +87,24 @@ export async function getOrCreateQuote(
 		})
 		.returningAll()
 		.executeTakeFirstOrThrow()
+}
+
+export async function getQuote(
+	trx: Transaction<DB>,
+	id: number,
+): Promise<Quote> {
+	const result = await trx
+		.selectFrom('Quote')
+		.where('id', '=', id)
+		.selectAll()
+		.executeTakeFirstOrThrow()
+
+	return {
+		id: result.id,
+		artefactId: result.artefactId,
+		quote: result.quote,
+		createdAt: result.createdAt,
+	}
 }
 
 export async function createClaim(

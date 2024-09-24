@@ -1,11 +1,17 @@
 import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
+import { useState } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
+import { Icon } from '#app/components/ui/icon.tsx'
 import PollResult from '#app/components/ui/poll-result.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
 import { db } from '#app/db.ts'
 import { getChronologicalPolls } from '#app/repositories/ranking.ts'
-import { type FrontPagePost } from '#app/types/api-types.ts'
+import {
+	type Artefact,
+	type Quote,
+	type PollPagePost,
+} from '#app/types/api-types.ts'
 
 export async function loader() {
 	const feed = await db.transaction().execute(async trx => {
@@ -14,7 +20,7 @@ export async function loader() {
 	return { feed }
 }
 
-export default function ClaimExtraction() {
+export default function PollsPage() {
 	const { feed } = useLoaderData<typeof loader>()
 
 	return (
@@ -24,7 +30,7 @@ export default function ClaimExtraction() {
 					<Markdown deactivateLinks={false}>{'## Recent Polls'}</Markdown>
 				</div>
 				{feed.map((post, index) => {
-					return <PollPost key={'fact-check-' + String(index)} post={post} />
+					return <PollPost key={'poll-' + String(index)} post={post} />
 				})}
 			</div>
 		</div>
@@ -35,11 +41,13 @@ function PollPost({
 	post,
 	className,
 }: {
-	post: FrontPagePost
+	post: PollPagePost
 	className?: string
 }) {
 	const ageString = moment(post.createdAt).fromNow()
 	const commentString = post.nTransitiveComments == 1 ? 'comment' : 'comments'
+
+	const [showPollPostContext, setShowPollPostContext] = useState<boolean>(false)
 
 	return (
 		<div
@@ -50,17 +58,42 @@ function PollPost({
 		>
 			<div className="flex">
 				<div className="flex w-full flex-col">
-					<div className="mb-2 text-sm opacity-50">{ageString}</div>
+					<div className="mb-2">
+						<span className="text-sm opacity-50">{ageString}</span>
+					</div>
 					<PostContent
 						content={post.content}
 						deactivateLinks={false}
 						linkTo={`/post/${post.id}`}
 					/>
-					<div className="mt-2 text-sm opacity-50">
+					<div className="mt-auto flex flex-wrap space-x-4 text-sm opacity-50">
+						{post.context && (
+							<div>
+								<button
+									onClick={() => {
+										setShowPollPostContext(!showPollPostContext)
+										return false
+									}}
+									className="shrink-0"
+								>
+									{showPollPostContext ? (
+										<Icon name="chevron-down">Hide context</Icon>
+									) : (
+										<Icon name="chevron-right">Show context</Icon>
+									)}
+								</button>
+							</div>
+						)}
 						<Link to={`/post/${post.id}`}>
 							{post.nTransitiveComments} {commentString}
 						</Link>
 					</div>
+					{showPollPostContext && post.context && (
+						<PollPostClaimContext
+							artefact={post.context.artefact}
+							quote={post.context.quote}
+						/>
+					)}
 				</div>
 				<PollResult
 					postId={post.id}
@@ -68,6 +101,39 @@ function PollPost({
 					voteCount={post.oSize}
 					pollType={post.pollType}
 				/>
+			</div>
+		</div>
+	)
+}
+
+function PollPostClaimContext({
+	artefact,
+	quote,
+}: {
+	artefact: Artefact
+	quote: Quote | null
+}) {
+	const artefactSubmissionDate = new Date(artefact.createdAt)
+
+	return (
+		<div className="flex flex-col rounded-lg border-2 border-solid bg-background p-4">
+			{quote && (
+				<>
+					<Icon name="quote" size="xl" className="mb-2 mr-auto" />
+					<div>{quote.quote}</div>
+				</>
+			)}
+			<div className="mt-2 flex flex-col">
+				<span className="font-bold">Retrieved:</span>
+				<span className="italic">
+					from{' '}
+					<Link to={artefact.url} className="text-blue-500 underline">
+						{artefact.url}
+					</Link>
+				</span>
+				<span className="italic">
+					on {artefactSubmissionDate.toDateString()}
+				</span>
 			</div>
 		</div>
 	)
