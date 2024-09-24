@@ -278,7 +278,7 @@ function SubmitFactChecksAndFallaciesStep({
 				</div>
 			</div>
 			<Tabs defaultValue="fallacies" className="w-full">
-				<TabsList className="w-full">
+				<TabsList className="w-full my-4">
 					<TabsTrigger value="fallacies" className="w-full">
 						Detected Fallacies
 					</TabsTrigger>
