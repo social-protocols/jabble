@@ -1,7 +1,7 @@
 import { Link } from '@remix-run/react'
 import { useState } from 'react'
+import { Icon } from '#app/components/ui/icon.tsx'
 import { type Post } from '#app/types/api-types.ts'
-import { Icon } from './icon.tsx'
 import { PostContent } from './post-content.tsx'
 
 export function ParentThread({

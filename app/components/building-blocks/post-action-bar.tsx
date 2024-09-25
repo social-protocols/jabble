@@ -6,6 +6,7 @@ import {
 	useRef,
 } from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
+import { Icon } from '#app/components/ui/icon.tsx'
 import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { toImmutableReplyTree } from '#app/repositories/ranking.ts'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
@@ -19,7 +20,6 @@ import {
 } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
-import { Icon } from './icon.tsx'
 
 export function PostActionBar({
 	post,

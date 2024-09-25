@@ -1,10 +1,10 @@
 import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { useState } from 'react'
+import PollResult from '#app/components/building-blocks/poll-result.tsx'
+import { PostContent } from '#app/components/building-blocks/post-content.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
-import PollResult from '#app/components/ui/poll-result.tsx'
-import { PostContent } from '#app/components/ui/post-content.tsx'
 import { db } from '#app/db.ts'
 import { getChronologicalPolls } from '#app/repositories/ranking.ts'
 import {

@@ -1,6 +1,10 @@
 import { Link, useNavigate } from '@remix-run/react'
 import type * as Immutable from 'immutable'
 import { useRef } from 'react'
+import PollResult from '#app/components/building-blocks/poll-result.tsx'
+import { PostActionBar } from '#app/components/building-blocks/post-action-bar.tsx'
+import { PostContent } from '#app/components/building-blocks/post-content.tsx'
+import { PostInfoBar } from '#app/components/building-blocks/post-info-bar.tsx'
 import { type FallacyList } from '#app/repositories/fallacy-detection.ts'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import {
@@ -13,10 +17,6 @@ import {
 } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
-import PollResult from './poll-result.tsx'
-import { PostActionBar } from './post-action-bar.tsx'
-import { PostContent } from './post-content.tsx'
-import { PostInfoBar } from './post-info-bar.tsx'
 
 export function PostDetails({
 	post,
