@@ -15,7 +15,7 @@ import { invariant } from '#app/utils/misc.tsx'
 import { type DBEffect } from '../types/db-types.ts'
 import { type DB } from '../types/kysely-types.ts'
 import { relativeEntropy } from '../utils/entropy.ts'
-import { getArtefact, getOrCreateArtefact, getQuote } from './polls.ts'
+import { getArtefact, getQuote } from './polls.ts'
 import {
 	getDescendantCount,
 	getDescendantIds,

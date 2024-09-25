@@ -165,6 +165,6 @@ export type QuoteFallacy = {
 	quoteId: number
 	name: string
 	rationale: string
-	probability: number,
+	probability: number
 	createdAt: number
 }

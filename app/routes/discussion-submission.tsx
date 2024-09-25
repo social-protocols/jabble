@@ -1,5 +1,5 @@
-import { Markdown } from "#app/components/markdown.tsx"
-import { PostForm } from "#app/components/ui/post-form.tsx"
+import { Markdown } from '#app/components/markdown.tsx'
+import { PostForm } from '#app/components/ui/post-form.tsx'
 
 export default function OpenDiscussionSubmissionPage() {
 	const infoText = `

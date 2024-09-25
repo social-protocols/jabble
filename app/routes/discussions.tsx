@@ -27,12 +27,12 @@ export default function Explore() {
 
 export function FrontpageFeed({ feed }: { feed: FrontPagePost[] }) {
 	return (
-		<div className="flex flex-col w-full">
+		<div className="flex w-full flex-col">
 			<div className="mx-auto mb-4 w-full px-4">
 				<Markdown deactivateLinks={false}># Recent Discussions</Markdown>
 			</div>
 			<Link
-				className="rounded bg-blue-200 px-4 py-2 ml-auto mb-4 text-base font-bold text-black hover:bg-blue-300"
+				className="mb-4 ml-auto rounded bg-blue-200 px-4 py-2 text-base font-bold text-black hover:bg-blue-300"
 				to={'/discussion-submission'}
 			>
 				start a discussion

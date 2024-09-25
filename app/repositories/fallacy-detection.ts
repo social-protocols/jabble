@@ -1,12 +1,12 @@
-import { Transaction, sql } from 'kysely'
+import { type Transaction, sql } from 'kysely'
 import OpenAI from 'openai'
 import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
 import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
 import { db } from '#app/db.ts'
+import { type QuoteFallacy } from '#app/types/api-types.ts'
+import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { DB } from '#app/types/kysely-types.ts'
-import { QuoteFallacy } from '#app/types/api-types.ts'
 
 // Fallacy detection based on a paper by Helwe et at. (2023): https://arxiv.org/abs/2311.09761
 
@@ -239,21 +239,26 @@ export async function storeQuoteFallacies(
 	quoteId: number,
 	fallacies: FallacyList,
 ): Promise<QuoteFallacy[]> {
-	return await Promise.all(fallacies.map(fallacy => {
-		return trx
-			.insertInto('QuoteFallacy')
-			.values({
-				quoteId: quoteId,
-				name: fallacy.name,
-				rationale: fallacy.analysis,
-				probability: fallacy.probability,
-			})
-			.returningAll()
-			.executeTakeFirstOrThrow()
-	}))
+	return await Promise.all(
+		fallacies.map(fallacy => {
+			return trx
+				.insertInto('QuoteFallacy')
+				.values({
+					quoteId: quoteId,
+					name: fallacy.name,
+					rationale: fallacy.analysis,
+					probability: fallacy.probability,
+				})
+				.returningAll()
+				.executeTakeFirstOrThrow()
+		}),
+	)
 }
 
-export async function getQuoteFallacies(trx: Transaction<DB>, quoteId: number): Promise<QuoteFallacy[]> {
+export async function getQuoteFallacies(
+	trx: Transaction<DB>,
+	quoteId: number,
+): Promise<QuoteFallacy[]> {
 	return await trx
 		.selectFrom('QuoteFallacy')
 		.where('quoteId', '=', quoteId)

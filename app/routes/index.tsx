@@ -1,12 +1,5 @@
-import { useNavigate } from '@remix-run/react'
-import { useEffect } from 'react'
+import { redirect } from '@remix-run/server-runtime'
 
-export default function ClaimExtraction() {
-	const navigate = useNavigate()
-
-	useEffect(() => {
-		navigate('/polls')
-	}, [])
-
-	return (<></>)
+export function loader() {
+	return redirect('/polls')
 }

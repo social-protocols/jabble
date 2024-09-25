@@ -1,10 +1,10 @@
-import { Textarea } from '#app/components/ui/textarea.tsx'
-import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
-import { useDebounce } from '#app/utils/misc.tsx'
+import { useNavigate } from '@remix-run/react'
 import { type ChangeEvent, useState } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
-import { useNavigate } from '@remix-run/react'
+import { Textarea } from '#app/components/ui/textarea.tsx'
+import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
 import { type Artefact, type Quote } from '#app/types/api-types.ts'
+import { useDebounce } from '#app/utils/misc.tsx'
 
 export default function SubmitArtefactPage() {
 	const navigate = useNavigate()
@@ -38,7 +38,11 @@ export default function SubmitArtefactPage() {
 		() => (!isValidUrl(originUrlState) && !(originUrlState == '')) || false,
 	)
 
-	async function handleSubmitArtefact(originUrl: string, description: string | null, quoteContent: string) {
+	async function handleSubmitArtefact(
+		originUrl: string,
+		description: string | null,
+		quoteContent: string,
+	) {
 		setIsExtractingClaims(true)
 		try {
 			const payload = {
@@ -85,7 +89,9 @@ You can then decide which ones you want to post as fact-check or discussion poll
 			<div className="mb-4">
 				<Markdown deactivateLinks={false}>{infoText}</Markdown>
 			</div>
-			<Markdown deactivateLinks={false}>**Something someone said on the Internet**</Markdown>
+			<Markdown deactivateLinks={false}>
+				**Something someone said on the Internet**
+			</Markdown>
 			<Textarea
 				placeholder="Paste something here you want to analyze and potentially fact-check"
 				name="quote"
@@ -97,7 +103,9 @@ You can then decide which ones you want to post as fact-check or discussion poll
 				}}
 				className="mb-2 min-h-[150px] w-full"
 			/>
-			<Markdown deactivateLinks={false}>**Where you found it (must be a valid URL)**</Markdown>
+			<Markdown deactivateLinks={false}>
+				**Where you found it (must be a valid URL)**
+			</Markdown>
 			<Textarea
 				placeholder="https://www.example.com"
 				name="origin-url"
@@ -117,7 +125,9 @@ You can then decide which ones you want to post as fact-check or discussion poll
 			{urlError && originUrlState !== '' && (
 				<div className="text-sm text-red-500">Please enter a valid URL.</div>
 			)}
-			<Markdown deactivateLinks={false}>**Short description of the source (optional)**</Markdown>
+			<Markdown deactivateLinks={false}>
+				**Short description of the source (optional)**
+			</Markdown>
 			<Textarea
 				placeholder="An example site, for illustrative purposes"
 				name="description"

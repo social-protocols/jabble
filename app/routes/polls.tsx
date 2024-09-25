@@ -26,11 +26,11 @@ export default function PollsPage() {
 	return (
 		<div>
 			<div className="flex flex-col">
-				<div className="px-4 mb-4">
+				<div className="mb-4 px-4">
 					<Markdown deactivateLinks={false}>{'## Recent Polls'}</Markdown>
 				</div>
 				<Link
-					className="rounded-lg bg-red-200 p-4 mb-4 ml-auto hover:bg-red-400"
+					className="mb-4 ml-auto rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
 					to={'/artefact-submission'}
 				>
 					submit an artefact

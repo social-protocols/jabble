@@ -1,7 +1,7 @@
+import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
-import {
-	useState,
-} from 'react'
+import { useState } from 'react'
+import { z } from 'zod'
 import { Icon } from '#app/components/ui/icon.tsx'
 import {
 	Tabs,
@@ -9,7 +9,11 @@ import {
 	TabsList,
 	TabsTrigger,
 } from '#app/components/ui/tabs.tsx'
-import { getQuoteFallacies, type FallacyList } from '#app/repositories/fallacy-detection.ts'
+import { db } from '#app/db.ts'
+import { getCandidateClaims } from '#app/repositories/claim-extraction.ts'
+import { getQuoteFallacies } from '#app/repositories/fallacy-detection.ts'
+import { getArtefact, getQuote } from '#app/repositories/polls.ts'
+import { getPost } from '#app/repositories/post.ts'
 import {
 	type Artefact,
 	PollType,
@@ -19,13 +23,6 @@ import {
 	type Post,
 } from '#app/types/api-types.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
-import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import { db } from '#app/db.ts'
-import { z } from 'zod'
-import { getArtefact, getQuote } from '#app/repositories/polls.ts'
-import { getCandidateClaims } from '#app/repositories/claim-extraction.ts'
-import { getPost } from '#app/repositories/post.ts'
-
 
 const artefactIdSchema = z.coerce.number()
 const quoteIdSchema = z.coerce.number()
@@ -48,11 +45,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
 		quoteFallacies: QuoteFallacy[]
 	} = await db.transaction().execute(async trx => {
 		const candidateClaims = await getCandidateClaims(trx, artefactId, quoteId)
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const submittedClaimsPostIds = candidateClaims
 			.filter(candidate => candidate.postId !== null)
-			.map(candidate => candidate.postId!)
-		const posts = await Promise.all(submittedClaimsPostIds.map(async postId => await getPost(trx, postId)))
+			.map(candidate => candidate.postId!) // eslint-disable-line @typescript-eslint/no-non-null-assertion
+		const posts = await Promise.all(
+			submittedClaimsPostIds.map(async postId => await getPost(trx, postId)),
+		)
 		const quoteFallacies = await getQuoteFallacies(trx, quoteId)
 		return {
 			artefact: await getArtefact(trx, artefactId),
@@ -73,7 +71,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 export default function SubmitFactCheckWizard() {
-	const { artefact, quote, candidateClaims, posts, quoteFallacies } = useLoaderData<typeof loader>()
+	const { artefact, quote, candidateClaims, posts, quoteFallacies } =
+		useLoaderData<typeof loader>()
+
+	console.log(posts) // TODO
 
 	return (
 		<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
@@ -114,7 +115,7 @@ function SubmitFactChecksAndFallaciesStep({
 				</div>
 			</div>
 			<Tabs defaultValue="fallacies" className="w-full">
-				<TabsList className="w-full my-4">
+				<TabsList className="my-4 w-full">
 					<TabsTrigger value="fallacies" className="w-full">
 						Detected Fallacies
 					</TabsTrigger>
