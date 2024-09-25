@@ -72,6 +72,12 @@ function PollPost({
 						deactivateLinks={false}
 						linkTo={`/post/${post.id}`}
 					/>
+					{showPollPostContext && post.context && (
+						<PollPostClaimContext
+							artefact={post.context.artefact}
+							quote={post.context.quote}
+						/>
+					)}
 					<div className="mt-auto flex flex-wrap space-x-4 text-sm opacity-50">
 						{post.context && (
 							<div>
@@ -83,7 +89,7 @@ function PollPost({
 									className="shrink-0"
 								>
 									{showPollPostContext ? (
-										<Icon name="chevron-down">Hide context</Icon>
+										<Icon name="chevron-up">Hide context</Icon>
 									) : (
 										<Icon name="chevron-right">Show context</Icon>
 									)}
@@ -94,12 +100,6 @@ function PollPost({
 							{post.nTransitiveComments} {commentString}
 						</Link>
 					</div>
-					{showPollPostContext && post.context && (
-						<PollPostClaimContext
-							artefact={post.context.artefact}
-							quote={post.context.quote}
-						/>
-					)}
 				</div>
 				<PollResult
 					postId={post.id}
@@ -122,7 +122,7 @@ function PollPostClaimContext({
 	const artefactSubmissionDate = new Date(artefact.createdAt)
 
 	return (
-		<div className="flex flex-col rounded-lg border-2 border-solid bg-background p-4">
+		<div className="flex flex-col rounded-lg border-2 border-solid bg-background p-4 my-2">
 			{quote && (
 				<>
 					<Icon name="quote" size="xl" className="mb-2 mr-auto" />

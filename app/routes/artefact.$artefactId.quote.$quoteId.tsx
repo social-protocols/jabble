@@ -23,6 +23,12 @@ import {
 	type Post,
 } from '#app/types/api-types.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from '#app/components/ui/dropdown-menu.tsx'
 
 const artefactIdSchema = z.coerce.number()
 const quoteIdSchema = z.coerce.number()
@@ -76,41 +82,25 @@ export default function SubmitFactCheckWizard() {
 
 	console.log(posts) // TODO
 
+	const artefactSubmissionDate = new Date(artefact.createdAt)
+
 	return (
 		<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
-			<SubmitFactChecksAndFallaciesStep
-				artefact={artefact}
-				quote={quote.quote}
-				claims={candidateClaims}
-				fallacies={quoteFallacies}
-			/>
-		</div>
-	)
-}
-
-function SubmitFactChecksAndFallaciesStep({
-	artefact,
-	quote,
-	claims,
-	fallacies,
-}: {
-	artefact: Artefact
-	quote: string
-	claims: CandidateClaim[]
-	fallacies: QuoteFallacy[]
-}) {
-	return claims.length == 0 ? (
-		<></>
-	) : (
-		<>
 			<div className="mb-2">
-				<div className="flex flex-col rounded-xl bg-post p-4">
+				<div className="flex flex-col rounded-xl bg-post p-4 border-solid border-2">
 					<Icon name="quote" size="xl" className="mb-2 mr-auto" />
-					{quote}
-					<div className="ml-auto mt-2">
-						<Link to={artefact.url} className="text-blue-500 underline">
-							Go to source
-						</Link>
+					{quote.quote}
+					<div className="mt-2 flex flex-col">
+						<span className="font-bold">Retrieved:</span>
+						<span className="italic">
+							from{' '}
+							<Link to={artefact.url} className="text-blue-500 underline">
+								{artefact.url}
+							</Link>
+						</span>
+						<span className="italic">
+							on {artefactSubmissionDate.toDateString()}
+						</span>
 					</div>
 				</div>
 			</div>
@@ -124,15 +114,23 @@ function SubmitFactChecksAndFallaciesStep({
 					</TabsTrigger>
 				</TabsList>
 				<TabsContent value="fallacies">
-					{fallacies && <DetectedFallacies fallacies={fallacies} />}
+					{quoteFallacies && <DetectedFallacies fallacies={quoteFallacies} />}
 				</TabsContent>
 				<TabsContent value="claims">
 					<div className="mt-5">
-						{claims.map((claim, index) => {
-							return (
-								<ExtractedClaim key={'claim-' + String(index)} claim={claim} />
-							)
-						})}
+						{candidateClaims.length == 0 ? (
+							<div>
+								No claims extracted
+							</div>
+						) : (
+							<>
+							{candidateClaims.map((claim, index) => {
+								return (
+									<ExtractedClaim key={'claim-' + String(index)} claim={claim} />
+								)
+							})}
+							</>
+						)}
 					</div>
 				</TabsContent>
 			</Tabs>
@@ -142,7 +140,7 @@ function SubmitFactChecksAndFallaciesStep({
 			>
 				Finish
 			</Link>
-		</>
+		</div>
 	)
 }
 
@@ -169,7 +167,8 @@ function DetectedFallacies({ fallacies }: { fallacies: QuoteFallacy[] }) {
 }
 
 function ExtractedClaim({ claim }: { claim: CandidateClaim }) {
-	const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+	const [isSubmittingFactCheck, setIsSubmittingFactCheck] = useState<boolean>(false)
+	const [isSubmittingOpinionPoll, setIsSubmittingOpinionPoll] = useState<boolean>(false)
 	const [submitted, setSubmitted] = useState<boolean>(false)
 	const [newSubmissionPostId, setNewSubmissionPostId] = useState<number | null>(
 		null,
@@ -178,7 +177,12 @@ function ExtractedClaim({ claim }: { claim: CandidateClaim }) {
 	const user = useOptionalUser()
 
 	async function handleSubmit(claim: CandidateClaim, pollType: PollType) {
-		setIsSubmitting(true)
+		if (pollType == PollType.FactCheck) {
+			setIsSubmittingFactCheck(true)
+		}
+		else {
+			setIsSubmittingOpinionPoll(true)
+		}
 		try {
 			const payload = {
 				candidateClaimId: claim.id,
@@ -194,7 +198,12 @@ function ExtractedClaim({ claim }: { claim: CandidateClaim }) {
 			setSubmitted(true)
 			setNewSubmissionPostId(newPostId)
 		} finally {
-			setIsSubmitting(false)
+		if (pollType == PollType.FactCheck) {
+			setIsSubmittingFactCheck(false)
+		}
+		else {
+			setIsSubmittingOpinionPoll(false)
+		}
 		}
 	}
 
@@ -204,28 +213,53 @@ function ExtractedClaim({ claim }: { claim: CandidateClaim }) {
 			{user && (
 				<div className="flex w-full flex-row">
 					{!submitted && (
-						<button
-							disabled={isSubmitting}
-							className="ml-auto mt-2 rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
-							onClick={e => {
-								e.preventDefault()
-								handleSubmit(claim, PollType.FactCheck)
-							}}
-						>
-							{isSubmitting ? 'Submitting...' : 'Create Fact Check'}
-						</button>
-					)}
-					{!submitted && (
-						<button
-							disabled={isSubmitting}
-							className="ml-2 mt-2 rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
-							onClick={e => {
-								e.preventDefault()
-								handleSubmit(claim, PollType.Opinion)
-							}}
-						>
-							{isSubmitting ? 'Submitting...' : 'Create Opinion Poll'}
-						</button>
+						<div className="ml-auto mt-2">
+							<DropdownMenu>
+								<DropdownMenuTrigger>
+									<button
+										className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
+									>
+										<Icon name="lightning-bolt">Submit poll</Icon>
+									</button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent>
+									<DropdownMenuItem>
+										<button
+											disabled={isSubmittingFactCheck}
+											className="flex"
+											onClick={e => {
+												e.preventDefault()
+												handleSubmit(claim, PollType.FactCheck)
+											}}
+										>
+											{isSubmittingFactCheck ? (
+												<>
+													Submitting
+													<Icon name="update" className="animate-spin ml-2" />
+												</>
+											) : <>Fact Check</>}
+										</button>
+									</DropdownMenuItem>
+									<DropdownMenuItem>
+										<button
+											disabled={isSubmittingOpinionPoll}
+											className="flex"
+											onClick={e => {
+												e.preventDefault()
+												handleSubmit(claim, PollType.Opinion)
+											}}
+										>
+											{isSubmittingOpinionPoll ? (
+												<>
+													Submitting
+													<Icon name="update" className="animate-spin ml-2" />
+												</>
+											) : <>Opinion Poll</>}
+										</button>
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
 					)}
 					{submitted && (
 						<Link

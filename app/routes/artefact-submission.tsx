@@ -1,35 +1,42 @@
 import { useNavigate } from '@remix-run/react'
-import { type ChangeEvent, useState } from 'react'
+import { type ChangeEvent, useState, useEffect } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
 import { type Artefact, type Quote } from '#app/types/api-types.ts'
 import { useDebounce } from '#app/utils/misc.tsx'
+import { Icon } from '#app/components/ui/icon.tsx'
 
 export default function SubmitArtefactPage() {
 	const navigate = useNavigate()
 
 	const quoteStateStorageKey = 'claim-extraction-statement'
-	const claimsStorageKey = 'extracted-claims'
 	const originUrlStorageKey = 'claim-extraction-origin'
+	const descriptionStorageKey = 'claim-extraction-description'
 
 	const [quoteState, setQuoteState] = useState<string>('')
 	const [originUrlState, setOriginUrlState] = useState<string>('')
 	const [descriptionState, setDescriptionState] = useState<string>('')
 
-	const [isExtractingClaims, setIsExtractingClaims] = useState<boolean>(false)
+	const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
 	const quoteStateChangeHandler = useDebounce(
 		(event: ChangeEvent<HTMLTextAreaElement>) => {
-			localStorage.removeItem(claimsStorageKey)
-			localStorage.setItem(quoteStateStorageKey, event.target.value)
+			sessionStorage.setItem(quoteStateStorageKey, event.target.value)
 		},
 		500,
 	)
 
 	const originUrlChangeHandler = useDebounce(
 		(event: ChangeEvent<HTMLTextAreaElement>) => {
-			localStorage.setItem(originUrlStorageKey, event.target.value)
+			sessionStorage.setItem(originUrlStorageKey, event.target.value)
+		},
+		500,
+	)
+
+	const descriptionChangeHandler = useDebounce(
+		(event: ChangeEvent<HTMLTextAreaElement>) => {
+			sessionStorage.setItem(descriptionStorageKey, event.target.value)
 		},
 		500,
 	)
@@ -38,12 +45,29 @@ export default function SubmitArtefactPage() {
 		() => (!isValidUrl(originUrlState) && !(originUrlState == '')) || false,
 	)
 
+	useEffect(() => {
+		const storedQuoteState = sessionStorage.getItem(quoteStateStorageKey)
+		if (storedQuoteState !== null) {
+			setQuoteState(storedQuoteState)
+		}
+
+		const storedOriginValue = sessionStorage.getItem(originUrlStorageKey)
+		if (storedOriginValue !== null) {
+			setOriginUrlState(storedOriginValue)
+		}
+
+		const storedDescription = sessionStorage.getItem(descriptionStorageKey)
+		if (storedDescription !== null) {
+			setDescriptionState(storedDescription)
+		}
+	}, [])
+
 	async function handleSubmitArtefact(
 		originUrl: string,
 		description: string | null,
 		quoteContent: string,
 	) {
-		setIsExtractingClaims(true)
+		setIsSubmitting(true)
 		try {
 			const payload = {
 				url: originUrl,
@@ -68,7 +92,10 @@ export default function SubmitArtefactPage() {
 			}
 			navigate(`/artefact/${artefact.id}/quote/${quote.id}`)
 		} finally {
-			setIsExtractingClaims(false)
+			setIsSubmitting(false)
+			sessionStorage.removeItem(quoteStateStorageKey)
+			sessionStorage.removeItem(originUrlStorageKey)
+			sessionStorage.removeItem(descriptionStorageKey)
 		}
 	}
 
@@ -133,7 +160,7 @@ You can then decide which ones you want to post as fact-check or discussion poll
 				name="description"
 				value={descriptionState}
 				onChange={event => {
-					originUrlChangeHandler(event)
+					descriptionChangeHandler(event)
 					setDescriptionState(event.target.value)
 				}}
 				className="mb-2 min-h-[70px] w-full"
@@ -144,14 +171,21 @@ You can then decide which ones you want to post as fact-check or discussion poll
 				</div>
 				<button
 					title="Submit artefact"
-					disabled={isExtractingClaims}
+					disabled={isSubmitting}
 					className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
 					onClick={e => {
 						e.preventDefault()
 						handleSubmitArtefact(originUrlState, descriptionState, quoteState)
 					}}
 				>
-					{isExtractingClaims ? 'Submitting...' : 'Submit'}
+					{isSubmitting ? (
+						<>
+							Submitting
+							<Icon name="update" className="animate-spin ml-2" />
+						</>
+					) : (
+						<>Submit</>
+					)}
 				</button>
 			</div>
 		</div>
