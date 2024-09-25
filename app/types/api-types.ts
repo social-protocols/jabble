@@ -159,3 +159,12 @@ export type CandidateClaim = {
 	postId: number | null
 	createdAt: number
 }
+
+export type QuoteFallacy = {
+	id: number
+	quoteId: number
+	name: string
+	rationale: string
+	probability: number,
+	createdAt: number
+}

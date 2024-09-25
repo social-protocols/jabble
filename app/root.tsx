@@ -270,9 +270,9 @@ export default withSentry(AppWithProviders)
 function NavigationMenu() {
 	const location = useLocation()
 
-	const baseNavigationClassName = 'rounded py-1 px-2 hover:bg-post'
-	const fallacyDetectionClassName =
-		location.pathname == '/fallacy-detection' ? 'bg-post' : ''
+	const baseNavigationClassName = 'rounded-md py-1 px-2 hover:bg-post'
+	// const fallacyDetectionClassName =
+	// 	location.pathname == '/fallacy-detection' ? 'bg-post' : ''
 	const pollsClassName = location.pathname == '/polls' ? 'bg-post' : ''
 	const discussionsClassName =
 		location.pathname == '/discussions' ? 'bg-post' : ''
@@ -291,12 +291,12 @@ function NavigationMenu() {
 			>
 				<Icon name="chat-bubble">Open Discussions</Icon>
 			</Link>
-			<Link
+			{/*<Link
 				to="/fallacy-detection"
 				className={baseNavigationClassName + ' ' + fallacyDetectionClassName}
 			>
 				<Icon name="magic-wand">Fallacy Detection</Icon>
-			</Link>
+			</Link>*/}
 		</>
 	)
 }

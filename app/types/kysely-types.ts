@@ -186,6 +186,15 @@ export type CandidateClaim = {
 	createdAt: Generated<number>
 }
 
+export type QuoteFallacy = {
+	id: Generated<number>
+	quoteId: number
+	name: string
+	rationale: string
+	probability: number
+	createdAt: Generated<number>
+}
+
 export type DB = {
 	Vote: Vote
 	Password: Password
@@ -212,4 +221,5 @@ export type DB = {
 	Quote: Quote
 	ClaimToArtefact: ClaimToArtefact
 	CandidateClaim: CandidateClaim
+	QuoteFallacy: QuoteFallacy
 }

@@ -1,10 +1,12 @@
-import { sql } from 'kysely'
+import { Transaction, sql } from 'kysely'
 import OpenAI from 'openai'
 import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
 import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
 import { db } from '#app/db.ts'
 import { invariant } from '#app/utils/misc.tsx'
+import { DB } from '#app/types/kysely-types.ts'
+import { QuoteFallacy } from '#app/types/api-types.ts'
 
 // Fallacy detection based on a paper by Helwe et at. (2023): https://arxiv.org/abs/2311.09761
 
@@ -230,6 +232,33 @@ E₁ is part of E, E has property P. Therefore, E₁ has property P.
 	const event = choice.message.parsed
 	invariant(event != null, 'could not parse result')
 	return event.detected_fallacies
+}
+
+export async function storeQuoteFallacies(
+	trx: Transaction<DB>,
+	quoteId: number,
+	fallacies: FallacyList,
+): Promise<QuoteFallacy[]> {
+	return await Promise.all(fallacies.map(fallacy => {
+		return trx
+			.insertInto('QuoteFallacy')
+			.values({
+				quoteId: quoteId,
+				name: fallacy.name,
+				rationale: fallacy.analysis,
+				probability: fallacy.probability,
+			})
+			.returningAll()
+			.executeTakeFirstOrThrow()
+	}))
+}
+
+export async function getQuoteFallacies(trx: Transaction<DB>, quoteId: number): Promise<QuoteFallacy[]> {
+	return await trx
+		.selectFrom('QuoteFallacy')
+		.where('quoteId', '=', quoteId)
+		.selectAll()
+		.execute()
 }
 
 export async function storeFallacies(

@@ -119,5 +119,24 @@ export async function up(db: Kysely<any>): Promise<void> {
 				, createdAt  integer not null default (unixepoch('subsec')*1000)
 			)
 		`.execute(trx)
+
+		await sql`
+			create table QuoteFallacy (
+				  id          integer not null primary key autoincrement
+				, quoteId     integer not null references Quote(id)
+				, name        text    not null
+				, rationale   text    not null
+				, probability real    not null
+				, createdAt   integer not null default (unixepoch('subsec')*1000)
+			)
+		`.execute(trx)
+
+		await sql`
+			drop table ClaimToClaimContext
+		`.execute(trx)
+
+		await sql`
+			drop table ClaimContext
+		`.execute(trx)
 	})
 }

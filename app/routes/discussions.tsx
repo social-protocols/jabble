@@ -3,7 +3,6 @@ import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { Markdown } from '#app/components/markdown.tsx'
 import { PostContent } from '#app/components/ui/post-content.tsx'
-import { PostForm } from '#app/components/ui/post-form.tsx'
 import { db } from '#app/db.ts'
 import * as rankingTs from '#app/repositories/ranking.ts'
 import { type FrontPagePost } from '#app/types/api-types.ts'
@@ -27,23 +26,17 @@ export default function Explore() {
 }
 
 export function FrontpageFeed({ feed }: { feed: FrontPagePost[] }) {
-	const infoText = `
-# Jabble Discussions
-
-This is a place to have open discussions.
-`.trim()
-
 	return (
-		<div>
-			<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
-				<div className="mb-4">
-					<Markdown deactivateLinks={false}>{infoText}</Markdown>
-				</div>
-				<PostForm />
-			</div>
+		<div className="flex flex-col w-full">
 			<div className="mx-auto mb-4 w-full px-4">
 				<Markdown deactivateLinks={false}># Recent Discussions</Markdown>
 			</div>
+			<Link
+				className="rounded bg-blue-200 px-4 py-2 ml-auto mb-4 text-base font-bold text-black hover:bg-blue-300"
+				to={'/discussion-submission'}
+			>
+				start a discussion
+			</Link>
 			<PostList feed={feed} />
 		</div>
 	)

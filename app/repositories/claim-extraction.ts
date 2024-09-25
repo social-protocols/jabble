@@ -129,7 +129,7 @@ async function insertCandidateClaim(
 		.executeTakeFirstOrThrow()
 }
 
-async function getCandidateClaims(
+export async function getCandidateClaims(
 	trx: Transaction<DB>,
 	artefactId: number,
 	quoteId: number,

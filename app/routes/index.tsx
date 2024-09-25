@@ -1,22 +1,12 @@
-import {
-	Link,
-	// useLoaderData,
-} from '@remix-run/react'
-
-// export async function loader() {
-// 	const testContent = "TEST CONTENT"
-// 	return { testContent }
-// }
+import { useNavigate } from '@remix-run/react'
+import { useEffect } from 'react'
 
 export default function ClaimExtraction() {
-	// const { testContent } = useLoaderData<typeof loader>()
+	const navigate = useNavigate()
 
-	return (
-		<Link
-			className="rounded-lg bg-red-200 p-4 hover:bg-red-700"
-			to={'/submit-factcheck'}
-		>
-			submit a fact-check request
-		</Link>
-	)
+	useEffect(() => {
+		navigate('/polls')
+	}, [])
+
+	return (<></>)
 }
