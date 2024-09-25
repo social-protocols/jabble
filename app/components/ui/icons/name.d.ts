@@ -20,6 +20,7 @@ export type IconName =
 	| 'envelope-closed'
 	| 'exit'
 	| 'file-text'
+	| 'gear'
 	| 'github-logo'
 	| 'hand'
 	| 'laptop'

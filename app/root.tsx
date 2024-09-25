@@ -33,6 +33,13 @@ import { GeneralErrorBoundary } from './components/error-boundary.tsx'
 import { ErrorList } from './components/forms.tsx'
 import { EpicProgress } from './components/progress-bar.tsx'
 import { EpicToaster } from './components/toaster.tsx'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from './components/ui/dropdown-menu.tsx'
 import { href as iconsHref, Icon } from './components/ui/icon.tsx'
 import { SITE_NAME } from './site.ts'
 import tailwindStyleSheetUrl from './styles/tailwind.css'
@@ -306,26 +313,35 @@ function UserMenu() {
 	const location = useLocation()
 
 	const baseNavigationClassName = 'rounded py-1 px-2 hover:bg-post'
-	const userSettingsClassName =
-		location.pathname == '/settings/profile' ? 'bg-post' : ''
 	const loginClassName = location.pathname == '/login' ? 'bg-post' : ''
 	const signupClassName = location.pathname == '/signup' ? 'bg-post' : ''
 
 	return user ? (
 		<>
-			<Link
-				to="/settings/profile"
-				className={baseNavigationClassName + ' ' + userSettingsClassName}
-			>
-				<Icon name="person">{user.username}</Icon>
-			</Link>
-			<Form action="/logout" method="POST">
-				<button type="submit" className={baseNavigationClassName}>
-					<Icon className="text-body-md" name="exit">
-						Logout
-					</Icon>
-				</button>
-			</Form>
+			<DropdownMenu>
+				<DropdownMenuTrigger>
+					<button className="rounded border-2 border-solid bg-post px-4 py-2">
+						<Icon name="person">{user.username}</Icon>
+					</button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent>
+					<DropdownMenuItem>
+						<Link to="/settings/profile">
+							<Icon name="gear">Settings</Icon>
+						</Link>
+					</DropdownMenuItem>
+					<DropdownMenuSeparator />
+					<DropdownMenuItem>
+						<Form action="/logout" method="POST">
+							<button type="submit">
+								<Icon className="text-body-md" name="exit">
+									Logout
+								</Icon>
+							</button>
+						</Form>
+					</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
 		</>
 	) : (
 		<>
