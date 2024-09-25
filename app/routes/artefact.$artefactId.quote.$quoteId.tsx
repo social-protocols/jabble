@@ -76,7 +76,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 	})
 }
 
-export default function SubmitFactCheckWizard() {
+export default function ArtefactQuoteEditingPage() {
 	const { artefact, quote, candidateClaims, posts, quoteFallacies } =
 		useLoaderData<typeof loader>()
 
@@ -217,7 +217,7 @@ function ExtractedClaim({ claim }: { claim: CandidateClaim }) {
 						<div className="ml-auto mt-2">
 							<DropdownMenu>
 								<DropdownMenuTrigger>
-									<button className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300">
+									<button className="rounded bg-purple-200 px-2 py-1 text-base font-bold text-black hover:bg-purple-300">
 										<Icon name="lightning-bolt">Submit poll</Icon>
 									</button>
 								</DropdownMenuTrigger>
