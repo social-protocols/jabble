@@ -122,7 +122,7 @@ function PollPostClaimContext({
 	const artefactSubmissionDate = new Date(artefact.createdAt)
 
 	return (
-		<div className="flex flex-col rounded-lg border-2 border-solid bg-background p-4 my-2">
+		<div className="my-2 flex flex-col rounded-lg border-2 border-solid bg-background p-4">
 			{quote && (
 				<>
 					<Icon name="quote" size="xl" className="mb-2 mr-auto" />

@@ -2,6 +2,12 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import { useState } from 'react'
 import { z } from 'zod'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from '#app/components/ui/dropdown-menu.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import {
 	Tabs,
@@ -23,12 +29,6 @@ import {
 	type Post,
 } from '#app/types/api-types.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from '#app/components/ui/dropdown-menu.tsx'
 
 const artefactIdSchema = z.coerce.number()
 const quoteIdSchema = z.coerce.number()
@@ -87,7 +87,7 @@ export default function SubmitFactCheckWizard() {
 	return (
 		<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
 			<div className="mb-2">
-				<div className="flex flex-col rounded-xl bg-post p-4 border-solid border-2">
+				<div className="flex flex-col rounded-xl border-2 border-solid bg-post p-4">
 					<Icon name="quote" size="xl" className="mb-2 mr-auto" />
 					{quote.quote}
 					<div className="mt-2 flex flex-col">
@@ -119,16 +119,17 @@ export default function SubmitFactCheckWizard() {
 				<TabsContent value="claims">
 					<div className="mt-5">
 						{candidateClaims.length == 0 ? (
-							<div>
-								No claims extracted
-							</div>
+							<div>No claims extracted</div>
 						) : (
 							<>
-							{candidateClaims.map((claim, index) => {
-								return (
-									<ExtractedClaim key={'claim-' + String(index)} claim={claim} />
-								)
-							})}
+								{candidateClaims.map((claim, index) => {
+									return (
+										<ExtractedClaim
+											key={'claim-' + String(index)}
+											claim={claim}
+										/>
+									)
+								})}
 							</>
 						)}
 					</div>
@@ -167,8 +168,10 @@ function DetectedFallacies({ fallacies }: { fallacies: QuoteFallacy[] }) {
 }
 
 function ExtractedClaim({ claim }: { claim: CandidateClaim }) {
-	const [isSubmittingFactCheck, setIsSubmittingFactCheck] = useState<boolean>(false)
-	const [isSubmittingOpinionPoll, setIsSubmittingOpinionPoll] = useState<boolean>(false)
+	const [isSubmittingFactCheck, setIsSubmittingFactCheck] =
+		useState<boolean>(false)
+	const [isSubmittingOpinionPoll, setIsSubmittingOpinionPoll] =
+		useState<boolean>(false)
 	const [submitted, setSubmitted] = useState<boolean>(false)
 	const [newSubmissionPostId, setNewSubmissionPostId] = useState<number | null>(
 		null,
@@ -179,8 +182,7 @@ function ExtractedClaim({ claim }: { claim: CandidateClaim }) {
 	async function handleSubmit(claim: CandidateClaim, pollType: PollType) {
 		if (pollType == PollType.FactCheck) {
 			setIsSubmittingFactCheck(true)
-		}
-		else {
+		} else {
 			setIsSubmittingOpinionPoll(true)
 		}
 		try {
@@ -198,12 +200,11 @@ function ExtractedClaim({ claim }: { claim: CandidateClaim }) {
 			setSubmitted(true)
 			setNewSubmissionPostId(newPostId)
 		} finally {
-		if (pollType == PollType.FactCheck) {
-			setIsSubmittingFactCheck(false)
-		}
-		else {
-			setIsSubmittingOpinionPoll(false)
-		}
+			if (pollType == PollType.FactCheck) {
+				setIsSubmittingFactCheck(false)
+			} else {
+				setIsSubmittingOpinionPoll(false)
+			}
 		}
 	}
 
@@ -216,9 +217,7 @@ function ExtractedClaim({ claim }: { claim: CandidateClaim }) {
 						<div className="ml-auto mt-2">
 							<DropdownMenu>
 								<DropdownMenuTrigger>
-									<button
-										className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
-									>
+									<button className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300">
 										<Icon name="lightning-bolt">Submit poll</Icon>
 									</button>
 								</DropdownMenuTrigger>
@@ -235,9 +234,11 @@ function ExtractedClaim({ claim }: { claim: CandidateClaim }) {
 											{isSubmittingFactCheck ? (
 												<>
 													Submitting
-													<Icon name="update" className="animate-spin ml-2" />
+													<Icon name="update" className="ml-2 animate-spin" />
 												</>
-											) : <>Fact Check</>}
+											) : (
+												<>Fact Check</>
+											)}
 										</button>
 									</DropdownMenuItem>
 									<DropdownMenuItem>
@@ -252,9 +253,11 @@ function ExtractedClaim({ claim }: { claim: CandidateClaim }) {
 											{isSubmittingOpinionPoll ? (
 												<>
 													Submitting
-													<Icon name="update" className="animate-spin ml-2" />
+													<Icon name="update" className="ml-2 animate-spin" />
 												</>
-											) : <>Opinion Poll</>}
+											) : (
+												<>Opinion Poll</>
+											)}
 										</button>
 									</DropdownMenuItem>
 								</DropdownMenuContent>

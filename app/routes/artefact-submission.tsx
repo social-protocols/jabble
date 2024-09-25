@@ -1,11 +1,11 @@
 import { useNavigate } from '@remix-run/react'
 import { type ChangeEvent, useState, useEffect } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
+import { Icon } from '#app/components/ui/icon.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
 import { type Artefact, type Quote } from '#app/types/api-types.ts'
 import { useDebounce } from '#app/utils/misc.tsx'
-import { Icon } from '#app/components/ui/icon.tsx'
 
 export default function SubmitArtefactPage() {
 	const navigate = useNavigate()
@@ -181,7 +181,7 @@ You can then decide which ones you want to post as fact-check or discussion poll
 					{isSubmitting ? (
 						<>
 							Submitting
-							<Icon name="update" className="animate-spin ml-2" />
+							<Icon name="update" className="ml-2 animate-spin" />
 						</>
 					) : (
 						<>Submit</>
