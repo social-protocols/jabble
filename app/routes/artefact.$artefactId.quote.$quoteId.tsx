@@ -49,7 +49,9 @@ export async function loader({ params }: LoaderFunctionArgs) {
 			.filter(candidate => candidate.postId !== null)
 			.map(candidate => candidate.postId!) // eslint-disable-line @typescript-eslint/no-non-null-assertion
 		const posts = await Promise.all(
-			submittedClaimsPostIds.map(async postId => await getPollPost(trx, postId)),
+			submittedClaimsPostIds.map(
+				async postId => await getPollPost(trx, postId),
+			),
 		)
 		const quoteFallacies = await getQuoteFallacies(trx, quoteId)
 		return {
@@ -71,13 +73,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 export default function ArtefactQuoteEditingPage() {
-	const {
-		artefact,
-		quote,
-		candidateClaims,
-		posts,
-		quoteFallacies,
-	} = useLoaderData<typeof loader>()
+	const { artefact, quote, candidateClaims, posts, quoteFallacies } =
+		useLoaderData<typeof loader>()
 
 	const artefactSubmissionDate = new Date(artefact.createdAt)
 
@@ -115,8 +112,8 @@ export default function ArtefactQuoteEditingPage() {
 				</TabsList>
 				<TabsContent value="polls">
 					<div>
-						{posts.map(post => {
-							return <PollPost post={post} />
+						{posts.map((post, idx) => {
+							return <PollPost key={`poll-post-${idx}`} post={post} />
 						})}
 					</div>
 				</TabsContent>

@@ -1,11 +1,16 @@
 import { sql, type Transaction } from 'kysely'
-import { createPost, getDescendantCount, getPost } from '#app/repositories/post.ts'
+import {
+	createPost,
+	getDescendantCount,
+	getPost,
+} from '#app/repositories/post.ts'
 import {
 	type Quote,
 	type Artefact,
 	type Claim,
 	type PollType,
 	type Post,
+	type PollPagePost,
 } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
 import {
@@ -163,7 +168,10 @@ export async function createPoll(
 	return await getPost(trx, postId)
 }
 
-export async function getPollPost(trx: Transaction<DB>, postId: number): Promise<PollPagePost> {
+export async function getPollPost(
+	trx: Transaction<DB>,
+	postId: number,
+): Promise<PollPagePost> {
 	// TODO: check whether the post is actually a poll
 
 	let query = trx
@@ -184,7 +192,7 @@ export async function getPollPost(trx: Transaction<DB>, postId: number): Promise
 		.select(['Artefact.id as artefactId', 'Quote.id as quoteId'])
 		.select(sql<number>`replies`.as('nReplies'))
 		.orderBy('Post.createdAt', 'desc')
-	
+
 	const post = await query.executeTakeFirstOrThrow()
 
 	return {
