@@ -2,10 +2,8 @@ import { redirect, type ActionFunctionArgs } from '@remix-run/node'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
 import { db } from '#app/db.ts'
-import {
-	fallacyDetection,
-	storeFallacies,
-} from '#app/repositories/fallacy-detection.ts'
+import { fallacyDetection } from '#app/modules/fallacies/fallacy-detection-client.ts'
+import { storeFallacies } from '#app/modules/fallacies/fallacy-repository.ts'
 import { getPost } from '#app/repositories/post.ts'
 import { checkIsAdminOrThrow, requireUserId } from '#app/utils/auth.server.ts'
 

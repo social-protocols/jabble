@@ -3,10 +3,8 @@ import { redirect } from '@remix-run/server-runtime'
 import { z } from 'zod'
 import { zfd } from 'zod-form-data'
 import { db } from '#app/db.ts'
-import {
-	fallacyDetection,
-	storeFallacies,
-} from '#app/repositories/fallacy-detection.ts'
+import { fallacyDetection } from '#app/modules/fallacies/fallacy-detection-client.ts'
+import { storeFallacies } from '#app/modules/fallacies/fallacy-repository.ts'
 import { createPost } from '#app/repositories/post.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
