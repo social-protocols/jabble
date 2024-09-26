@@ -78,6 +78,10 @@ export default function ArtefactQuoteEditingPage() {
 
 	const artefactSubmissionDate = new Date(artefact.createdAt)
 
+	const unsubmittedClaims = candidateClaims.filter(
+		claim => claim.postId == null,
+	)
+
 	return (
 		<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
 			<div className="mb-2">
@@ -123,7 +127,7 @@ export default function ArtefactQuoteEditingPage() {
 							<div>No claims extracted</div>
 						) : (
 							<>
-								{candidateClaims.map((claim, index) => {
+								{unsubmittedClaims.map((claim, index) => {
 									return (
 										<ExtractedClaim
 											key={'claim-' + String(index)}
