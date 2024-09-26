@@ -7,7 +7,7 @@ import { db } from '#app/db.ts'
 import { type QuoteFallacy } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { getQuote } from './polls.ts'
+import { getQuote } from './quote.ts'
 
 // Fallacy detection based on a paper by Helwe et at. (2023): https://arxiv.org/abs/2311.09761
 
