@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { db } from '#app/db.ts'
 import { fallacyDetection } from '#app/modules/fallacies/fallacy-detection-client.ts'
 import { storeFallacies } from '#app/modules/fallacies/fallacy-repository.ts'
-import { createPost } from '#app/repositories/post.ts'
+import { createPost } from '#app/modules/posts/post-service.ts'
 import { getCommentTreeState, getReplyTree } from '#app/repositories/ranking.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 

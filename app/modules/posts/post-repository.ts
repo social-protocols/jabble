@@ -1,81 +1,14 @@
-import { sql, type Transaction } from 'kysely'
-import { MAX_CHARS_PER_POST } from '#app/constants.ts'
+import { type Transaction } from 'kysely'
 import {
-	type FallacyList,
-	FallacyListSchema,
-} from '#app/modules/fallacies/fallacy-types.ts'
-import { vote } from '#app/modules/scoring/vote-service.ts'
-import {
-	Direction,
 	type StatsPost,
 	type Post,
 	type PostWithScore,
 	type PollType,
 } from '#app/types/api-types.ts'
-import { type DBPost } from '#app/types/db-types.ts'
+import { type DB } from '#app/types/kysely-types.ts'
+import { checkIsAdminOrThrow } from '#app/utils/auth.server.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { type DB } from '../types/kysely-types.ts'
-import { checkIsAdminOrThrow } from '../utils/auth.server.ts'
-
-export async function createPost(
-	trx: Transaction<DB>,
-	parentId: number | null,
-	content: string,
-	authorId: string,
-	options?: { isPrivate: boolean; withUpvote?: boolean; createdAt?: number },
-): Promise<number> {
-	invariant(content.length <= MAX_CHARS_PER_POST, 'Post content too long')
-	invariant(content.length > 0, 'Post content too short')
-
-	const persistedPost: DBPost = await trx
-		.insertInto('Post')
-		.values({
-			content: content,
-			parentId: parentId,
-			authorId: authorId,
-			isPrivate: options ? Number(options.isPrivate) : 0,
-			createdAt: options?.createdAt ?? Date.now(),
-		})
-		.returningAll()
-		.executeTakeFirstOrThrow()
-
-	invariant(persistedPost, `Reply to ${parentId} not submitted successfully`)
-
-	if (options?.withUpvote !== undefined ? options.withUpvote : true) {
-		await vote(trx, authorId, persistedPost.id, Direction.Up)
-	}
-
-	if (parentId !== null) {
-		await incrementReplyCount(trx, parentId)
-	}
-
-	return persistedPost.id
-}
-
-export async function incrementReplyCount(
-	trx: Transaction<DB>,
-	postId: number,
-) {
-	await initPostStats(trx, postId)
-	await trx
-		.updateTable('PostStats')
-		.set(eb => ({
-			replies: eb('replies', '+', 1),
-		}))
-		.where('postId', '=', postId)
-		.execute()
-}
-
-export async function initPostStats(trx: Transaction<DB>, postId: number) {
-	await trx
-		.insertInto('PostStats')
-		.values({
-			postId: postId,
-			replies: 0,
-		})
-		.onConflict(oc => oc.column('postId').doNothing())
-		.execute()
-}
+import { initPostStats } from './post-service.ts'
 
 export async function getPost(
 	trx: Transaction<DB>,
@@ -92,21 +25,6 @@ export async function getPost(
 	return {
 		...result,
 		pollType: result.pollType ? (result.pollType as PollType) : null,
-	}
-}
-
-export async function getFallacies(
-	trx: Transaction<DB>,
-	postId: number,
-): Promise<FallacyList> {
-	const fallacies = await trx
-		.selectFrom('Fallacy')
-		.where('postId', '=', postId)
-		.select(sql<string>`json(detection)`.as('detection'))
-		.executeTakeFirst()
-	if (fallacies == null) return []
-	else {
-		return FallacyListSchema.parse(JSON.parse(fallacies.detection))
 	}
 }
 
@@ -127,6 +45,20 @@ export async function getPostWithScore(
 		...scoredPost,
 		pollType: scoredPost.pollType ? (scoredPost.pollType as PollType) : null,
 	}
+}
+
+export async function incrementReplyCount(
+	trx: Transaction<DB>,
+	postId: number,
+) {
+	await initPostStats(trx, postId)
+	await trx
+		.updateTable('PostStats')
+		.set(eb => ({
+			replies: eb('replies', '+', 1),
+		}))
+		.where('postId', '=', postId)
+		.execute()
 }
 
 export async function getStatsPost(

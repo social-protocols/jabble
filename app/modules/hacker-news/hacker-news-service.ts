@@ -1,9 +1,10 @@
 import { decode } from 'html-entities'
 import { type Transaction } from 'kysely'
 import TurndownService from 'turndown'
-import { createPost, getRootPostId } from '#app/repositories/post.ts'
 import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
+import { getRootPostId } from '../posts/post-repository.ts'
+import { createPost } from '../posts/post-service.ts'
 import { getHackerNewsTree } from './hacker-news-client.ts'
 import {
 	getHNIdForPostId,

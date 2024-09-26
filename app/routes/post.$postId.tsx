@@ -8,7 +8,7 @@ import { PostWithReplies } from '#app/components/building-blocks/post-with-repli
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { db } from '#app/db.ts'
 import { updateHN } from '#app/modules/hacker-news/hacker-news-service.ts'
-import { getTransitiveParents } from '#app/repositories/post.ts'
+import { getTransitiveParents } from '#app/modules/posts/post-repository.ts'
 import {
 	getReplyTree,
 	getCommentTreeState,
