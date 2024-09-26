@@ -107,13 +107,13 @@ export default function ArtefactQuoteEditingPage() {
 						Extracted Claims
 					</TabsTrigger>
 					<TabsTrigger value="fallacies" className="w-full">
-						Detected Fallacies
+						Rhetorical Analysis
 					</TabsTrigger>
 				</TabsList>
 				<TabsContent value="polls">
 					<div>
-						{posts.map((post, idx) => {
-							return <PollPost key={`poll-post-${idx}`} post={post} />
+						{posts.map(post => {
+							return <PollPost key={`poll-post-${post.id}`} post={post} />
 						})}
 					</div>
 				</TabsContent>
