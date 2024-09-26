@@ -15,7 +15,7 @@ import { type DB } from '#app/types/kysely-types.ts'
 import {
 	getCandidateClaim,
 	updatePostIdOnCandidateClaim,
-} from './claim-extraction.ts'
+} from './candidate-claim.ts'
 import { getQuote } from './quote.ts'
 
 export async function createClaim(

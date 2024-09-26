@@ -14,7 +14,7 @@ import {
 } from '#app/components/ui/tabs.tsx'
 import { db } from '#app/db.ts'
 import { getArtefact } from '#app/repositories/artefact.ts'
-import { getCandidateClaims } from '#app/repositories/claim-extraction.ts'
+import { getCandidateClaims } from '#app/repositories/candidate-claim.ts'
 import { getQuoteFallacies } from '#app/repositories/fallacy-detection.ts'
 import { getPollPost } from '#app/repositories/polls.ts'
 import { getQuote } from '#app/repositories/quote.ts'
