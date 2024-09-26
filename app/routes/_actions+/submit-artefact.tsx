@@ -1,8 +1,8 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { db } from '#app/db.ts'
+import { extractClaims } from '#app/modules/claim-extraction/claim-extraction-client.ts'
 import { getOrCreateArtefact } from '#app/repositories/artefact.ts'
-import { extractClaims } from '#app/repositories/claim-extraction.ts'
 import { getOrDetectQuoteFallacies } from '#app/repositories/fallacy-detection.ts'
 import { getOrCreateQuote } from '#app/repositories/quote.ts'
 

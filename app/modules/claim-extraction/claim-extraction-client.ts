@@ -1,11 +1,13 @@
-import { type Transaction } from 'kysely'
 import OpenAI from 'openai'
 import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
 import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
 import { db } from '#app/db.ts'
+import {
+	getCandidateClaims,
+	insertCandidateClaim,
+} from '#app/repositories/candidate-claim.ts'
 import { type CandidateClaim } from '#app/types/api-types.ts'
-import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 
 export const ClaimExtractionSchema = z.object({
@@ -110,58 +112,4 @@ If a speaker uses the personal pronoun "I", try to infer the person's name and r
 				)
 		}),
 	)
-}
-
-async function insertCandidateClaim(
-	trx: Transaction<DB>,
-	artefactId: number,
-	quoteId: number,
-	claim: string,
-): Promise<CandidateClaim> {
-	return await trx
-		.insertInto('CandidateClaim')
-		.values({
-			artefactId: artefactId,
-			quoteId: quoteId,
-			claim: claim,
-		})
-		.returningAll()
-		.executeTakeFirstOrThrow()
-}
-
-export async function getCandidateClaims(
-	trx: Transaction<DB>,
-	artefactId: number,
-	quoteId: number,
-): Promise<CandidateClaim[]> {
-	return await trx
-		.selectFrom('CandidateClaim')
-		.where('artefactId', '=', artefactId)
-		.where('quoteId', '=', quoteId)
-		.selectAll()
-		.execute()
-}
-
-export async function getCandidateClaim(
-	trx: Transaction<DB>,
-	candidateClaimId: number,
-): Promise<CandidateClaim> {
-	return await trx
-		.selectFrom('CandidateClaim')
-		.where('id', '=', candidateClaimId)
-		.selectAll()
-		.executeTakeFirstOrThrow()
-}
-
-export async function updatePostIdOnCandidateClaim(
-	trx: Transaction<DB>,
-	candidateClaimId: number,
-	postId: number,
-): Promise<CandidateClaim> {
-	return await trx
-		.updateTable('CandidateClaim')
-		.set({ postId: postId })
-		.where('id', '=', candidateClaimId)
-		.returningAll()
-		.executeTakeFirstOrThrow()
 }
