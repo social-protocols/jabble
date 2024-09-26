@@ -12,15 +12,17 @@ import {
 import { db } from '#app/db.ts'
 import { getCandidateClaims } from '#app/repositories/claim-extraction.ts'
 import { getQuoteFallacies } from '#app/repositories/fallacy-detection.ts'
-import { getArtefact, getQuote } from '#app/repositories/polls.ts'
+import { getArtefact, getPollPost, getQuote } from '#app/repositories/polls.ts'
 import {
 	type Artefact,
 	PollType,
 	type CandidateClaim,
 	type QuoteFallacy,
 	type Quote,
+	type PollPagePost,
 } from '#app/types/api-types.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
+import { PollPost } from './polls.tsx'
 
 const artefactIdSchema = z.coerce.number()
 const quoteIdSchema = z.coerce.number()
@@ -33,28 +35,28 @@ export async function loader({ params }: LoaderFunctionArgs) {
 		artefact,
 		quote,
 		candidateClaims,
-		// posts,
+		posts,
 		quoteFallacies,
 	}: {
 		artefact: Artefact
 		quote: Quote
 		candidateClaims: CandidateClaim[]
-		// posts: Post[]
+		posts: PollPagePost[]
 		quoteFallacies: QuoteFallacy[]
 	} = await db.transaction().execute(async trx => {
 		const candidateClaims = await getCandidateClaims(trx, artefactId, quoteId)
-		// const submittedClaimsPostIds = candidateClaims
-		// 	.filter(candidate => candidate.postId !== null)
-		// 	.map(candidate => candidate.postId!) // eslint-disable-line @typescript-eslint/no-non-null-assertion
-		// const posts = await Promise.all(
-		// 	submittedClaimsPostIds.map(async postId => await getPost(trx, postId)),
-		// )
+		const submittedClaimsPostIds = candidateClaims
+			.filter(candidate => candidate.postId !== null)
+			.map(candidate => candidate.postId!) // eslint-disable-line @typescript-eslint/no-non-null-assertion
+		const posts = await Promise.all(
+			submittedClaimsPostIds.map(async postId => await getPollPost(trx, postId)),
+		)
 		const quoteFallacies = await getQuoteFallacies(trx, quoteId)
 		return {
 			artefact: await getArtefact(trx, artefactId),
 			quote: await getQuote(trx, quoteId),
 			candidateClaims: candidateClaims,
-			// posts: posts,
+			posts: posts,
 			quoteFallacies: quoteFallacies,
 		}
 	})
@@ -63,7 +65,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 		artefact,
 		quote,
 		candidateClaims,
-		// posts,
+		posts,
 		quoteFallacies,
 	})
 }
@@ -73,7 +75,7 @@ export default function ArtefactQuoteEditingPage() {
 		artefact,
 		quote,
 		candidateClaims,
-		// posts,
+		posts,
 		quoteFallacies,
 	} = useLoaderData<typeof loader>()
 
@@ -99,8 +101,11 @@ export default function ArtefactQuoteEditingPage() {
 					</div>
 				</div>
 			</div>
-			<Tabs defaultValue="claims" className="w-full">
+			<Tabs defaultValue="polls" className="w-full">
 				<TabsList className="my-4 w-full">
+					<TabsTrigger value="polls" className="w-full">
+						Polls
+					</TabsTrigger>
 					<TabsTrigger value="claims" className="w-full">
 						Extracted Claims
 					</TabsTrigger>
@@ -108,6 +113,13 @@ export default function ArtefactQuoteEditingPage() {
 						Detected Fallacies
 					</TabsTrigger>
 				</TabsList>
+				<TabsContent value="polls">
+					<div>
+						{posts.map(post => {
+							return <PollPost post={post} />
+						})}
+					</div>
+				</TabsContent>
 				<TabsContent value="claims">
 					<div className="mt-5">
 						{candidateClaims.length == 0 ? (

@@ -1,5 +1,5 @@
-import { type Transaction } from 'kysely'
-import { createPost, getPost } from '#app/repositories/post.ts'
+import { sql, type Transaction } from 'kysely'
+import { createPost, getDescendantCount, getPost } from '#app/repositories/post.ts'
 import {
 	type Quote,
 	type Artefact,
@@ -161,4 +161,48 @@ export async function createPoll(
 		.execute()
 
 	return await getPost(trx, postId)
+}
+
+export async function getPollPost(trx: Transaction<DB>, postId: number): Promise<PollPagePost> {
+	// TODO: check whether the post is actually a poll
+
+	let query = trx
+		.selectFrom('Post')
+		.where('Post.parentId', 'is', null)
+		.where('Post.deletedAt', 'is', null)
+		.where('Post.id', '=', postId)
+		.innerJoin('Poll', 'Poll.postId', 'Post.id')
+		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
+		.leftJoin('PostStats', 'PostStats.postId', 'Post.id')
+		.leftJoin('ClaimToArtefact', 'ClaimToArtefact.claimId', 'Poll.claimId')
+		.leftJoin('Artefact', 'Artefact.id', 'ClaimToArtefact.artefactId')
+		.leftJoin('Quote', 'Quote.artefactId', 'Artefact.id')
+		.where('Poll.pollType', 'is not', null)
+		.selectAll('Post')
+		.selectAll('FullScore')
+		.selectAll('Poll')
+		.select(['Artefact.id as artefactId', 'Quote.id as quoteId'])
+		.select(sql<number>`replies`.as('nReplies'))
+		.orderBy('Post.createdAt', 'desc')
+	
+	const post = await query.executeTakeFirstOrThrow()
+
+	return {
+		id: post.id,
+		parentId: post.parentId,
+		content: post.content,
+		createdAt: post.createdAt,
+		deletedAt: post.deletedAt,
+		isPrivate: post.isPrivate,
+		pollType: post.pollType ? (post.pollType as PollType) : null,
+		context: post.artefactId
+			? {
+					artefact: await getArtefact(trx, post.artefactId),
+					quote: post.quoteId ? await getQuote(trx, post.quoteId) : null,
+				}
+			: null,
+		oSize: post.oSize,
+		nTransitiveComments: await getDescendantCount(trx, post.id),
+		p: post.p,
+	}
 }

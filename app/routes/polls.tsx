@@ -45,7 +45,7 @@ export default function PollsPage() {
 	)
 }
 
-function PollPost({
+export function PollPost({
 	post,
 	className,
 }: {
