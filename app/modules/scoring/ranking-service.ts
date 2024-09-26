@@ -15,7 +15,6 @@ import { getEffect } from '#app/modules/scoring/effect-repository.ts'
 import { getUserVotes } from '#app/modules/scoring/vote-repository.ts'
 import { defaultVoteState } from '#app/modules/scoring/vote-service.ts'
 import {
-	type Effect,
 	type VoteState,
 	type ReplyTree,
 	type ImmutableReplyTree,
@@ -25,8 +24,8 @@ import {
 	type PollPagePost,
 } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
-import { relativeEntropy } from '#app/utils/entropy.ts'
 import { invariant } from '#app/utils/misc.tsx'
+import { effectSizeOnTarget } from './scoring-utils.ts'
 
 export function toImmutableReplyTree(replyTree: ReplyTree): ImmutableReplyTree {
 	return {
@@ -198,13 +197,6 @@ export async function getReplyTree(
 		fallacyList: await getFallacies(trx, postId),
 		replies: replies,
 	}
-}
-
-export function effectSizeOnTarget(effectOnTarget: Effect | null): number {
-	const targetP = effectOnTarget?.p ?? 0
-	const targetQ = effectOnTarget?.q ?? 0
-	const targetPSize = effectOnTarget?.pSize ?? 0
-	return relativeEntropy(targetP, targetQ) * targetPSize
 }
 
 export async function getChronologicalToplevelPosts(
