@@ -12,11 +12,9 @@ export default function SubmitArtefactPage() {
 
 	const quoteStateStorageKey = 'claim-extraction-statement'
 	const originUrlStorageKey = 'claim-extraction-origin'
-	const descriptionStorageKey = 'claim-extraction-description'
 
 	const [quoteState, setQuoteState] = useState<string>('')
 	const [originUrlState, setOriginUrlState] = useState<string>('')
-	const [descriptionState, setDescriptionState] = useState<string>('')
 
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
@@ -34,13 +32,6 @@ export default function SubmitArtefactPage() {
 		500,
 	)
 
-	const descriptionChangeHandler = useDebounce(
-		(event: ChangeEvent<HTMLTextAreaElement>) => {
-			sessionStorage.setItem(descriptionStorageKey, event.target.value)
-		},
-		500,
-	)
-
 	const [urlError, setUrlError] = useState<boolean>(
 		() => (!isValidUrl(originUrlState) && !(originUrlState == '')) || false,
 	)
@@ -54,11 +45,6 @@ export default function SubmitArtefactPage() {
 		const storedOriginValue = sessionStorage.getItem(originUrlStorageKey)
 		if (storedOriginValue !== null) {
 			setOriginUrlState(storedOriginValue)
-		}
-
-		const storedDescription = sessionStorage.getItem(descriptionStorageKey)
-		if (storedDescription !== null) {
-			setDescriptionState(storedDescription)
 		}
 	}, [])
 
@@ -95,7 +81,6 @@ export default function SubmitArtefactPage() {
 			setIsSubmitting(false)
 			sessionStorage.removeItem(quoteStateStorageKey)
 			sessionStorage.removeItem(originUrlStorageKey)
-			sessionStorage.removeItem(descriptionStorageKey)
 		}
 	}
 
@@ -152,19 +137,6 @@ You can then decide which ones you want to post as fact-check or discussion poll
 			{urlError && originUrlState !== '' && (
 				<div className="text-sm text-red-500">Please enter a valid URL.</div>
 			)}
-			<Markdown deactivateLinks={false}>
-				**Short description of the source (optional)**
-			</Markdown>
-			<Textarea
-				placeholder="An example site, for illustrative purposes"
-				name="description"
-				value={descriptionState}
-				onChange={event => {
-					descriptionChangeHandler(event)
-					setDescriptionState(event.target.value)
-				}}
-				className="mb-2 min-h-[70px] w-full"
-			/>
 			<div className="mb-6 flex flex-row">
 				<div className="mr-auto self-end text-gray-500">
 					<Markdown deactivateLinks={false}>{disclaimer}</Markdown>
@@ -175,7 +147,7 @@ You can then decide which ones you want to post as fact-check or discussion poll
 					className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
 					onClick={e => {
 						e.preventDefault()
-						handleSubmitArtefact(originUrlState, descriptionState, quoteState)
+						handleSubmitArtefact(originUrlState, null, quoteState) // TODO: no description submission for now
 					}}
 				>
 					{isSubmitting ? (
