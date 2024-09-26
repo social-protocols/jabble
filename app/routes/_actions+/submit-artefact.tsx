@@ -1,12 +1,10 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { db } from '#app/db.ts'
+import { getOrCreateArtefact } from '#app/repositories/artefact.ts'
 import { extractClaims } from '#app/repositories/claim-extraction.ts'
 import { getOrDetectQuoteFallacies } from '#app/repositories/fallacy-detection.ts'
-import {
-	getOrCreateArtefact,
-	getOrCreateQuote,
-} from '#app/repositories/polls.ts'
+import { getOrCreateQuote } from '#app/repositories/quote.ts'
 
 const artefactDtoSchema = z.object({
 	url: z.coerce.string(),
