@@ -17,7 +17,7 @@ import { getArtefact } from '#app/modules/claims/artefact-repository.ts'
 import { getCandidateClaims } from '#app/modules/claims/candidate-claim-repository.ts'
 import { getQuoteFallacies } from '#app/modules/claims/quote-fallacy-repository.ts'
 import { getQuote } from '#app/modules/claims/quote-repository.ts'
-import { getPollPost } from '#app/repositories/polls.ts'
+import { getPollPost } from '#app/modules/posts/polls/poll-repository.ts'
 import {
 	type Artefact,
 	PollType,

@@ -1,7 +1,7 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { db } from '#app/db.ts'
-import { getOrCreatePoll } from '#app/repositories/polls.ts'
+import { getOrCreatePoll } from '#app/modules/posts/polls/poll-repository.ts'
 import { PollType } from '#app/types/api-types.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
