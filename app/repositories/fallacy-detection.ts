@@ -7,6 +7,7 @@ import { db } from '#app/db.ts'
 import { type QuoteFallacy } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
+import { getQuote } from './polls.ts'
 
 // Fallacy detection based on a paper by Helwe et at. (2023): https://arxiv.org/abs/2311.09761
 
@@ -253,6 +254,27 @@ export async function storeQuoteFallacies(
 				.executeTakeFirstOrThrow()
 		}),
 	)
+}
+
+export async function getOrDetectQuoteFallacies(
+	trx: Transaction<DB>,
+	quoteId: number,
+): Promise<QuoteFallacy[]> {
+	const existingQuoteFallacies = await trx
+		.selectFrom('QuoteFallacy')
+		.where('QuoteFallacy.quoteId', '=', quoteId)
+		.selectAll()
+		.execute()
+
+	if (existingQuoteFallacies.length > 0) {
+		return existingQuoteFallacies
+	}
+
+	const quote = await getQuote(trx, quoteId)
+	const detectedFallacies = await fallacyDetection(quote.quote)
+	await storeQuoteFallacies(trx, quote.id, detectedFallacies)
+
+	return await getQuoteFallacies(trx, quoteId)
 }
 
 export async function getQuoteFallacies(
