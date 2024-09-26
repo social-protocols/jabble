@@ -3,12 +3,12 @@ import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
 import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
 import { db } from '#app/db.ts'
+import { type CandidateClaim } from '#app/types/api-types.ts'
+import { invariant } from '#app/utils/misc.tsx'
 import {
 	getCandidateClaims,
 	insertCandidateClaim,
-} from '#app/repositories/candidate-claim.ts'
-import { type CandidateClaim } from '#app/types/api-types.ts'
-import { invariant } from '#app/utils/misc.tsx'
+} from '../claims/candidate-claim-repository.ts'
 
 export const ClaimExtractionSchema = z.object({
 	claimContext: z
