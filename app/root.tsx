@@ -320,9 +320,9 @@ function UserMenu() {
 		<>
 			<DropdownMenu>
 				<DropdownMenuTrigger>
-					<button className="rounded border-2 border-solid bg-post px-4 py-2">
+					<div className="rounded border-2 border-solid bg-post px-4 py-2">
 						<Icon name="person">{user.username}</Icon>
-					</button>
+					</div>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent>
 					<DropdownMenuItem>
