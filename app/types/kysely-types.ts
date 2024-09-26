@@ -140,13 +140,6 @@ export type HNItem = {
 	postId: number
 }
 
-export type PlaygroundPost = {
-	id: Generated<number>
-	content: string
-	detection: string
-	createdAt: Generated<number>
-}
-
 export type Claim = {
 	id: Generated<number>
 	claim: string
@@ -213,7 +206,6 @@ export type DB = {
 	FullScore: FullScore
 	Lineage: Lineage
 	HNItem: HNItem
-	PlaygroundPost: PlaygroundPost
 	Claim: Claim
 	Poll: Poll
 	Artefact: Artefact
