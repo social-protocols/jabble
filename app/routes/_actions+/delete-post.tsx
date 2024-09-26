@@ -2,7 +2,7 @@ import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { db } from '#app/db.ts'
 import { setDeletedAt } from '#app/modules/posts/post-repository.ts'
-import { getCommentTreeState } from '#app/repositories/ranking.ts'
+import { getCommentTreeState } from '#app/modules/scoring/ranking-service.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariant } from '#app/utils/misc.tsx'
 
