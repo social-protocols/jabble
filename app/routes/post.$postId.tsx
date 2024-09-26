@@ -7,7 +7,7 @@ import { ParentThread } from '#app/components/building-blocks/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/building-blocks/post-with-replies.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { db } from '#app/db.ts'
-import { updateHN } from '#app/repositories/hackernews.ts'
+import { updateHN } from '#app/modules/hacker-news/hacker-news-service.ts'
 import { getTransitiveParents } from '#app/repositories/post.ts'
 import {
 	getReplyTree,

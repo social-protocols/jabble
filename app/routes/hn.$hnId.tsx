@@ -2,7 +2,7 @@ import { type LoaderFunctionArgs } from '@remix-run/node'
 import { redirect } from '@remix-run/react'
 import { z } from 'zod'
 import { db } from '#app/db.ts'
-import { syncWithHN } from '#app/repositories/hackernews.ts'
+import { syncWithHN } from '#app/modules/hacker-news/hacker-news-service.ts'
 
 const hnIdSchema = z.coerce.number()
 
