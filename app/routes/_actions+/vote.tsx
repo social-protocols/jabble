@@ -1,7 +1,7 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { db } from '#app/db.ts'
+import { vote } from '#app/modules/scoring/vote-service.ts'
 import { getCommentTreeState } from '#app/repositories/ranking.ts'
-import { vote } from '#app/repositories/vote.ts'
 import { type CommentTreeState, Direction } from '#app/types/api-types.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 

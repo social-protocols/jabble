@@ -4,7 +4,7 @@ import {
 	type FallacyList,
 	FallacyListSchema,
 } from '#app/modules/fallacies/fallacy-types.ts'
-import { vote } from '#app/repositories/vote.ts'
+import { vote } from '#app/modules/scoring/vote-service.ts'
 import {
 	Direction,
 	type StatsPost,

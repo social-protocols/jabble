@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs'
 import { db } from '#app/db.ts'
+import { vote } from '#app/modules/scoring/vote-service.ts'
 import { createPost } from '#app/repositories/post.ts'
-import { vote } from '#app/repositories/vote.ts'
 import { Direction } from '#app/types/api-types.ts'
 import { getPasswordHash } from '#app/utils/auth.server.ts'
 
