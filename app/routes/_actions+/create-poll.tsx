@@ -1,7 +1,7 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { db } from '#app/db.ts'
-import { createPoll } from '#app/repositories/polls.ts'
+import { getOrCreatePoll } from '#app/repositories/polls.ts'
 import { PollType } from '#app/types/api-types.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
@@ -20,7 +20,7 @@ export const action = async (args: ActionFunctionArgs) => {
 		.transaction()
 		.execute(
 			async trx =>
-				await createPoll(
+				await getOrCreatePoll(
 					trx,
 					userId,
 					claimDto.candidateClaimId,

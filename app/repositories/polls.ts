@@ -128,13 +128,36 @@ export async function createClaim(
 	}
 }
 
-export async function createPoll(
+export async function getOrCreatePoll(
 	trx: Transaction<DB>,
 	userId: string,
 	candidateClaimId: number,
 	artefactId: number | null,
 	pollType: PollType,
 ): Promise<Post> {
+	const existingPoll = await trx
+		.selectFrom('Post')
+		.innerJoin('Poll', 'Poll.postId', 'Post.id')
+		.innerJoin('CandidateClaim', 'CandidateClaim.postId', 'Post.id')
+		.where('CandidateClaim.artefactId', '=', artefactId)
+		.where('CandidateClaim.id', '=', candidateClaimId)
+		.where('Poll.pollType', '=', pollType)
+		.selectAll('Post')
+		.select(['Poll.pollType as pollType'])
+		.executeTakeFirst()
+
+	if (existingPoll !== undefined) {
+		return {
+			id: existingPoll.id,
+			parentId: existingPoll.parentId,
+			content: existingPoll.content,
+			createdAt: existingPoll.createdAt,
+			deletedAt: existingPoll.deletedAt,
+			isPrivate: existingPoll.isPrivate,
+			pollType: existingPoll.pollType as PollType,
+		}
+	}
+
 	const candidateClaim = await getCandidateClaim(trx, candidateClaimId)
 	const persistedClaim = await createClaim(trx, candidateClaim.claim)
 
