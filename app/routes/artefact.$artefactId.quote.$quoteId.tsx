@@ -1,7 +1,10 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
+import moment from 'moment'
 import { useState } from 'react'
 import { z } from 'zod'
+import PollResult from '#app/components/building-blocks/poll-result.tsx'
+import { PostContent } from '#app/components/building-blocks/post-content.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import {
 	Tabs,
@@ -22,7 +25,6 @@ import {
 	type PollPagePost,
 } from '#app/types/api-types.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
-import { PollPost } from './polls.tsx'
 
 const artefactIdSchema = z.coerce.number()
 const quoteIdSchema = z.coerce.number()
@@ -117,7 +119,7 @@ export default function ArtefactQuoteEditingPage() {
 				<TabsContent value="polls">
 					<div>
 						{posts.map(post => {
-							return <PollPost key={`poll-post-${post.id}`} post={post} />
+							return <QuotePollPost key={`poll-post-${post.id}`} post={post} />
 						})}
 					</div>
 				</TabsContent>
@@ -281,6 +283,50 @@ function ExtractedClaim({ claim }: { claim: CandidateClaim }) {
 					to submit fact checks
 				</div>
 			)}
+		</div>
+	)
+}
+
+function QuotePollPost({
+	post,
+	className,
+}: {
+	post: PollPagePost
+	className?: string
+}) {
+	const ageString = moment(post.createdAt).fromNow()
+	const commentString = post.nTransitiveComments == 1 ? 'comment' : 'comments'
+
+	return (
+		<div
+			className={
+				'mb-2 w-full min-w-0 rounded-xl border-2 border-solid border-gray-200 bg-post px-3 py-2 dark:border-gray-700 ' +
+				(className || '')
+			}
+		>
+			<div className="flex">
+				<div className="flex w-full flex-col">
+					<div className="mb-2">
+						<span className="text-sm opacity-50">{ageString}</span>
+					</div>
+					<PostContent
+						content={post.content}
+						deactivateLinks={false}
+						linkTo={`/post/${post.id}`}
+					/>
+					<div className="mt-auto flex flex-wrap space-x-4 text-sm opacity-50">
+						<Link to={`/post/${post.id}`}>
+							{post.nTransitiveComments} {commentString}
+						</Link>
+					</div>
+				</div>
+				<PollResult
+					postId={post.id}
+					pCurrent={post.p || NaN}
+					voteCount={post.oSize}
+					pollType={post.pollType}
+				/>
+			</div>
 		</div>
 	)
 }
