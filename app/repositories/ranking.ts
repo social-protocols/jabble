@@ -317,7 +317,6 @@ export async function getChronologicalPolls(
 				deletedAt: post.deletedAt,
 				isPrivate: post.isPrivate,
 				pollType: post.pollType ? (post.pollType as PollType) : null,
-				parent: post.parentId ? await getPost(trx, post.parentId) : null,
 				context: post.artefactId
 					? {
 							artefact: await getArtefact(trx, post.artefactId),
