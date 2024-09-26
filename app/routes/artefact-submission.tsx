@@ -48,16 +48,11 @@ export default function SubmitArtefactPage() {
 		}
 	}, [])
 
-	async function handleSubmitArtefact(
-		originUrl: string,
-		description: string | null,
-		quoteContent: string,
-	) {
+	async function handleSubmitArtefact(originUrl: string, quoteContent: string) {
 		setIsSubmitting(true)
 		try {
 			const payload = {
 				url: originUrl,
-				description: description,
 				quote: quoteContent,
 			}
 
@@ -147,7 +142,7 @@ You can then decide which ones you want to post as fact-check or discussion poll
 					className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
 					onClick={e => {
 						e.preventDefault()
-						handleSubmitArtefact(originUrlState, null, quoteState) // TODO: no description submission for now
+						handleSubmitArtefact(originUrlState, quoteState)
 					}}
 				>
 					{isSubmitting ? (

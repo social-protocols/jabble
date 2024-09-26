@@ -161,7 +161,6 @@ export type Poll = {
 export type Artefact = {
 	id: Generated<number>
 	url: string
-	description: string | null
 	createdAt: Generated<number>
 }
 

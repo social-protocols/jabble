@@ -21,7 +21,6 @@ import {
 export async function getOrCreateArtefact(
 	trx: Transaction<DB>,
 	url: string,
-	description: string | null,
 ): Promise<Artefact> {
 	const existingArtefact: Artefact | undefined = await trx
 		.selectFrom('Artefact')
@@ -37,7 +36,6 @@ export async function getOrCreateArtefact(
 		.insertInto('Artefact')
 		.values({
 			url: url,
-			description: description,
 		})
 		.returningAll()
 		.executeTakeFirstOrThrow()
@@ -45,7 +43,6 @@ export async function getOrCreateArtefact(
 	return {
 		id: createdArtefact.id,
 		url: createdArtefact.url,
-		description: createdArtefact.description,
 		createdAt: createdArtefact.createdAt,
 	}
 }
@@ -63,7 +60,6 @@ export async function getArtefact(
 	return {
 		id: result.id,
 		url: result.url,
-		description: result.description,
 		createdAt: result.createdAt,
 	}
 }

@@ -10,7 +10,6 @@ import {
 
 const artefactDtoSchema = z.object({
 	url: z.coerce.string(),
-	description: z.coerce.string().nullable(),
 	quote: z.coerce.string(),
 })
 
@@ -21,11 +20,7 @@ export const action = async (args: ActionFunctionArgs) => {
 	const { persistedArtefact, persistedQuote } = await db
 		.transaction()
 		.execute(async trx => {
-			const persistedArtefact = await getOrCreateArtefact(
-				trx,
-				artefactDto.url,
-				artefactDto.description,
-			)
+			const persistedArtefact = await getOrCreateArtefact(trx, artefactDto.url)
 			const persistedQuote = await getOrCreateQuote(
 				trx,
 				persistedArtefact.id,

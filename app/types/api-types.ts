@@ -135,7 +135,6 @@ export enum PollType {
 export type Artefact = {
 	id: number
 	url: string
-	description: string | null
 	createdAt: number
 }
 
