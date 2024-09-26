@@ -5,7 +5,7 @@ import PollResult from '#app/components/building-blocks/poll-result.tsx'
 import { PostActionBar } from '#app/components/building-blocks/post-action-bar.tsx'
 import { PostContent } from '#app/components/building-blocks/post-content.tsx'
 import { PostInfoBar } from '#app/components/building-blocks/post-info-bar.tsx'
-import { type FallacyList } from '#app/repositories/fallacy-detection.ts'
+import { type FallacyList } from '#app/modules/fallacies/fallacy-types.ts'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import {
 	type CommentTreeState,

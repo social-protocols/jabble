@@ -1,5 +1,5 @@
 import type * as Immutable from 'immutable'
-import { type FallacyList } from '#app/repositories/fallacy-detection.ts'
+import { type FallacyList } from '#app/modules/fallacies/fallacy-types.ts'
 
 export type Post = {
 	id: number

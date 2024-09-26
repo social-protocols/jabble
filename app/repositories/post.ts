@@ -3,7 +3,7 @@ import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import {
 	type FallacyList,
 	FallacyListSchema,
-} from '#app/repositories/fallacy-detection.ts'
+} from '#app/modules/fallacies/fallacy-types.ts'
 import { vote } from '#app/repositories/vote.ts'
 import {
 	Direction,

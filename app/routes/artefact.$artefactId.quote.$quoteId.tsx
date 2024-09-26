@@ -15,8 +15,8 @@ import {
 import { db } from '#app/db.ts'
 import { getArtefact } from '#app/repositories/artefact.ts'
 import { getCandidateClaims } from '#app/repositories/candidate-claim.ts'
-import { getQuoteFallacies } from '#app/repositories/fallacy-detection.ts'
 import { getPollPost } from '#app/repositories/polls.ts'
+import { getQuoteFallacies } from '#app/repositories/quote-fallacy.ts'
 import { getQuote } from '#app/repositories/quote.ts'
 import {
 	type Artefact,
