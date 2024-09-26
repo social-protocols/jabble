@@ -120,13 +120,6 @@ export type StatsPost = Post & {
 	criticalThreadId: number | null
 }
 
-export type PlaygroundPost = {
-	id: number
-	content: string
-	detection: FallacyList
-	createdAt: number
-}
-
 export enum PollType {
 	FactCheck = 'factCheck',
 	Opinion = 'opinion',
