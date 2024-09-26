@@ -10,11 +10,11 @@ import { db } from '#app/db.ts'
 import { updateHN } from '#app/modules/hacker-news/hacker-news-service.ts'
 import { getTransitiveParents } from '#app/modules/posts/post-repository.ts'
 import {
-	getReplyTree,
-	getCommentTreeState,
-	toImmutableReplyTree,
 	addReplyToReplyTree,
-} from '#app/repositories/ranking.ts'
+	getCommentTreeState,
+	getReplyTree,
+	toImmutableReplyTree,
+} from '#app/modules/scoring/ranking-service.ts'
 import {
 	Direction,
 	type ReplyTree,

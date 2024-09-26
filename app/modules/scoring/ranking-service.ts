@@ -24,9 +24,9 @@ import {
 	type PollType,
 	type PollPagePost,
 } from '#app/types/api-types.ts'
+import { type DB } from '#app/types/kysely-types.ts'
+import { relativeEntropy } from '#app/utils/entropy.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { type DB } from '../types/kysely-types.ts'
-import { relativeEntropy } from '../utils/entropy.ts'
 
 export function toImmutableReplyTree(replyTree: ReplyTree): ImmutableReplyTree {
 	return {

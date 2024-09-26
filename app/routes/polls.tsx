@@ -6,7 +6,7 @@ import { PostContent } from '#app/components/building-blocks/post-content.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { db } from '#app/db.ts'
-import { getChronologicalPolls } from '#app/repositories/ranking.ts'
+import { getChronologicalPolls } from '#app/modules/scoring/ranking-service.ts'
 import {
 	type Artefact,
 	type Quote,
