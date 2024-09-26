@@ -1,7 +1,10 @@
 import global_brain from '@socialprotocols/globalbrain-node'
 import { type Transaction } from 'kysely'
-import { type DBVoteEvent } from '../types/db-types.ts'
-import { type DB } from '../types/kysely-types.ts'
+import { type DBVoteEvent } from '#app/types/db-types.ts'
+import { type DB } from '#app/types/kysely-types.ts'
+import { insertEffectEvent } from './effect-repository.ts'
+import { insertScoreEvent } from './score-repository.ts'
+import { camelToSnakeCase } from './scoring-utils.ts'
 
 const gbDatabasePath = process.env.GB_DATABASE_PATH
 
@@ -77,58 +80,4 @@ export async function processScoreEvents(
 		'score/effect events for vote event',
 		voteEvent.voteEventId,
 	)
-}
-
-async function insertScoreEvent(trx: Transaction<DB>, data: any) {
-	const data_flat = {
-		voteEventId: data['vote_event_id'],
-		voteEventTime: data['vote_event_time'],
-		...snakeToCamelCaseObject(data['score']),
-	}
-
-	const result = await trx
-		.insertInto('ScoreEvent')
-		.values(data_flat)
-		.onConflict(oc => oc.columns(['voteEventId', 'postId']).doNothing())
-		.execute()
-
-	return result
-}
-
-async function insertEffectEvent(trx: Transaction<DB>, data: any) {
-	const data_flat = {
-		voteEventId: data['vote_event_id'],
-		voteEventTime: data['vote_event_time'],
-		...snakeToCamelCaseObject(data['effect']),
-	}
-
-	await trx
-		.insertInto('EffectEvent')
-		.values(data_flat)
-		.onConflict(oc =>
-			oc.columns(['voteEventId', 'postId', 'commentId']).doNothing(),
-		)
-		.execute()
-}
-
-function snakeToCamelCase(str: string): string {
-	return str.replace(/([-_][a-z])/g, group =>
-		group.toUpperCase().replace('-', '').replace('_', ''),
-	)
-}
-
-function snakeToCamelCaseObject(obj: any): any {
-	if (obj instanceof Array) {
-		return obj.map(v => snakeToCamelCaseObject(v))
-	} else if (obj !== null && obj.constructor === Object) {
-		return Object.keys(obj).reduce((result, key) => {
-			result[snakeToCamelCase(key)] = snakeToCamelCaseObject(obj[key])
-			return result
-		}, {} as any)
-	}
-	return obj
-}
-
-function camelToSnakeCase(str: string): string {
-	return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)
 }

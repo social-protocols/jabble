@@ -1,5 +1,5 @@
+import { sendVoteEvent } from '#app/modules/scoring/global-brain-service.ts'
 import { db } from '../app/db.ts'
-import { sendVoteEvent } from '../app/repositories/globalbrain.ts'
 import { type DBVoteEvent } from '../app/types/db-types.ts'
 
 async function replayVoteEvents() {
