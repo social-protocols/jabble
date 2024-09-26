@@ -1,5 +1,5 @@
 import { type Transaction, sql } from 'kysely'
-import { sendVoteEvent } from '#app/repositories/globalbrain.ts'
+import { sendVoteEvent } from '#app/modules/scoring/global-brain-service.ts'
 import { Direction, type VoteState } from '#app/types/api-types.ts'
 import {
 	type DBVoteEvent,
