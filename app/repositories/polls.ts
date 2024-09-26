@@ -6,10 +6,10 @@ import {
 } from '#app/modules/claims/candidate-claim-repository.ts'
 import { getQuote } from '#app/modules/claims/quote-repository.ts'
 import {
-	createPost,
 	getDescendantCount,
 	getPost,
-} from '#app/repositories/post.ts'
+} from '#app/modules/posts/post-repository.ts'
+import { createPost } from '#app/modules/posts/post-service.ts'
 import {
 	type Claim,
 	type PollType,

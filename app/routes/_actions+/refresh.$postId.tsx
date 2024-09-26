@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { db } from '#app/db.ts'
 import { fallacyDetection } from '#app/modules/fallacies/fallacy-detection-client.ts'
 import { storeFallacies } from '#app/modules/fallacies/fallacy-repository.ts'
-import { getPost } from '#app/repositories/post.ts'
+import { getPost } from '#app/modules/posts/post-repository.ts'
 import { checkIsAdminOrThrow, requireUserId } from '#app/utils/auth.server.ts'
 
 const postIdSchema = z.coerce.number()

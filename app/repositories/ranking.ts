@@ -3,6 +3,14 @@ import { type Transaction, sql } from 'kysely'
 import { MAX_POSTS_PER_PAGE } from '#app/constants.ts'
 import { getArtefact } from '#app/modules/claims/artefact-repository.ts'
 import { getQuote } from '#app/modules/claims/quote-repository.ts'
+import { getFallacies } from '#app/modules/fallacies/fallacy-repository.ts'
+import {
+	getDescendantCount,
+	getDescendantIds,
+	getPost,
+	getPostWithScore,
+	getReplyIds,
+} from '#app/modules/posts/post-repository.ts'
 import { getEffect } from '#app/modules/scoring/effect-repository.ts'
 import { getUserVotes } from '#app/modules/scoring/vote-repository.ts'
 import { defaultVoteState } from '#app/modules/scoring/vote-service.ts'
@@ -19,14 +27,6 @@ import {
 import { invariant } from '#app/utils/misc.tsx'
 import { type DB } from '../types/kysely-types.ts'
 import { relativeEntropy } from '../utils/entropy.ts'
-import {
-	getDescendantCount,
-	getDescendantIds,
-	getPost,
-	getReplyIds,
-	getPostWithScore,
-	getFallacies,
-} from './post.ts'
 
 export function toImmutableReplyTree(replyTree: ReplyTree): ImmutableReplyTree {
 	return {
