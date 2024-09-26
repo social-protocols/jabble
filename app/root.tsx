@@ -33,6 +33,13 @@ import { GeneralErrorBoundary } from './components/error-boundary.tsx'
 import { ErrorList } from './components/forms.tsx'
 import { EpicProgress } from './components/progress-bar.tsx'
 import { EpicToaster } from './components/toaster.tsx'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from './components/ui/dropdown-menu.tsx'
 import { href as iconsHref, Icon } from './components/ui/icon.tsx'
 import { SITE_NAME } from './site.ts'
 import tailwindStyleSheetUrl from './styles/tailwind.css'
@@ -270,29 +277,33 @@ export default withSentry(AppWithProviders)
 function NavigationMenu() {
 	const location = useLocation()
 
-	const baseNavigationClassName = 'rounded py-1 px-2 hover:bg-post'
-	const fallacyDetectionClassName =
-		location.pathname == '/fallacyDetection' ? 'bg-post' : ''
-	const pollsClassName = location.pathname == '/' ? 'bg-post' : ''
-	const discussionsClassName = location.pathname == '/discuss' ? 'bg-post' : ''
+	const baseNavigationClassName = 'rounded-md py-1 px-2 hover:bg-post'
+	// const fallacyDetectionClassName =
+	// 	location.pathname == '/fallacy-detection' ? 'bg-post' : ''
+	const pollsClassName = location.pathname == '/polls' ? 'bg-post' : ''
+	const discussionsClassName =
+		location.pathname == '/discussions' ? 'bg-post' : ''
 
 	return (
 		<>
-			<Link to="/" className={baseNavigationClassName + ' ' + pollsClassName}>
+			<Link
+				to="/polls"
+				className={baseNavigationClassName + ' ' + pollsClassName}
+			>
 				<Icon name="lightning-bolt">Polls</Icon>
 			</Link>
 			<Link
-				to="/discuss"
+				to="/discussions"
 				className={baseNavigationClassName + ' ' + discussionsClassName}
 			>
 				<Icon name="chat-bubble">Open Discussions</Icon>
 			</Link>
-			<Link
-				to="/fallacyDetection"
+			{/*<Link
+				to="/fallacy-detection"
 				className={baseNavigationClassName + ' ' + fallacyDetectionClassName}
 			>
 				<Icon name="magic-wand">Fallacy Detection</Icon>
-			</Link>
+			</Link>*/}
 		</>
 	)
 }
@@ -302,26 +313,35 @@ function UserMenu() {
 	const location = useLocation()
 
 	const baseNavigationClassName = 'rounded py-1 px-2 hover:bg-post'
-	const userSettingsClassName =
-		location.pathname == '/settings/profile' ? 'bg-post' : ''
 	const loginClassName = location.pathname == '/login' ? 'bg-post' : ''
 	const signupClassName = location.pathname == '/signup' ? 'bg-post' : ''
 
 	return user ? (
 		<>
-			<Link
-				to="/settings/profile"
-				className={baseNavigationClassName + ' ' + userSettingsClassName}
-			>
-				<Icon name="person">{user.username}</Icon>
-			</Link>
-			<Form action="/logout" method="POST">
-				<button type="submit" className={baseNavigationClassName}>
-					<Icon className="text-body-md" name="exit">
-						Logout
-					</Icon>
-				</button>
-			</Form>
+			<DropdownMenu>
+				<DropdownMenuTrigger>
+					<div className="rounded border-2 border-solid bg-post px-4 py-2">
+						<Icon name="person">{user.username}</Icon>
+					</div>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent>
+					<DropdownMenuItem>
+						<Link to="/settings/profile">
+							<Icon name="gear">Settings</Icon>
+						</Link>
+					</DropdownMenuItem>
+					<DropdownMenuSeparator />
+					<DropdownMenuItem>
+						<Form action="/logout" method="POST">
+							<button type="submit">
+								<Icon className="text-body-md" name="exit">
+									Logout
+								</Icon>
+							</button>
+						</Form>
+					</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
 		</>
 	) : (
 		<>

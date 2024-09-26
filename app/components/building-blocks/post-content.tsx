@@ -1,7 +1,7 @@
 import { useNavigate } from '@remix-run/react'
 import DOMPurify from 'isomorphic-dompurify'
 import { Markdown } from '#app/components/markdown.tsx'
-import { Truncate } from './truncate.tsx'
+import { Truncate } from '#app/components/ui/truncate.tsx'
 
 export function PostContent({
 	content,

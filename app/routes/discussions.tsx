@@ -1,9 +1,8 @@
 import { type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
+import { PostContent } from '#app/components/building-blocks/post-content.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
-import { PostContent } from '#app/components/ui/post-content.tsx'
-import { PostForm } from '#app/components/ui/post-form.tsx'
 import { db } from '#app/db.ts'
 import * as rankingTs from '#app/repositories/ranking.ts'
 import { type FrontPagePost } from '#app/types/api-types.ts'
@@ -27,22 +26,18 @@ export default function Explore() {
 }
 
 export function FrontpageFeed({ feed }: { feed: FrontPagePost[] }) {
-	const infoText = `
-# Jabble Discussions
-
-This is a place to have open discussions.
-`.trim()
-
 	return (
-		<div>
-			<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
-				<div className="mb-4">
-					<Markdown deactivateLinks={false}>{infoText}</Markdown>
+		<div className="flex w-full flex-col">
+			<div className="mb-4 flex items-center">
+				<div className="mr-2 px-4">
+					<Markdown deactivateLinks={false}># Discussions</Markdown>
 				</div>
-				<PostForm />
-			</div>
-			<div className="mx-auto mb-4 w-full px-4">
-				<Markdown deactivateLinks={false}># Recent Discussions</Markdown>
+				<Link
+					className="ml-auto rounded bg-blue-200 px-4 py-2 text-base font-bold text-black hover:bg-blue-300"
+					to={'/discussion-submission'}
+				>
+					start a discussion
+				</Link>
 			</div>
 			<PostList feed={feed} />
 		</div>
@@ -65,10 +60,6 @@ export function TopLevelPost({
 }) {
 	const ageString = moment(post.createdAt).fromNow()
 	const commentString = post.nTransitiveComments == 1 ? 'comment' : 'comments'
-
-	// const voteString = post.oSize == 1 ? 'vote' : 'votes'
-	// const pCurrent: number = post.p || NaN
-	// const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
 
 	return (
 		<div

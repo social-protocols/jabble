@@ -1,6 +1,6 @@
+import { PostDetails } from '#app/components/building-blocks/post-details.tsx'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import { type ImmutableReplyTree } from '#app/types/api-types.ts'
-import { PostDetails } from './post-details.tsx'
 
 export function PostWithReplies({
 	replyTree,

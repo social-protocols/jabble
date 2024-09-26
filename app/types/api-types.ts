@@ -5,7 +5,6 @@ export type Post = {
 	id: number
 	parentId: number | null
 	content: string
-	// authorId: string
 	createdAt: number
 	deletedAt: number | null
 	isPrivate: number
@@ -22,6 +21,16 @@ export type PostWithScore = Post & { score: number }
 
 export type FrontPagePost = Post & {
 	fallacyList: FallacyList
+	oSize: number
+	nTransitiveComments: number
+	p: number
+}
+
+export type PollPagePost = Post & {
+	context: {
+		artefact: Artefact
+		quote: Quote | null
+	} | null
 	oSize: number
 	nTransitiveComments: number
 	p: number
@@ -121,4 +130,40 @@ export type PlaygroundPost = {
 export enum PollType {
 	FactCheck = 'factCheck',
 	Opinion = 'opinion',
+}
+
+export type Artefact = {
+	id: number
+	url: string
+	createdAt: number
+}
+
+export type Claim = {
+	id: number
+	claim: string
+}
+
+export type Quote = {
+	id: number
+	artefactId: number
+	quote: string
+	createdAt: number
+}
+
+export type CandidateClaim = {
+	id: number
+	artefactId: number
+	quoteId: number
+	claim: string
+	postId: number | null
+	createdAt: number
+}
+
+export type QuoteFallacy = {
+	id: number
+	quoteId: number
+	name: string
+	rationale: string
+	probability: number
+	createdAt: number
 }

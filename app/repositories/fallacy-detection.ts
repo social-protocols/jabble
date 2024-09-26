@@ -1,10 +1,13 @@
-import { sql } from 'kysely'
+import { type Transaction, sql } from 'kysely'
 import OpenAI from 'openai'
 import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
-import { MAX_CHARS_PER_POST } from '#app/constants.ts'
+import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
 import { db } from '#app/db.ts'
+import { type QuoteFallacy } from '#app/types/api-types.ts'
+import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
+import { getQuote } from './polls.ts'
 
 // Fallacy detection based on a paper by Helwe et at. (2023): https://arxiv.org/abs/2311.09761
 
@@ -116,8 +119,8 @@ const FallacyDetectionSchema = z
 export type FallacyList = z.infer<typeof FallacyListSchema>
 
 export async function fallacyDetection(content: string): Promise<FallacyList> {
-	invariant(content.length <= MAX_CHARS_PER_POST, 'Post content too long')
-	invariant(content.length > 0, 'Post content too short')
+	invariant(content.length <= MAX_CHARS_PER_QUOTE, 'Quote content too long')
+	invariant(content.length > 0, 'Quote content too short')
 
 	const openai = new OpenAI()
 
@@ -230,6 +233,59 @@ E₁ is part of E, E has property P. Therefore, E₁ has property P.
 	const event = choice.message.parsed
 	invariant(event != null, 'could not parse result')
 	return event.detected_fallacies
+}
+
+export async function storeQuoteFallacies(
+	trx: Transaction<DB>,
+	quoteId: number,
+	fallacies: FallacyList,
+): Promise<QuoteFallacy[]> {
+	return await Promise.all(
+		fallacies.map(fallacy => {
+			return trx
+				.insertInto('QuoteFallacy')
+				.values({
+					quoteId: quoteId,
+					name: fallacy.name,
+					rationale: fallacy.analysis,
+					probability: fallacy.probability,
+				})
+				.returningAll()
+				.executeTakeFirstOrThrow()
+		}),
+	)
+}
+
+export async function getOrDetectQuoteFallacies(
+	trx: Transaction<DB>,
+	quoteId: number,
+): Promise<QuoteFallacy[]> {
+	const existingQuoteFallacies = await trx
+		.selectFrom('QuoteFallacy')
+		.where('QuoteFallacy.quoteId', '=', quoteId)
+		.selectAll()
+		.execute()
+
+	if (existingQuoteFallacies.length > 0) {
+		return existingQuoteFallacies
+	}
+
+	const quote = await getQuote(trx, quoteId)
+	const detectedFallacies = await fallacyDetection(quote.quote)
+	await storeQuoteFallacies(trx, quote.id, detectedFallacies)
+
+	return await getQuoteFallacies(trx, quoteId)
+}
+
+export async function getQuoteFallacies(
+	trx: Transaction<DB>,
+	quoteId: number,
+): Promise<QuoteFallacy[]> {
+	return await trx
+		.selectFrom('QuoteFallacy')
+		.where('quoteId', '=', quoteId)
+		.selectAll()
+		.execute()
 }
 
 export async function storeFallacies(

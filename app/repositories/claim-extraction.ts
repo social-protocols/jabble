@@ -1,20 +1,20 @@
-import { type Transaction, sql } from 'kysely'
+import { type Transaction } from 'kysely'
 import OpenAI from 'openai'
 import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
-import { MAX_CHARS_PER_DOCUMENT } from '#app/constants.ts'
-import { createPost, getPost } from '#app/repositories/post.ts'
-import { type PollType, type Post } from '#app/types/api-types.ts'
+import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
+import { db } from '#app/db.ts'
+import { type CandidateClaim } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 
 export const ClaimExtractionSchema = z.object({
-	claim_context: z
+	claimContext: z
 		.string()
 		.describe(
 			'A neutral description of the original text, explaining the context of where the claim was made.',
 		),
-	extracted_claims: z
+	extractedClaims: z
 		.array(
 			z
 				.object({
@@ -23,17 +23,17 @@ export const ClaimExtractionSchema = z.object({
 						.describe(
 							'A claim made in the text. No personal opinions of the author, just statements of fact. The claim should be understandable in isolation.',
 						),
-					claim_without_indirection: z
+					claimWithoutIndirection: z
 						.string()
 						.describe(
 							'The claim without any indirection, i.e. the claim should be direct and not indirect. Bad example: A study showed that X is true. Good example: X is true. If the claim contains no indirection, leave it as it is.',
 						),
-					normative_or_descriptive: z
+					normativeOrDescriptive: z
 						.enum(['normative', 'descriptive'])
 						.describe(
 							'Whether the claim makes a normative statement (something should be a certain way) or a descriptive statement (something is a certain way).',
 						),
-					contains_judgment: z
+					containsJudgment: z
 						.boolean()
 						.describe(
 							'Whether the claim contains any judgment by the author. Is an opinion about the content of the claim expressed?',
@@ -46,17 +46,28 @@ export const ClaimExtractionSchema = z.object({
 		),
 })
 
-export type ClaimList = z.infer<typeof ClaimExtractionSchema>
-
-export async function extractClaims(content: string): Promise<ClaimList> {
+export async function extractClaims(
+	artefactId: number,
+	quoteId: number,
+	content: string,
+): Promise<CandidateClaim[]> {
 	invariant(
-		content.length <= MAX_CHARS_PER_DOCUMENT,
+		content.length <= MAX_CHARS_PER_QUOTE,
 		'Document for claim extraction is content too long',
 	)
 	invariant(
 		content.length > 0,
 		'Document for claim extraction is  content too short',
 	)
+
+	const existingCandidateClaims: CandidateClaim[] = await Promise.all(
+		await db
+			.transaction()
+			.execute(async trx => await getCandidateClaims(trx, artefactId, quoteId)),
+	)
+	if (existingCandidateClaims.length > 0) {
+		return existingCandidateClaims
+	}
 
 	const openai = new OpenAI()
 
@@ -84,49 +95,73 @@ If a speaker uses the personal pronoun "I", try to infer the person's name and r
 	const event = choice.message.parsed
 	invariant(event != null, 'could not parse result')
 
-	return event
+	return await Promise.all(
+		event.extractedClaims.map(async claim => {
+			return await db
+				.transaction()
+				.execute(
+					async trx =>
+						await insertCandidateClaim(
+							trx,
+							artefactId,
+							quoteId,
+							claim.claimWithoutIndirection,
+						),
+				)
+		}),
+	)
 }
 
-export async function createPoll(
+async function insertCandidateClaim(
 	trx: Transaction<DB>,
-	userId: string,
+	artefactId: number,
+	quoteId: number,
 	claim: string,
-	context: string,
-	origin: string | null,
-	pollType: PollType,
-): Promise<Post> {
-	const postContent = `
-**Claim:** ${claim}
-
-**Context:** ${context}
-`.trim()
-
-	const postId = await createPost(trx, null, postContent, userId, {
-		isPrivate: false,
-		withUpvote: false,
-	})
-
-	const claimId: { id: number } = await trx
-		.insertInto('Claim')
-		.values({ claim })
-		.returning('id')
+): Promise<CandidateClaim> {
+	return await trx
+		.insertInto('CandidateClaim')
+		.values({
+			artefactId: artefactId,
+			quoteId: quoteId,
+			claim: claim,
+		})
+		.returningAll()
 		.executeTakeFirstOrThrow()
+}
 
-	const claimContextId: { id: number } = await trx
-		.insertInto('ClaimContext')
-		.values({ context, origin })
-		.returning('id')
+export async function getCandidateClaims(
+	trx: Transaction<DB>,
+	artefactId: number,
+	quoteId: number,
+): Promise<CandidateClaim[]> {
+	return await trx
+		.selectFrom('CandidateClaim')
+		.where('artefactId', '=', artefactId)
+		.where('quoteId', '=', quoteId)
+		.selectAll()
+		.execute()
+}
+
+export async function getCandidateClaim(
+	trx: Transaction<DB>,
+	candidateClaimId: number,
+): Promise<CandidateClaim> {
+	return await trx
+		.selectFrom('CandidateClaim')
+		.where('id', '=', candidateClaimId)
+		.selectAll()
 		.executeTakeFirstOrThrow()
+}
 
-	await sql`
-		insert or ignore into ClaimToClaimContext
-		values (${claimId.id}, ${claimContextId.id})
-	`.execute(trx)
-
-	await sql`
-		insert or ignore into Poll (claimId, contextId, postId, pollType)
-		values (${claimId.id}, ${claimContextId.id}, ${postId}, ${pollType})
-	`.execute(trx)
-
-	return await getPost(trx, postId)
+export async function updatePostIdOnCandidateClaim(
+	trx: Transaction<DB>,
+	candidateClaimId: number,
+	postId: number,
+): Promise<CandidateClaim> {
+	return await trx
+		.updateTable('CandidateClaim')
+		.set({ postId: postId })
+		.where('id', '=', candidateClaimId)
+		.returningAll()
+		.executeTakeFirstOrThrow()
 }
