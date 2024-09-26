@@ -26,15 +26,17 @@ export default function PollsPage() {
 	return (
 		<div>
 			<div className="flex flex-col">
-				<div className="mb-4 px-4">
-					<Markdown deactivateLinks={false}>{'## Recent Polls'}</Markdown>
+				<div className="mb-4 flex items-center">
+					<div className="mr-2 px-4">
+						<Markdown deactivateLinks={false}>{'## Polls'}</Markdown>
+					</div>
+					<Link
+						className="ml-auto rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
+						to={'/artefact-submission'}
+					>
+						submit an artefact
+					</Link>
 				</div>
-				<Link
-					className="mb-4 ml-auto rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
-					to={'/artefact-submission'}
-				>
-					submit an artefact
-				</Link>
 				{feed.map((post, index) => {
 					return <PollPost key={'poll-' + String(index)} post={post} />
 				})}

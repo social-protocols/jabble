@@ -2,12 +2,6 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import { useState } from 'react'
 import { z } from 'zod'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from '#app/components/ui/dropdown-menu.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import {
 	Tabs,
@@ -19,14 +13,12 @@ import { db } from '#app/db.ts'
 import { getCandidateClaims } from '#app/repositories/claim-extraction.ts'
 import { getQuoteFallacies } from '#app/repositories/fallacy-detection.ts'
 import { getArtefact, getQuote } from '#app/repositories/polls.ts'
-import { getPost } from '#app/repositories/post.ts'
 import {
 	type Artefact,
 	PollType,
 	type CandidateClaim,
 	type QuoteFallacy,
 	type Quote,
-	type Post,
 } from '#app/types/api-types.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 
@@ -41,28 +33,28 @@ export async function loader({ params }: LoaderFunctionArgs) {
 		artefact,
 		quote,
 		candidateClaims,
-		posts,
+		// posts,
 		quoteFallacies,
 	}: {
 		artefact: Artefact
 		quote: Quote
 		candidateClaims: CandidateClaim[]
-		posts: Post[]
+		// posts: Post[]
 		quoteFallacies: QuoteFallacy[]
 	} = await db.transaction().execute(async trx => {
 		const candidateClaims = await getCandidateClaims(trx, artefactId, quoteId)
-		const submittedClaimsPostIds = candidateClaims
-			.filter(candidate => candidate.postId !== null)
-			.map(candidate => candidate.postId!) // eslint-disable-line @typescript-eslint/no-non-null-assertion
-		const posts = await Promise.all(
-			submittedClaimsPostIds.map(async postId => await getPost(trx, postId)),
-		)
+		// const submittedClaimsPostIds = candidateClaims
+		// 	.filter(candidate => candidate.postId !== null)
+		// 	.map(candidate => candidate.postId!) // eslint-disable-line @typescript-eslint/no-non-null-assertion
+		// const posts = await Promise.all(
+		// 	submittedClaimsPostIds.map(async postId => await getPost(trx, postId)),
+		// )
 		const quoteFallacies = await getQuoteFallacies(trx, quoteId)
 		return {
 			artefact: await getArtefact(trx, artefactId),
 			quote: await getQuote(trx, quoteId),
 			candidateClaims: candidateClaims,
-			posts: posts,
+			// posts: posts,
 			quoteFallacies: quoteFallacies,
 		}
 	})
@@ -71,16 +63,19 @@ export async function loader({ params }: LoaderFunctionArgs) {
 		artefact,
 		quote,
 		candidateClaims,
-		posts,
+		// posts,
 		quoteFallacies,
 	})
 }
 
 export default function ArtefactQuoteEditingPage() {
-	const { artefact, quote, candidateClaims, posts, quoteFallacies } =
-		useLoaderData<typeof loader>()
-
-	console.log(posts) // TODO
+	const {
+		artefact,
+		quote,
+		candidateClaims,
+		// posts,
+		quoteFallacies,
+	} = useLoaderData<typeof loader>()
 
 	const artefactSubmissionDate = new Date(artefact.createdAt)
 
@@ -104,18 +99,15 @@ export default function ArtefactQuoteEditingPage() {
 					</div>
 				</div>
 			</div>
-			<Tabs defaultValue="fallacies" className="w-full">
+			<Tabs defaultValue="claims" className="w-full">
 				<TabsList className="my-4 w-full">
-					<TabsTrigger value="fallacies" className="w-full">
-						Detected Fallacies
-					</TabsTrigger>
 					<TabsTrigger value="claims" className="w-full">
 						Extracted Claims
 					</TabsTrigger>
+					<TabsTrigger value="fallacies" className="w-full">
+						Detected Fallacies
+					</TabsTrigger>
 				</TabsList>
-				<TabsContent value="fallacies">
-					{quoteFallacies && <DetectedFallacies fallacies={quoteFallacies} />}
-				</TabsContent>
 				<TabsContent value="claims">
 					<div className="mt-5">
 						{candidateClaims.length == 0 ? (
@@ -133,6 +125,9 @@ export default function ArtefactQuoteEditingPage() {
 							</>
 						)}
 					</div>
+				</TabsContent>
+				<TabsContent value="fallacies">
+					{quoteFallacies && <DetectedFallacies fallacies={quoteFallacies} />}
 				</TabsContent>
 			</Tabs>
 			<Link
@@ -209,59 +204,46 @@ function ExtractedClaim({ claim }: { claim: CandidateClaim }) {
 	}
 
 	return (
-		<div className="mb-5 flex flex-col rounded-xl border-2 border-solid bg-post p-4 dark:border-gray-700">
-			<div>{claim.claim}</div>
+		<div className="mb-5 flex rounded-xl border-2 border-solid bg-post p-4 dark:border-gray-700">
+			<div className="w-full">{claim.claim}</div>
 			{user && (
-				<div className="flex w-full flex-row">
+				<div className="border-l-solid ml-auto flex min-w-32 flex-col border-l-2 pl-2">
 					{!submitted && (
-						<div className="ml-auto mt-2">
-							<DropdownMenu>
-								<DropdownMenuTrigger>
-									<button className="rounded bg-purple-200 px-2 py-1 text-base font-bold text-black hover:bg-purple-300">
-										<Icon name="lightning-bolt">Submit poll</Icon>
-									</button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent>
-									<DropdownMenuItem>
-										<button
-											disabled={isSubmittingFactCheck}
-											className="flex"
-											onClick={e => {
-												e.preventDefault()
-												handleSubmit(claim, PollType.FactCheck)
-											}}
-										>
-											{isSubmittingFactCheck ? (
-												<>
-													Submitting
-													<Icon name="update" className="ml-2 animate-spin" />
-												</>
-											) : (
-												<>Fact Check</>
-											)}
-										</button>
-									</DropdownMenuItem>
-									<DropdownMenuItem>
-										<button
-											disabled={isSubmittingOpinionPoll}
-											className="flex"
-											onClick={e => {
-												e.preventDefault()
-												handleSubmit(claim, PollType.Opinion)
-											}}
-										>
-											{isSubmittingOpinionPoll ? (
-												<>
-													Submitting
-													<Icon name="update" className="ml-2 animate-spin" />
-												</>
-											) : (
-												<>Opinion Poll</>
-											)}
-										</button>
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
+						<div className="space-y-2">
+							<button
+								disabled={isSubmittingFactCheck}
+								className="flex w-full rounded bg-purple-200 px-2 py-1 text-sm font-bold text-black hover:bg-purple-300"
+								onClick={e => {
+									e.preventDefault()
+									handleSubmit(claim, PollType.FactCheck)
+								}}
+							>
+								{isSubmittingFactCheck ? (
+									<>
+										Submitting
+										<Icon name="update" className="ml-2 animate-spin" />
+									</>
+								) : (
+									<>Fact Check</>
+								)}
+							</button>
+							<button
+								disabled={isSubmittingOpinionPoll}
+								className="flex w-full rounded bg-purple-200 px-2 py-1 text-sm font-bold text-black hover:bg-purple-300"
+								onClick={e => {
+									e.preventDefault()
+									handleSubmit(claim, PollType.Opinion)
+								}}
+							>
+								{isSubmittingOpinionPoll ? (
+									<>
+										Submitting
+										<Icon name="update" className="ml-2 animate-spin" />
+									</>
+								) : (
+									<>Opinion Poll</>
+								)}
+							</button>
 						</div>
 					)}
 					{submitted && (

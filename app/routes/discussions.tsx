@@ -28,15 +28,17 @@ export default function Explore() {
 export function FrontpageFeed({ feed }: { feed: FrontPagePost[] }) {
 	return (
 		<div className="flex w-full flex-col">
-			<div className="mx-auto mb-4 w-full px-4">
-				<Markdown deactivateLinks={false}># Recent Discussions</Markdown>
+			<div className="mb-4 flex items-center">
+				<div className="mr-2 px-4">
+					<Markdown deactivateLinks={false}># Discussions</Markdown>
+				</div>
+				<Link
+					className="ml-auto rounded bg-blue-200 px-4 py-2 text-base font-bold text-black hover:bg-blue-300"
+					to={'/discussion-submission'}
+				>
+					start a discussion
+				</Link>
 			</div>
-			<Link
-				className="mb-4 ml-auto rounded bg-blue-200 px-4 py-2 text-base font-bold text-black hover:bg-blue-300"
-				to={'/discussion-submission'}
-			>
-				start a discussion
-			</Link>
 			<PostList feed={feed} />
 		</div>
 	)
@@ -58,10 +60,6 @@ export function TopLevelPost({
 }) {
 	const ageString = moment(post.createdAt).fromNow()
 	const commentString = post.nTransitiveComments == 1 ? 'comment' : 'comments'
-
-	// const voteString = post.oSize == 1 ? 'vote' : 'votes'
-	// const pCurrent: number = post.p || NaN
-	// const pCurrentString: String = (pCurrent * 100).toFixed(0) + '%'
 
 	return (
 		<div
