@@ -1,34 +1,17 @@
-import * as https from 'https'
 import { decode } from 'html-entities'
 import { type Transaction } from 'kysely'
 import TurndownService from 'turndown'
-import { z } from 'zod'
+import { createPost, getRootPostId } from '#app/repositories/post.ts'
 import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { createPost, getRootPostId } from './post.ts'
+import { getHackerNewsTree } from './hacker-news-client.ts'
+import {
+	getHNIdForPostId,
+	getPostIdForHNItem,
+} from './hacker-news-repository.ts'
+import { type AlgoliaHackerNewsTree } from './hacker-news-types.ts'
 
 const HN_USER_ID = 'ea4e6cf6-afba-4f14-9040-00d5457e827f'
-
-const baseAlgoliaHackerNewsTreeSchema = z.object({
-	author: z.coerce.string(),
-	created_at_i: z.coerce.number(),
-	id: z.coerce.number(),
-	parent_id: z.coerce.number().nullable(),
-	story_id: z.coerce.number(),
-	text: z.coerce.string().nullable(),
-	title: z.coerce.string().nullable(),
-	type: z.coerce.string(),
-	url: z.coerce.string().nullable(),
-})
-
-type AlgoliaHackerNewsTree = z.infer<typeof baseAlgoliaHackerNewsTreeSchema> & {
-	children: AlgoliaHackerNewsTree[]
-}
-
-const algoliaHackerNewsTreeSchema: z.ZodType<AlgoliaHackerNewsTree> =
-	baseAlgoliaHackerNewsTreeSchema.extend({
-		children: z.lazy(() => algoliaHackerNewsTreeSchema.array()),
-	})
 
 export async function syncWithHN(
 	trx: Transaction<DB>,
@@ -48,36 +31,6 @@ export async function updateHN(trx: Transaction<DB>, postId: number) {
 	if (hnId !== undefined) {
 		await syncWithHN(trx, hnId)
 	}
-}
-
-async function getHackerNewsTree(hnId: number): Promise<AlgoliaHackerNewsTree> {
-	console.log(`Importing new replies for ${hnId} from Hacker News...`)
-
-	const hnUrl = `https://hn.algolia.com/api/v1/items/${hnId}`
-
-	const result: AlgoliaHackerNewsTree =
-		await new Promise<AlgoliaHackerNewsTree>((resolve, reject) => {
-			https
-				.get(hnUrl, res => {
-					let data = ''
-
-					res.on('data', chunk => {
-						data += chunk
-					})
-
-					res.on('end', () => {
-						try {
-							const item = algoliaHackerNewsTreeSchema.parse(JSON.parse(data))
-							resolve(item)
-						} catch (e) {
-							reject(e)
-						}
-					})
-				})
-				.on('error', e => reject(e))
-		})
-
-	return result
 }
 
 const turndownService = new TurndownService()
@@ -135,28 +88,4 @@ async function createMissingPosts(
 	)
 
 	return postId
-}
-
-async function getPostIdForHNItem(
-	trx: Transaction<DB>,
-	hnId: number,
-): Promise<number | undefined> {
-	const result = await trx
-		.selectFrom('HNItem')
-		.where('hnId', '=', hnId)
-		.select('postId')
-		.executeTakeFirst()
-	return result?.postId
-}
-
-async function getHNIdForPostId(
-	trx: Transaction<DB>,
-	postId: number,
-): Promise<number | undefined> {
-	const result = await trx
-		.selectFrom('HNItem')
-		.where('postId', '=', postId)
-		.select('hnId')
-		.executeTakeFirst()
-	return result?.hnId
 }
