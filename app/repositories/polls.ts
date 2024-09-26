@@ -1,5 +1,10 @@
 import { sql, type Transaction } from 'kysely'
-import { getArtefact } from '#app/repositories/artefact.ts'
+import { getArtefact } from '#app/modules/claims/artefact-repository.ts'
+import {
+	getCandidateClaim,
+	updatePostIdOnCandidateClaim,
+} from '#app/modules/claims/candidate-claim-repository.ts'
+import { getQuote } from '#app/modules/claims/quote-repository.ts'
 import {
 	createPost,
 	getDescendantCount,
@@ -12,11 +17,6 @@ import {
 	type PollPagePost,
 } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
-import {
-	getCandidateClaim,
-	updatePostIdOnCandidateClaim,
-} from './candidate-claim.ts'
-import { getQuote } from './quote.ts'
 
 export async function createClaim(
 	trx: Transaction<DB>,

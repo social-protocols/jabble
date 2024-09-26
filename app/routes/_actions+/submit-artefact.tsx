@@ -2,9 +2,9 @@ import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { db } from '#app/db.ts'
 import { extractClaims } from '#app/modules/claim-extraction/claim-extraction-client.ts'
-import { getOrCreateArtefact } from '#app/repositories/artefact.ts'
-import { getOrDetectQuoteFallacies } from '#app/repositories/quote-fallacy.ts'
-import { getOrCreateQuote } from '#app/repositories/quote.ts'
+import { getOrCreateArtefact } from '#app/modules/claims/artefact-repository.ts'
+import { getOrDetectQuoteFallacies } from '#app/modules/claims/quote-fallacy-repository.ts'
+import { getOrCreateQuote } from '#app/modules/claims/quote-repository.ts'
 
 const artefactDtoSchema = z.object({
 	url: z.coerce.string(),

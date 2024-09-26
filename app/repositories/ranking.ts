@@ -1,10 +1,11 @@
 import * as Immutable from 'immutable'
 import { type Transaction, sql } from 'kysely'
 import { MAX_POSTS_PER_PAGE } from '#app/constants.ts'
+import { getArtefact } from '#app/modules/claims/artefact-repository.ts'
+import { getQuote } from '#app/modules/claims/quote-repository.ts'
 import { getEffect } from '#app/modules/scoring/effect-repository.ts'
 import { getUserVotes } from '#app/modules/scoring/vote-repository.ts'
 import { defaultVoteState } from '#app/modules/scoring/vote-service.ts'
-import { getArtefact } from '#app/repositories/artefact.ts'
 import {
 	type Effect,
 	type VoteState,
@@ -26,7 +27,6 @@ import {
 	getPostWithScore,
 	getFallacies,
 } from './post.ts'
-import { getQuote } from './quote.ts'
 
 export function toImmutableReplyTree(replyTree: ReplyTree): ImmutableReplyTree {
 	return {

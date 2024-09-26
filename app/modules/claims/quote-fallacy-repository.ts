@@ -3,7 +3,7 @@ import { fallacyDetection } from '#app/modules/fallacies/fallacy-detection-clien
 import { type FallacyList } from '#app/modules/fallacies/fallacy-types.ts'
 import { type QuoteFallacy } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
-import { getQuote } from './quote.ts'
+import { getQuote } from './quote-repository.ts'
 
 export async function storeQuoteFallacies(
 	trx: Transaction<DB>,
