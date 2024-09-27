@@ -15,7 +15,7 @@ import {
 	getCommentTreeState,
 	getReplyTree,
 	toImmutableReplyTree,
-} from '#app/modules/scoring/ranking-service.ts'
+} from '#app/modules/posts/scoring/ranking-service.ts'
 import {
 	Direction,
 	type ReplyTree,

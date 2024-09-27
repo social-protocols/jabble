@@ -1,10 +1,10 @@
 import { type Transaction } from 'kysely'
 import { MAX_CHARS_PER_POST } from '#app/constants.ts'
-import { vote } from '#app/modules/scoring/vote-service.ts'
 import { Direction } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { incrementReplyCount, insertPost } from './post-repository.ts'
+import { vote } from './scoring/vote-service.ts'
 
 export async function createPost(
 	trx: Transaction<DB>,

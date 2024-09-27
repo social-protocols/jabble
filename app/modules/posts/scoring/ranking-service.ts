@@ -11,9 +11,6 @@ import {
 	getPostWithScore,
 	getReplyIds,
 } from '#app/modules/posts/post-repository.ts'
-import { getEffect } from '#app/modules/scoring/effect-repository.ts'
-import { getUserVotes } from '#app/modules/scoring/vote-repository.ts'
-import { defaultVoteState } from '#app/modules/scoring/vote-service.ts'
 import {
 	type VoteState,
 	type ReplyTree,
@@ -26,8 +23,11 @@ import {
 	type FrontPagePost,
 	type PollPagePost,
 	type PollType,
-} from '../posts/post-types.ts'
+} from '../post-types.ts'
+import { getEffect } from './effect-repository.ts'
 import { effectSizeOnTarget } from './scoring-utils.ts'
+import { getUserVotes } from './vote-repository.ts'
+import { defaultVoteState } from './vote-service.ts'
 
 export function toImmutableReplyTree(replyTree: ReplyTree): ImmutableReplyTree {
 	return {

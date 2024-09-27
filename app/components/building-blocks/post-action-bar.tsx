@@ -9,7 +9,7 @@ import TextareaAutosize from 'react-textarea-autosize'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { type Post } from '#app/modules/posts/post-types.ts'
-import { toImmutableReplyTree } from '#app/modules/scoring/ranking-service.ts'
+import { toImmutableReplyTree } from '#app/modules/posts/scoring/ranking-service.ts'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import {
 	type ReplyTree,
