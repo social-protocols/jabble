@@ -7,9 +7,9 @@ import { Markdown } from '#app/components/markdown.tsx'
 import { db } from '#app/db.ts'
 import { getStatsPost } from '#app/modules/posts/post-repository.ts'
 import { type StatsPost } from '#app/modules/posts/post-types.ts'
+import { getEffects } from '#app/modules/posts/scoring/effect-repository.ts'
+import { relativeEntropy } from '#app/modules/posts/scoring/scoring-utils.ts'
 import { type DBEffect } from '#app/types/db-types.ts'
-import { getEffects } from '#app/modules/scoring/effect-repository.ts'
-import { relativeEntropy } from '#app/modules/scoring/scoring-utils.ts'
 
 const postIdSchema = z.coerce.number()
 

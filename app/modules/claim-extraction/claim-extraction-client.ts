@@ -1,14 +1,7 @@
 import OpenAI from 'openai'
 import { zodResponseFormat } from 'openai/helpers/zod'
 import { z } from 'zod'
-import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
-import { db } from '#app/db.ts'
-import { type CandidateClaim } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import {
-	getCandidateClaims,
-	insertCandidateClaim,
-} from '../claims/candidate-claim-repository.ts'
 
 export const ClaimExtractionSchema = z.object({
 	claimContext: z
@@ -48,29 +41,7 @@ export const ClaimExtractionSchema = z.object({
 		),
 })
 
-export async function extractClaims(
-	artefactId: number,
-	quoteId: number,
-	content: string,
-): Promise<CandidateClaim[]> {
-	invariant(
-		content.length <= MAX_CHARS_PER_QUOTE,
-		'Document for claim extraction is content too long',
-	)
-	invariant(
-		content.length > 0,
-		'Document for claim extraction is  content too short',
-	)
-
-	const existingCandidateClaims: CandidateClaim[] = await Promise.all(
-		await db
-			.transaction()
-			.execute(async trx => await getCandidateClaims(trx, artefactId, quoteId)),
-	)
-	if (existingCandidateClaims.length > 0) {
-		return existingCandidateClaims
-	}
-
+export async function extractClaims(content: string): Promise<string[]> {
 	const openai = new OpenAI()
 
 	const systemMessage = `
@@ -97,19 +68,7 @@ If a speaker uses the personal pronoun "I", try to infer the person's name and r
 	const event = choice.message.parsed
 	invariant(event != null, 'could not parse result')
 
-	return await Promise.all(
-		event.extractedClaims.map(async claim => {
-			return await db
-				.transaction()
-				.execute(
-					async trx =>
-						await insertCandidateClaim(
-							trx,
-							artefactId,
-							quoteId,
-							claim.claimWithoutIndirection,
-						),
-				)
-		}),
+	return event.extractedClaims.map(
+		detection => detection.claimWithoutIndirection,
 	)
 }
