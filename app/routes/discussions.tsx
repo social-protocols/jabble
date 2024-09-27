@@ -4,8 +4,8 @@ import moment from 'moment'
 import { PostContent } from '#app/components/building-blocks/post-content.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
 import { db } from '#app/db.ts'
+import { type FrontPagePost } from '#app/modules/posts/post-types.ts'
 import { getChronologicalToplevelPosts } from '#app/modules/scoring/ranking-service.ts'
-import { type FrontPagePost } from '#app/types/api-types.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 
 export async function loader({ request }: LoaderFunctionArgs) {

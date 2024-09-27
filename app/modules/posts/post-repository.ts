@@ -1,14 +1,39 @@
 import { type Transaction } from 'kysely'
-import {
-	type StatsPost,
-	type Post,
-	type PostWithScore,
-	type PollType,
-} from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
 import { checkIsAdminOrThrow } from '#app/utils/auth.server.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { initPostStats } from './post-service.ts'
+import {
+	type PollType,
+	type Post,
+	type PostWithScore,
+	type StatsPost,
+} from './post-types.ts'
+
+export async function insertPost(
+	trx: Transaction<DB>,
+	parentId: number | null,
+	content: string,
+	authorId: string,
+	isPrivate: boolean,
+	createdAt?: number,
+): Promise<Post> {
+	// TODO: handle in one database call
+
+	const persistedPost: { id: number } = await trx
+		.insertInto('Post')
+		.values({
+			content: content,
+			parentId: parentId,
+			authorId: authorId,
+			isPrivate: isPrivate ? 1 : 0,
+			createdAt: createdAt ?? Date.now(),
+		})
+		.returning(['id'])
+		.executeTakeFirstOrThrow()
+
+	return await getPost(trx, persistedPost.id)
+}
 
 export async function getPost(
 	trx: Transaction<DB>,

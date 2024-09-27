@@ -18,13 +18,12 @@ import { getCandidateClaims } from '#app/modules/claims/candidate-claim-reposito
 import { getQuoteFallacies } from '#app/modules/claims/quote-fallacy-repository.ts'
 import { getQuote } from '#app/modules/claims/quote-repository.ts'
 import { getPollPost } from '#app/modules/posts/polls/poll-repository.ts'
+import { type PollPagePost, PollType } from '#app/modules/posts/post-types.ts'
 import {
 	type Artefact,
-	PollType,
 	type CandidateClaim,
 	type QuoteFallacy,
 	type Quote,
-	type PollPagePost,
 } from '#app/types/api-types.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 

@@ -9,6 +9,7 @@ import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { db } from '#app/db.ts'
 import { updateHN } from '#app/modules/hacker-news/hacker-news-service.ts'
 import { getTransitiveParents } from '#app/modules/posts/post-repository.ts'
+import { type Post } from '#app/modules/posts/post-types.ts'
 import {
 	addReplyToReplyTree,
 	getCommentTreeState,
@@ -18,7 +19,6 @@ import {
 import {
 	Direction,
 	type ReplyTree,
-	type Post,
 	type CommentTreeState,
 	type ImmutableReplyTree,
 	type CollapsedState,

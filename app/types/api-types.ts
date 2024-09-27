@@ -1,39 +1,11 @@
 import type * as Immutable from 'immutable'
 import { type FallacyList } from '#app/modules/fallacies/fallacy-types.ts'
-
-export type Post = {
-	id: number
-	parentId: number | null
-	content: string
-	createdAt: number
-	deletedAt: number | null
-	isPrivate: number
-	pollType: PollType | null
-}
+import { type Post, type PostWithScore } from '#app/modules/posts/post-types.ts'
 
 export type User = {
 	id: string
 	username: string
 	isAdmin: number
-}
-
-export type PostWithScore = Post & { score: number }
-
-export type FrontPagePost = Post & {
-	fallacyList: FallacyList
-	oSize: number
-	nTransitiveComments: number
-	p: number
-}
-
-export type PollPagePost = Post & {
-	context: {
-		artefact: Artefact
-		quote: Quote | null
-	} | null
-	oSize: number
-	nTransitiveComments: number
-	p: number
 }
 
 export type Effect = {
@@ -96,33 +68,6 @@ export type VoteState = {
 	postId: number
 	vote: Direction
 	isInformed: boolean
-}
-
-export type StatsPost = Post & {
-	voteEventId: number
-	voteEventTime: number
-	postId: number
-	o: number
-	oCount: number
-	oSize: number
-	p: number
-	score: number
-
-	commentId: number | null
-	pCount: number
-	pSize: number
-	q: number
-	qCount: number
-	qSize: number
-	r: number
-	weight: number
-
-	criticalThreadId: number | null
-}
-
-export enum PollType {
-	FactCheck = 'factCheck',
-	Opinion = 'opinion',
 }
 
 export type Artefact = {
