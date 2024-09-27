@@ -7,7 +7,7 @@ import { Markdown } from '#app/components/markdown.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { db } from '#app/db.ts'
 import { type PollPagePost } from '#app/modules/posts/post-types.ts'
-import { getChronologicalPolls } from '#app/modules/scoring/ranking-service.ts'
+import { getChronologicalPolls } from '#app/modules/posts/scoring/ranking-service.ts'
 import { type Artefact, type Quote } from '#app/types/api-types.ts'
 
 export async function loader() {
