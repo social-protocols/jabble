@@ -19,12 +19,14 @@ import {
 	type ReplyTree,
 	type ImmutableReplyTree,
 	type CommentTreeState,
-	type FrontPagePost,
-	type PollType,
-	type PollPagePost,
 } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
+import {
+	type FrontPagePost,
+	type PollPagePost,
+	type PollType,
+} from '../posts/post-types.ts'
 import { effectSizeOnTarget } from './scoring-utils.ts'
 
 export function toImmutableReplyTree(replyTree: ReplyTree): ImmutableReplyTree {

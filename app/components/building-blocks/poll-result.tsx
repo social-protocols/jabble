@@ -1,5 +1,5 @@
 import { Link } from '@remix-run/react'
-import { PollType } from '#app/types/api-types.ts'
+import { PollType } from '#app/modules/posts/post-types.ts'
 
 export default function PollResult({
 	postId,

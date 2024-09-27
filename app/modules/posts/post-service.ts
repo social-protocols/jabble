@@ -2,10 +2,9 @@ import { type Transaction } from 'kysely'
 import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { vote } from '#app/modules/scoring/vote-service.ts'
 import { Direction } from '#app/types/api-types.ts'
-import { type DBPost } from '#app/types/db-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { incrementReplyCount } from './post-repository.ts'
+import { incrementReplyCount, insertPost } from './post-repository.ts'
 
 export async function createPost(
 	trx: Transaction<DB>,
@@ -17,17 +16,14 @@ export async function createPost(
 	invariant(content.length <= MAX_CHARS_PER_POST, 'Post content too long')
 	invariant(content.length > 0, 'Post content too short')
 
-	const persistedPost: DBPost = await trx
-		.insertInto('Post')
-		.values({
-			content: content,
-			parentId: parentId,
-			authorId: authorId,
-			isPrivate: options ? Number(options.isPrivate) : 0,
-			createdAt: options?.createdAt ?? Date.now(),
-		})
-		.returningAll()
-		.executeTakeFirstOrThrow()
+	const persistedPost = await insertPost(
+		trx,
+		parentId,
+		content,
+		authorId,
+		options?.isPrivate ?? false,
+		options?.createdAt ?? Date.now(),
+	)
 
 	invariant(persistedPost, `Reply to ${parentId} not submitted successfully`)
 

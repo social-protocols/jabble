@@ -11,12 +11,8 @@ import {
 	getPost,
 } from '#app/modules/posts/post-repository.ts'
 import { createPost } from '#app/modules/posts/post-service.ts'
-import {
-	type PollType,
-	type Post,
-	type PollPagePost,
-} from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
+import { type PollPagePost, type PollType, type Post } from '../post-types.ts'
 
 export async function getOrCreatePoll(
 	trx: Transaction<DB>,

@@ -6,13 +6,12 @@ import { PostActionBar } from '#app/components/building-blocks/post-action-bar.t
 import { PostContent } from '#app/components/building-blocks/post-content.tsx'
 import { PostInfoBar } from '#app/components/building-blocks/post-info-bar.tsx'
 import { type FallacyList } from '#app/modules/fallacies/fallacy-types.ts'
+import { PollType, type Post } from '#app/modules/posts/post-types.ts'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import {
 	type CommentTreeState,
 	Direction,
 	type ImmutableReplyTree,
-	type Post,
-	PollType,
 	type PostState,
 } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
