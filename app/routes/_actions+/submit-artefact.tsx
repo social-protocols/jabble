@@ -1,8 +1,8 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { db } from '#app/db.ts'
-import { extractClaims } from '#app/modules/claim-extraction/claim-extraction-client.ts'
 import { getOrCreateArtefact } from '#app/modules/claims/artefact-repository.ts'
+import { getOrCreateCandidateClaims } from '#app/modules/claims/claim-service.ts'
 import { getOrDetectQuoteFallacies } from '#app/modules/claims/quote-fallacy-repository.ts'
 import { getOrCreateQuote } from '#app/modules/claims/quote-repository.ts'
 
@@ -24,15 +24,14 @@ export const action = async (args: ActionFunctionArgs) => {
 				persistedArtefact.id,
 				artefactDto.quote,
 			)
+			await getOrCreateCandidateClaims(
+				trx,
+				persistedArtefact.id,
+				persistedQuote.quote,
+			)
 			await getOrDetectQuoteFallacies(trx, persistedQuote.id)
 			return { persistedArtefact, persistedQuote }
 		})
-
-	await extractClaims(
-		persistedArtefact.id,
-		persistedQuote.id,
-		persistedQuote.quote,
-	)
 
 	return {
 		artefact: persistedArtefact,
