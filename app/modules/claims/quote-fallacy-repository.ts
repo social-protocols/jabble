@@ -1,8 +1,8 @@
 import { type Transaction } from 'kysely'
 import { fallacyDetection } from '#app/modules/fallacies/fallacy-detection-client.ts'
 import { type FallacyList } from '#app/modules/fallacies/fallacy-types.ts'
-import { type QuoteFallacy } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
+import { type QuoteFallacy } from './claim-types.ts'
 import { getQuote } from './quote-repository.ts'
 
 export async function storeQuoteFallacies(

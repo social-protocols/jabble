@@ -1,4 +1,4 @@
-import { type Artefact, type Quote } from '#app/types/api-types.ts'
+import { type Artefact, type Quote } from '../claims/claim-types.ts'
 import { type FallacyList } from '../fallacies/fallacy-types.ts'
 
 export type Post = {

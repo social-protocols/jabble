@@ -1,10 +1,9 @@
 import { sql, type Transaction } from 'kysely'
 import { getArtefact } from '#app/modules/claims/artefact-repository.ts'
 import {
-	getCandidateClaim,
-	updatePostIdOnCandidateClaim,
-} from '#app/modules/claims/candidate-claim-repository.ts'
-import { createClaim } from '#app/modules/claims/claim-repository.ts'
+	getClaim,
+	updatePostIdOnClaim,
+} from '#app/modules/claims/claim-repository.ts'
 import { getQuote } from '#app/modules/claims/quote-repository.ts'
 import {
 	getDescendantCount,
@@ -17,16 +16,14 @@ import { type PollPagePost, type PollType, type Post } from '../post-types.ts'
 export async function getOrCreatePoll(
 	trx: Transaction<DB>,
 	userId: string,
-	candidateClaimId: number,
-	artefactId: number | null,
+	claimId: number,
 	pollType: PollType,
 ): Promise<Post> {
 	const existingPoll = await trx
 		.selectFrom('Post')
 		.innerJoin('Poll', 'Poll.postId', 'Post.id')
-		.innerJoin('CandidateClaim', 'CandidateClaim.postId', 'Post.id')
-		.where('CandidateClaim.artefactId', '=', artefactId)
-		.where('CandidateClaim.id', '=', candidateClaimId)
+		.innerJoin('Claim', 'Claim.postId', 'Post.id')
+		.where('Claim.id', '=', claimId)
 		.where('Poll.pollType', '=', pollType)
 		.selectAll('Post')
 		.select(['Poll.pollType as pollType'])
@@ -44,31 +41,20 @@ export async function getOrCreatePoll(
 		}
 	}
 
-	const candidateClaim = await getCandidateClaim(trx, candidateClaimId)
-	const persistedClaim = await createClaim(trx, candidateClaim.claim)
-
-	if (artefactId !== null) {
-		await trx
-			.insertInto('ClaimToArtefact')
-			.values({
-				claimId: persistedClaim.id,
-				artefactId: artefactId,
-			})
-			.execute()
-	}
+	const claim = await getClaim(trx, claimId)
 
 	// TODO: createPost should return the entire post
-	const postId = await createPost(trx, null, persistedClaim.claim, userId, {
+	const postId = await createPost(trx, null, claim.claim, userId, {
 		isPrivate: false,
 		withUpvote: false,
 	})
 
-	await updatePostIdOnCandidateClaim(trx, candidateClaimId, postId)
+	await updatePostIdOnClaim(trx, claimId, postId)
 
 	await trx
 		.insertInto('Poll')
 		.values({
-			claimId: persistedClaim.id,
+			claimId: claimId,
 			postId: postId,
 			pollType: pollType,
 		})
@@ -91,9 +77,9 @@ export async function getPollPost(
 		.innerJoin('Poll', 'Poll.postId', 'Post.id')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
 		.leftJoin('PostStats', 'PostStats.postId', 'Post.id')
-		.leftJoin('ClaimToArtefact', 'ClaimToArtefact.claimId', 'Poll.claimId')
-		.leftJoin('Artefact', 'Artefact.id', 'ClaimToArtefact.artefactId')
-		.leftJoin('Quote', 'Quote.artefactId', 'Artefact.id')
+		.leftJoin('Claim', 'Claim.postId', 'Post.id')
+		.leftJoin('Quote', 'Quote.id', 'Claim.quoteId')
+		.leftJoin('Artefact', 'Artefact.id', 'Quote.artefactId')
 		.where('Poll.pollType', 'is not', null)
 		.selectAll('Post')
 		.selectAll('FullScore')

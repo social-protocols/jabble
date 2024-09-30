@@ -1,6 +1,6 @@
 import { type Transaction } from 'kysely'
-import { type Artefact } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
+import { type Artefact } from './claim-types.ts'
 
 export async function getOrCreateArtefact(
 	trx: Transaction<DB>,
