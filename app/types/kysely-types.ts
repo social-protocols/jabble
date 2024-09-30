@@ -140,11 +140,6 @@ export type HNItem = {
 	postId: number
 }
 
-export type Claim = {
-	id: Generated<number>
-	claim: string
-}
-
 export type Poll = {
 	claimId: number
 	postId: number
@@ -164,14 +159,8 @@ export type Quote = {
 	createdAt: Generated<number>
 }
 
-export type ClaimToArtefact = {
-	claimId: number
-	artefactId: number
-}
-
-export type CandidateClaim = {
+export type Claim = {
 	id: Generated<number>
-	artefactId: number
 	quoteId: number
 	claim: string
 	postId: number | null
@@ -210,7 +199,5 @@ export type DB = {
 	Poll: Poll
 	Artefact: Artefact
 	Quote: Quote
-	ClaimToArtefact: ClaimToArtefact
-	CandidateClaim: CandidateClaim
 	QuoteFallacy: QuoteFallacy
 }

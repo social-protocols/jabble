@@ -254,12 +254,10 @@ export async function getChronologicalPolls(
 		.where('Post.deletedAt', 'is', null)
 		.innerJoin('Poll', 'Poll.postId', 'Post.id')
 		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
-		.leftJoin('PostStats', join =>
-			join.onRef('PostStats.postId', '=', 'Post.id'),
-		)
-		.leftJoin('ClaimToArtefact', 'ClaimToArtefact.claimId', 'Poll.claimId')
-		.leftJoin('Artefact', 'Artefact.id', 'ClaimToArtefact.artefactId')
-		.leftJoin('Quote', 'Quote.artefactId', 'Artefact.id')
+		.leftJoin('PostStats', 'PostStats.postId', 'Post.id')
+		.leftJoin('Claim', 'Claim.postId', 'Post.id')
+		.leftJoin('Quote', 'Quote.id', 'Claim.quoteId')
+		.leftJoin('Artefact', 'Artefact.id', 'Quote.artefactId')
 		.where('Poll.pollType', 'is not', null)
 		.selectAll('Post')
 		.selectAll('FullScore')

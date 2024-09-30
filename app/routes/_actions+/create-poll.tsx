@@ -6,14 +6,13 @@ import { PollType } from '#app/modules/posts/post-types.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
 const PollCreationDtoSchema = z.object({
-	candidateClaimId: z.coerce.number(),
-	artefactId: z.coerce.number().nullable(),
+	claimId: z.coerce.number(),
 	pollType: z.nativeEnum(PollType),
 })
 
 export const action = async (args: ActionFunctionArgs) => {
 	const request = args.request
-	const claimDto = PollCreationDtoSchema.parse(await request.json())
+	const pollCreationDto = PollCreationDtoSchema.parse(await request.json())
 	const userId: string = await requireUserId(request)
 
 	const post = await db
@@ -23,9 +22,8 @@ export const action = async (args: ActionFunctionArgs) => {
 				await getOrCreatePoll(
 					trx,
 					userId,
-					claimDto.candidateClaimId,
-					claimDto.artefactId,
-					claimDto.pollType,
+					pollCreationDto.claimId,
+					pollCreationDto.pollType,
 				),
 		)
 

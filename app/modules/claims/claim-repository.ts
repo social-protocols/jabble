@@ -1,19 +1,71 @@
 import { type Transaction } from 'kysely'
-import { type Claim } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
+import { type Claim } from './claim-types.ts'
 
-export async function createClaim(
+// export async function createClaim(
+// 	trx: Transaction<DB>,
+// 	claim: string,
+// ): Promise<Claim> {
+// 	const createdClaim = await trx
+// 		.insertInto('Claim')
+// 		.values({ claim })
+// 		.returningAll()
+// 		.executeTakeFirstOrThrow()
+
+// 	return {
+// 		id: createdClaim.id,
+// 		claim: createdClaim.claim,
+// 	}
+// }
+
+export async function insertClaim(
 	trx: Transaction<DB>,
+	quoteId: number,
 	claim: string,
+	postId: number | null,
 ): Promise<Claim> {
-	const createdClaim = await trx
+	return await trx
 		.insertInto('Claim')
-		.values({ claim })
+		.values({
+			quoteId: quoteId,
+			claim: claim,
+			postId: postId,
+		})
 		.returningAll()
 		.executeTakeFirstOrThrow()
+}
 
-	return {
-		id: createdClaim.id,
-		claim: createdClaim.claim,
-	}
+export async function getClaims(
+	trx: Transaction<DB>,
+	quoteId: number,
+): Promise<Claim[]> {
+	return await trx
+		.selectFrom('Claim')
+		.where('quoteId', '=', quoteId)
+		.selectAll()
+		.execute()
+}
+
+export async function getClaim(
+	trx: Transaction<DB>,
+	claimId: number,
+): Promise<Claim> {
+	return await trx
+		.selectFrom('Claim')
+		.where('id', '=', claimId)
+		.selectAll()
+		.executeTakeFirstOrThrow()
+}
+
+export async function updatePostIdOnClaim(
+	trx: Transaction<DB>,
+	claimId: number,
+	postId: number,
+): Promise<Claim> {
+	return await trx
+		.updateTable('Claim')
+		.set({ postId: postId })
+		.where('id', '=', claimId)
+		.returningAll()
+		.executeTakeFirstOrThrow()
 }

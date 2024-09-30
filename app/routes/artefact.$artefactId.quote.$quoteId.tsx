@@ -14,17 +14,17 @@ import {
 } from '#app/components/ui/tabs.tsx'
 import { db } from '#app/db.ts'
 import { getArtefact } from '#app/modules/claims/artefact-repository.ts'
-import { getCandidateClaims } from '#app/modules/claims/candidate-claim-repository.ts'
+import { getClaims } from '#app/modules/claims/claim-repository.ts'
+import {
+	type Claim,
+	type Artefact,
+	type Quote,
+	type QuoteFallacy,
+} from '#app/modules/claims/claim-types.ts'
 import { getQuoteFallacies } from '#app/modules/claims/quote-fallacy-repository.ts'
 import { getQuote } from '#app/modules/claims/quote-repository.ts'
 import { getPollPost } from '#app/modules/posts/polls/poll-repository.ts'
 import { type PollPagePost, PollType } from '#app/modules/posts/post-types.ts'
-import {
-	type Artefact,
-	type CandidateClaim,
-	type QuoteFallacy,
-	type Quote,
-} from '#app/types/api-types.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 
 const artefactIdSchema = z.coerce.number()
@@ -37,20 +37,20 @@ export async function loader({ params }: LoaderFunctionArgs) {
 	const {
 		artefact,
 		quote,
-		candidateClaims,
+		claims,
 		posts,
 		quoteFallacies,
 	}: {
 		artefact: Artefact
 		quote: Quote
-		candidateClaims: CandidateClaim[]
+		claims: Claim[]
 		posts: PollPagePost[]
 		quoteFallacies: QuoteFallacy[]
 	} = await db.transaction().execute(async trx => {
-		const candidateClaims = await getCandidateClaims(trx, artefactId, quoteId)
-		const submittedClaimsPostIds = candidateClaims
-			.filter(candidate => candidate.postId !== null)
-			.map(candidate => candidate.postId!) // eslint-disable-line @typescript-eslint/no-non-null-assertion
+		const claims = await getClaims(trx, quoteId)
+		const submittedClaimsPostIds = claims
+			.filter(claim => claim.postId !== null)
+			.map(claim => claim.postId!) // eslint-disable-line @typescript-eslint/no-non-null-assertion
 		const posts = await Promise.all(
 			submittedClaimsPostIds.map(
 				async postId => await getPollPost(trx, postId),
@@ -60,7 +60,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 		return {
 			artefact: await getArtefact(trx, artefactId),
 			quote: await getQuote(trx, quoteId),
-			candidateClaims: candidateClaims,
+			claims: claims,
 			posts: posts,
 			quoteFallacies: quoteFallacies,
 		}
@@ -69,21 +69,19 @@ export async function loader({ params }: LoaderFunctionArgs) {
 	return json({
 		artefact,
 		quote,
-		candidateClaims,
+		claims,
 		posts,
 		quoteFallacies,
 	})
 }
 
 export default function ArtefactQuoteEditingPage() {
-	const { artefact, quote, candidateClaims, posts, quoteFallacies } =
+	const { artefact, quote, claims, posts, quoteFallacies } =
 		useLoaderData<typeof loader>()
 
 	const artefactSubmissionDate = new Date(artefact.createdAt)
 
-	const unsubmittedClaims = candidateClaims.filter(
-		claim => claim.postId == null,
-	)
+	const unsubmittedClaims = claims.filter(claim => claim.postId == null)
 
 	return (
 		<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
@@ -126,7 +124,7 @@ export default function ArtefactQuoteEditingPage() {
 				</TabsContent>
 				<TabsContent value="claims">
 					<div className="mt-5">
-						{candidateClaims.length == 0 ? (
+						{claims.length == 0 ? (
 							<div>No claims extracted</div>
 						) : (
 							<>
@@ -178,7 +176,7 @@ function DetectedFallacies({ fallacies }: { fallacies: QuoteFallacy[] }) {
 	)
 }
 
-function ExtractedClaim({ claim }: { claim: CandidateClaim }) {
+function ExtractedClaim({ claim }: { claim: Claim }) {
 	const [isSubmittingFactCheck, setIsSubmittingFactCheck] =
 		useState<boolean>(false)
 	const [isSubmittingOpinionPoll, setIsSubmittingOpinionPoll] =
@@ -190,7 +188,7 @@ function ExtractedClaim({ claim }: { claim: CandidateClaim }) {
 
 	const user = useOptionalUser()
 
-	async function handleSubmit(claim: CandidateClaim, pollType: PollType) {
+	async function handleSubmit(claim: Claim, pollType: PollType) {
 		if (pollType == PollType.FactCheck) {
 			setIsSubmittingFactCheck(true)
 		} else {
@@ -198,8 +196,7 @@ function ExtractedClaim({ claim }: { claim: CandidateClaim }) {
 		}
 		try {
 			const payload = {
-				candidateClaimId: claim.id,
-				artefactId: claim.artefactId,
+				claimId: claim.id,
 				pollType: pollType,
 			}
 			const response = await fetch('/create-poll', {
