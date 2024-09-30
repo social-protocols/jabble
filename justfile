@@ -32,7 +32,8 @@ dev:
 
 # open database in sqlite commandline 
 db:
-	sqlite3 $APP_DATABASE_PATH
+	litecli $APP_DATABASE_PATH
+	# sqlite3 $APP_DATABASE_PATH
 
 # run typescript typechecker
 typecheck:
@@ -93,8 +94,8 @@ download-production-data:
 	mkdir -p $SOCIAL_PROTOCOLS_DATADIR/production/
 	fly ssh sftp get /data/sqlite.db $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db
 	fly ssh sftp get /data/global-brain.db $SOCIAL_PROTOCOLS_DATADIR/production/global-brain.db
-	fly ssh sftp get /data/sqlite.db $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db-wal
-	fly ssh sftp get /data/global-brain.db $SOCIAL_PROTOCOLS_DATADIR/production/global-brain.db-wal
+	fly ssh sftp get /data/sqlite.db-wal $SOCIAL_PROTOCOLS_DATADIR/production/sqlite.db-wal
+	fly ssh sftp get /data/global-brain.db-wal $SOCIAL_PROTOCOLS_DATADIR/production/global-brain.db-wal
 
 # use the data in $SOCIAL_PROTOCOLS_DATADIR/production/ locally. Run download-production-data first
 use-production-data:
