@@ -13,13 +13,30 @@ export async function up(db: Kysely<any>): Promise<void> {
 		`.execute(trx)
 
 		await sql`
-			alter table CandidateClaim
-			drop column artefactId
+			create table Claim (
+				  id         integer not null primary key autoincrement
+				, quoteId    integer          references Quote(id) default null
+				, claim      text    not null
+				, postId     number           references Post(id) default null
+				, createdAt  integer not null default (unixepoch('subsec')*1000)
+			)
 		`.execute(trx)
 
 		await sql`
-			alter table CandidateClaim
-			rename to Claim
+			insert into Claim (
+				id
+				, quoteId
+				, claim
+				, postId
+				, createdAt
+			)
+			select
+				id
+				, quoteId
+				, claim
+				, postId
+				, createdAt
+			from CandidateClaim
 		`.execute(trx)
 
 		await sql`
@@ -53,6 +70,10 @@ export async function up(db: Kysely<any>): Promise<void> {
 
 		await sql`
 			drop table ClaimToArtefact
+		`.execute(trx)
+		
+		await sql`
+			drop table CandidateClaim
 		`.execute(trx)
 
 		await sql`
