@@ -92,7 +92,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 		await sql`
 			drop table ClaimToArtefact
 		`.execute(trx)
-		
+
 		await sql`
 			drop table CandidateClaim
 		`.execute(trx)
