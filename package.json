@@ -38,6 +38,7 @@
     "@conform-to/zod": "^0.9.0",
     "@epic-web/remember": "^1.0.2",
     "@epic-web/totp": "^1.1.1",
+    "@johnwarden/twitter-scraper": "github:johnwarden/twitter-scraper#1ddf60604783f5d33c24b8808a8ea85f461fdc0b",
     "@nasa-gcn/remix-seo": "^2.0.0",
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-dropdown-menu": "^2.0.6",
