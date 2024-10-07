@@ -157,20 +157,15 @@ interface OEmbedResponse {
 }
 
 function EmbeddedTweet({ tweetUrl }: { tweetUrl: string }) {
-
 	const [embedHtml, setEmbedHtml] = useState<string | undefined>(undefined)
 	const [cache, setCache] = useState<{ [key: string]: string }>({})
-	const [isValidUrl, setIsValidUrl] = useState<boolean>(false)
 	const [isFetching, setIsFetching] = useState<boolean>(false)
 	const [isTweetLoaded, setIsTweetLoaded] = useState<boolean>(false)
-	const [fetchError, setFetchError] = useState<string | null>(null)
 
 	const embedContainerRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
 		if (isValidTweetUrl(tweetUrl)) {
-			setIsValidUrl(true)
-			setFetchError(null)
 			setEmbedHtml(undefined) // Reset embedHtml when URL changes
 			if (cache[tweetUrl]) {
 				setEmbedHtml(cache[tweetUrl])
@@ -198,16 +193,13 @@ function EmbeddedTweet({ tweetUrl }: { tweetUrl: string }) {
 					.catch(error => {
 						console.error('Error fetching oEmbed data:', error)
 						setEmbedHtml('') // Ensure embedHtml is falsy on error
-						setFetchError(error.message)
 					})
 					.finally(() => {
 						setIsFetching(false)
 					})
 			}
 		} else {
-			setIsValidUrl(false)
 			setEmbedHtml(undefined) // Reset embedHtml when URL is invalid
-			setFetchError(null)
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [tweetUrl])
@@ -287,4 +279,3 @@ function isValidTweetUrl(url: string): boolean {
 		/^https?:\/\/(www\.)?(twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/
 	return regex.test(url)
 }
-
