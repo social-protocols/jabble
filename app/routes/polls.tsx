@@ -1,6 +1,6 @@
 import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import PollResult from '#app/components/building-blocks/poll-result.tsx'
 import { PostContent } from '#app/components/building-blocks/post-content.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
@@ -120,12 +120,19 @@ function PollPostClaimContext({
 }) {
 	const artefactSubmissionDate = new Date(artefact.createdAt)
 
+	const isTweet = isValidTweetUrl(artefact.url)
+
 	return (
 		<div className="my-2 flex flex-col rounded-lg border-2 border-solid bg-background p-4">
 			{quote && (
 				<>
-					<Icon name="quote" size="xl" className="mb-2 mr-auto" />
-					<div>{quote.quote}</div>
+					{isTweet && <EmbeddedTweet tweetUrl={artefact.url} />}
+					{!isTweet && (
+						<>
+							<Icon name="quote" size="xl" className="mb-2 mr-auto" />
+							<PostContent content={quote.quote} deactivateLinks={true} />
+						</>
+					)}
 				</>
 			)}
 			<div className="mt-2 flex flex-col">
@@ -143,3 +150,141 @@ function PollPostClaimContext({
 		</div>
 	)
 }
+
+interface OEmbedResponse {
+	html: string
+	// Add other properties if needed
+}
+
+function EmbeddedTweet({ tweetUrl }: { tweetUrl: string }) {
+
+	const [embedHtml, setEmbedHtml] = useState<string | undefined>(undefined)
+	const [cache, setCache] = useState<{ [key: string]: string }>({})
+	const [isValidUrl, setIsValidUrl] = useState<boolean>(false)
+	const [isFetching, setIsFetching] = useState<boolean>(false)
+	const [isTweetLoaded, setIsTweetLoaded] = useState<boolean>(false)
+	const [fetchError, setFetchError] = useState<string | null>(null)
+
+	const embedContainerRef = useRef<HTMLDivElement>(null)
+
+	useEffect(() => {
+		if (isValidTweetUrl(tweetUrl)) {
+			setIsValidUrl(true)
+			setFetchError(null)
+			setEmbedHtml(undefined) // Reset embedHtml when URL changes
+			if (cache[tweetUrl]) {
+				setEmbedHtml(cache[tweetUrl])
+			} else {
+				setIsFetching(true)
+				fetch(`/oembed?url=${encodeURIComponent(tweetUrl)}`)
+					.then(async response => {
+						if (!response.ok) {
+							if (response.status === 404) {
+								throw new Error('Tweet not found')
+							} else {
+								throw new Error('Failed to fetch oEmbed data')
+							}
+						}
+						const data = (await response.json()) as OEmbedResponse
+						if (!data.html) {
+							throw new Error('Invalid oEmbed data')
+						}
+						setCache(prevCache => ({
+							...prevCache,
+							[tweetUrl]: data.html,
+						}))
+						setEmbedHtml(data.html)
+					})
+					.catch(error => {
+						console.error('Error fetching oEmbed data:', error)
+						setEmbedHtml('') // Ensure embedHtml is falsy on error
+						setFetchError(error.message)
+					})
+					.finally(() => {
+						setIsFetching(false)
+					})
+			}
+		} else {
+			setIsValidUrl(false)
+			setEmbedHtml(undefined) // Reset embedHtml when URL is invalid
+			setFetchError(null)
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [tweetUrl])
+
+	useEffect(() => {
+		if (embedHtml) {
+			setIsTweetLoaded(false)
+
+			const loadTwitterScript = () => {
+				if (window.twttr && window.twttr.widgets) {
+					window.twttr.widgets.load()
+				} else {
+					const script = document.createElement('script')
+					script.src = 'https://platform.twitter.com/widgets.js'
+					script.async = true
+					script.onload = () => {
+						if (window.twttr && window.twttr.widgets) {
+							window.twttr.widgets.load()
+						}
+					}
+					document.body.appendChild(script)
+				}
+			}
+			loadTwitterScript()
+
+			const checkTweetLoaded = () => {
+				const embedContainer = embedContainerRef.current
+				if (!embedContainer) return
+
+				// Check if the tweet iframe is loaded
+				const iframe = embedContainer.querySelector('iframe')
+				if (iframe) {
+					iframe.addEventListener('load', () => {
+						setIsTweetLoaded(true)
+					})
+				} else {
+					// If iframe is not found immediately, observe for its addition
+					const observer = new MutationObserver(() => {
+						const iframe = embedContainer.querySelector('iframe')
+						if (iframe) {
+							iframe.addEventListener('load', () => {
+								setIsTweetLoaded(true)
+							})
+							observer.disconnect()
+						}
+					})
+					observer.observe(embedContainer, { childList: true, subtree: true })
+				}
+			}
+
+			checkTweetLoaded()
+		}
+	}, [embedHtml])
+
+	return (
+		<>
+			{(isFetching || !isTweetLoaded) && (
+				<div>
+					Loading
+					<Icon name="update" className="ml-2 animate-spin" />
+				</div>
+			)}
+			{embedHtml && (
+				<div style={{ position: 'relative' }}>
+					<div
+						ref={embedContainerRef}
+						dangerouslySetInnerHTML={{ __html: embedHtml }}
+					/>
+				</div>
+			)}
+		</>
+	)
+}
+
+function isValidTweetUrl(url: string): boolean {
+	const regex =
+		/^https?:\/\/(www\.)?(twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/
+	return regex.test(url)
+}
+
