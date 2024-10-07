@@ -13,7 +13,7 @@ export const loader: LoaderFunction = async (args: LoaderFunctionArgs) => {
   }
 
   if (isTweetUrl(url)) {
-    return await twitterOembed(request);
+    return await proxyTwitterOembed(request);
   }
 
   const hackerNewsId = parseHackerNewsNewsItemUrl(url);
@@ -25,7 +25,7 @@ export const loader: LoaderFunction = async (args: LoaderFunctionArgs) => {
   return errorResponse(400, "Unsupported URL");
 };
 
-const twitterOembed = async (request: Request) => {
+const proxyTwitterOembed = async (request: Request) => {
 
   const apiUrl = `https://publish.twitter.com/oembed${new URL(request.url).search}`;
 
@@ -33,7 +33,7 @@ const twitterOembed = async (request: Request) => {
     const response = await fetch(apiUrl, {
       method: 'GET',
       headers: {
-        'User-Agent': request.headers.get('User-Agent') || 'Jabble/1.0',
+        'User-Agent': request.headers.get('User-Agent') || 'YourAppName/1.0',
       },
     });
 
@@ -113,23 +113,72 @@ interface HackerNewsItem {
   text?: string;
   time: number;
   type: string;
+  title?: string; // For story items
+  url?: string;
   [key: string]: any;
 }
 
-const hackerNewsOembed = async (itemId: number) => {
+// Utility function to get relative time
+function timeAgo(timestamp: number): string {
+  const now = Date.now();
+  const secondsPast = (now - timestamp * 1000) / 1000;
 
+  if (secondsPast < 60) {
+    return `${Math.floor(secondsPast)} seconds ago`;
+  }
+  if (secondsPast < 3600) {
+    return `${Math.floor(secondsPast / 60)} minutes ago`;
+  }
+  if (secondsPast < 86400) {
+    return `${Math.floor(secondsPast / 3600)} hours ago`;
+  }
+  if (secondsPast < 2592000) {
+    return `${Math.floor(secondsPast / 86400)} days ago`;
+  }
+  if (secondsPast < 31104000) {
+    return `${Math.floor(secondsPast / 2592000)} months ago`;
+  }
+  return `${Math.floor(secondsPast / 31104000)} years ago`;
+}
+
+const hackerNewsOembed = async (itemId: number) => {
   try {
-    // Fetch the comment data from the Hacker News API
+    // Fetch the item data from the Hacker News API
     const response = await fetch(`https://hacker-news.firebaseio.com/v0/item/${itemId}.json`);
     if (!response.ok) {
       throw new Error(`Failed to fetch item with id ${itemId}`);
     }
 
-		const data = await response.json() as HackerNewsItem;
+    const data = await response.json() as HackerNewsItem;
 
     // Check if the item text exists
     if (!data.text) {
       throw new Error('Item text is missing');
+    }
+
+    // Fetch the parent item to get the story title
+    let storyTitle = '';
+    let storyId = '';
+    if (data.parent) {
+      const parentResponse = await fetch(`https://hacker-news.firebaseio.com/v0/item/${data.parent}.json`);
+      if (parentResponse.ok) {
+        const parentData = await parentResponse.json() as HackerNewsItem;
+
+        if (parentData.type === 'story') {
+          storyTitle = parentData.title || '';
+          storyId = parentData.id.toString();
+        } else if (parentData.parent) {
+          // Fetch the grandparent item
+          const grandParentResponse = await fetch(`https://hacker-news.firebaseio.com/v0/item/${parentData.parent}.json`);
+          if (grandParentResponse.ok) {
+            const grandParentData = await grandParentResponse.json() as HackerNewsItem;
+            if (grandParentData.type === 'story') {
+              storyTitle = grandParentData.title || '';
+              storyId = grandParentData.id.toString();
+            }
+          }
+        }
+      }
     }
 
     // Sanitize the item text to prevent XSS attacks
@@ -142,9 +191,8 @@ const hackerNewsOembed = async (itemId: number) => {
       },
     });
 
-    // Format the timestamp to a readable date and time
-    const date = new Date(data.time * 1000);
-    const formattedTime = date.toLocaleString('en-US', { timeZone: 'UTC' });
+    // Get relative time
+    const relativeTime = timeAgo(data.time);
 
     // Generate the HTML for the comment
     const html = `
@@ -153,6 +201,11 @@ const hackerNewsOembed = async (itemId: number) => {
   font-family: Verdana, Geneva, sans-serif;
   font-size: 10pt;
   line-height: 1.4em;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  padding: 10px;
+  background-color: #f6f6ef;
+  position: relative;
 }
 
 .hn-comment-header {
@@ -169,26 +222,53 @@ const hackerNewsOembed = async (itemId: number) => {
   font-size: 8pt;
 }
 
-.hn-comment-link {
+.hn-comment-title {
+  color: #828282;
+  font-size: 8pt;
   margin-left: 5px;
 }
 
 .hn-comment-text {
   margin-top: 10px;
 }
+
+.hn-logo {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.hn-logo img {
+  width: 20px;
+  height: 20px;
+}
+
+.hn-comment a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.hn-comment a:hover {
+  text-decoration: none;
+}
 </style>
-<div class="hn-comment">
-  <div class="hn-comment-header">
-    <span class="hn-comment-author">
-      <a href="https://news.ycombinator.com/user?id=${encodeURIComponent(data.by)}">${data.by}</a>
-    </span>
-    <span class="hn-comment-time">${formattedTime}</span>
-    <span class="hn-comment-link">
-      <a href="https://news.ycombinator.com/item?id=${data.id}">link</a>
-    </span>
+<a href="https://news.ycombinator.com/item?id=${storyId}#${data.id}" target="_blank" rel="noopener noreferrer" class="hn-comment-link">
+  <div class="hn-comment">
+    <div class="hn-logo">
+      <img src="https://news.ycombinator.com/favicon.ico" alt="Hacker News">
+    </div>
+    <div class="hn-comment-header">
+      <span class="hn-comment-author">${data.by}</span>
+      <span class="hn-comment-time">${relativeTime}</span>
+      ${
+        storyTitle
+          ? `<span class="hn-comment-title">on: ${sanitizeHtml(storyTitle)}</span>`
+          : ''
+      }
+    </div>
+    <div class="hn-comment-text">${sanitizedText}</div>
   </div>
-  <div class="hn-comment-text">${sanitizedText}</div>
-</div>
+</a>
 `;
 
     // Build the oEmbed response
@@ -199,7 +279,6 @@ const hackerNewsOembed = async (itemId: number) => {
       width: 600,
       height: null,
       author_name: data.by,
-      author_url: `https://news.ycombinator.com/user?id=${encodeURIComponent(data.by)}`,
       provider_name: 'Hacker News',
       provider_url: 'https://news.ycombinator.com',
       cache_age: '86400', // Cache for one day
