@@ -48,7 +48,7 @@ export async function extractClaims(content: string): Promise<string[]> {
 Extract all the claims made in the provided piece of content.
 Claims should be direct: For example, if a speaker makes claim X, extract "X", not "Speaker claims X".
 Don't use the passive form.
-If a speaker uses the personal pronoun "I", try to infer the person's name and restate the claim in the third person.
+Restate deictic expressions so the claim is understandable on its own. For example, if the speaker says "This is illegal in these four countries", infer what "this" and "these four countries" refers to and explicitly state these in the claim. If a speaker uses the personal pronoun "I", try to infer the person's name and restate the claim in the third person. 
 	`
 
 	const completion = await openai.beta.chat.completions.parse({

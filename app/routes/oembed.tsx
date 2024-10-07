@@ -106,13 +106,13 @@ interface OEmbedResponse {
 }
 
 interface HackerNewsItem {
-  by: string;
-  id: number;
+  by?: string;
+  id?: number;
   kids?: number[];
   parent?: number;
   text?: string;
-  time: number;
-  type: string;
+  time?: number;
+  type?: string;
   title?: string; // For story items
   url?: string;
   [key: string]: any;
@@ -141,11 +141,12 @@ function timeAgo(timestamp: number): string {
   return `${Math.floor(secondsPast / 31104000)} years ago`;
 }
 
-// Function to fetch the comment thread
-async function getCommentThread(itemId: number): Promise<HackerNewsItem[]> {
+// Function to fetch the comment thread and story ID
+async function getCommentThread(itemId: number): Promise<{ thread: HackerNewsItem[]; storyId: number }> {
   const thread: HackerNewsItem[] = [];
 
   let currentId = itemId;
+  let storyId = 0;
 
   while (true) {
     const response = await fetch(`https://hacker-news.firebaseio.com/v0/item/${currentId}.json`);
@@ -157,19 +158,26 @@ async function getCommentThread(itemId: number): Promise<HackerNewsItem[]> {
     thread.unshift(data); // Add to the beginning to build from root to leaf
 
     if (!data.parent || data.type === 'story') {
+      if (data.type === 'story' && data.id) {
+        storyId = data.id;
+      }
       break;
     }
 
     currentId = data.parent;
   }
 
-  return thread;
+  if (storyId === 0 && thread.length > 0 && thread[0].parent) {
+    // If storyId is not set, use the parent of the first item
+    storyId = thread[0].parent!;
+  }
+
+  return { thread, storyId };
 }
 
 // Function to generate HTML for the comment thread
-function generateThreadHTML(thread: HackerNewsItem[]): string {
+function generateThreadHTML(thread: HackerNewsItem[], storyId: number): string {
   let html = '';
-  const totalLevels = thread.length;
 
   thread.forEach((comment, index) => {
     // Skip the story item if it's at the beginning
@@ -186,23 +194,26 @@ function generateThreadHTML(thread: HackerNewsItem[]): string {
       },
     });
 
-    const relativeTime = timeAgo(comment.time);
-
-    const isLast = index === totalLevels - 1;
+    const relativeTime = comment.time ? timeAgo(comment.time) : '';
 
     const indent = index * 20; // Adjust indentation per level
 
+    const author = comment.by || '[deleted]';
+    const commentId = comment.id || '';
+    const commentUrl = `https://news.ycombinator.com/item?id=${storyId}#${commentId}`;
+
     html += `
-      <div class="hn-comment-level" style="margin-left: ${indent}px;">
-        ${!isLast ? `<div class="hn-vertical-line" style="left: ${-10 + indent}px;"></div>` : ''}
-        <div class="hn-comment" style="font-size: ${isLast ? '10pt' : '9pt'};">
-          <div class="hn-comment-header">
-            <span class="hn-comment-author">${comment.by}</span>
-            <span class="hn-comment-time">${relativeTime}</span>
+      <a href="${commentUrl}" target="_blank" rel="noopener noreferrer" class="hn-comment-link">
+        <div class="hn-comment-level" style="margin-left: ${indent}px;">
+          <div class="hn-comment" style="font-size: ${index === thread.length - 1 ? '10pt' : '9pt'};">
+            <div class="hn-comment-header">
+              <span class="hn-comment-author">${author}</span>
+              <span class="hn-comment-time">${relativeTime}</span>
+            </div>
+            <div class="hn-comment-text">${sanitizedText}</div>
           </div>
-          <div class="hn-comment-text">${sanitizedText}</div>
         </div>
-      </div>
+      </a>
     `;
   });
 
@@ -211,15 +222,15 @@ function generateThreadHTML(thread: HackerNewsItem[]): string {
 
 const hackerNewsOembed = async (itemId: number) => {
   try {
-    // Get the comment thread
-    const thread = await getCommentThread(itemId);
+    // Get the comment thread and story ID
+    const { thread, storyId } = await getCommentThread(itemId);
 
     if (thread.length === 0) {
       throw new Error('Comment not found');
     }
 
     // Generate HTML for the thread
-    const htmlContent = generateThreadHTML(thread);
+    const htmlContent = generateThreadHTML(thread, storyId);
 
     // Wrap the entire content in the main container
     const html = `
@@ -236,7 +247,6 @@ const hackerNewsOembed = async (itemId: number) => {
     }
 
     .hn-comment-level {
-      position: relative;
       margin-bottom: 10px;
     }
 
@@ -245,11 +255,11 @@ const hackerNewsOembed = async (itemId: number) => {
     }
 
     .hn-comment-header {
-      margin-bottom: 5px;
+      margin-bottom: 2px; /* Reduced margin */
     }
 
     .hn-comment-author {
-      font-weight: bold;
+      font-weight: normal; /* Removed bold */
     }
 
     .hn-comment-time {
@@ -259,7 +269,7 @@ const hackerNewsOembed = async (itemId: number) => {
     }
 
     .hn-comment-text {
-      margin-top: 10px;
+      margin-top: 5px; /* Reduced margin */
     }
 
     .hn-logo {
@@ -273,27 +283,22 @@ const hackerNewsOembed = async (itemId: number) => {
       height: 20px;
     }
 
-    .hn-vertical-line {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 2px;
-      background-color: #e6e6e6;
+    .hn-comment-link {
+      text-decoration: none;
+      color: inherit;
     }
 
-    .hn-comment-level:last-child .hn-vertical-line {
-      bottom: calc(100% - 20px); /* Adjust to end above the username */
+    .hn-comment-link:hover {
+      text-decoration: none;
     }
 
     </style>
-    <a href="https://news.ycombinator.com/item?id=${thread[thread.length - 1].id}" target="_blank" rel="noopener noreferrer" class="hn-comment-link">
-      <div class="hn-comment-thread">
-        <div class="hn-logo">
-          <img src="https://news.ycombinator.com/favicon.ico" alt="Hacker News">
-        </div>
-        ${htmlContent}
+    <div class="hn-comment-thread">
+      <div class="hn-logo">
+        <img src="https://news.ycombinator.com/favicon.ico" alt="Hacker News">
       </div>
-    </a>
+      ${htmlContent}
+    </div>
     `;
 
     // Build the oEmbed response
@@ -303,7 +308,7 @@ const hackerNewsOembed = async (itemId: number) => {
       html: html,
       width: 600,
       height: null,
-      author_name: thread[thread.length - 1].by,
+      author_name: thread[thread.length - 1].by || '[deleted]',
       provider_name: 'Hacker News',
       provider_url: 'https://news.ycombinator.com',
       cache_age: '86400', // Cache for one day
