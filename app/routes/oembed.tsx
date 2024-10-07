@@ -1,61 +1,92 @@
 import { type LoaderFunctionArgs, type LoaderFunction } from "@remix-run/node";
-
 import fetch from 'node-fetch';
 import sanitizeHtml from 'sanitize-html';
 
-
 export const loader: LoaderFunction = async (args: LoaderFunctionArgs) => {
 
-	const request = args.request
+  const request = args.request;
 
-	const url = new URL(request.url).searchParams.get('url');
+  const url = new URL(request.url).searchParams.get('url');
 
-	if (!url) {
-		return errorResponse(400, "url: queryParam is required")
-	}
+  if (!url) {
+    return errorResponse(400, "url: queryParam is required");
+  }
 
-	if (isTweetUrl(url)) {
-		return await proxyTwitterOembed(args);
-	}
+  if (isTweetUrl(url)) {
+    return await twitterOembed(request);
+  }
 
+  const hackerNewsId = parseHackerNewsNewsItemUrl(url);
+  if (hackerNewsId !== undefined) {
+    return await hackerNewsOembed(hackerNewsId);
+  }
 
-}
-
-
-const proxyTwitterOembed: LoaderFunction = async ({ request }) => {
-
-	const apiUrl = `https://publish.twitter.com/oembed${new URL(request.url).search}`;
-
-	try {
-		const response = await fetch(apiUrl, {
-			method: 'GET',
-			headers: {
-				'User-Agent': request.headers.get('User-Agent') || 'Jabble/1.0',
-			},
-		});
-
-		// Return Twitter's response directly
-		return new Response(response.body, {
-			status: response.status,
-			headers: response.headers,
-		});
-	} catch (error: any) {
-		console.error('Error fetching from Twitter API:', error);
-
-		return errorResponse(502, "The proxy server received an invalid response from the upstream server.")
-	}
+  // If URL does not match any known patterns
+  return errorResponse(400, "Unsupported URL");
 };
 
+const twitterOembed = async (request: Request) => {
+
+  const apiUrl = `https://publish.twitter.com/oembed${new URL(request.url).search}`;
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'User-Agent': request.headers.get('User-Agent') || 'Jabble/1.0',
+      },
+    });
+
+    const responseBody = await response.text();
+
+    // Return Twitter's response directly
+    return new Response(responseBody, {
+      status: response.status,
+      headers: {
+        "Content-Type": response.headers.get("Content-Type") || "application/json; charset=utf-8",
+      },
+    });
+  } catch (error: any) {
+    console.error('Error fetching from Twitter API:', error);
+
+    return errorResponse(502, "The proxy server received an invalid response from the upstream server.");
+  }
+};
 
 function isTweetUrl(url: string): boolean {
-	const regex =
-		/^https?:\/\/(www\.)?(twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/
-	return regex.test(url)
+  const regex =
+    /^https?:\/\/(www\.)?(twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/
+  return regex.test(url);
 }
 
-function isHackerNewsItemUrl(url: string): boolean {
-}
+function parseHackerNewsNewsItemUrl(url: string): number | undefined {
+  try {
+    // Parse the URL
+    const parsedUrl = new URL(url);
 
+    // Check if hostname is 'news.ycombinator.com'
+    if (parsedUrl.hostname !== 'news.ycombinator.com') {
+      return undefined;
+    }
+
+    // Check if path is '/item'
+    if (parsedUrl.pathname !== '/item') {
+      return undefined;
+    }
+
+    // Extract 'id' query parameter
+    const id = parsedUrl.searchParams.get('id');
+    if (!id) {
+      return undefined;
+    }
+
+    // Parse ID and return
+    return parseInt(id, 10);
+  } catch (e) {
+    // If any error occurs, return undefined
+    return undefined;
+  }
+}
 
 interface OEmbedResponse {
   version: string;
@@ -74,27 +105,34 @@ interface OEmbedResponse {
   thumbnail_height?: number;
 }
 
-async function getHackerNewsCommentOEmbed(commentId: number): Promise<OEmbedResponse> {
+interface HackerNewsItem {
+  by: string;
+  id: number;
+  kids?: number[];
+  parent?: number;
+  text?: string;
+  time: number;
+  type: string;
+  [key: string]: any;
+}
+
+const hackerNewsOembed = async (itemId: number) => {
+
   try {
     // Fetch the comment data from the Hacker News API
-    const response = await fetch(`https://hacker-news.firebaseio.com/v0/item/${commentId}.json`);
+    const response = await fetch(`https://hacker-news.firebaseio.com/v0/item/${itemId}.json`);
     if (!response.ok) {
-      throw new Error(`Failed to fetch comment with id ${commentId}`);
+      throw new Error(`Failed to fetch item with id ${itemId}`);
     }
 
-    const data = await response.json();
+		const data = await response.json() as HackerNewsItem;
 
-    // Check if the item is a comment
-    if (data.type !== 'comment') {
-      throw new Error('Item is not a comment');
-    }
-
-    // Check if the comment text exists
+    // Check if the item text exists
     if (!data.text) {
-      throw new Error('Comment text is missing');
+      throw new Error('Item text is missing');
     }
 
-    // Sanitize the comment text to prevent XSS attacks
+    // Sanitize the item text to prevent XSS attacks
     const sanitizedText = sanitizeHtml(data.text, {
       allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
       allowedAttributes: {
@@ -167,14 +205,18 @@ async function getHackerNewsCommentOEmbed(commentId: number): Promise<OEmbedResp
       cache_age: '86400', // Cache for one day
     };
 
-    return oEmbedResponse;
+    return new Response(JSON.stringify(oEmbedResponse), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+      },
+    });
+
   } catch (error) {
-    throw error;
+    console.error('Error fetching Hacker News item:', error);
+    return errorResponse(500, 'Internal Server Error');
   }
-}
-
-
-
+};
 
 function errorResponse(httpStatusCode: number, message: string) {
   const errorResponse = {
@@ -185,11 +227,11 @@ function errorResponse(httpStatusCode: number, message: string) {
     ],
   };
 
-	return new Response(JSON.stringify(errorResponse), {
-		status: httpStatusCode,
-		headers: {
-			"Content-Type": "application/json; charset=utf-8",
-			"Cache-Control": "no-cache, no-store, max-age=0",
-		},
-	});	
+  return new Response(JSON.stringify(errorResponse), {
+    status: httpStatusCode,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-cache, no-store, max-age=0",
+    },
+  });
 }
