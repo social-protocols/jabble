@@ -141,48 +141,43 @@ function timeAgo(timestamp: number): string {
   return `${Math.floor(secondsPast / 31104000)} years ago`;
 }
 
-const hackerNewsOembed = async (itemId: number) => {
-  try {
-    // Fetch the item data from the Hacker News API
-    const response = await fetch(`https://hacker-news.firebaseio.com/v0/item/${itemId}.json`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch item with id ${itemId}`);
-    }
+// Function to fetch the comment thread
+async function getCommentThread(itemId: number): Promise<HackerNewsItem[]> {
+  const thread: HackerNewsItem[] = [];
 
+  let currentId = itemId;
+
+  while (true) {
+    const response = await fetch(`https://hacker-news.firebaseio.com/v0/item/${currentId}.json`);
+    if (!response.ok) {
+      break; // or throw an error
+    }
     const data = await response.json() as HackerNewsItem;
 
-    // Check if the item text exists
-    if (!data.text) {
-      throw new Error('Item text is missing');
+    thread.unshift(data); // Add to the beginning to build from root to leaf
+
+    if (!data.parent || data.type === 'story') {
+      break;
     }
 
-    // Fetch the parent item to get the story title
-    let storyTitle = '';
-    let storyId = '';
-    if (data.parent) {
-      const parentResponse = await fetch(`https://hacker-news.firebaseio.com/v0/item/${data.parent}.json`);
-      if (parentResponse.ok) {
-        const parentData = await parentResponse.json() as HackerNewsItem;
+    currentId = data.parent;
+  }
 
-        if (parentData.type === 'story') {
-          storyTitle = parentData.title || '';
-          storyId = parentData.id.toString();
-        } else if (parentData.parent) {
-          // Fetch the grandparent item
-          const grandParentResponse = await fetch(`https://hacker-news.firebaseio.com/v0/item/${parentData.parent}.json`);
-          if (grandParentResponse.ok) {
-            const grandParentData = await grandParentResponse.json() as HackerNewsItem;
-            if (grandParentData.type === 'story') {
-              storyTitle = grandParentData.title || '';
-              storyId = grandParentData.id.toString();
-            }
-          }
-        }
-      }
+  return thread;
+}
+
+// Function to generate HTML for the comment thread
+function generateThreadHTML(thread: HackerNewsItem[]): string {
+  let html = '';
+  const totalLevels = thread.length;
+
+  thread.forEach((comment, index) => {
+    // Skip the story item if it's at the beginning
+    if (index === 0 && comment.type === 'story') {
+      return;
     }
 
-    // Sanitize the item text to prevent XSS attacks
-    const sanitizedText = sanitizeHtml(data.text, {
+    const sanitizedText = sanitizeHtml(comment.text || '', {
       allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img']),
       allowedAttributes: {
         a: ['href', 'name', 'target'],
@@ -191,85 +186,115 @@ const hackerNewsOembed = async (itemId: number) => {
       },
     });
 
-    // Get relative time
-    const relativeTime = timeAgo(data.time);
+    const relativeTime = timeAgo(comment.time);
 
-    // Generate the HTML for the comment
+    const isLast = index === totalLevels - 1;
+
+    const indent = index * 20; // Adjust indentation per level
+
+    html += `
+      <div class="hn-comment-level" style="margin-left: ${indent}px;">
+        ${!isLast ? `<div class="hn-vertical-line" style="left: ${-10 + indent}px;"></div>` : ''}
+        <div class="hn-comment" style="font-size: ${isLast ? '10pt' : '9pt'};">
+          <div class="hn-comment-header">
+            <span class="hn-comment-author">${comment.by}</span>
+            <span class="hn-comment-time">${relativeTime}</span>
+          </div>
+          <div class="hn-comment-text">${sanitizedText}</div>
+        </div>
+      </div>
+    `;
+  });
+
+  return html;
+}
+
+const hackerNewsOembed = async (itemId: number) => {
+  try {
+    // Get the comment thread
+    const thread = await getCommentThread(itemId);
+
+    if (thread.length === 0) {
+      throw new Error('Comment not found');
+    }
+
+    // Generate HTML for the thread
+    const htmlContent = generateThreadHTML(thread);
+
+    // Wrap the entire content in the main container
     const html = `
-<style>
-.hn-comment {
-  font-family: Verdana, Geneva, sans-serif;
-  font-size: 10pt;
-  line-height: 1.4em;
-  border: 1px solid #e6e6e6;
-  border-radius: 8px;
-  padding: 10px;
-  background-color: #f6f6ef;
-  position: relative;
-}
+    <style>
+    .hn-comment-thread {
+      position: relative;
+      font-family: Verdana, Geneva, sans-serif;
+      font-size: 10pt;
+      line-height: 1.4em;
+      border: 1px solid #e6e6e6;
+      border-radius: 8px;
+      padding: 10px;
+      background-color: #f6f6ef;
+    }
 
-.hn-comment-header {
-  margin-bottom: 5px;
-}
+    .hn-comment-level {
+      position: relative;
+      margin-bottom: 10px;
+    }
 
-.hn-comment-author {
-  font-weight: bold;
-}
+    .hn-comment {
+      position: relative;
+    }
 
-.hn-comment-time {
-  color: #828282;
-  margin-left: 5px;
-  font-size: 8pt;
-}
+    .hn-comment-header {
+      margin-bottom: 5px;
+    }
 
-.hn-comment-title {
-  color: #828282;
-  font-size: 8pt;
-  margin-left: 5px;
-}
+    .hn-comment-author {
+      font-weight: bold;
+    }
 
-.hn-comment-text {
-  margin-top: 10px;
-}
+    .hn-comment-time {
+      color: #828282;
+      margin-left: 5px;
+      font-size: 8pt;
+    }
 
-.hn-logo {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
+    .hn-comment-text {
+      margin-top: 10px;
+    }
 
-.hn-logo img {
-  width: 20px;
-  height: 20px;
-}
+    .hn-logo {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
 
-.hn-comment a {
-  text-decoration: none;
-  color: inherit;
-}
+    .hn-logo img {
+      width: 20px;
+      height: 20px;
+    }
 
-.hn-comment a:hover {
-  text-decoration: none;
-}
-</style>
-<a href="https://news.ycombinator.com/item?id=${storyId}#${data.id}" target="_blank" rel="noopener noreferrer" class="hn-comment-link">
-  <div class="hn-comment">
-    <div class="hn-logo">
-      <img src="https://news.ycombinator.com/favicon.ico" alt="Hacker News">
-    </div>
-    <div class="hn-comment-header">
-      <span class="hn-comment-author">${data.by}</span>
-      <span class="hn-comment-time">${relativeTime}</span>
-      ${
-        storyTitle
-          ? `<span class="hn-comment-title">on: ${sanitizeHtml(storyTitle)}</span>`
-          : ''
-      }
-    </div>
-    <div class="hn-comment-text">${sanitizedText}</div>
-  </div>
-</a>
-`;
+    .hn-vertical-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background-color: #e6e6e6;
+    }
+
+    .hn-comment-level:last-child .hn-vertical-line {
+      bottom: calc(100% - 20px); /* Adjust to end above the username */
+    }
+
+    </style>
+    <a href="https://news.ycombinator.com/item?id=${thread[thread.length - 1].id}" target="_blank" rel="noopener noreferrer" class="hn-comment-link">
+      <div class="hn-comment-thread">
+        <div class="hn-logo">
+          <img src="https://news.ycombinator.com/favicon.ico" alt="Hacker News">
+        </div>
+        ${htmlContent}
+      </div>
+    </a>
+    `;
 
     // Build the oEmbed response
     const oEmbedResponse: OEmbedResponse = {
@@ -278,7 +303,7 @@ const hackerNewsOembed = async (itemId: number) => {
       html: html,
       width: 600,
       height: null,
-      author_name: data.by,
+      author_name: thread[thread.length - 1].by,
       provider_name: 'Hacker News',
       provider_url: 'https://news.ycombinator.com',
       cache_age: '86400', // Cache for one day
