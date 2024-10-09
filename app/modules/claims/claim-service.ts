@@ -3,33 +3,62 @@ import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
 import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { extractTweetTextGraphQL } from '#app/utils/tweet_extraction.server.ts'
+import { isValidTweetUrl, parseTweetURL } from '#app/utils/twitter-utils.ts'
 import { extractClaims } from '../claim-extraction/claim-extraction-client.ts'
 import { fallacyDetection } from '../fallacies/fallacy-detection-client.ts'
-import { getOrCreateArtefact } from './artefact-repository.ts'
+import { getArtefact, getOrCreateArtefact } from './artefact-repository.ts'
 import { getClaims, insertClaim } from './claim-repository.ts'
 import { type Claim, type Artefact, type Quote } from './claim-types.ts'
 import { storeQuoteFallacies } from './quote-fallacy-repository.ts'
 import { insertQuote } from './quote-repository.ts'
 
-function parseTweetURL(url: string): string | null {
-	const regex =
-		/^https?:\/\/(www\.)?(twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(?:es)?\/(\d+)/
-	const match = regex.exec(url)
-	if (match && match[4]) {
-		return match[4] // match[4] is the tweet ID
-	} else {
-		return null
+export async function submitArtefact(
+	trx: Transaction<DB>,
+	url: string,
+): Promise<{
+	artefact: Artefact
+	navigateTo: string
+}> {
+	const artefact = await getOrCreateArtefact(trx, url)
+
+	if (isValidTweetUrl(url)) {
+		const tweetId = parseTweetURL(url)
+
+		invariant(tweetId, `Couldn't parse tweet url for url: ${url}`)
+
+		const existingQuote: Quote | undefined = await trx
+			.selectFrom('Quote')
+			.where('artefactId', '=', artefact.id)
+			.selectAll()
+			.executeTakeFirst()
+
+		if (existingQuote !== undefined) {
+			return {
+				artefact: artefact,
+				navigateTo: `/artefact/${artefact.id}/quote/${existingQuote.id}`,
+			}
+		}
+
+		const quoteContent = await extractTweetTextGraphQL(tweetId)
+		const persistedQuote = await submitQuote(trx, artefact.id, quoteContent)
+
+		return {
+			artefact: artefact,
+			navigateTo: `/artefact/${artefact.id}/quote/${persistedQuote.id}`,
+		}
+	}
+
+	return {
+		artefact: artefact,
+		navigateTo: `/artefact/${artefact.id}`,
 	}
 }
 
-export async function submitArtefactWithQuote(
+export async function submitQuote(
 	trx: Transaction<DB>,
-	url: string,
+	artefactId: number,
 	quoteContent: string,
-): Promise<{
-	artefact: Artefact
-	quote: Quote
-}> {
+): Promise<Quote> {
 	invariant(
 		quoteContent.length <= MAX_CHARS_PER_QUOTE,
 		'Document for claim extraction is content too long',
@@ -39,7 +68,7 @@ export async function submitArtefactWithQuote(
 		'Document for claim extraction is  content too short',
 	)
 
-	const artefact = await getOrCreateArtefact(trx, url)
+	const artefact = await getArtefact(trx, artefactId)
 
 	const existingQuote: Quote | undefined = await trx
 		.selectFrom('Quote')
@@ -49,12 +78,7 @@ export async function submitArtefactWithQuote(
 		.executeTakeFirst()
 
 	if (existingQuote !== undefined) {
-		return { artefact: artefact, quote: existingQuote }
-	}
-
-	const tweetId = parseTweetURL(url)
-	if (tweetId !== null) {
-		quoteContent = await extractTweetTextGraphQL(tweetId)
+		return existingQuote
 	}
 
 	const persistedQuote = await trx
@@ -76,10 +100,7 @@ export async function submitArtefactWithQuote(
 	const detectedFallacies = await fallacyDetection(persistedQuote.quote)
 	await storeQuoteFallacies(trx, persistedQuote.id, detectedFallacies)
 
-	return {
-		artefact: artefact,
-		quote: persistedQuote,
-	}
+	return persistedQuote
 }
 
 export async function getOrCreateClaims(

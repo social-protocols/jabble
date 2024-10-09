@@ -60,3 +60,23 @@ export async function getQuote(
 		createdAt: result.createdAt,
 	}
 }
+
+export async function getQuotes(
+	trx: Transaction<DB>,
+	artefactId: number,
+): Promise<Quote[]> {
+	const result: Quote[] = await trx
+		.selectFrom('Quote')
+		.where('artefactId', '=', artefactId)
+		.selectAll()
+		.execute()
+
+	return result.map(row => {
+		return {
+			id: row.id,
+			artefactId: row.artefactId,
+			quote: row.quote,
+			createdAt: row.createdAt,
+		}
+	})
+}
