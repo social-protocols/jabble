@@ -5,7 +5,7 @@ import { invariant } from '#app/utils/misc.tsx'
 import { extractTweetTextGraphQL } from '#app/utils/tweet_extraction.server.ts'
 import { extractClaims } from '../claim-extraction/claim-extraction-client.ts'
 import { fallacyDetection } from '../fallacies/fallacy-detection-client.ts'
-import { getOrCreateArtefact } from './artefact-repository.ts'
+import { getArtefact, getOrCreateArtefact } from './artefact-repository.ts'
 import { getClaims, insertClaim } from './claim-repository.ts'
 import { type Claim, type Artefact, type Quote } from './claim-types.ts'
 import { storeQuoteFallacies } from './quote-fallacy-repository.ts'
@@ -80,6 +80,55 @@ export async function submitArtefactWithQuote(
 		artefact: artefact,
 		quote: persistedQuote,
 	}
+}
+
+export async function submitQuote(
+	trx: Transaction<DB>,
+	artefactId: number,
+	quoteContent: string,
+): Promise<Quote> {
+	invariant(
+		quoteContent.length <= MAX_CHARS_PER_QUOTE,
+		'Document for claim extraction is content too long',
+	)
+	invariant(
+		quoteContent.length > 0,
+		'Document for claim extraction is  content too short',
+	)
+
+	const artefact = await getArtefact(trx, artefactId)
+
+	const existingQuote: Quote | undefined = await trx
+		.selectFrom('Quote')
+		.where('quote', '=', quoteContent)
+		.where('artefactId', '=', artefact.id)
+		.selectAll()
+		.executeTakeFirst()
+
+	if (existingQuote !== undefined) {
+		return existingQuote
+	}
+
+	const persistedQuote = await trx
+		.insertInto('Quote')
+		.values({
+			artefactId: artefact.id,
+			quote: quoteContent,
+		})
+		.returningAll()
+		.executeTakeFirstOrThrow()
+
+	const extractedClaims = await extractClaims(persistedQuote.quote)
+	await Promise.all(
+		extractedClaims.map(async rawClaim => {
+			return await insertClaim(trx, persistedQuote.id, rawClaim, null)
+		}),
+	)
+
+	const detectedFallacies = await fallacyDetection(persistedQuote.quote)
+	await storeQuoteFallacies(trx, persistedQuote.id, detectedFallacies)
+
+	return persistedQuote
 }
 
 export async function getOrCreateClaims(
