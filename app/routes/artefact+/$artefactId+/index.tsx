@@ -12,7 +12,7 @@ import { getArtefact } from '#app/modules/claims/artefact-repository.ts'
 import { type Artefact, type Quote } from '#app/modules/claims/claim-types.ts'
 import { getQuotes } from '#app/modules/claims/quote-repository.ts'
 import { useDebounce } from '#app/utils/misc.tsx'
-import { isValidTweetUrl } from '#app/utils/tweet_extraction.server.ts'
+import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 
 const artefactIdSchema = z.coerce.number()
