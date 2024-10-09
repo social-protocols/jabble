@@ -1,11 +1,10 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
 import { db } from '#app/db.ts'
-import { submitArtefactWithQuote } from '#app/modules/claims/claim-service.ts'
+import { submitArtefact } from '#app/modules/claims/claim-service.ts'
 
 const artefactDtoSchema = z.object({
 	url: z.coerce.string(),
-	quote: z.coerce.string(),
 })
 
 export const action = async (args: ActionFunctionArgs) => {
@@ -13,8 +12,5 @@ export const action = async (args: ActionFunctionArgs) => {
 	const artefactDto = artefactDtoSchema.parse(await request.json())
 	return await db
 		.transaction()
-		.execute(
-			async trx =>
-				await submitArtefactWithQuote(trx, artefactDto.url, artefactDto.quote),
-		)
+		.execute(async trx => await submitArtefact(trx, artefactDto.url))
 }

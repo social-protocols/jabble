@@ -22,63 +22,51 @@ function parseTweetURL(url: string): string | null {
 	}
 }
 
-export async function submitArtefactWithQuote(
+function isValidTweetUrl(url: string): boolean {
+	const regex =
+		/^https?:\/\/(www\.)?(twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/
+	return regex.test(url)
+}
+
+export async function submitArtefact(
 	trx: Transaction<DB>,
 	url: string,
-	quoteContent: string,
 ): Promise<{
 	artefact: Artefact
-	quote: Quote
+	navigateTo: string
 }> {
-	invariant(
-		quoteContent.length <= MAX_CHARS_PER_QUOTE,
-		'Document for claim extraction is content too long',
-	)
-	invariant(
-		quoteContent.length > 0,
-		'Document for claim extraction is  content too short',
-	)
-
 	const artefact = await getOrCreateArtefact(trx, url)
 
-	const existingQuote: Quote | undefined = await trx
-		.selectFrom('Quote')
-		.where('quote', '=', quoteContent)
-		.where('artefactId', '=', artefact.id)
-		.selectAll()
-		.executeTakeFirst()
+	if (isValidTweetUrl(url)) {
+		const tweetId = parseTweetURL(url)
 
-	if (existingQuote !== undefined) {
-		return { artefact: artefact, quote: existingQuote }
+		invariant(tweetId, `Couldn't parse tweet url for url: ${url}`)
+
+		const existingQuote: Quote | undefined = await trx
+			.selectFrom('Quote')
+			.where('artefactId', '=', artefact.id)
+			.selectAll()
+			.executeTakeFirst()
+
+		if (existingQuote !== undefined) {
+			return {
+				artefact: artefact,
+				navigateTo: `/artefact/${artefact.id}/quote/${existingQuote.id}`,
+			}
+		}
+
+		const quoteContent = await extractTweetTextGraphQL(tweetId)
+		const persistedQuote = await submitQuote(trx, artefact.id, quoteContent)
+
+		return {
+			artefact: artefact,
+			navigateTo: `/artefact/${artefact.id}/quote/${persistedQuote.id}`,
+		}
 	}
-
-	const tweetId = parseTweetURL(url)
-	if (tweetId !== null) {
-		quoteContent = await extractTweetTextGraphQL(tweetId)
-	}
-
-	const persistedQuote = await trx
-		.insertInto('Quote')
-		.values({
-			artefactId: artefact.id,
-			quote: quoteContent,
-		})
-		.returningAll()
-		.executeTakeFirstOrThrow()
-
-	const extractedClaims = await extractClaims(persistedQuote.quote)
-	await Promise.all(
-		extractedClaims.map(async rawClaim => {
-			return await insertClaim(trx, persistedQuote.id, rawClaim, null)
-		}),
-	)
-
-	const detectedFallacies = await fallacyDetection(persistedQuote.quote)
-	await storeQuoteFallacies(trx, persistedQuote.id, detectedFallacies)
 
 	return {
 		artefact: artefact,
-		quote: persistedQuote,
+		navigateTo: `/artefact/${artefact.id}`,
 	}
 }
 

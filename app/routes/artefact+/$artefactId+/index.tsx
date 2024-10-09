@@ -148,8 +148,19 @@ function SubmitQuoteForm({ artefactId }: { artefactId: number }) {
 		}
 	}
 
+	const infoText = `
+Visit the artefact URL and paste any quote from that URL that you want to discuss or fact-check here.
+	`
+
+	const disclaimer = `
+**Disclaimer**: Your text will be sent to the OpenAI API for analysis.
+`
+
 	return (
-		<div className="mt-2 flex flex-col items-end">
+		<div className="mt-2 flex flex-col">
+			<div className="mb-4">
+				<Markdown deactivateLinks={false}>{infoText}</Markdown>
+			</div>
 			<TextareaAutosize
 				name="content"
 				className="mb-2 flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid]:border-input-invalid"
@@ -166,22 +177,27 @@ function SubmitQuoteForm({ artefactId }: { artefactId: number }) {
 					setContentState(value)
 				}}
 			/>
-			<button
-				className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
-				onClick={e => {
-					e.preventDefault()
-					handleQuoteSubmit(artefactId, contentState)
-				}}
-			>
-				{isSubmitting ? (
-					<>
-						Submitting
-						<Icon name="update" className="ml-2 animate-spin" />
-					</>
-				) : (
-					<>Submit</>
-				)}
-			</button>
+			<div className="mb-6 flex w-full flex-row">
+				<div className="mr-auto self-end text-sm text-gray-500">
+					<Markdown deactivateLinks={false}>{disclaimer}</Markdown>
+				</div>
+				<button
+					className="rounded bg-purple-200 px-4 py-2 text-base font-bold text-black hover:bg-purple-300"
+					onClick={e => {
+						e.preventDefault()
+						handleQuoteSubmit(artefactId, contentState)
+					}}
+				>
+					{isSubmitting ? (
+						<>
+							Submitting
+							<Icon name="update" className="ml-2 animate-spin" />
+						</>
+					) : (
+						<>Submit</>
+					)}
+				</button>
+			</div>
 		</div>
 	)
 }
