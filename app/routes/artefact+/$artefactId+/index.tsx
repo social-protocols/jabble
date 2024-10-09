@@ -64,26 +64,30 @@ export default function ArtefactPage() {
 				</div>
 			</div>
 			<div className="space-y-4">
-				<Markdown deactivateLinks={false}>### Quotes</Markdown>
-				{user && (
+				{!isTweet && (
 					<>
-						<div className="flex w-full">
-							<button
-								onClick={() => {
-									setShowSubmissionForm(!showSubmissionForm)
-									return false
-								}}
-								className="shrink-0 font-bold text-purple-700"
-							>
-								{showSubmissionForm ? (
-									<Icon name="chevron-down" className="mt-[-0.1em]" />
-								) : (
-									<Icon name="chevron-right" className="mt-[-0.1em]" />
-								)}
-								<span className="ml-2">Submit new quote</span>
-							</button>
-						</div>
-						{showSubmissionForm && <SubmitQuoteForm artefactId={artefact.id} />}
+						<Markdown deactivateLinks={false}>### Quotes</Markdown>
+						{user && (
+							<>
+								<div className="flex w-full">
+									<button
+										onClick={() => {
+											setShowSubmissionForm(!showSubmissionForm)
+											return false
+										}}
+										className="shrink-0 font-bold text-purple-700"
+									>
+										{showSubmissionForm ? (
+											<Icon name="chevron-down" className="mt-[-0.1em]" />
+										) : (
+											<Icon name="chevron-right" className="mt-[-0.1em]" />
+										)}
+										<span className="ml-2">Submit new quote</span>
+									</button>
+								</div>
+								{showSubmissionForm && <SubmitQuoteForm artefactId={artefact.id} />}
+							</>
+						)}
 					</>
 				)}
 				<div>

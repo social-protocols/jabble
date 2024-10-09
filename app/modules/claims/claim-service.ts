@@ -2,7 +2,7 @@ import { type Transaction } from 'kysely'
 import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
 import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { extractTweetTextGraphQL } from '#app/utils/tweet_extraction.server.ts'
+import { extractTweetTextGraphQL, isValidTweetUrl, parseTweetURL } from '#app/utils/tweet_extraction.server.ts'
 import { extractClaims } from '../claim-extraction/claim-extraction-client.ts'
 import { fallacyDetection } from '../fallacies/fallacy-detection-client.ts'
 import { getArtefact, getOrCreateArtefact } from './artefact-repository.ts'
@@ -10,23 +10,6 @@ import { getClaims, insertClaim } from './claim-repository.ts'
 import { type Claim, type Artefact, type Quote } from './claim-types.ts'
 import { storeQuoteFallacies } from './quote-fallacy-repository.ts'
 import { insertQuote } from './quote-repository.ts'
-
-function parseTweetURL(url: string): string | null {
-	const regex =
-		/^https?:\/\/(www\.)?(twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(?:es)?\/(\d+)/
-	const match = regex.exec(url)
-	if (match && match[4]) {
-		return match[4] // match[4] is the tweet ID
-	} else {
-		return null
-	}
-}
-
-function isValidTweetUrl(url: string): boolean {
-	const regex =
-		/^https?:\/\/(www\.)?(twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/
-	return regex.test(url)
-}
 
 export async function submitArtefact(
 	trx: Transaction<DB>,
