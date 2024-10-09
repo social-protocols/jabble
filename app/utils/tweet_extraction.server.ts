@@ -36,4 +36,3 @@ export function isValidTweetUrl(url: string): boolean {
 		/^https?:\/\/(www\.)?(twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/
 	return regex.test(url)
 }
-

@@ -12,6 +12,7 @@ import { getArtefact } from '#app/modules/claims/artefact-repository.ts'
 import { type Artefact, type Quote } from '#app/modules/claims/claim-types.ts'
 import { getQuotes } from '#app/modules/claims/quote-repository.ts'
 import { useDebounce } from '#app/utils/misc.tsx'
+import { isValidTweetUrl } from '#app/utils/tweet_extraction.server.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 
 const artefactIdSchema = z.coerce.number()
@@ -42,6 +43,8 @@ export default function ArtefactPage() {
 	const user = useOptionalUser()
 
 	const artefactSubmissionDate = new Date(artefact.createdAt)
+
+	const isTweet = isValidTweetUrl(artefact.url)
 
 	const [showSubmissionForm, setShowSubmissionForm] = useState<boolean>(false)
 
@@ -85,7 +88,9 @@ export default function ArtefactPage() {
 										<span className="ml-2">Submit new quote</span>
 									</button>
 								</div>
-								{showSubmissionForm && <SubmitQuoteForm artefactId={artefact.id} />}
+								{showSubmissionForm && (
+									<SubmitQuoteForm artefactId={artefact.id} />
+								)}
 							</>
 						)}
 					</>
