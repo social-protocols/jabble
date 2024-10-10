@@ -26,6 +26,8 @@ import { getQuote } from '#app/modules/claims/quote-repository.ts'
 import { getPollPost } from '#app/modules/posts/polls/poll-repository.ts'
 import { type PollPagePost, PollType } from '#app/modules/posts/post-types.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
+import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
+import { EmbeddedTweet } from '#app/components/building-blocks/embedded-integration.tsx'
 
 const artefactIdSchema = z.coerce.number()
 const quoteIdSchema = z.coerce.number()
@@ -83,12 +85,17 @@ export default function ArtefactQuoteEditingPage() {
 
 	const unsubmittedClaims = claims.filter(claim => claim.postId == null)
 
+	const isTweet = isValidTweetUrl(artefact.url)
+
 	return (
 		<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
 			<div className="mb-2">
 				<div className="flex flex-col rounded-xl border-2 border-solid bg-post p-4">
-					<Icon name="quote" size="xl" className="mb-2 mr-auto" />
-					{quote.quote}
+					{isTweet ? (
+						<EmbeddedTweet tweetUrl={artefact.url} />
+					) : (
+						<QuoteFallback quote={quote} />
+					)}
 					<div className="mt-2 flex flex-col">
 						<span className="font-bold">Retrieved:</span>
 						<span className="italic">
@@ -151,6 +158,19 @@ export default function ArtefactQuoteEditingPage() {
 				Finish
 			</Link>
 		</div>
+	)
+}
+
+function QuoteFallback({
+	quote,
+}: {
+	quote: Quote
+}) {
+	return (
+		<>
+			<Icon name="quote" size="xl" className="mb-2 mr-auto" />
+			{quote.quote}
+		</>
 	)
 }
 
