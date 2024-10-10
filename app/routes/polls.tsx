@@ -9,6 +9,7 @@ import { db } from '#app/db.ts'
 import { type Artefact, type Quote } from '#app/modules/claims/claim-types.ts'
 import { type PollPagePost } from '#app/modules/posts/post-types.ts'
 import { getChronologicalPolls } from '#app/modules/posts/scoring/ranking-service.ts'
+import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
 
 export async function loader() {
 	const feed = await db.transaction().execute(async trx => {
@@ -272,10 +273,4 @@ function EmbeddedTweet({ tweetUrl }: { tweetUrl: string }) {
 			)}
 		</>
 	)
-}
-
-function isValidTweetUrl(url: string): boolean {
-	const regex =
-		/^https?:\/\/(www\.)?(twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/
-	return regex.test(url)
 }
