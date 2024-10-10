@@ -14,6 +14,7 @@ import { getQuotes } from '#app/modules/claims/quote-repository.ts'
 import { useDebounce } from '#app/utils/misc.tsx'
 import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
+import { EmbeddedTweet } from '#app/components/building-blocks/embedded-integration.tsx'
 
 const artefactIdSchema = z.coerce.number()
 
@@ -39,14 +40,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
 export default function ArtefactPage() {
 	const { artefact, quotes } = useLoaderData<typeof loader>()
-
-	const user = useOptionalUser()
-
 	const artefactSubmissionDate = new Date(artefact.createdAt)
-
 	const isTweet = isValidTweetUrl(artefact.url)
-
-	const [showSubmissionForm, setShowSubmissionForm] = useState<boolean>(false)
 
 	return (
 		<>
@@ -65,49 +60,67 @@ export default function ArtefactPage() {
 						submitted on: {artefactSubmissionDate.toDateString()}
 					</span>
 				</div>
-			</div>
-			<div className="space-y-4">
-				{!isTweet && (
+				{isTweet ? (
 					<>
-						<Markdown deactivateLinks={false}>### Quotes</Markdown>
-						{user && (
-							<>
-								<div className="flex w-full">
-									<button
-										onClick={() => {
-											setShowSubmissionForm(!showSubmissionForm)
-											return false
-										}}
-										className="shrink-0 font-bold text-purple-700"
-									>
-										{showSubmissionForm ? (
-											<Icon name="chevron-down" className="mt-[-0.1em]" />
-										) : (
-											<Icon name="chevron-right" className="mt-[-0.1em]" />
-										)}
-										<span className="ml-2">Submit new quote</span>
-									</button>
-								</div>
-								{showSubmissionForm && (
-									<SubmitQuoteForm artefactId={artefact.id} />
-								)}
-							</>
-						)}
+						<Link to={`/artefact/${artefact.id}/quote/${quotes[0]!.id}`} className="underline">Go to quote page</Link>
+						<EmbeddedTweet tweetUrl={artefact.url} />
 					</>
+				) : (
+					<NonExhaustiveQuoteListPreview artefact={artefact} quotes={quotes} />
 				)}
-				<div>
-					{quotes.map(quote => {
-						return (
-							<QuotePreview
-								artefact={artefact}
-								quote={quote}
-								key={`quote-${quote.id}`}
-							/>
-						)
-					})}
-				</div>
 			</div>
 		</>
+	)
+}
+
+function NonExhaustiveQuoteListPreview({
+	artefact,
+	quotes,
+}: {
+	artefact: Artefact
+	quotes: Quote[]
+}) {
+	const user = useOptionalUser()
+	const [showSubmissionForm, setShowSubmissionForm] = useState<boolean>(false)
+
+	return (
+		<div className="space-y-4">
+			<Markdown deactivateLinks={false}>### Quotes</Markdown>
+			{user && (
+				<>
+					<div className="flex w-full">
+						<button
+							onClick={() => {
+								setShowSubmissionForm(!showSubmissionForm)
+								return false
+							}}
+							className="shrink-0 font-bold text-purple-700"
+						>
+							{showSubmissionForm ? (
+								<Icon name="chevron-down" className="mt-[-0.1em]" />
+							) : (
+								<Icon name="chevron-right" className="mt-[-0.1em]" />
+							)}
+							<span className="ml-2">Submit new quote</span>
+						</button>
+					</div>
+					{showSubmissionForm && (
+						<SubmitQuoteForm artefactId={artefact.id} />
+					)}
+				</>
+			)}
+			<div>
+				{quotes.map(quote => {
+					return (
+						<QuotePreview
+							artefact={artefact}
+							quote={quote}
+							key={`quote-${quote.id}`}
+						/>
+					)
+				})}
+			</div>
+		</div>
 	)
 }
 
