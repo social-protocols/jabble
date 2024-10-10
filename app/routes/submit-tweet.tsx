@@ -4,6 +4,7 @@ import { Markdown } from '#app/components/markdown.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
 import { type Artefact, type Quote } from '#app/types/kysely-types.ts'
+import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
 
 declare global {
 	interface Window {
@@ -128,12 +129,6 @@ export default function SubmitTweetPage() {
 			checkTweetLoaded()
 		}
 	}, [embedHtml])
-
-	function isValidTweetUrl(url: string): boolean {
-		const regex =
-			/^https?:\/\/(www\.)?(twitter\.com|x\.com)\/(?:#!\/)?(\w+)\/status(es)?\/(\d+)/
-		return regex.test(url)
-	}
 
 	async function handleSubmitTweet(url: string) {
 		setIsSubmitting(true)
