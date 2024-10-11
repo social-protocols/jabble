@@ -125,7 +125,7 @@ function PollPostClaimContext({
 	const isTweet = isValidTweetUrl(artefact.url)
 
 	return (
-		<div className="my-2 flex flex-col rounded-lg border-2 border-solid bg-background p-4">
+		<div className="my-2 flex flex-col rounded-lg border-2 border-solid bg-background p-4 dark:border-gray-700">
 			{quote && (
 				<>
 					{isTweet && <EmbeddedTweet tweetUrl={artefact.url} />}
