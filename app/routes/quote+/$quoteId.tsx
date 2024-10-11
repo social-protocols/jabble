@@ -88,7 +88,7 @@ export default function ArtefactQuoteEditingPage() {
 	const isTweet = isValidTweetUrl(artefact.url)
 
 	return (
-		<div className="mb-4 flex flex-col space-y-2 rounded-xl border-2 border-solid border-gray-200 p-4 text-sm dark:border-gray-700">
+		<div className="mb-4 flex flex-col space-y-2 text-sm">
 			<div className="mb-2">
 				<div className="flex flex-col rounded-xl border-2 border-solid bg-post p-4">
 					{isTweet ? (
@@ -153,12 +153,6 @@ export default function ArtefactQuoteEditingPage() {
 					{quoteFallacies && <DetectedFallacies fallacies={quoteFallacies} />}
 				</TabsContent>
 			</Tabs>
-			<Link
-				to="/polls"
-				className="rounded bg-purple-200 px-4 py-2 text-center text-base font-bold text-black hover:bg-purple-300"
-			>
-				Finish
-			</Link>
 		</div>
 	)
 }
