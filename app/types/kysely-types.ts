@@ -176,6 +176,16 @@ export type QuoteFallacy = {
 	createdAt: Generated<number>
 }
 
+export type Tag = {
+	id: Generated<number>
+	tag: string
+}
+
+export type PostTag = {
+	postId: number
+	tagId: number
+}
+
 export type DB = {
 	Vote: Vote
 	Password: Password
@@ -200,4 +210,6 @@ export type DB = {
 	Artefact: Artefact
 	Quote: Quote
 	QuoteFallacy: QuoteFallacy
+	Tag: Tag
+	PostTag: PostTag
 }

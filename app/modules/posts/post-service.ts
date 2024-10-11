@@ -5,6 +5,8 @@ import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { incrementReplyCount, insertPost } from './post-repository.ts'
 import { vote } from './scoring/vote-service.ts'
+import { tagContent } from '../tags/tagger-client.ts'
+import { insertPostTag, insertTag } from '../tags/tag-repository.ts'
 
 export async function createPost(
 	trx: Transaction<DB>,
@@ -26,6 +28,10 @@ export async function createPost(
 	)
 
 	invariant(persistedPost, `Reply to ${parentId} not submitted successfully`)
+
+	const tags = await tagContent(content)
+	const persistedTags = await Promise.all(tags.map(async tag => insertTag(trx, tag)))
+	await Promise.all(persistedTags.map(async tag => insertPostTag(trx, persistedPost.id, tag.id)))
 
 	if (options?.withUpvote !== undefined ? options.withUpvote : true) {
 		await vote(trx, authorId, persistedPost.id, Direction.Up)
