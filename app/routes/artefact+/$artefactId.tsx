@@ -238,7 +238,7 @@ function QuotePreview({
 	const artefactSubmissionDate = new Date(artefact.createdAt)
 	return (
 		<div className="mb-2">
-			<div className="flex flex-col rounded-xl border-2 border-solid bg-post p-4">
+			<div className="flex flex-col rounded-xl border-2 border-solid bg-post p-4 dark:border-gray-700">
 				<Icon name="quote" size="xl" className="mb-2 mr-auto" />
 				<PostContent
 					content={quote.quote}

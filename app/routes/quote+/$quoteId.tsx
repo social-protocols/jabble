@@ -90,7 +90,7 @@ export default function ArtefactQuoteEditingPage() {
 	return (
 		<div className="mb-4 flex flex-col space-y-2 text-sm">
 			<div className="mb-2">
-				<div className="flex flex-col rounded-xl border-2 border-solid bg-post p-4">
+				<div className="flex flex-col rounded-xl border-2 border-solid bg-post p-4 dark:border-gray-700">
 					{isTweet ? (
 						<div className="flex flex-col items-center">
 							<EmbeddedTweet tweetUrl={artefact.url} />
