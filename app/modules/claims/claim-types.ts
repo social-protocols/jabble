@@ -27,3 +27,8 @@ export type QuoteFallacy = {
 	probability: number
 	createdAt: number
 }
+
+export type ClaimContext = {
+	artefact: Artefact
+	quote: Quote
+}

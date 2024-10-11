@@ -25,6 +25,11 @@ import {
 } from '#app/types/api-types.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariant } from '#app/utils/misc.tsx'
+import { ClaimContext, Quote } from '#app/modules/claims/claim-types.ts'
+import { getClaimContextByPollPostId } from '#app/modules/claims/claim-service.ts'
+import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
+import { EmbeddedTweet } from '#app/components/building-blocks/embedded-integration.tsx'
+import { Icon } from '#app/components/ui/icon.tsx'
 
 const postIdSchema = z.coerce.number()
 
@@ -36,22 +41,28 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		mutableReplyTree,
 		transitiveParents,
 		commentTreeState,
+		pollContext,
 	}: {
 		mutableReplyTree: ReplyTree
 		transitiveParents: Post[]
 		commentTreeState: CommentTreeState
+		pollContext: ClaimContext | null
 	} = await db.transaction().execute(async trx => {
 		await updateHN(trx, postId)
 		const commentTreeState = await getCommentTreeState(trx, postId, userId)
+		const mutableReplyTree = await getReplyTree(
+			trx,
+			postId,
+			userId,
+			commentTreeState,
+		)
+		const isPoll = mutableReplyTree.post.pollType !== null
+		const pollContext = isPoll ? await getClaimContextByPollPostId(trx, postId) : null
 		return {
-			mutableReplyTree: await getReplyTree(
-				trx,
-				postId,
-				userId,
-				commentTreeState,
-			),
+			mutableReplyTree: mutableReplyTree,
 			transitiveParents: await getTransitiveParents(trx, postId),
 			commentTreeState: commentTreeState,
+			pollContext: pollContext
 		}
 	})
 
@@ -59,6 +70,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		mutableReplyTree,
 		transitiveParents,
 		commentTreeState,
+		pollContext,
 	})
 }
 
@@ -102,7 +114,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 }
 
 export default function PostPage() {
-	const { mutableReplyTree, transitiveParents, commentTreeState } =
+	const { mutableReplyTree, transitiveParents, commentTreeState, pollContext } =
 		useLoaderData<typeof loader>()
 
 	const params = useParams()
@@ -115,6 +127,7 @@ export default function PostPage() {
 				mutableReplyTree={mutableReplyTree}
 				transitiveParents={transitiveParents}
 				initialCommentTreeState={commentTreeState}
+				pollContext={pollContext}
 			/>
 		</>
 	)
@@ -137,10 +150,12 @@ export function DiscussionView({
 	mutableReplyTree,
 	transitiveParents,
 	initialCommentTreeState,
+	pollContext,
 }: {
 	mutableReplyTree: ReplyTree
 	transitiveParents: Post[]
 	initialCommentTreeState: CommentTreeState
+	pollContext: ClaimContext | null
 }) {
 	const initialReplyTree = toImmutableReplyTree(mutableReplyTree)
 
@@ -195,8 +210,43 @@ export function DiscussionView({
 		},
 	}
 
+	const isTweet = pollContext ? isValidTweetUrl(pollContext?.artefact.url) : false
+
+	const [showPollContext, setShowPollContext] = useState<boolean>(false)
+
 	return (
 		<>
+			{pollContext && (
+				<div className="mb-4">
+					<button
+						onClick={() => {
+							setShowPollContext(!showPollContext)
+							return false
+						}}
+						className="shrink-0 font-bold text-purple-700"
+					>
+						{showPollContext ? (
+							<Icon name="chevron-down" className="mt-[-0.1em]" />
+						) : (
+							<Icon name="chevron-right" className="mt-[-0.1em]" />
+						)}
+						<span className="ml-2">Show context</span>
+					</button>
+					{showPollContext && (
+						<div className="flex flex-col p-4 items-center">
+							{isTweet ? (
+								<EmbeddedTweet tweetUrl={pollContext.artefact.url} />
+							): (
+								<>
+									<Icon name="quote" size="xl" className="mb-2 mr-auto" />
+									{pollContext.quote.quote}
+								</>
+							)}
+						</div>
+					)}
+				</div>
+
+			)}
 			<ParentThread transitiveParents={transitiveParents} />
 			<PostWithReplies
 				className={'mb-2 rounded-sm bg-post p-2'}
