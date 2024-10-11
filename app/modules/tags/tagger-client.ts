@@ -1,22 +1,18 @@
-import { invariant } from "#app/utils/misc.tsx"
-import OpenAI from "openai"
-import { zodResponseFormat } from "openai/helpers/zod.mjs"
-import { z } from "zod"
+import OpenAI from 'openai'
+import { zodResponseFormat } from 'openai/helpers/zod.mjs'
+import { z } from 'zod'
+import { invariant } from '#app/utils/misc.tsx'
 
 export const TaggingSchema = z.object({
 	tags: z
 		.array(
 			z
 				.object({
-					tag: z
-						.string()
-						.describe('A tag for the given content.'),
+					tag: z.string().describe('A tag for the given content.'),
 				})
 				.strict(),
 		)
-		.describe(
-			'A list of tags that characterizes the given content.',
-		),
+		.describe('A list of tags that characterizes the given content.'),
 })
 
 export async function tagContent(content: string): Promise<string[]> {
@@ -46,4 +42,3 @@ They should be broad categories that the content could be subsumed under.
 
 	return event.tags.map(tag => tag.tag)
 }
-

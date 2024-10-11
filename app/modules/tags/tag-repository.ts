@@ -1,8 +1,11 @@
-import { DB } from "#app/types/kysely-types.ts";
-import { Transaction } from "kysely";
-import { Tag } from "./tag-types.ts";
+import { type Transaction } from 'kysely'
+import { type DB } from '#app/types/kysely-types.ts'
+import { type Tag } from './tag-types.ts'
 
-export async function insertTag(trx: Transaction<DB>, tag: string): Promise<Tag> {
+export async function insertTag(
+	trx: Transaction<DB>,
+	tag: string,
+): Promise<Tag> {
 	await trx
 		.insertInto('Tag')
 		.values({ tag })
@@ -21,7 +24,11 @@ export async function getTag(trx: Transaction<DB>, tag: string): Promise<Tag> {
 		.executeTakeFirstOrThrow()
 }
 
-export async function insertPostTag(trx: Transaction<DB>, postId: number, tagId: number): Promise<void> {
+export async function insertPostTag(
+	trx: Transaction<DB>,
+	postId: number,
+	tagId: number,
+): Promise<void> {
 	await trx
 		.insertInto('PostTag')
 		.values({ postId, tagId })
