@@ -92,7 +92,9 @@ export default function ArtefactQuoteEditingPage() {
 			<div className="mb-2">
 				<div className="flex flex-col rounded-xl border-2 border-solid bg-post p-4">
 					{isTweet ? (
-						<EmbeddedTweet tweetUrl={artefact.url} />
+						<div className="flex flex-col items-center">
+							<EmbeddedTweet tweetUrl={artefact.url} />
+						</div>
 					) : (
 						<QuoteFallback quote={quote} />
 					)}
