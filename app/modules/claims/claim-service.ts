@@ -40,7 +40,7 @@ export async function submitArtefact(
 		if (existingQuote !== undefined) {
 			return {
 				artefact: artefact,
-				navigateTo: `/artefact/${artefact.id}/quote/${existingQuote.id}`,
+				navigateTo: `/quote/${existingQuote.id}`,
 			}
 		}
 
@@ -49,7 +49,7 @@ export async function submitArtefact(
 
 		return {
 			artefact: artefact,
-			navigateTo: `/artefact/${artefact.id}/quote/${persistedQuote.id}`,
+			navigateTo: `/quote/${persistedQuote.id}`,
 		}
 	}
 

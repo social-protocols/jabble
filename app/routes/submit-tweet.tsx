@@ -144,7 +144,7 @@ export default function SubmitTweetPage() {
 				headers: { 'Content-Type': 'application/json' },
 			})
 			const {
-				artefact,
+				artefact: _,
 				quote,
 			}: {
 				artefact: Artefact
@@ -153,7 +153,7 @@ export default function SubmitTweetPage() {
 				artefact: Artefact
 				quote: Quote
 			}
-			navigate(`/artefact/${artefact.id}/quote/${quote.id}`)
+			navigate(`/quote/${quote.id}`)
 		} finally {
 			setIsSubmitting(false)
 		}

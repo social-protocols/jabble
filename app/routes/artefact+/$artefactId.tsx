@@ -64,7 +64,7 @@ export default function ArtefactPage() {
 					<>
 						<Link
 							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-							to={`/artefact/${artefact.id}/quote/${quotes[0]!.id}`}
+							to={`/quote/${quotes[0]!.id}`}
 							className="underline"
 						>
 							Go to quote page
@@ -168,7 +168,7 @@ function SubmitQuoteForm({ artefactId }: { artefactId: number }) {
 			const persistedQuote = (await response.json()) as Quote
 			// after successful submission, remove from localstorage
 			localStorage.removeItem(storageKey)
-			navigate(`/artefact/${artefactId}/quote/${persistedQuote.id}`)
+			navigate(`/quote/${persistedQuote.id}`)
 		} finally {
 			setIsSubmitting(false)
 		}
@@ -243,7 +243,7 @@ function QuotePreview({
 				<PostContent
 					content={quote.quote}
 					deactivateLinks={false}
-					linkTo={`/artefact/${artefact.id}/quote/${quote.id}`}
+					linkTo={`/quote/${quote.id}`}
 				/>
 				<div className="mt-2 flex flex-col">
 					<span className="font-bold">Retrieved:</span>

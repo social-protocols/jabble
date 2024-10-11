@@ -29,11 +29,9 @@ import { type PollPagePost, PollType } from '#app/modules/posts/post-types.ts'
 import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 
-const artefactIdSchema = z.coerce.number()
 const quoteIdSchema = z.coerce.number()
 
 export async function loader({ params }: LoaderFunctionArgs) {
-	const artefactId = artefactIdSchema.parse(params.artefactId)
 	const quoteId = quoteIdSchema.parse(params.quoteId)
 
 	const {
@@ -59,9 +57,11 @@ export async function loader({ params }: LoaderFunctionArgs) {
 			),
 		)
 		const quoteFallacies = await getQuoteFallacies(trx, quoteId)
+		const quote = await getQuote(trx, quoteId)
+		const artefact = await getArtefact(trx, quote.artefactId)
 		return {
-			artefact: await getArtefact(trx, artefactId),
-			quote: await getQuote(trx, quoteId),
+			artefact: artefact,
+			quote: quote,
 			claims: claims,
 			posts: posts,
 			quoteFallacies: quoteFallacies,
