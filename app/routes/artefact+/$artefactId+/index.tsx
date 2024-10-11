@@ -3,6 +3,7 @@ import { Link, useLoaderData, useNavigate } from '@remix-run/react'
 import { type ChangeEvent, useState } from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
 import { z } from 'zod'
+import { EmbeddedTweet } from '#app/components/building-blocks/embedded-integration.tsx'
 import { PostContent } from '#app/components/building-blocks/post-content.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
@@ -14,7 +15,6 @@ import { getQuotes } from '#app/modules/claims/quote-repository.ts'
 import { useDebounce } from '#app/utils/misc.tsx'
 import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
-import { EmbeddedTweet } from '#app/components/building-blocks/embedded-integration.tsx'
 
 const artefactIdSchema = z.coerce.number()
 
@@ -62,7 +62,13 @@ export default function ArtefactPage() {
 				</div>
 				{isTweet ? (
 					<>
-						<Link to={`/artefact/${artefact.id}/quote/${quotes[0]!.id}`} className="underline">Go to quote page</Link>
+						<Link
+							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+							to={`/artefact/${artefact.id}/quote/${quotes[0]!.id}`}
+							className="underline"
+						>
+							Go to quote page
+						</Link>
 						<EmbeddedTweet tweetUrl={artefact.url} />
 					</>
 				) : (
@@ -104,9 +110,7 @@ function NonExhaustiveQuoteListPreview({
 							<span className="ml-2">Submit new quote</span>
 						</button>
 					</div>
-					{showSubmissionForm && (
-						<SubmitQuoteForm artefactId={artefact.id} />
-					)}
+					{showSubmissionForm && <SubmitQuoteForm artefactId={artefact.id} />}
 				</>
 			)}
 			<div>

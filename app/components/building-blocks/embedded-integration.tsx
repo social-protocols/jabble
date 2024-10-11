@@ -1,6 +1,6 @@
-import { isValidTweetUrl } from "#app/utils/twitter-utils.ts"
-import { useEffect, useRef, useState } from "react"
-import { Icon } from "../ui/icon.tsx"
+import { useEffect, useRef, useState } from 'react'
+import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
+import { Icon } from '../ui/icon.tsx'
 
 interface OEmbedResponse {
 	html: string

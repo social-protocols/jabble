@@ -8,7 +8,12 @@ import { extractClaims } from '../claim-extraction/claim-extraction-client.ts'
 import { fallacyDetection } from '../fallacies/fallacy-detection-client.ts'
 import { getArtefact, getOrCreateArtefact } from './artefact-repository.ts'
 import { getClaims, insertClaim } from './claim-repository.ts'
-import { type Claim, type Artefact, type Quote, ClaimContext } from './claim-types.ts'
+import {
+	type Claim,
+	type Artefact,
+	type Quote,
+	type ClaimContext,
+} from './claim-types.ts'
 import { storeQuoteFallacies } from './quote-fallacy-repository.ts'
 import { insertQuote } from './quote-repository.ts'
 
@@ -139,7 +144,10 @@ export async function getOrCreateClaims(
 	return candidateClaims
 }
 
-export async function getClaimContextByPollPostId(trx: Transaction<DB>, pollPostId: number): Promise<ClaimContext> {
+export async function getClaimContextByPollPostId(
+	trx: Transaction<DB>,
+	pollPostId: number,
+): Promise<ClaimContext> {
 	const quote = await trx
 		.selectFrom('Poll')
 		.innerJoin('Claim', 'Claim.id', 'Poll.claimId')
