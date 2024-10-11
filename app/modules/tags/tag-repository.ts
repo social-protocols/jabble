@@ -24,6 +24,17 @@ export async function getTag(trx: Transaction<DB>, tag: string): Promise<Tag> {
 		.executeTakeFirstOrThrow()
 }
 
+export async function getTagById(
+	trx: Transaction<DB>,
+	tagId: number,
+): Promise<Tag> {
+	return await trx
+		.selectFrom('Tag')
+		.where('id', '=', tagId)
+		.selectAll()
+		.executeTakeFirstOrThrow()
+}
+
 export async function insertPostTag(
 	trx: Transaction<DB>,
 	postId: number,

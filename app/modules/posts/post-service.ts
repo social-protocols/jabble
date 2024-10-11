@@ -5,7 +5,9 @@ import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { insertPostTag, insertTag } from '../tags/tag-repository.ts'
 import { tagContent } from '../tags/tagger-client.ts'
+import { getPollPost } from './polls/poll-repository.ts'
 import { incrementReplyCount, insertPost } from './post-repository.ts'
+import { type PollPagePost, type PollType, type Post } from './post-types.ts'
 import { vote } from './scoring/vote-service.ts'
 
 export async function createPost(
@@ -61,4 +63,48 @@ export async function initPostStats(trx: Transaction<DB>, postId: number) {
 		})
 		.onConflict(oc => oc.column('postId').doNothing())
 		.execute()
+}
+
+export async function getPostsAndPollsByTagId(
+	trx: Transaction<DB>,
+	tagId: number,
+): Promise<{
+	posts: Post[]
+	polls: PollPagePost[]
+}> {
+	const results = await trx
+		.selectFrom('Post')
+		.innerJoin('PostTag', 'PostTag.postId', 'Post.id')
+		.leftJoin('Poll', 'Poll.postId', 'Post.id')
+		.where('PostTag.tagId', '=', tagId)
+		.selectAll('Post')
+		.select(['Poll.pollType as pollType'])
+		.execute()
+
+	const posts = results
+		.filter(row => row.pollType === null)
+		.map(row => {
+			return {
+				id: row.id,
+				parentId: row.parentId,
+				content: row.content,
+				createdAt: row.createdAt,
+				deletedAt: row.deletedAt,
+				isPrivate: row.isPrivate,
+				pollType: row.pollType as PollType,
+			}
+		})
+
+	const polls = await Promise.all(
+		results
+			.filter(row => row.pollType !== null)
+			.map(async row => {
+				return await getPollPost(trx, row.id)
+			}),
+	)
+
+	return {
+		posts: posts,
+		polls: polls,
+	}
 }
