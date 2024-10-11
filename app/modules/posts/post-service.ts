@@ -29,9 +29,11 @@ export async function createPost(
 
 	invariant(persistedPost, `Reply to ${parentId} not submitted successfully`)
 
-	const tags = await tagContent(content)
-	const persistedTags = await Promise.all(tags.map(async tag => insertTag(trx, tag)))
-	await Promise.all(persistedTags.map(async tag => insertPostTag(trx, persistedPost.id, tag.id)))
+	if (parentId == null) {
+		const tags = await tagContent(content)
+		const persistedTags = await Promise.all(tags.map(async tag => insertTag(trx, tag)))
+		await Promise.all(persistedTags.map(async tag => insertPostTag(trx, persistedPost.id, tag.id)))
+	}
 
 	if (options?.withUpvote !== undefined ? options.withUpvote : true) {
 		await vote(trx, authorId, persistedPost.id, Direction.Up)
