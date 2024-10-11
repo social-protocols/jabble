@@ -1,6 +1,7 @@
 import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { useState } from 'react'
+import { EmbeddedTweet } from '#app/components/building-blocks/embedded-integration.tsx'
 import PollResult from '#app/components/building-blocks/poll-result.tsx'
 import { PostContent } from '#app/components/building-blocks/post-content.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
@@ -10,7 +11,6 @@ import { type Artefact, type Quote } from '#app/modules/claims/claim-types.ts'
 import { type PollPagePost } from '#app/modules/posts/post-types.ts'
 import { getChronologicalPolls } from '#app/modules/posts/scoring/ranking-service.ts'
 import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
-import { EmbeddedTweet } from '#app/components/building-blocks/embedded-integration.tsx'
 
 export async function loader() {
 	const feed = await db.transaction().execute(async trx => {

@@ -3,6 +3,7 @@ import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { useState } from 'react'
 import { z } from 'zod'
+import { EmbeddedTweet } from '#app/components/building-blocks/embedded-integration.tsx'
 import PollResult from '#app/components/building-blocks/poll-result.tsx'
 import { PostContent } from '#app/components/building-blocks/post-content.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
@@ -25,9 +26,8 @@ import { getQuoteFallacies } from '#app/modules/claims/quote-fallacy-repository.
 import { getQuote } from '#app/modules/claims/quote-repository.ts'
 import { getPollPost } from '#app/modules/posts/polls/poll-repository.ts'
 import { type PollPagePost, PollType } from '#app/modules/posts/post-types.ts'
-import { useOptionalUser } from '#app/utils/user.ts'
 import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
-import { EmbeddedTweet } from '#app/components/building-blocks/embedded-integration.tsx'
+import { useOptionalUser } from '#app/utils/user.ts'
 
 const artefactIdSchema = z.coerce.number()
 const quoteIdSchema = z.coerce.number()
@@ -161,11 +161,7 @@ export default function ArtefactQuoteEditingPage() {
 	)
 }
 
-function QuoteFallback({
-	quote,
-}: {
-	quote: Quote
-}) {
+function QuoteFallback({ quote }: { quote: Quote }) {
 	return (
 		<>
 			<Icon name="quote" size="xl" className="mb-2 mr-auto" />

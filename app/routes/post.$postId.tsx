@@ -3,10 +3,14 @@ import { type MetaFunction, useLoaderData, useParams } from '@remix-run/react'
 import * as Immutable from 'immutable'
 import { type Dispatch, type SetStateAction, useState } from 'react'
 import { z } from 'zod'
+import { EmbeddedTweet } from '#app/components/building-blocks/embedded-integration.tsx'
 import { ParentThread } from '#app/components/building-blocks/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/building-blocks/post-with-replies.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
+import { Icon } from '#app/components/ui/icon.tsx'
 import { db } from '#app/db.ts'
+import { getClaimContextByPollPostId } from '#app/modules/claims/claim-service.ts'
+import { type ClaimContext } from '#app/modules/claims/claim-types.ts'
 import { updateHN } from '#app/modules/hacker-news/hacker-news-service.ts'
 import { getTransitiveParents } from '#app/modules/posts/post-repository.ts'
 import { type Post } from '#app/modules/posts/post-types.ts'
@@ -25,11 +29,7 @@ import {
 } from '#app/types/api-types.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { ClaimContext, Quote } from '#app/modules/claims/claim-types.ts'
-import { getClaimContextByPollPostId } from '#app/modules/claims/claim-service.ts'
 import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
-import { EmbeddedTweet } from '#app/components/building-blocks/embedded-integration.tsx'
-import { Icon } from '#app/components/ui/icon.tsx'
 
 const postIdSchema = z.coerce.number()
 
@@ -57,12 +57,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 			commentTreeState,
 		)
 		const isPoll = mutableReplyTree.post.pollType !== null
-		const pollContext = isPoll ? await getClaimContextByPollPostId(trx, postId) : null
+		const pollContext = isPoll
+			? await getClaimContextByPollPostId(trx, postId)
+			: null
 		return {
 			mutableReplyTree: mutableReplyTree,
 			transitiveParents: await getTransitiveParents(trx, postId),
 			commentTreeState: commentTreeState,
-			pollContext: pollContext
+			pollContext: pollContext,
 		}
 	})
 
@@ -210,7 +212,9 @@ export function DiscussionView({
 		},
 	}
 
-	const isTweet = pollContext ? isValidTweetUrl(pollContext?.artefact.url) : false
+	const isTweet = pollContext
+		? isValidTweetUrl(pollContext?.artefact.url)
+		: false
 
 	const [showPollContext, setShowPollContext] = useState<boolean>(false)
 
@@ -233,10 +237,10 @@ export function DiscussionView({
 						<span className="ml-2">Show context</span>
 					</button>
 					{showPollContext && (
-						<div className="flex flex-col p-4 items-center">
+						<div className="flex flex-col items-center p-4">
 							{isTweet ? (
 								<EmbeddedTweet tweetUrl={pollContext.artefact.url} />
-							): (
+							) : (
 								<>
 									<Icon name="quote" size="xl" className="mb-2 mr-auto" />
 									{pollContext.quote.quote}
@@ -245,7 +249,6 @@ export function DiscussionView({
 						</div>
 					)}
 				</div>
-
 			)}
 			<ParentThread transitiveParents={transitiveParents} />
 			<PostWithReplies
