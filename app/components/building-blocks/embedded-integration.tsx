@@ -12,12 +12,14 @@ export function EmbeddedTweet({ tweetUrl }: { tweetUrl: string }) {
 	const [cache, setCache] = useState<{ [key: string]: string }>({})
 	const [isFetching, setIsFetching] = useState<boolean>(false)
 	const [isTweetLoaded, setIsTweetLoaded] = useState<boolean>(false)
+	const [fetchError, setFetchError] = useState<string | null>(null)
 
 	const embedContainerRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
 		if (isValidTweetUrl(tweetUrl)) {
 			setEmbedHtml(undefined) // Reset embedHtml when URL changes
+			setFetchError(null)
 			if (cache[tweetUrl]) {
 				setEmbedHtml(cache[tweetUrl])
 			} else {
@@ -40,10 +42,12 @@ export function EmbeddedTweet({ tweetUrl }: { tweetUrl: string }) {
 							[tweetUrl]: data.html,
 						}))
 						setEmbedHtml(data.html)
+						setFetchError(null)
 					})
 					.catch(error => {
 						console.error('Error fetching oEmbed data:', error)
 						setEmbedHtml('') // Ensure embedHtml is falsy on error
+						setFetchError(error.message)
 					})
 					.finally(() => {
 						setIsFetching(false)
@@ -51,6 +55,7 @@ export function EmbeddedTweet({ tweetUrl }: { tweetUrl: string }) {
 			}
 		} else {
 			setEmbedHtml(undefined) // Reset embedHtml when URL is invalid
+			setFetchError(null)
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [tweetUrl])
@@ -107,6 +112,7 @@ export function EmbeddedTweet({ tweetUrl }: { tweetUrl: string }) {
 
 	return (
 		<>
+			{fetchError && <div style={{ color: 'red' }}>× {fetchError}</div>}
 			{(isFetching || !isTweetLoaded) && (
 				<div>
 					Loading
