@@ -120,7 +120,12 @@ export function EmbeddedTweet({ tweetUrl }: { tweetUrl: string }) {
 				</div>
 			)}
 			{embedHtml && (
-				<div style={{ position: 'relative' }}>
+				<div
+					style={{
+						position: 'relative',
+						display: isTweetLoaded ? 'block' : 'none',
+					}}
+				>
 					<div
 						ref={embedContainerRef}
 						dangerouslySetInnerHTML={{ __html: embedHtml }}
