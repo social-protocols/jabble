@@ -2,6 +2,16 @@ import { useEffect, useRef, useState } from 'react'
 import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
 import { Icon } from '../ui/icon.tsx'
 
+declare global {
+	interface Window {
+		twttr?: {
+			widgets: {
+				load: () => void
+			}
+		}
+	}
+}
+
 interface OEmbedResponse {
 	html: string
 	// Add other properties if needed
