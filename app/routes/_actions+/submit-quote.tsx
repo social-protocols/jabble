@@ -1,6 +1,6 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
-import { db } from '#app/db.ts'
+import { db } from '#app/database/db.ts'
 import { submitQuote } from '#app/modules/claims/claim-service.ts'
 
 const artefactDtoSchema = z.object({

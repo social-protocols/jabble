@@ -1,5 +1,5 @@
 import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
-import { db } from '#app/db.ts'
+import { db } from '#app/database/db.ts'
 import { logout, requireUserId } from '#app/utils/auth.server.ts'
 
 export async function loader({ request }: LoaderFunctionArgs) {

@@ -1,10 +1,10 @@
 import { sql, type Transaction } from 'kysely'
-import { type Direction, type VoteState } from '#app/types/api-types.ts'
 import {
+	type DB,
 	type DBInsertableVoteEvent,
 	type DBVoteEvent,
-} from '#app/types/db-types.ts'
-import { type DB } from '#app/types/kysely-types.ts'
+} from '#app/database/types.ts'
+import { type Direction, type VoteState } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 
 export async function insertVoteEvent(

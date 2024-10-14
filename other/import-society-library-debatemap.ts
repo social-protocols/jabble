@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { db } from '#app/db.ts'
+import { db } from '#app/database/db.ts'
 import { createPost } from '#app/modules/posts/post-service.ts'
 import { invariant } from '../app/utils/misc.tsx'
 

@@ -2,7 +2,7 @@ import { promises as fs } from 'fs'
 import * as path from 'path'
 import { fileURLToPath } from 'url'
 import { FileMigrationProvider, Migrator } from 'kysely'
-import { db } from './app/db.ts'
+import { db } from './app/database/db.ts'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 

@@ -1,6 +1,6 @@
 import { type Transaction } from 'kysely'
 import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
-import { type DB } from '#app/types/kysely-types.ts'
+import { type DB } from '#app/database/types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { extractTweetTextGraphQL } from '#app/utils/tweet_extraction.server.ts'
 import { isValidTweetUrl, parseTweetURL } from '#app/utils/twitter-utils.ts'

@@ -3,7 +3,7 @@ import { faker } from '@faker-js/faker'
 import bcrypt from 'bcryptjs'
 import { UniqueEnforcer } from 'enforce-unique'
 import { type Kysely, sql } from 'kysely'
-import { type DB } from '#app/types/kysely-types.ts' // this is the Database interface we defined earlier
+import { type DB } from '#app/database/types.ts'
 
 const uniqueUsernameEnforcer = new UniqueEnforcer()
 

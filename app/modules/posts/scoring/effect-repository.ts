@@ -1,6 +1,5 @@
 import { type Transaction } from 'kysely'
-import { type DBEffect } from '#app/types/db-types.ts'
-import { type DB } from '#app/types/kysely-types.ts'
+import { type DB, type DBEffect } from '#app/database/types.ts'
 import { snakeToCamelCaseObject } from './scoring-utils.ts'
 
 export async function insertEffectEvent(trx: Transaction<DB>, data: any) {

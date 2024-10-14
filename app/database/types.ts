@@ -1,22 +1,24 @@
-import { type ColumnType } from 'kysely'
-export type Generated<T> =
+import { type ColumnType, type Selectable, type Insertable } from 'kysely'
+
+type Generated<T> =
 	T extends ColumnType<infer S, infer I, infer U>
 		? ColumnType<S, I | undefined, U>
 		: ColumnType<T, T | undefined, T>
-export type Timestamp = ColumnType<Date, Date | string, Date | string>
 
-export type Vote = {
+type Vote = {
 	userId: string
 	postId: number
 	vote: number
 	latestVoteEventId: number
 	voteEventTime: number
 }
-export type Password = {
+
+type Password = {
 	hash: string
 	userId: string
 }
-export type Post = {
+
+type Post = {
 	id: Generated<number>
 	parentId: number | null
 	content: string
@@ -25,29 +27,34 @@ export type Post = {
 	deletedAt: number | null
 	isPrivate: number
 }
-export type Fallacy = {
+
+type Fallacy = {
 	postId: number
 	detection: string
 }
-export type PostStats = {
+
+type PostStats = {
 	postId: number
 	replies: number
 }
-export type Session = {
+
+type Session = {
 	id: string
 	expirationDate: number
 	createdAt: Generated<number>
 	updatedAt: number
 	userId: string
 }
-export type User = {
+
+type User = {
 	id: string
 	email: string
 	username: string
 	createdAt: Generated<number>
 	isAdmin: number
 }
-export type Verification = {
+
+type Verification = {
 	id: string
 	createdAt: Generated<number>
 	/**
@@ -84,7 +91,7 @@ export type Verification = {
 	expiresAt: number | null
 }
 
-export type VoteEvent = {
+type VoteEvent = {
 	voteEventId: Generated<number>
 	voteEventTime: Generated<number>
 	userId: string
@@ -93,7 +100,7 @@ export type VoteEvent = {
 	vote: number
 }
 
-export type Score = {
+type Score = {
 	voteEventId: number
 	voteEventTime: number
 	postId: number
@@ -104,7 +111,7 @@ export type Score = {
 	score: number
 }
 
-export type Effect = {
+type Effect = {
 	postId: number
 	commentId: number | null
 	p: number
@@ -117,49 +124,49 @@ export type Effect = {
 	weight: number
 }
 
-export type EffectWithDefault = Effect
+type EffectWithDefault = Effect
 
-export type EffectEvent = Effect & {
+type EffectEvent = Effect & {
 	voteEventId: number
 	voteEventTime: number
 }
 
-export type FullScore = Score &
+type FullScore = Score &
 	Effect & {
 		criticalThreadId: number | null
 	}
 
-export type Lineage = {
+type Lineage = {
 	ancestorId: number
 	descendantId: number
 	separation: number
 }
 
-export type HNItem = {
+type HNItem = {
 	hnId: number
 	postId: number
 }
 
-export type Poll = {
+type Poll = {
 	claimId: number
 	postId: number
 	pollType: string
 }
 
-export type Artefact = {
+type Artefact = {
 	id: Generated<number>
 	url: string
 	createdAt: Generated<number>
 }
 
-export type Quote = {
+type Quote = {
 	id: Generated<number>
 	artefactId: number
 	quote: string
 	createdAt: Generated<number>
 }
 
-export type Claim = {
+type Claim = {
 	id: Generated<number>
 	quoteId: number
 	claim: string
@@ -167,7 +174,7 @@ export type Claim = {
 	createdAt: Generated<number>
 }
 
-export type QuoteFallacy = {
+type QuoteFallacy = {
 	id: Generated<number>
 	quoteId: number
 	name: string
@@ -176,12 +183,12 @@ export type QuoteFallacy = {
 	createdAt: Generated<number>
 }
 
-export type Tag = {
+type Tag = {
 	id: Generated<number>
 	tag: string
 }
 
-export type PostTag = {
+type PostTag = {
 	postId: number
 	tagId: number
 }
@@ -213,3 +220,18 @@ export type DB = {
 	Tag: Tag
 	PostTag: PostTag
 }
+
+export type DBUser = Selectable<User>
+export type DBPost = Selectable<Post>
+export type DBPassword = Selectable<Password>
+export type DBPostStats = Selectable<PostStats>
+export type DBVerification = Selectable<Verification>
+export type DBScore = Selectable<Score>
+export type DBFullScore = Selectable<FullScore>
+export type DBLineage = Selectable<Lineage>
+export type DBEffect = Selectable<Effect>
+export type DBInsertableScore = Insertable<Score>
+export type DBVoteEvent = Selectable<VoteEvent>
+export type DBVote = Selectable<Vote>
+export type DBInsertableVoteEvent = Insertable<VoteEvent>
+export type DBHNItem = Selectable<HNItem>

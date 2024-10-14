@@ -1,7 +1,6 @@
 import { type Transaction } from 'kysely'
+import { type DB, type DBVoteEvent } from '#app/database/types.ts'
 import { Direction, type VoteState } from '#app/types/api-types.ts'
-import { type DBVoteEvent } from '#app/types/db-types.ts'
-import { type DB } from '#app/types/kysely-types.ts'
 import { sendVoteEvent } from './global-brain-service.ts'
 import { insertVoteEvent } from './vote-repository.ts'
 

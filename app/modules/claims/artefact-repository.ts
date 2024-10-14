@@ -1,5 +1,5 @@
 import { type Transaction } from 'kysely'
-import { type DB } from '#app/types/kysely-types.ts'
+import { type DB } from '#app/database/types.ts'
 import { type Artefact } from './claim-types.ts'
 
 export async function getOrCreateArtefact(

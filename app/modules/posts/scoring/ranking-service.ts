@@ -1,6 +1,7 @@
 import Immutable from 'immutable'
 import { type Transaction, sql } from 'kysely'
 import { MAX_POSTS_PER_PAGE } from '#app/constants.ts'
+import { type DB } from '#app/database/types.ts'
 import { getArtefact } from '#app/modules/claims/artefact-repository.ts'
 import { getQuote } from '#app/modules/claims/quote-repository.ts'
 import { getFallacies } from '#app/modules/fallacies/fallacy-repository.ts'
@@ -17,7 +18,6 @@ import {
 	type ImmutableReplyTree,
 	type CommentTreeState,
 } from '#app/types/api-types.ts'
-import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { type FrontPagePost, type Poll, type PollType } from '../post-types.ts'
 import { getEffect } from './effect-repository.ts'

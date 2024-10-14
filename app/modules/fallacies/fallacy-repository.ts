@@ -1,10 +1,10 @@
 import { type Transaction, sql } from 'kysely'
-import { db } from '#app/db.ts'
+import { db } from '#app/database/db.ts'
+import { type DB } from '#app/database/types.ts'
 import {
 	type FallacyList,
 	FallacyListSchema,
 } from '#app/modules/fallacies/fallacy-types.ts'
-import { type DB } from '#app/types/kysely-types.ts'
 
 export async function storeFallacies(
 	postId: number,

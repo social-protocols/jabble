@@ -1,6 +1,6 @@
 import { sendVoteEvent } from '#app/modules/posts/scoring/global-brain-service.ts'
-import { db } from '../app/db.ts'
-import { type DBVoteEvent } from '../app/types/db-types.ts'
+import { db } from '../app/database/db.ts'
+import { type DBVoteEvent } from '../app/database/types.ts'
 
 async function replayVoteEvents() {
 	console.log('Replaying vote events')

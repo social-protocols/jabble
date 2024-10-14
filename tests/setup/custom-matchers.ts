@@ -1,6 +1,6 @@
 import * as setCookieParser from 'set-cookie-parser'
 import { expect } from 'vitest'
-import { db } from '#app/db.ts'
+import { db } from '#app/database/db.ts'
 import { sessionKey } from '#app/utils/auth.server.ts'
 import { authSessionStorage } from '#app/utils/session.server.ts'
 import {

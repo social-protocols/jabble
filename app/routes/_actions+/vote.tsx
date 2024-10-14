@@ -1,5 +1,5 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
-import { db } from '#app/db.ts'
+import { db } from '#app/database/db.ts'
 import { getCommentTreeState } from '#app/modules/posts/scoring/ranking-service.ts'
 import { vote } from '#app/modules/posts/scoring/vote-service.ts'
 import { type CommentTreeState, Direction } from '#app/types/api-types.ts'

@@ -4,7 +4,7 @@ import zlib from 'zlib'
 import * as cliProgress from 'cli-progress'
 import { glob } from 'glob'
 import TurndownService from 'turndown'
-import { db } from '#app/db.ts'
+import { db } from '#app/database/db.ts'
 import { createPost } from '#app/modules/posts/post-service.ts'
 
 const turndownService = new TurndownService({ emDelimiter: '*' })

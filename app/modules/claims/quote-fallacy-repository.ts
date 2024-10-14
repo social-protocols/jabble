@@ -1,7 +1,7 @@
 import { type Transaction } from 'kysely'
+import { type DB } from '#app/database/types.ts'
 import { fallacyDetection } from '#app/modules/fallacies/fallacy-detection-client.ts'
 import { type FallacyList } from '#app/modules/fallacies/fallacy-types.ts'
-import { type DB } from '#app/types/kysely-types.ts'
 import { type QuoteFallacy } from './claim-types.ts'
 import { getQuote } from './quote-repository.ts'
 
