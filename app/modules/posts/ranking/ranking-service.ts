@@ -12,11 +12,6 @@ import {
 	getPostWithScore,
 	getReplyIds,
 } from '#app/modules/posts/post-repository.ts'
-import {
-	type ReplyTree,
-	type ImmutableReplyTree,
-	type CommentTreeState,
-} from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import {
 	type VoteState,
@@ -24,33 +19,15 @@ import {
 	type Poll,
 	type PollType,
 } from '../post-types.ts'
-import { getEffect } from './effect-repository.ts'
-import { effectSizeOnTarget } from './scoring-utils.ts'
-import { getUserVotes } from './vote-repository.ts'
-import { defaultVoteState } from './vote-service.ts'
-
-export function toImmutableReplyTree(replyTree: ReplyTree): ImmutableReplyTree {
-	return {
-		...replyTree,
-		replies: Immutable.List(replyTree.replies.map(toImmutableReplyTree)),
-	}
-}
-
-export function addReplyToReplyTree(
-	tree: ImmutableReplyTree,
-	reply: ImmutableReplyTree,
-): ImmutableReplyTree {
-	if (reply.post.parentId == tree.post.id) {
-		return {
-			...tree,
-			replies: tree.replies.insert(0, reply),
-		}
-	}
-	return {
-		...tree,
-		replies: tree.replies.map(child => addReplyToReplyTree(child, reply)),
-	}
-}
+import { getEffect } from '../scoring/effect-repository.ts'
+import { effectSizeOnTarget } from '../scoring/scoring-utils.ts'
+import { getUserVotes } from '../scoring/vote-repository.ts'
+import { defaultVoteState } from '../scoring/vote-service.ts'
+import {
+	type CommentTreeState,
+	type ImmutableReplyTree,
+	type ReplyTree,
+} from './ranking-types.ts'
 
 export async function getCommentTreeState(
 	trx: Transaction<DB>,
@@ -69,7 +46,6 @@ export async function getCommentTreeState(
 			'FullScore.p as p',
 			'FullScore.oSize as voteCount',
 			'Post.deletedAt as deletedAt',
-			'FullScore.criticalThreadId',
 		])
 		.where('Post.id', 'in', descendantIds.concat([targetPostId]))
 		.where('p', 'is not', null)
@@ -79,29 +55,14 @@ export async function getCommentTreeState(
 		? await getUserVotes(trx, userId, descendantIds.concat([targetPostId]))
 		: undefined
 
-	const criticalCommentIdToTargetId: { [key: number]: number[] } = {}
-	results.forEach(res => {
-		const criticalThreadId = res.criticalThreadId
-		if (criticalThreadId !== null) {
-			const entry = criticalCommentIdToTargetId[criticalThreadId]
-			if (entry !== undefined) {
-				entry.push(res.postId)
-			} else {
-				criticalCommentIdToTargetId[criticalThreadId] = [res.postId]
-			}
-		}
-	})
-
 	let commentTreeState: CommentTreeState = {
 		targetPostId,
-		criticalCommentIdToTargetId,
 		posts: {},
 	}
 
 	await Promise.all(
 		results.map(async result => {
 			commentTreeState.posts[result.postId] = {
-				criticalCommentId: result.criticalThreadId,
 				// We have to use the non-null assertion here because kysely doesn't
 				// return values as non-null type even if we filter nulls with a where
 				// condition. We can, however, be sure that the values are never null.

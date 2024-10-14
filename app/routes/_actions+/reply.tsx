@@ -8,7 +8,7 @@ import { createPost } from '#app/modules/posts/post-service.ts'
 import {
 	getCommentTreeState,
 	getReplyTree,
-} from '#app/modules/posts/scoring/ranking-service.ts'
+} from '#app/modules/posts/ranking/ranking-service.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
 type ReplyData = {
