@@ -119,6 +119,9 @@ export default function PostPage() {
 	const { mutableReplyTree, transitiveParents, commentTreeState, pollContext } =
 		useLoaderData<typeof loader>()
 
+	// We need to use MutableReplyTree because Immutable types are not preserved
+	// in serialization. However, we convert the mutable reply tree to an
+	// immutable one as early as possible in the frontend.
 	const replyTree = toImmutableReplyTree(mutableReplyTree)
 
 	const params = useParams()
