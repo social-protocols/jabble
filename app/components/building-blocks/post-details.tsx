@@ -1,5 +1,5 @@
 import { Link, useNavigate } from '@remix-run/react'
-import type * as Immutable from 'immutable'
+import type Immutable from 'immutable'
 import { useRef } from 'react'
 import PollResult from '#app/components/building-blocks/poll-result.tsx'
 import { PostActionBar } from '#app/components/building-blocks/post-action-bar.tsx'

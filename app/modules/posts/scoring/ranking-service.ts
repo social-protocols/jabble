@@ -1,4 +1,4 @@
-import * as Immutable from 'immutable'
+import Immutable from 'immutable'
 import { type Transaction, sql } from 'kysely'
 import { MAX_POSTS_PER_PAGE } from '#app/constants.ts'
 import { getArtefact } from '#app/modules/claims/artefact-repository.ts'
