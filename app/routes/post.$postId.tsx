@@ -1,6 +1,6 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { type MetaFunction, useLoaderData, useParams } from '@remix-run/react'
-import * as Immutable from 'immutable'
+import Immutable from 'immutable'
 import { type Dispatch, type SetStateAction, useState } from 'react'
 import { z } from 'zod'
 import { EmbeddedTweet } from '#app/components/building-blocks/embedded-integration.tsx'

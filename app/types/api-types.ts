@@ -1,4 +1,4 @@
-import type * as Immutable from 'immutable'
+import type Immutable from 'immutable'
 import { type FallacyList } from '#app/modules/fallacies/fallacy-types.ts'
 import { type Post, type PostWithScore } from '#app/modules/posts/post-types.ts'
 
