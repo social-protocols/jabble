@@ -1,6 +1,7 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
+import { OpenDiscussionPreview } from '#app/components/building-blocks/open-discussion-preview.tsx'
 import { PollPostPreview } from '#app/components/building-blocks/poll-post-preview.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
 import {
@@ -14,7 +15,6 @@ import { getPostsAndPollsByTagId } from '#app/modules/posts/post-service.ts'
 import { type FrontPagePost, type Poll } from '#app/modules/posts/post-types.ts'
 import { getTagById } from '#app/modules/tags/tag-repository.ts'
 import { type Tag } from '#app/modules/tags/tag-types.ts'
-import { TopLevelPost } from './discussions.tsx'
 
 const tagIdSchema = z.coerce.number()
 
@@ -76,7 +76,7 @@ export default function TagPage() {
 						<div className="mt-5">
 							{posts.map(post => {
 								return (
-									<TopLevelPost
+									<OpenDiscussionPreview
 										post={post}
 										key={`post-${post.id}`}
 										className="mb-4"
