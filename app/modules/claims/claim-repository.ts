@@ -2,22 +2,6 @@ import { type Transaction } from 'kysely'
 import { type DB } from '#app/types/kysely-types.ts'
 import { type Claim } from './claim-types.ts'
 
-// export async function createClaim(
-// 	trx: Transaction<DB>,
-// 	claim: string,
-// ): Promise<Claim> {
-// 	const createdClaim = await trx
-// 		.insertInto('Claim')
-// 		.values({ claim })
-// 		.returningAll()
-// 		.executeTakeFirstOrThrow()
-
-// 	return {
-// 		id: createdClaim.id,
-// 		claim: createdClaim.claim,
-// 	}
-// }
-
 export async function insertClaim(
 	trx: Transaction<DB>,
 	quoteId: number,
