@@ -11,7 +11,7 @@ import {
 } from '#app/modules/posts/post-repository.ts'
 import { createPost } from '#app/modules/posts/post-service.ts'
 import { type DB } from '#app/types/kysely-types.ts'
-import { type PollPagePost, type PollType, type Post } from '../post-types.ts'
+import { type Poll, type PollType, type Post } from '../post-types.ts'
 
 export async function getOrCreatePoll(
 	trx: Transaction<DB>,
@@ -66,7 +66,7 @@ export async function getOrCreatePoll(
 export async function getPollPost(
 	trx: Transaction<DB>,
 	postId: number,
-): Promise<PollPagePost> {
+): Promise<Poll> {
 	// TODO: check whether the post is actually a poll
 
 	let query = trx

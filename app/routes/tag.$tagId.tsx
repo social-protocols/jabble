@@ -1,6 +1,7 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
+import { PollPostPreview } from '#app/components/building-blocks/poll-post-preview.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
 import {
 	Tabs,
@@ -10,9 +11,10 @@ import {
 } from '#app/components/ui/tabs.tsx'
 import { db } from '#app/db.ts'
 import { getPostsAndPollsByTagId } from '#app/modules/posts/post-service.ts'
-import { type PollPagePost, type Post } from '#app/modules/posts/post-types.ts'
+import { type FrontPagePost, type Poll } from '#app/modules/posts/post-types.ts'
 import { getTagById } from '#app/modules/tags/tag-repository.ts'
 import { type Tag } from '#app/modules/tags/tag-types.ts'
+import { TopLevelPost } from './discussions.tsx'
 
 const tagIdSchema = z.coerce.number()
 
@@ -24,8 +26,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
 		polls,
 	}: {
 		tag: Tag
-		posts: Post[]
-		polls: PollPagePost[]
+		posts: FrontPagePost[]
+		polls: Poll[]
 	} = await db.transaction().execute(async trx => {
 		const tag = await getTagById(trx, tagId)
 		const { posts, polls } = await getPostsAndPollsByTagId(trx, tag.id)
@@ -61,9 +63,11 @@ export default function TagPage() {
 						<div>
 							{polls.map(poll => {
 								return (
-									<div key={`post-${poll.id}`} className="mb-4">
-										{poll.content}
-									</div>
+									<PollPostPreview
+										post={poll}
+										key={`post-${poll.id}`}
+										className="mb-4"
+									/>
 								)
 							})}
 						</div>
@@ -72,9 +76,11 @@ export default function TagPage() {
 						<div className="mt-5">
 							{posts.map(post => {
 								return (
-									<div key={`post-${post.id}`} className="mb-4">
-										{post.content}
-									</div>
+									<TopLevelPost
+										post={post}
+										key={`post-${post.id}`}
+										className="mb-4"
+									/>
 								)
 							})}
 						</div>

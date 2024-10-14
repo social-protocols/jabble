@@ -25,7 +25,7 @@ import {
 import { getQuoteFallacies } from '#app/modules/claims/quote-fallacy-repository.ts'
 import { getQuote } from '#app/modules/claims/quote-repository.ts'
 import { getPollPost } from '#app/modules/posts/polls/poll-repository.ts'
-import { type PollPagePost, PollType } from '#app/modules/posts/post-types.ts'
+import { type Poll, PollType } from '#app/modules/posts/post-types.ts'
 import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 
@@ -44,7 +44,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 		artefact: Artefact
 		quote: Quote
 		claims: Claim[]
-		posts: PollPagePost[]
+		posts: Poll[]
 		quoteFallacies: QuoteFallacy[]
 	} = await db.transaction().execute(async trx => {
 		const claims = await getClaims(trx, quoteId)
@@ -301,7 +301,7 @@ function QuotePollPost({
 	post,
 	className,
 }: {
-	post: PollPagePost
+	post: Poll
 	className?: string
 }) {
 	const ageString = moment(post.createdAt).fromNow()

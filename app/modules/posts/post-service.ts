@@ -3,11 +3,16 @@ import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { Direction } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
+import { getFallacies } from '../fallacies/fallacy-repository.ts'
 import { insertPostTag, insertTag } from '../tags/tag-repository.ts'
 import { extractTags } from '../tags/tagger-client.ts'
 import { getPollPost } from './polls/poll-repository.ts'
-import { incrementReplyCount, insertPost } from './post-repository.ts'
-import { type PollPagePost, type PollType, type Post } from './post-types.ts'
+import {
+	getDescendantCount,
+	incrementReplyCount,
+	insertPost,
+} from './post-repository.ts'
+import { type FrontPagePost, type Poll, type PollType } from './post-types.ts'
 import { vote } from './scoring/vote-service.ts'
 
 export async function createPost(
@@ -69,8 +74,8 @@ export async function getPostsAndPollsByTagId(
 	trx: Transaction<DB>,
 	tagId: number,
 ): Promise<{
-	posts: Post[]
-	polls: PollPagePost[]
+	posts: FrontPagePost[]
+	polls: Poll[]
 }> {
 	const results = await trx
 		.selectFrom('Post')
@@ -81,19 +86,33 @@ export async function getPostsAndPollsByTagId(
 		.select(['Poll.pollType as pollType'])
 		.execute()
 
-	const posts = results
-		.filter(row => row.pollType === null)
-		.map(row => {
-			return {
-				id: row.id,
-				parentId: row.parentId,
-				content: row.content,
-				createdAt: row.createdAt,
-				deletedAt: row.deletedAt,
-				isPrivate: row.isPrivate,
-				pollType: row.pollType as PollType,
-			}
-		})
+	const posts = await Promise.all(
+		results
+			.filter(row => row.pollType === null)
+			.map(async row => {
+				const stats = await trx
+					.selectFrom('Post')
+					.where('Post.id', '=', row.id)
+					.where('Post.deletedAt', 'is', null)
+					.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
+					.select(['FullScore.oSize as oSize', 'FullScore.p as p'])
+					.executeTakeFirstOrThrow()
+
+				return {
+					id: row.id,
+					parentId: row.parentId,
+					content: row.content,
+					createdAt: row.createdAt,
+					deletedAt: row.deletedAt,
+					isPrivate: row.isPrivate,
+					pollType: row.pollType as PollType,
+					fallacyList: await getFallacies(trx, row.id),
+					oSize: stats.oSize,
+					nTransitiveComments: await getDescendantCount(trx, row.id),
+					p: stats.p,
+				}
+			}),
+	)
 
 	const polls = await Promise.all(
 		results
