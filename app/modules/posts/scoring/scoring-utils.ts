@@ -1,4 +1,4 @@
-import { type Effect } from '#app/types/api-types.ts'
+import { type Effect } from '../post-types.ts'
 
 export function snakeToCamelCase(str: string): string {
 	return str.replace(/([-_][a-z])/g, group =>

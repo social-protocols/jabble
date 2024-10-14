@@ -13,13 +13,17 @@ import {
 	getReplyIds,
 } from '#app/modules/posts/post-repository.ts'
 import {
-	type VoteState,
 	type ReplyTree,
 	type ImmutableReplyTree,
 	type CommentTreeState,
 } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { type FrontPagePost, type Poll, type PollType } from '../post-types.ts'
+import {
+	type VoteState,
+	type FrontPagePost,
+	type Poll,
+	type PollType,
+} from '../post-types.ts'
 import { getEffect } from './effect-repository.ts'
 import { effectSizeOnTarget } from './scoring-utils.ts'
 import { getUserVotes } from './vote-repository.ts'

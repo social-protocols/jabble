@@ -13,7 +13,7 @@ import { getClaimContextByPollPostId } from '#app/modules/claims/claim-service.t
 import { type ClaimContext } from '#app/modules/claims/claim-types.ts'
 import { updateHN } from '#app/modules/hacker-news/hacker-news-service.ts'
 import { getTransitiveParents } from '#app/modules/posts/post-repository.ts'
-import { type Post } from '#app/modules/posts/post-types.ts'
+import { VoteDirection, type Post } from '#app/modules/posts/post-types.ts'
 import {
 	addReplyToReplyTree,
 	getCommentTreeState,
@@ -21,7 +21,6 @@ import {
 	toImmutableReplyTree,
 } from '#app/modules/posts/scoring/ranking-service.ts'
 import {
-	Direction,
 	type ReplyTree,
 	type CommentTreeState,
 	type ImmutableReplyTree,
@@ -185,7 +184,7 @@ export function DiscussionView({
 
 	const treeContext: TreeContext = {
 		onReplySubmit,
-		targetHasVote: postState.voteState.vote !== Direction.Neutral,
+		targetHasVote: postState.voteState.vote !== VoteDirection.Neutral,
 		targetPostId: postId,
 		commentTreeState: commentTreeState,
 		setCommentTreeState: setCommentTreeState,

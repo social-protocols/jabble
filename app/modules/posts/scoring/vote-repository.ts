@@ -4,14 +4,14 @@ import {
 	type DBInsertableVoteEvent,
 	type DBVoteEvent,
 } from '#app/database/types.ts'
-import { type Direction, type VoteState } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
+import { type VoteDirection, type VoteState } from '../post-types.ts'
 
 export async function insertVoteEvent(
 	trx: Transaction<DB>,
 	userId: string,
 	postId: number,
-	vote: Direction,
+	vote: VoteDirection,
 ): Promise<DBVoteEvent> {
 	const voteInt = vote as number
 

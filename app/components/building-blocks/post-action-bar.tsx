@@ -8,14 +8,13 @@ import {
 import TextareaAutosize from 'react-textarea-autosize'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { MAX_CHARS_PER_POST } from '#app/constants.ts'
-import { type Post } from '#app/modules/posts/post-types.ts'
+import { VoteDirection, type Post } from '#app/modules/posts/post-types.ts'
 import { toImmutableReplyTree } from '#app/modules/posts/scoring/ranking-service.ts'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import {
 	type ReplyTree,
 	type CommentTreeState,
 	type ImmutableReplyTree,
-	Direction,
 	type PostState,
 } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
@@ -91,7 +90,7 @@ export function PostActionBar({
 
 	const isTopLevelPost = post.parentId === null
 
-	const submitVote = async function (direction: Direction) {
+	const submitVote = async function (direction: VoteDirection) {
 		const payLoad = {
 			postId: post.id,
 			focussedPostId: treeContext.targetPostId,
@@ -166,11 +165,11 @@ export function PostActionBar({
 					<>
 						<button
 							title={'Upvote'}
-							onClick={async () => await submitVote(Direction.Up)}
+							onClick={async () => await submitVote(VoteDirection.Up)}
 						>
 							<Icon
 								name={
-									postState.voteState.vote == Direction.Up
+									postState.voteState.vote == VoteDirection.Up
 										? 'thick-arrow-up-solid'
 										: 'thick-arrow-up'
 								}
@@ -179,12 +178,12 @@ export function PostActionBar({
 						<span className="mx-[-0.6em]">Vote</span>
 						<button
 							title={'Downvote'}
-							onClick={async () => await submitVote(Direction.Down)}
+							onClick={async () => await submitVote(VoteDirection.Down)}
 							className="mr-[0.3em]"
 						>
 							<Icon
 								name={
-									postState.voteState.vote == Direction.Down
+									postState.voteState.vote == VoteDirection.Down
 										? 'thick-arrow-down-solid'
 										: 'thick-arrow-down'
 								}

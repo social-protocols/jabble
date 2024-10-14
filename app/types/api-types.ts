@@ -1,24 +1,16 @@
 import type Immutable from 'immutable'
 import { type FallacyList } from '#app/modules/fallacies/fallacy-types.ts'
-import { type Post, type PostWithScore } from '#app/modules/posts/post-types.ts'
+import {
+	type Effect,
+	type VoteState,
+	type Post,
+	type PostWithScore,
+} from '#app/modules/posts/post-types.ts'
 
 export type User = {
 	id: string
 	username: string
 	isAdmin: number
-}
-
-export type Effect = {
-	postId: number
-	commentId: number | null
-	p: number
-	pCount: number
-	pSize: number
-	q: number
-	qCount: number
-	qSize: number
-	r: number
-	weight: number
 }
 
 export type ReplyTree = {
@@ -56,16 +48,4 @@ export type CollapsedState = {
 	currentlyFocussedPostId: number | null
 	hidePost: Immutable.Map<number, boolean>
 	hideChildren: Immutable.Map<number, boolean>
-}
-
-export enum Direction {
-	Up = 1,
-	Down = -1,
-	Neutral = 0,
-}
-
-export type VoteState = {
-	postId: number
-	vote: Direction
-	isInformed: boolean
 }

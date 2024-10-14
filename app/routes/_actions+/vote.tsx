@@ -1,15 +1,16 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { db } from '#app/database/db.ts'
+import { VoteDirection } from '#app/modules/posts/post-types.ts'
 import { getCommentTreeState } from '#app/modules/posts/scoring/ranking-service.ts'
 import { vote } from '#app/modules/posts/scoring/vote-service.ts'
-import { type CommentTreeState, Direction } from '#app/types/api-types.ts'
+import { type CommentTreeState } from '#app/types/api-types.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
 type VoteData = {
 	postId: number
 	focussedPostId: number
-	direction: Direction
-	currentVoteState: Direction
+	direction: VoteDirection
+	currentVoteState: VoteDirection
 }
 
 export const action = async (args: ActionFunctionArgs) => {
@@ -20,7 +21,7 @@ export const action = async (args: ActionFunctionArgs) => {
 	// Example: state is Up and we receive another Up means that we clear the vote.
 	const newState =
 		dataParsed.direction == dataParsed.currentVoteState
-			? Direction.Neutral
+			? VoteDirection.Neutral
 			: dataParsed.direction
 
 	const userId: string = await requireUserId(request)

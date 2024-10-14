@@ -6,11 +6,14 @@ import { PostActionBar } from '#app/components/building-blocks/post-action-bar.t
 import { PostContent } from '#app/components/building-blocks/post-content.tsx'
 import { PostInfoBar } from '#app/components/building-blocks/post-info-bar.tsx'
 import { type FallacyList } from '#app/modules/fallacies/fallacy-types.ts'
-import { PollType, type Post } from '#app/modules/posts/post-types.ts'
+import {
+	PollType,
+	VoteDirection,
+	type Post,
+} from '#app/modules/posts/post-types.ts'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import {
 	type CommentTreeState,
-	Direction,
 	type ImmutableReplyTree,
 	type PostState,
 } from '#app/types/api-types.ts'
@@ -48,7 +51,7 @@ export function PostDetails({
 
 	const isTopLevelPost = post.parentId === null
 
-	const userHasVoted = postState.voteState.vote != Direction.Neutral
+	const userHasVoted = postState.voteState.vote != VoteDirection.Neutral
 
 	return (
 		<div
@@ -120,7 +123,7 @@ function PollVoteButtons({
 	const user = useOptionalUser()
 	const loggedIn: boolean = user !== null
 
-	const submitVote = async function (direction: Direction) {
+	const submitVote = async function (direction: VoteDirection) {
 		const payLoad = {
 			postId: post.id,
 			focussedPostId: treeContext.targetPostId,
@@ -149,10 +152,10 @@ function PollVoteButtons({
 		<div className="my-2 space-x-4">
 			<button
 				title={'Upvote'}
-				onClick={async () => await submitVote(Direction.Up)}
+				onClick={async () => await submitVote(VoteDirection.Up)}
 				className={
 					'rounded-full px-4 py-2 text-primary-foreground ' +
-					(postState.voteState.vote == Direction.Up
+					(postState.voteState.vote == VoteDirection.Up
 						? 'bg-primary text-primary-foreground'
 						: 'text-secondary-foreground outline outline-2 outline-secondary-foreground')
 				}
@@ -161,10 +164,10 @@ function PollVoteButtons({
 			</button>
 			<button
 				title={'Downvote'}
-				onClick={async () => await submitVote(Direction.Down)}
+				onClick={async () => await submitVote(VoteDirection.Down)}
 				className={
 					'rounded-full px-4 py-2 text-primary-foreground ' +
-					(postState.voteState.vote == Direction.Down
+					(postState.voteState.vote == VoteDirection.Down
 						? 'bg-primary text-primary-foreground'
 						: 'text-secondary-foreground outline outline-2 outline-secondary-foreground')
 				}
