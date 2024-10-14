@@ -20,7 +20,7 @@ export type FrontPagePost = Post & {
 	p: number
 }
 
-export type PollPagePost = Post & {
+export type Poll = Post & {
 	context: {
 		artefact: Artefact
 		quote: Quote | null

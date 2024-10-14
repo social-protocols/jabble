@@ -19,11 +19,7 @@ import {
 } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import {
-	type FrontPagePost,
-	type PollPagePost,
-	type PollType,
-} from '../post-types.ts'
+import { type FrontPagePost, type Poll, type PollType } from '../post-types.ts'
 import { getEffect } from './effect-repository.ts'
 import { effectSizeOnTarget } from './scoring-utils.ts'
 import { getUserVotes } from './vote-repository.ts'
@@ -247,7 +243,7 @@ export async function getChronologicalToplevelPosts(
 
 export async function getChronologicalPolls(
 	trx: Transaction<DB>,
-): Promise<PollPagePost[]> {
+): Promise<Poll[]> {
 	let query = trx
 		.selectFrom('Post')
 		.where('Post.parentId', 'is', null)
