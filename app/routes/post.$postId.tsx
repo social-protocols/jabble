@@ -187,13 +187,11 @@ export function DiscussionView({
 		`post ${postId} not found in commentTreeState`,
 	)
 
-	function onReplySubmit(reply: ReplyTree) {
-		const newReplyTreeState = addReplyToReplyTree(replyTreeState, reply)
-		setReplyTreeState(newReplyTreeState)
-	}
-
 	const treeContext: TreeContext = {
-		onReplySubmit,
+		onReplySubmit: (reply: ReplyTree) => {
+			const newReplyTreeState = addReplyToReplyTree(replyTreeState, reply)
+			setReplyTreeState(newReplyTreeState)
+		},
 		targetHasVote: postState.voteState.vote !== VoteDirection.Neutral,
 		targetPostId: postId,
 		commentTreeState: commentTreeState,
@@ -221,53 +219,58 @@ export function DiscussionView({
 		},
 	}
 
-	const isTweet = pollContext
-		? isValidTweetUrl(pollContext?.artefact.url)
-		: false
-
-	const [showPollContext, setShowPollContext] = useState<boolean>(false)
-
 	return (
 		<>
-			{pollContext && (
-				<div className="mb-4">
-					<button
-						onClick={() => {
-							setShowPollContext(!showPollContext)
-							return false
-						}}
-						className="shrink-0 font-bold text-purple-700"
-					>
-						{showPollContext ? (
-							<Icon name="chevron-down" className="mt-[-0.1em]" />
-						) : (
-							<Icon name="chevron-right" className="mt-[-0.1em]" />
-						)}
-						<span className="ml-2">Show context</span>
-					</button>
-					{showPollContext && (
-						<div className="flex flex-col items-center p-4">
-							{isTweet ? (
-								<EmbeddedTweet tweetUrl={pollContext.artefact.url} />
-							) : (
-								<>
-									<Icon name="quote" size="xl" className="mb-2 mr-auto" />
-									{pollContext.quote.quote}
-								</>
-							)}
-						</div>
-					)}
-				</div>
-			)}
+			{pollContext && <PollContext pollContext={pollContext} />}
 			<ParentThread transitiveParents={transitiveParents} />
 			<PostWithReplies
-				className={'mb-2 rounded-sm bg-post p-2'}
+				className={
+					'mb-2 rounded-xl border-2 border-solid border-gray-200 bg-post p-2 dark:border-gray-700 '
+				}
 				replyTree={replyTreeState}
 				pathFromTargetPost={Immutable.List([postId])}
 				treeContext={treeContext}
 			/>
 			<div className="h-screen" />
 		</>
+	)
+}
+
+function PollContext({ pollContext }: { pollContext: ClaimContext }) {
+	const isTweet = pollContext
+		? isValidTweetUrl(pollContext?.artefact.url)
+		: false
+
+	const [showPollContext, setShowPollContext] = useState<boolean>(false)
+	return (
+		<div className="mb-4">
+			<button
+				onClick={() => {
+					setShowPollContext(!showPollContext)
+					return false
+				}}
+				className="shrink-0 font-bold text-purple-700"
+			>
+				{showPollContext ? (
+					<Icon name="chevron-down" className="mt-[-0.1em]" />
+				) : (
+					<Icon name="chevron-right" className="mt-[-0.1em]" />
+				)}
+				<span className="ml-2">Show context</span>
+			</button>
+			{showPollContext && (
+				<div className="flex flex-col items-center p-4">
+					{isTweet ? (
+						<EmbeddedTweet tweetUrl={pollContext.artefact.url} />
+					) : (
+						<>
+							<Icon name="quote" size="xl" className="mb-2 mr-auto" />
+							{pollContext.quote.quote}
+						</>
+					)}
+				</div>
+			)}
+		</div>
 	)
 }
 
