@@ -1,7 +1,6 @@
 import SQLite from 'better-sqlite3'
 import { Kysely, SqliteDialect } from 'kysely'
-
-import { type DB } from '#app/types/kysely-types.ts' // this is the Database interface we defined earlier
+import { type DB } from './types.ts'
 
 const databasePath = process.env.APP_DATABASE_PATH
 

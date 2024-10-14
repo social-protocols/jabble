@@ -9,7 +9,7 @@ import {
 	TabsList,
 	TabsTrigger,
 } from '#app/components/ui/tabs.tsx'
-import { db } from '#app/db.ts'
+import { db } from '#app/database/db.ts'
 import { getPostsAndPollsByTagId } from '#app/modules/posts/post-service.ts'
 import { type FrontPagePost, type Poll } from '#app/modules/posts/post-types.ts'
 import { getTagById } from '#app/modules/tags/tag-repository.ts'

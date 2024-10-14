@@ -1,7 +1,7 @@
 import { Link, useLoaderData } from '@remix-run/react'
 import { PollPostPreview } from '#app/components/building-blocks/poll-post-preview.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
-import { db } from '#app/db.ts'
+import { db } from '#app/database/db.ts'
 import { getChronologicalPolls } from '#app/modules/posts/scoring/ranking-service.ts'
 
 export async function loader() {

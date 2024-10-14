@@ -1,7 +1,6 @@
 import global_brain from '@socialprotocols/globalbrain-node'
 import { type Transaction } from 'kysely'
-import { type DBVoteEvent } from '#app/types/db-types.ts'
-import { type DB } from '#app/types/kysely-types.ts'
+import { type DB, type DBVoteEvent } from '#app/database/types.ts'
 import { insertEffectEvent } from './effect-repository.ts'
 import { insertScoreEvent } from './score-repository.ts'
 import { camelToSnakeCase } from './scoring-utils.ts'

@@ -1,6 +1,6 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import { z } from 'zod'
-import { db } from '#app/db.ts'
+import { db } from '#app/database/db.ts'
 import { setDeletedAt } from '#app/modules/posts/post-repository.ts'
 import { getCommentTreeState } from '#app/modules/posts/scoring/ranking-service.ts'
 import { getUserId } from '#app/utils/auth.server.ts'

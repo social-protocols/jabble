@@ -1,4 +1,5 @@
 import { sql, type Transaction } from 'kysely'
+import { type DB } from '#app/database/types.ts'
 import { getArtefact } from '#app/modules/claims/artefact-repository.ts'
 import {
 	getClaim,
@@ -10,7 +11,6 @@ import {
 	getPost,
 } from '#app/modules/posts/post-repository.ts'
 import { createPost } from '#app/modules/posts/post-service.ts'
-import { type DB } from '#app/types/kysely-types.ts'
 import { type Poll, type PollType, type Post } from '../post-types.ts'
 
 export async function getOrCreatePoll(

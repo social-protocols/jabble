@@ -1,7 +1,7 @@
 import { type ActionFunctionArgs } from '@remix-run/node'
 import invariant from 'tiny-invariant'
 import { z } from 'zod'
-import { db } from '#app/db.ts'
+import { db } from '#app/database/db.ts'
 import { fallacyDetection } from '#app/modules/fallacies/fallacy-detection-client.ts'
 import { storeFallacies } from '#app/modules/fallacies/fallacy-repository.ts'
 import { createPost } from '#app/modules/posts/post-service.ts'

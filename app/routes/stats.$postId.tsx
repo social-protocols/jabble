@@ -4,12 +4,12 @@ import invariant from 'tiny-invariant'
 import { z } from 'zod'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
-import { db } from '#app/db.ts'
+import { db } from '#app/database/db.ts'
+import { type DBEffect } from '#app/database/types.ts'
 import { getStatsPost } from '#app/modules/posts/post-repository.ts'
 import { type StatsPost } from '#app/modules/posts/post-types.ts'
 import { getEffects } from '#app/modules/posts/scoring/effect-repository.ts'
 import { relativeEntropy } from '#app/modules/posts/scoring/scoring-utils.ts'
-import { type DBEffect } from '#app/types/db-types.ts'
 
 const postIdSchema = z.coerce.number()
 

@@ -2,8 +2,8 @@ import { createId } from '@paralleldrive/cuid2'
 import { redirect } from '@remix-run/node'
 import bcrypt from 'bcryptjs'
 import { safeRedirect } from 'remix-utils/safe-redirect'
-import { db } from '#app/db.ts'
-import { type DBPassword, type DBUser } from '#app/types/db-types.ts'
+import { db } from '#app/database/db.ts'
+import { type DBPassword, type DBUser } from '#app/database/types.ts'
 import { combineHeaders, invariant } from './misc.tsx'
 import { authSessionStorage } from './session.server.ts'
 
@@ -19,11 +19,6 @@ export async function getUserId(request: Request) {
 	)
 	const sessionId = authSession.get(sessionKey)
 	if (!sessionId) return null
-
-	// const session = await prisma.session.findUnique({
-	// 	select: { user: { select: { id: true } } },
-	// 	where: { id: sessionId, expirationDate: { gt: new Date() } },
-	// })
 
 	const session = await db
 		.selectFrom('Session')

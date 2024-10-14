@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs'
-import { db } from '#app/db.ts'
+import { db } from '#app/database/db.ts'
 import { createPost } from '#app/modules/posts/post-service.ts'
 import { vote } from '#app/modules/posts/scoring/vote-service.ts'
 import { Direction } from '#app/types/api-types.ts'

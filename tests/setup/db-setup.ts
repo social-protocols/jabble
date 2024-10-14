@@ -15,7 +15,7 @@ beforeAll(async () => {
 // we *must* use dynamic imports here so the process.env.DATABASE_URL is set
 // before prisma is imported and initialized
 afterEach(async () => {
-	const { db } = await import('#app/db.ts')
+	const { db } = await import('#app/database/db.ts')
 	await cleanupDb(db)
 })
 

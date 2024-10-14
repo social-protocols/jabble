@@ -13,7 +13,7 @@ import {
 	TabsList,
 	TabsTrigger,
 } from '#app/components/ui/tabs.tsx'
-import { db } from '#app/db.ts'
+import { db } from '#app/database/db.ts'
 import { getArtefact } from '#app/modules/claims/artefact-repository.ts'
 import { getClaims } from '#app/modules/claims/claim-repository.ts'
 import {
