@@ -9,6 +9,7 @@ import { extractTags } from '../tags/tagger-client.ts'
 import { getPollPost } from './polls/poll-repository.ts'
 import {
 	getDescendantCount,
+	getPost,
 	incrementReplyCount,
 	insertPost,
 } from './post-repository.ts'
@@ -37,15 +38,7 @@ export async function createPost(
 	invariant(persistedPost, `Reply to ${parentId} not submitted successfully`)
 
 	if (parentId == null) {
-		const tags = await extractTags(content)
-		const persistedTags = await Promise.all(
-			tags.map(async tag => await insertTag(trx, tag)),
-		)
-		await Promise.all(
-			persistedTags.map(
-				async tag => await insertPostTag(trx, persistedPost.id, tag.id),
-			),
-		)
+		await tagPost(trx, persistedPost.id)
 	}
 
 	if (options?.withUpvote !== undefined ? options.withUpvote : true) {
@@ -126,4 +119,15 @@ export async function getPostsAndPollsByTagId(
 		posts: posts,
 		polls: polls,
 	}
+}
+
+export async function tagPost(trx: Transaction<DB>, postId: number) {
+	const post = await getPost(trx, postId)
+	const tags = await extractTags(post.content)
+	const persistedTags = await Promise.all(
+		tags.map(async tag => await insertTag(trx, tag)),
+	)
+	await Promise.all(
+		persistedTags.map(async tag => await insertPostTag(trx, post.id, tag.id)),
+	)
 }
