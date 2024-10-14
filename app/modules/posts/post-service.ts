@@ -1,7 +1,6 @@
 import { type Transaction } from 'kysely'
 import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { type DB } from '#app/database/types.ts'
-import { Direction } from '#app/types/api-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { getFallacies } from '../fallacies/fallacy-repository.ts'
 import { insertPostTag, insertTag } from '../tags/tag-repository.ts'
@@ -13,7 +12,12 @@ import {
 	incrementReplyCount,
 	insertPost,
 } from './post-repository.ts'
-import { type FrontPagePost, type Poll, type PollType } from './post-types.ts'
+import {
+	VoteDirection,
+	type FrontPagePost,
+	type Poll,
+	type PollType,
+} from './post-types.ts'
 import { vote } from './scoring/vote-service.ts'
 
 export async function createPost(
@@ -42,7 +46,7 @@ export async function createPost(
 	}
 
 	if (options?.withUpvote !== undefined ? options.withUpvote : true) {
-		await vote(trx, authorId, persistedPost.id, Direction.Up)
+		await vote(trx, authorId, persistedPost.id, VoteDirection.Up)
 	}
 
 	if (parentId !== null) {

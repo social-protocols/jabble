@@ -56,3 +56,28 @@ export enum PollType {
 	FactCheck = 'factCheck',
 	Opinion = 'opinion',
 }
+
+export type Effect = {
+	postId: number
+	commentId: number | null
+	p: number
+	pCount: number
+	pSize: number
+	q: number
+	qCount: number
+	qSize: number
+	r: number
+	weight: number
+}
+
+export enum VoteDirection {
+	Up = 1,
+	Down = -1,
+	Neutral = 0,
+}
+
+export type VoteState = {
+	postId: number
+	vote: VoteDirection
+	isInformed: boolean
+}

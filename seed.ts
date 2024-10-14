@@ -1,8 +1,8 @@
 import bcrypt from 'bcryptjs'
 import { db } from '#app/database/db.ts'
 import { createPost } from '#app/modules/posts/post-service.ts'
+import { VoteDirection } from '#app/modules/posts/post-types.ts'
 import { vote } from '#app/modules/posts/scoring/vote-service.ts'
-import { Direction } from '#app/types/api-types.ts'
 import { getPasswordHash } from '#app/utils/auth.server.ts'
 
 export async function seed() {
@@ -78,7 +78,7 @@ export async function seed() {
 
 	// And also downvotes
 	db.transaction().execute(
-		async trx => await vote(trx, bob, post1, Direction.Down),
+		async trx => await vote(trx, bob, post1, VoteDirection.Down),
 	)
 
 	// And responds to bob's response
@@ -137,27 +137,27 @@ export async function seed() {
 	})
 
 	await db.transaction().execute(async trx => {
-		await vote(trx, alice, post6, Direction.Down)
+		await vote(trx, alice, post6, VoteDirection.Down)
 
 		// agreed with 2 (shown 3)
-		await vote(trx, charlie, post2, Direction.Up)
+		await vote(trx, charlie, post2, VoteDirection.Up)
 
 		// changed mind after seeing 2
-		await vote(trx, charlie, post1, Direction.Down)
+		await vote(trx, charlie, post1, VoteDirection.Down)
 
 		// changed mind back (for no particular reason)
-		await vote(trx, charlie, post1, Direction.Up)
+		await vote(trx, charlie, post1, VoteDirection.Up)
 
 		// duplicate vote
-		await vote(trx, charlie, post1, Direction.Up)
+		await vote(trx, charlie, post1, VoteDirection.Up)
 
 		// changed mind back again
-		await vote(trx, charlie, post1, Direction.Down)
+		await vote(trx, charlie, post1, VoteDirection.Down)
 
 		// and s some other votes
-		await vote(trx, charlie, post1, Direction.Down)
-		await vote(trx, charlie, post2, Direction.Down)
-		await vote(trx, charlie, post2, Direction.Up)
+		await vote(trx, charlie, post1, VoteDirection.Down)
+		await vote(trx, charlie, post2, VoteDirection.Down)
+		await vote(trx, charlie, post2, VoteDirection.Up)
 		await vote(trx, charlie, 3, 1)
 		await vote(trx, charlie, 2, -1)
 		await vote(trx, bob, 6, -1)
