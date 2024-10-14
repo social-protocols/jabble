@@ -4,9 +4,9 @@ import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { extractTweetTextGraphQL } from '#app/utils/tweet_extraction.server.ts'
 import { isValidTweetUrl, parseTweetURL } from '#app/utils/twitter-utils.ts'
-import { extractClaims } from '../claim-extraction/claim-extraction-client.ts'
 import { fallacyDetection } from '../fallacies/fallacy-detection-client.ts'
 import { getArtefact, getOrCreateArtefact } from './artefact-repository.ts'
+import { extractClaims } from './claim-extraction-client.ts'
 import { getClaims, insertClaim } from './claim-repository.ts'
 import {
 	type Claim,
