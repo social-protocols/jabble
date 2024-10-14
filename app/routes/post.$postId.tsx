@@ -19,7 +19,6 @@ import {
 	getReplyTree,
 } from '#app/modules/posts/ranking/ranking-service.ts'
 import {
-	type CollapsedState,
 	type CommentTreeState,
 	type ImmutableReplyTree,
 	type ReplyTree,
@@ -147,6 +146,12 @@ export type TreeContext = {
 	onCollapseParentSiblings: (
 		pathFromFocussedPost: Immutable.List<number>,
 	) => void
+}
+
+export type CollapsedState = {
+	currentlyFocussedPostId: number | null
+	hidePost: Immutable.Map<number, boolean>
+	hideChildren: Immutable.Map<number, boolean>
 }
 
 export function DiscussionView({

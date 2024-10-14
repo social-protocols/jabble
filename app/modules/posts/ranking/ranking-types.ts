@@ -33,9 +33,3 @@ export type CommentTreeState = {
 		[key: number]: PostState
 	}
 }
-
-export type CollapsedState = {
-	currentlyFocussedPostId: number | null
-	hidePost: Immutable.Map<number, boolean>
-	hideChildren: Immutable.Map<number, boolean>
-}
