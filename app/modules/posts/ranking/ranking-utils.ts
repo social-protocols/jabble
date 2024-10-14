@@ -1,7 +1,7 @@
 import Immutable from 'immutable'
-import { type ImmutableReplyTree, type ReplyTree } from './ranking-types.ts'
+import { type ReplyTree, type MutableReplyTree } from './ranking-types.ts'
 
-export function toImmutableReplyTree(replyTree: ReplyTree): ImmutableReplyTree {
+export function toImmutableReplyTree(replyTree: MutableReplyTree): ReplyTree {
 	return {
 		...replyTree,
 		replies: Immutable.List(replyTree.replies.map(toImmutableReplyTree)),
@@ -9,9 +9,9 @@ export function toImmutableReplyTree(replyTree: ReplyTree): ImmutableReplyTree {
 }
 
 export function addReplyToReplyTree(
-	tree: ImmutableReplyTree,
-	reply: ImmutableReplyTree,
-): ImmutableReplyTree {
+	tree: ReplyTree,
+	reply: ReplyTree,
+): ReplyTree {
 	if (reply.post.parentId == tree.post.id) {
 		return {
 			...tree,

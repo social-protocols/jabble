@@ -1,5 +1,5 @@
 import { PostDetails } from '#app/components/building-blocks/post-details.tsx'
-import { type ImmutableReplyTree } from '#app/modules/posts/ranking/ranking-types.ts'
+import { type ReplyTree } from '#app/modules/posts/ranking/ranking-types.ts'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
 
 export function PostWithReplies({
@@ -8,7 +8,7 @@ export function PostWithReplies({
 	treeContext,
 	className,
 }: {
-	replyTree: ImmutableReplyTree
+	replyTree: ReplyTree
 	pathFromTargetPost: Immutable.List<number>
 	treeContext: TreeContext
 	className?: string
@@ -33,7 +33,7 @@ export function PostWithReplies({
 				/>
 				{!hideChildren && (
 					<div key={`${postId}-subtree`} className={'ml-2 pl-3'}>
-						{replyTree.replies.map((tree: ImmutableReplyTree) => {
+						{replyTree.replies.map((tree: ReplyTree) => {
 							return (
 								<PostWithReplies
 									key={`${treeContext.targetPostId}-${tree.post.id}`}

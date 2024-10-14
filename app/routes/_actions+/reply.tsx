@@ -7,7 +7,7 @@ import { storeFallacies } from '#app/modules/fallacies/fallacy-repository.ts'
 import { createPost } from '#app/modules/posts/post-service.ts'
 import {
 	getCommentTreeState,
-	getReplyTree,
+	getMutableReplyTree,
 } from '#app/modules/posts/ranking/ranking-service.ts'
 import { requireUserId } from '#app/utils/auth.server.ts'
 
@@ -62,7 +62,12 @@ export const action = async (args: ActionFunctionArgs) => {
 			)
 			return {
 				commentTreeState,
-				newReplyTree: await getReplyTree(trx, postId, userId, commentTreeState),
+				newReplyTree: await getMutableReplyTree(
+					trx,
+					postId,
+					userId,
+					commentTreeState,
+				),
 			}
 		} else return {}
 	})

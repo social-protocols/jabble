@@ -16,11 +16,11 @@ import { getTransitiveParents } from '#app/modules/posts/post-repository.ts'
 import { VoteDirection, type Post } from '#app/modules/posts/post-types.ts'
 import {
 	getCommentTreeState,
-	getReplyTree,
+	getMutableReplyTree,
 } from '#app/modules/posts/ranking/ranking-service.ts'
 import {
+	type MutableReplyTree,
 	type CommentTreeState,
-	type ImmutableReplyTree,
 	type ReplyTree,
 } from '#app/modules/posts/ranking/ranking-types.ts'
 import {
@@ -43,25 +43,25 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 		commentTreeState,
 		pollContext,
 	}: {
-		mutableReplyTree: ReplyTree
+		mutableReplyTree: MutableReplyTree
 		transitiveParents: Post[]
 		commentTreeState: CommentTreeState
 		pollContext: ClaimContext | null
 	} = await db.transaction().execute(async trx => {
 		await updateHN(trx, postId)
 		const commentTreeState = await getCommentTreeState(trx, postId, userId)
-		const mutableReplyTree = await getReplyTree(
+		const replyTree = await getMutableReplyTree(
 			trx,
 			postId,
 			userId,
 			commentTreeState,
 		)
-		const isPoll = mutableReplyTree.post.pollType !== null
+		const isPoll = replyTree.post.pollType !== null
 		const pollContext = isPoll
 			? await getClaimContextByPollPostId(trx, postId)
 			: null
 		return {
-			mutableReplyTree: mutableReplyTree,
+			mutableReplyTree: replyTree,
 			transitiveParents: await getTransitiveParents(trx, postId),
 			commentTreeState: commentTreeState,
 			pollContext: pollContext,
@@ -119,6 +119,8 @@ export default function PostPage() {
 	const { mutableReplyTree, transitiveParents, commentTreeState, pollContext } =
 		useLoaderData<typeof loader>()
 
+	const replyTree = toImmutableReplyTree(mutableReplyTree)
+
 	const params = useParams()
 
 	// subcomponent and key needed for react to not preserve state on page changes
@@ -126,7 +128,7 @@ export default function PostPage() {
 		<>
 			<DiscussionView
 				key={params['postId']}
-				mutableReplyTree={mutableReplyTree}
+				initialReplyTree={replyTree}
 				transitiveParents={transitiveParents}
 				initialCommentTreeState={commentTreeState}
 				pollContext={pollContext}
@@ -136,7 +138,7 @@ export default function PostPage() {
 }
 
 export type TreeContext = {
-	onReplySubmit: (reply: ImmutableReplyTree) => void
+	onReplySubmit: (reply: ReplyTree) => void
 	targetHasVote: boolean
 	targetPostId: number
 	commentTreeState: CommentTreeState
@@ -155,18 +157,16 @@ export type CollapsedState = {
 }
 
 export function DiscussionView({
-	mutableReplyTree,
+	initialReplyTree,
 	transitiveParents,
 	initialCommentTreeState,
 	pollContext,
 }: {
-	mutableReplyTree: ReplyTree
+	initialReplyTree: ReplyTree
 	transitiveParents: Post[]
 	initialCommentTreeState: CommentTreeState
 	pollContext: ClaimContext | null
 }) {
-	const initialReplyTree = toImmutableReplyTree(mutableReplyTree)
-
 	const [replyTreeState, setReplyTreeState] = useState(initialReplyTree)
 	const [commentTreeState, setCommentTreeState] = useState<CommentTreeState>(
 		initialCommentTreeState,
@@ -184,7 +184,7 @@ export function DiscussionView({
 		`post ${postId} not found in commentTreeState`,
 	)
 
-	function onReplySubmit(reply: ImmutableReplyTree) {
+	function onReplySubmit(reply: ReplyTree) {
 		const newReplyTreeState = addReplyToReplyTree(replyTreeState, reply)
 		setReplyTreeState(newReplyTreeState)
 	}
@@ -271,7 +271,7 @@ export function DiscussionView({
 function collapseParentSiblingsAndIndirectChildren(
 	pathFromFocussedPost: Immutable.List<number>,
 	collapsedState: CollapsedState,
-	replyTree: ImmutableReplyTree,
+	replyTree: ReplyTree,
 ): CollapsedState {
 	// go down the tree along the path
 	// and collapse all siblings on the way.

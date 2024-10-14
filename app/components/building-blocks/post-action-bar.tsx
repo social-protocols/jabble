@@ -11,9 +11,9 @@ import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { VoteDirection, type Post } from '#app/modules/posts/post-types.ts'
 import {
 	type CommentTreeState,
-	type ImmutableReplyTree,
-	type PostState,
 	type ReplyTree,
+	type PostState,
+	type MutableReplyTree,
 } from '#app/modules/posts/ranking/ranking-types.ts'
 import { toImmutableReplyTree } from '#app/modules/posts/ranking/ranking-utils.ts'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
@@ -29,7 +29,7 @@ export function PostActionBar({
 	postState,
 }: {
 	post: Post
-	replyTree: ImmutableReplyTree
+	replyTree: ReplyTree
 	pathFromTargetPost: Immutable.List<number>
 	postDetailsRef: React.RefObject<HTMLDivElement>
 	treeContext: TreeContext
@@ -335,7 +335,7 @@ function ReplyForm({
 		})
 		const responseDecoded = (await response.json()) as {
 			commentTreeState: CommentTreeState
-			newReplyTree: ReplyTree
+			newReplyTree: MutableReplyTree
 		}
 		// after successful submission, remove from localstorage
 		localStorage.removeItem(storageKey)

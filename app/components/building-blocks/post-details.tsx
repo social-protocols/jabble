@@ -13,7 +13,7 @@ import {
 } from '#app/modules/posts/post-types.ts'
 import {
 	type CommentTreeState,
-	type ImmutableReplyTree,
+	type ReplyTree,
 	type PostState,
 } from '#app/modules/posts/ranking/ranking-types.ts'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
@@ -31,7 +31,7 @@ export function PostDetails({
 	post: Post
 	fallacyList: FallacyList
 	className?: string
-	replyTree: ImmutableReplyTree
+	replyTree: ReplyTree
 	pathFromTargetPost: Immutable.List<number>
 	treeContext: TreeContext
 }) {

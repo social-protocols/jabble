@@ -7,16 +7,16 @@ import {
 	type PostWithScore,
 } from '#app/modules/posts/post-types.ts'
 
-export type ReplyTree = {
+export type MutableReplyTree = {
 	post: PostWithScore
 	fallacyList: FallacyList
-	replies: ReplyTree[]
+	replies: MutableReplyTree[]
 }
 
-export type ImmutableReplyTree = {
+export type ReplyTree = {
 	post: Post
 	fallacyList: FallacyList
-	replies: Immutable.List<ImmutableReplyTree>
+	replies: Immutable.List<ReplyTree>
 }
 
 export type PostState = {

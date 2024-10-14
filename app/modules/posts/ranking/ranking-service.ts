@@ -25,8 +25,8 @@ import { getUserVotes } from '../scoring/vote-repository.ts'
 import { defaultVoteState } from '../scoring/vote-service.ts'
 import {
 	type CommentTreeState,
-	type ImmutableReplyTree,
 	type ReplyTree,
+	type MutableReplyTree,
 } from './ranking-types.ts'
 
 export async function getCommentTreeState(
@@ -84,9 +84,7 @@ export async function getCommentTreeState(
 	return commentTreeState
 }
 
-export function getAllPostIdsInTree(
-	tree: ImmutableReplyTree,
-): Immutable.List<number> {
+export function getAllPostIdsInTree(tree: ReplyTree): Immutable.List<number> {
 	if (tree.replies.size === 0) {
 		return Immutable.List([tree.post.id])
 	}
@@ -96,22 +94,22 @@ export function getAllPostIdsInTree(
 	)
 }
 
-export async function getReplyTree(
+export async function getMutableReplyTree(
 	trx: Transaction<DB>,
 	postId: number,
 	userId: string | null,
 	commentTreeState: CommentTreeState,
-): Promise<ReplyTree> {
+): Promise<MutableReplyTree> {
 	const directReplyIds = await getReplyIds(trx, postId)
 	const post = await getPostWithScore(trx, postId)
 
-	const replies: ReplyTree[] = await Promise.all(
+	const replies: MutableReplyTree[] = await Promise.all(
 		// Recursively get all subtrees.
 		// Stopping criterion: Once we reach a leaf node, its replies will be an
 		// empty array, so the Promise.all will resolve immediately.
 		directReplyIds.map(
 			async replyId =>
-				await getReplyTree(trx, replyId, userId, commentTreeState),
+				await getMutableReplyTree(trx, replyId, userId, commentTreeState),
 		),
 	)
 
