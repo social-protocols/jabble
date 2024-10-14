@@ -11,12 +11,12 @@ import {
 	VoteDirection,
 	type Post,
 } from '#app/modules/posts/post-types.ts'
-import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import {
 	type CommentTreeState,
 	type ImmutableReplyTree,
 	type PostState,
-} from '#app/types/api-types.ts'
+} from '#app/modules/posts/ranking/ranking-types.ts'
+import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
 

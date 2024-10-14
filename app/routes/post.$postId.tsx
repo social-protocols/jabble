@@ -15,17 +15,19 @@ import { updateHN } from '#app/modules/hacker-news/hacker-news-service.ts'
 import { getTransitiveParents } from '#app/modules/posts/post-repository.ts'
 import { VoteDirection, type Post } from '#app/modules/posts/post-types.ts'
 import {
-	addReplyToReplyTree,
 	getCommentTreeState,
 	getReplyTree,
-	toImmutableReplyTree,
-} from '#app/modules/posts/scoring/ranking-service.ts'
+} from '#app/modules/posts/ranking/ranking-service.ts'
 import {
-	type ReplyTree,
+	type CollapsedState,
 	type CommentTreeState,
 	type ImmutableReplyTree,
-	type CollapsedState,
-} from '#app/types/api-types.ts'
+	type ReplyTree,
+} from '#app/modules/posts/ranking/ranking-types.ts'
+import {
+	addReplyToReplyTree,
+	toImmutableReplyTree,
+} from '#app/modules/posts/ranking/ranking-utils.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'

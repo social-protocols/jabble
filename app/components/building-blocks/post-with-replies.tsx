@@ -1,6 +1,6 @@
 import { PostDetails } from '#app/components/building-blocks/post-details.tsx'
+import { type ImmutableReplyTree } from '#app/modules/posts/ranking/ranking-types.ts'
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
-import { type ImmutableReplyTree } from '#app/types/api-types.ts'
 
 export function PostWithReplies({
 	replyTree,

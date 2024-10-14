@@ -7,12 +7,6 @@ import {
 	type PostWithScore,
 } from '#app/modules/posts/post-types.ts'
 
-export type User = {
-	id: string
-	username: string
-	isAdmin: number
-}
-
 export type ReplyTree = {
 	post: PostWithScore
 	fallacyList: FallacyList
@@ -26,7 +20,6 @@ export type ImmutableReplyTree = {
 }
 
 export type PostState = {
-	criticalCommentId: number | null
 	voteState: VoteState
 	voteCount: number
 	p: number | null
@@ -36,9 +29,6 @@ export type PostState = {
 
 export type CommentTreeState = {
 	targetPostId: number
-	criticalCommentIdToTargetId: {
-		[key: number]: number[]
-	}
 	posts: {
 		[key: number]: PostState
 	}

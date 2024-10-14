@@ -2,7 +2,7 @@ import moment from 'moment'
 import { useState } from 'react'
 import { type FallacyList } from '#app/modules/fallacies/fallacy-types.ts'
 import { type Post } from '#app/modules/posts/post-types.ts'
-import { type PostState } from '#app/types/api-types.ts'
+import { type PostState } from '#app/modules/posts/ranking/ranking-types.ts'
 
 export function PostInfoBar({
 	post,

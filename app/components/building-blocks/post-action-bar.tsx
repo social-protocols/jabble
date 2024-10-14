@@ -9,14 +9,14 @@ import TextareaAutosize from 'react-textarea-autosize'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { VoteDirection, type Post } from '#app/modules/posts/post-types.ts'
-import { toImmutableReplyTree } from '#app/modules/posts/scoring/ranking-service.ts'
-import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import {
-	type ReplyTree,
 	type CommentTreeState,
 	type ImmutableReplyTree,
 	type PostState,
-} from '#app/types/api-types.ts'
+	type ReplyTree,
+} from '#app/modules/posts/ranking/ranking-types.ts'
+import { toImmutableReplyTree } from '#app/modules/posts/ranking/ranking-utils.ts'
+import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
 
