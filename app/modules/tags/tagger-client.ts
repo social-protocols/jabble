@@ -15,7 +15,7 @@ export const TaggingSchema = z.object({
 		.describe('A list of tags that characterizes the given content.'),
 })
 
-export async function tagContent(content: string): Promise<string[]> {
+export async function extractTags(content: string): Promise<string[]> {
 	const openai = new OpenAI()
 
 	const systemMessage = `

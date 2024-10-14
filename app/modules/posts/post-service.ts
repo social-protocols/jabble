@@ -4,7 +4,7 @@ import { Direction } from '#app/types/api-types.ts'
 import { type DB } from '#app/types/kysely-types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { insertPostTag, insertTag } from '../tags/tag-repository.ts'
-import { tagContent } from '../tags/tagger-client.ts'
+import { extractTags } from '../tags/tagger-client.ts'
 import { getPollPost } from './polls/poll-repository.ts'
 import { incrementReplyCount, insertPost } from './post-repository.ts'
 import { type PollPagePost, type PollType, type Post } from './post-types.ts'
@@ -32,7 +32,7 @@ export async function createPost(
 	invariant(persistedPost, `Reply to ${parentId} not submitted successfully`)
 
 	if (parentId == null) {
-		const tags = await tagContent(content)
+		const tags = await extractTags(content)
 		const persistedTags = await Promise.all(
 			tags.map(async tag => await insertTag(trx, tag)),
 		)

@@ -2,6 +2,12 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { z } from 'zod'
 import { Markdown } from '#app/components/markdown.tsx'
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from '#app/components/ui/tabs.tsx'
 import { db } from '#app/db.ts'
 import { getPostsAndPollsByTagId } from '#app/modules/posts/post-service.ts'
 import { type PollPagePost, type Post } from '#app/modules/posts/post-types.ts'
@@ -41,25 +47,39 @@ export default function TagPage() {
 			<div className="mb-6">
 				<Markdown deactivateLinks={false}>{`# # ${tag.tag}`}</Markdown>
 			</div>
-			<div className="mb-6">
-				<h1>Posts</h1>
-				{posts.map(post => {
-					return (
-						<div key={`post-${post.id}`} className="mb-4">
-							{post.content}
+			<div>
+				<Tabs defaultValue="polls" className="w-full">
+					<TabsList className="my-4 w-full">
+						<TabsTrigger value="polls" className="w-full">
+							Polls
+						</TabsTrigger>
+						<TabsTrigger value="posts" className="w-full">
+							Posts
+						</TabsTrigger>
+					</TabsList>
+					<TabsContent value="polls">
+						<div>
+							{polls.map(poll => {
+								return (
+									<div key={`post-${poll.id}`} className="mb-4">
+										{poll.content}
+									</div>
+								)
+							})}
 						</div>
-					)
-				})}
-			</div>
-			<div className="mb-6">
-				<h1>Polls</h1>
-				{polls.map(poll => {
-					return (
-						<div key={`post-${poll.id}`} className="mb-4">
-							{poll.content}
+					</TabsContent>
+					<TabsContent value="posts">
+						<div className="mt-5">
+							{posts.map(post => {
+								return (
+									<div key={`post-${post.id}`} className="mb-4">
+										{post.content}
+									</div>
+								)
+							})}
 						</div>
-					)
-				})}
+					</TabsContent>
+				</Tabs>
 			</div>
 		</>
 	)

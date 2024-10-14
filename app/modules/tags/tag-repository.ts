@@ -10,8 +10,7 @@ export async function insertTag(
 		.insertInto('Tag')
 		.values({ tag })
 		.onConflict(oc => oc.column('tag').doNothing())
-		.returningAll()
-		.executeTakeFirstOrThrow()
+		.execute()
 
 	return getTag(trx, tag)
 }
