@@ -14,7 +14,7 @@ import {
 import {
 	VoteDirection,
 	type FrontPagePost,
-	type Poll,
+	type FrontPagePoll,
 	type PollType,
 } from './post-types.ts'
 import { vote } from './scoring/vote-service.ts'
@@ -71,7 +71,7 @@ export async function getPostsAndPollsByTagId(
 	tagId: number,
 ): Promise<{
 	posts: FrontPagePost[]
-	polls: Poll[]
+	polls: FrontPagePoll[]
 }> {
 	const results = await trx
 		.selectFrom('Post')

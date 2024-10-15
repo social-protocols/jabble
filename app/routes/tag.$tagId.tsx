@@ -12,7 +12,10 @@ import {
 } from '#app/components/ui/tabs.tsx'
 import { db } from '#app/database/db.ts'
 import { getPostsAndPollsByTagId } from '#app/modules/posts/post-service.ts'
-import { type FrontPagePost, type Poll } from '#app/modules/posts/post-types.ts'
+import {
+	type FrontPagePost,
+	type FrontPagePoll,
+} from '#app/modules/posts/post-types.ts'
 import { getTagById } from '#app/modules/tags/tag-repository.ts'
 import { type Tag } from '#app/modules/tags/tag-types.ts'
 
@@ -27,7 +30,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 	}: {
 		tag: Tag
 		posts: FrontPagePost[]
-		polls: Poll[]
+		polls: FrontPagePoll[]
 	} = await db.transaction().execute(async trx => {
 		const tag = await getTagById(trx, tagId)
 		const { posts, polls } = await getPostsAndPollsByTagId(trx, tag.id)

@@ -16,14 +16,11 @@ export type FrontPagePost = Post & {
 	p: number
 }
 
-export type Poll = Post & {
+export type FrontPagePoll = FrontPagePost & {
 	context: {
 		artefact: Artefact
 		quote: Quote | null
 	} | null
-	oSize: number
-	nTransitiveComments: number
-	p: number
 }
 
 export type StatsPost = Post & {

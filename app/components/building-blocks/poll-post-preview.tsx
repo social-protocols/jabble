@@ -2,7 +2,7 @@ import { Link } from '@remix-run/react'
 import moment from 'moment'
 import { useState } from 'react'
 import { type Artefact, type Quote } from '#app/modules/claims/claim-types.ts'
-import { type Poll } from '#app/modules/posts/post-types.ts'
+import { type FrontPagePoll } from '#app/modules/posts/post-types.ts'
 import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
 import { Icon } from '../ui/icon.tsx'
 import { EmbeddedTweet } from './embedded-integration.tsx'
@@ -13,7 +13,7 @@ export function PollPostPreview({
 	post,
 	className,
 }: {
-	post: Poll
+	post: FrontPagePoll
 	className?: string
 }) {
 	const ageString = moment(post.createdAt).fromNow()
