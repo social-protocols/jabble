@@ -9,7 +9,12 @@ import TextareaAutosize from 'react-textarea-autosize'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { postIsPoll } from '#app/modules/posts/post-service.ts'
-import { VoteDirection, type Post } from '#app/modules/posts/post-types.ts'
+import {
+	type Poll,
+	PollType,
+	VoteDirection,
+	type Post,
+} from '#app/modules/posts/post-types.ts'
 import {
 	type CommentTreeState,
 	type ReplyTree,
@@ -87,10 +92,6 @@ export function PostActionBar({
 		})
 	}
 
-	const isTargetPost = post.id == treeContext.targetPostId
-
-	const isTopLevelPost = post.parentId === null
-
 	const submitVote = async function (direction: VoteDirection) {
 		const payLoad = {
 			postId: post.id,
@@ -162,35 +163,17 @@ export function PostActionBar({
 							<Icon name="chevron-down" className="ml-[-0.2em]" />
 						</button>
 					))}
-				{loggedIn && (!isTargetPost || !isTopLevelPost || !isPoll) && (
+				{loggedIn && !isDeleted && (
 					<>
-						<button
-							title={'Upvote'}
-							onClick={async () => await submitVote(VoteDirection.Up)}
-						>
-							<Icon
-								name={
-									postState.voteState.vote == VoteDirection.Up
-										? 'thick-arrow-up-solid'
-										: 'thick-arrow-up'
-								}
+						{isPoll ? (
+							<PollVoteButtons
+								poll={post}
+								postState={postState}
+								submitVote={submitVote}
 							/>
-						</button>
-						<span className="mx-[-0.6em]">Vote</span>
-						<button
-							title={'Downvote'}
-							onClick={async () => await submitVote(VoteDirection.Down)}
-							className="mr-[0.3em]"
-						>
-							<Icon
-								name={
-									postState.voteState.vote == VoteDirection.Down
-										? 'thick-arrow-down-solid'
-										: 'thick-arrow-down'
-								}
-								className="mt-[-0.2em]"
-							/>
-						</button>
+						) : (
+							<VoteButtons postState={postState} submitVote={submitVote} />
+						)}
 					</>
 				)}
 				{false && (
@@ -259,6 +242,90 @@ export function PostActionBar({
 				/>
 			)}
 		</>
+	)
+}
+
+function VoteButtons({
+	postState,
+	submitVote,
+}: {
+	postState: PostState
+	submitVote: (direction: VoteDirection) => Promise<void>
+}) {
+	return (
+		<>
+			<button
+				title={'Upvote'}
+				onClick={async () => await submitVote(VoteDirection.Up)}
+			>
+				<Icon
+					name={
+						postState.voteState.vote == VoteDirection.Up
+							? 'thick-arrow-up-solid'
+							: 'thick-arrow-up'
+					}
+				/>
+			</button>
+			<span className="mx-[-0.6em]">Vote</span>
+			<button
+				title={'Downvote'}
+				onClick={async () => await submitVote(VoteDirection.Down)}
+				className="mr-[0.3em]"
+			>
+				<Icon
+					name={
+						postState.voteState.vote == VoteDirection.Down
+							? 'thick-arrow-down-solid'
+							: 'thick-arrow-down'
+					}
+					className="mt-[-0.2em]"
+				/>
+			</button>
+		</>
+	)
+}
+
+function PollVoteButtons({
+	poll,
+	postState,
+	submitVote,
+}: {
+	poll: Poll
+	postState: PostState
+	submitVote: (direction: VoteDirection) => Promise<void>
+}) {
+	// TODO: handle else case properly
+	const upvoteLabel = poll.pollType == PollType.FactCheck ? 'True' : 'Agree'
+
+	// TODO: handle else case properly
+	const downvoteLabel =
+		poll.pollType == PollType.FactCheck ? 'False' : 'Disagree'
+
+	return (
+		<div className="flex space-x-1 rounded px-2 opacity-100 ">
+			<button
+				title={upvoteLabel}
+				onClick={async () => await submitVote(VoteDirection.Up)}
+				className={
+					postState.voteState.vote == VoteDirection.Up
+						? 'font-bold text-purple-700 dark:text-purple-500'
+						: ''
+				}
+			>
+				{upvoteLabel + ' <'}
+			</button>
+			<button
+				title={downvoteLabel}
+				onClick={async () => await submitVote(VoteDirection.Down)}
+				className={
+					postState.voteState.vote == VoteDirection.Down
+						? 'font-bold text-purple-700 dark:text-purple-500'
+						: ''
+				}
+			>
+				{'> ' + downvoteLabel}
+			</button>
+		</div>
 	)
 }
 
