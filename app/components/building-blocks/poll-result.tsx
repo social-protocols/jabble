@@ -10,7 +10,7 @@ export default function PollResult({
 	postId: number
 	pCurrent: number
 	voteCount: number
-	pollType: PollType | null
+	pollType: PollType
 }) {
 	const pCurrentString: string = (pCurrent * 100).toFixed(0) + '%'
 
