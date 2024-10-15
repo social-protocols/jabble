@@ -3,12 +3,7 @@ import { type DB } from '#app/database/types.ts'
 import { checkIsAdminOrThrow } from '#app/utils/auth.server.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { initPostStats } from './post-service.ts'
-import {
-	type PollType,
-	type Post,
-	type PostWithScore,
-	type StatsPost,
-} from './post-types.ts'
+import { type PollType, type Post, type StatsPost } from './post-types.ts'
 
 export async function insertPost(
 	trx: Transaction<DB>,
@@ -50,25 +45,6 @@ export async function getPost(
 	return {
 		...result,
 		pollType: result.pollType ? (result.pollType as PollType) : null,
-	}
-}
-
-export async function getPostWithScore(
-	trx: Transaction<DB>,
-	postId: number,
-): Promise<PostWithScore> {
-	const scoredPost = await trx
-		.selectFrom('Post')
-		.innerJoin('FullScore', 'FullScore.postId', 'Post.id')
-		.leftJoin('Poll', 'Poll.postId', 'Post.id')
-		.where('Post.id', '=', postId)
-		.selectAll('Post')
-		.select(['pollType', 'oSize', 'score'])
-		.executeTakeFirstOrThrow()
-
-	return {
-		...scoredPost,
-		pollType: scoredPost.pollType ? (scoredPost.pollType as PollType) : null,
 	}
 }
 

@@ -10,8 +10,6 @@ export type Post = {
 	pollType: PollType | null
 }
 
-export type PostWithScore = Post & { score: number }
-
 export type FrontPagePost = Post & {
 	oSize: number
 	nTransitiveComments: number
