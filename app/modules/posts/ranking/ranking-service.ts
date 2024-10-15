@@ -9,7 +9,6 @@ import {
 	getDescendantCount,
 	getDescendantIds,
 	getPost,
-	getPostWithScore,
 	getReplyIds,
 } from '#app/modules/posts/post-repository.ts'
 import { invariant } from '#app/utils/misc.tsx'
@@ -101,7 +100,13 @@ export async function getMutableReplyTree(
 	commentTreeState: CommentTreeState,
 ): Promise<MutableReplyTree> {
 	const directReplyIds = await getReplyIds(trx, postId)
-	const post = await getPostWithScore(trx, postId)
+	const post = await getPost(trx, postId)
+	const score: number = await trx
+		.selectFrom('FullScore')
+		.where('FullScore.postId', '=', postId)
+		.select('score')
+		.executeTakeFirstOrThrow()
+		.then(row => row.score)
 
 	const replies: MutableReplyTree[] = await Promise.all(
 		// Recursively get all subtrees.
@@ -149,12 +154,13 @@ export async function getMutableReplyTree(
 		const effectSizeA = effectSizeOnTarget(effectA)
 		const effectSizeB = effectSizeOnTarget(effectB)
 
-		const tieBreaker = b.post.score - a.post.score
+		const tieBreaker = b.score - a.score
 		return effectSizeB - effectSizeA || tieBreaker
 	})
 
 	return {
 		post: post,
+		score: score,
 		fallacyList: await getFallacies(trx, postId),
 		replies: replies,
 	}
