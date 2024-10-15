@@ -193,7 +193,6 @@ export async function getChronologicalToplevelPosts(
 				isPrivate: post.isPrivate,
 				pollType: post.pollType ? (post.pollType as PollType) : null,
 				parent: post.parentId ? await getPost(trx, post.parentId) : null,
-				fallacyList: await getFallacies(trx, post.id),
 				oSize: post.oSize,
 				nTransitiveComments: await getDescendantCount(trx, post.id),
 				p: post.p,
