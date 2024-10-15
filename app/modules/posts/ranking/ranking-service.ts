@@ -15,7 +15,7 @@ import { invariant } from '#app/utils/misc.tsx'
 import {
 	type VoteState,
 	type FrontPagePost,
-	type Poll,
+	type FrontPagePoll,
 	type PollType,
 } from '../post-types.ts'
 import { getEffect } from '../scoring/effect-repository.ts'
@@ -211,7 +211,7 @@ export async function getChronologicalToplevelPosts(
 
 export async function getChronologicalPolls(
 	trx: Transaction<DB>,
-): Promise<Poll[]> {
+): Promise<FrontPagePoll[]> {
 	let query = trx
 		.selectFrom('Post')
 		.where('Post.parentId', 'is', null)
