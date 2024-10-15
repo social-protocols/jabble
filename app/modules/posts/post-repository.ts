@@ -3,7 +3,7 @@ import { type DB } from '#app/database/types.ts'
 import { checkIsAdminOrThrow } from '#app/utils/auth.server.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { initPostStats } from './post-service.ts'
-import { type PollType, type Post, type StatsPost } from './post-types.ts'
+import { type Post, type StatsPost } from './post-types.ts'
 
 export async function insertPost(
 	trx: Transaction<DB>,
@@ -34,18 +34,11 @@ export async function getPost(
 	trx: Transaction<DB>,
 	postId: number,
 ): Promise<Post> {
-	const result = await trx
+	return await trx
 		.selectFrom('Post')
-		.leftJoin('Poll', 'Poll.postId', 'Post.id')
 		.where('Post.id', '=', postId)
 		.selectAll('Post')
-		.select(['pollType'])
 		.executeTakeFirstOrThrow()
-
-	return {
-		...result,
-		pollType: result.pollType ? (result.pollType as PollType) : null,
-	}
 }
 
 export async function incrementReplyCount(
@@ -81,10 +74,7 @@ export async function getStatsPost(
 		throw new Error(`Failed to read scored post postId=${postId}`)
 	}
 
-	return {
-		...scoredPost,
-		pollType: scoredPost.pollType ? (scoredPost.pollType as PollType) : null,
-	}
+	return scoredPost
 }
 
 export async function getReplyIds(
@@ -167,9 +157,7 @@ export async function getTransitiveParents(
 				),
 		)
 		.selectFrom('transitive_parents')
-		.leftJoin('Poll', 'Poll.postId', 'transitive_parents.id')
-		.selectAll('transitive_parents')
-		.selectAll('Poll')
+		.selectAll()
 		.execute()
 
 	// the topmost parent is the first element in the array
@@ -184,7 +172,6 @@ export async function getTransitiveParents(
 			createdAt: post.createdAt,
 			deletedAt: post.deletedAt,
 			isPrivate: post.isPrivate,
-			pollType: post.pollType ? (post.pollType as PollType) : null,
 		}
 	})
 

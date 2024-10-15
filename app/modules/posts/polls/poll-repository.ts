@@ -5,20 +5,21 @@ import {
 	getClaim,
 	updatePostIdOnClaim,
 } from '#app/modules/claims/claim-repository.ts'
+import { getClaimContextByPollPostId } from '#app/modules/claims/claim-service.ts'
 import { getQuote } from '#app/modules/claims/quote-repository.ts'
 import {
 	getDescendantCount,
 	getPost,
 } from '#app/modules/posts/post-repository.ts'
 import { createPost } from '#app/modules/posts/post-service.ts'
-import { type FrontPagePoll, type PollType, type Post } from '../post-types.ts'
+import { type Poll, type FrontPagePoll, type PollType } from '../post-types.ts'
 
 export async function getOrCreatePoll(
 	trx: Transaction<DB>,
 	userId: string,
 	claimId: number,
 	pollType: PollType,
-): Promise<Post> {
+): Promise<Poll> {
 	const existingPoll = await trx
 		.selectFrom('Post')
 		.innerJoin('Poll', 'Poll.postId', 'Post.id')
@@ -38,6 +39,7 @@ export async function getOrCreatePoll(
 			deletedAt: existingPoll.deletedAt,
 			isPrivate: existingPoll.isPrivate,
 			pollType: existingPoll.pollType as PollType,
+			context: await getClaimContextByPollPostId(trx, existingPoll.id),
 		}
 	}
 
@@ -60,10 +62,39 @@ export async function getOrCreatePoll(
 		})
 		.execute()
 
-	return await getPost(trx, postId)
+	const persistedPost = await getPost(trx, postId)
+	return {
+		id: persistedPost.id,
+		parentId: persistedPost.parentId,
+		content: persistedPost.content,
+		createdAt: persistedPost.createdAt,
+		deletedAt: persistedPost.deletedAt,
+		isPrivate: persistedPost.isPrivate,
+		pollType: pollType,
+		context: await getClaimContextByPollPostId(trx, persistedPost.id),
+	}
 }
 
-export async function getPollPost(
+export async function getPollByPostId(
+	trx: Transaction<DB>,
+	pollPostId: number,
+): Promise<Poll> {
+	const result = await trx
+		.selectFrom('Post')
+		.innerJoin('Poll', 'Poll.postId', 'Post.id')
+		.where('Post.id', '=', pollPostId)
+		.selectAll('Post')
+		.select('Poll.pollType as pollType')
+		.executeTakeFirstOrThrow()
+
+	return {
+		...result,
+		pollType: result.pollType as PollType,
+		context: await getClaimContextByPollPostId(trx, pollPostId),
+	}
+}
+
+export async function getFrontPagePoll(
 	trx: Transaction<DB>,
 	postId: number,
 ): Promise<FrontPagePoll> {
@@ -88,24 +119,24 @@ export async function getPollPost(
 		.select(sql<number>`replies`.as('nReplies'))
 		.orderBy('Post.createdAt', 'desc')
 
-	const post = await query.executeTakeFirstOrThrow()
+	const result = await query.executeTakeFirstOrThrow()
 
 	return {
-		id: post.id,
-		parentId: post.parentId,
-		content: post.content,
-		createdAt: post.createdAt,
-		deletedAt: post.deletedAt,
-		isPrivate: post.isPrivate,
-		pollType: post.pollType ? (post.pollType as PollType) : null,
-		context: post.artefactId
+		id: result.id,
+		parentId: result.parentId,
+		content: result.content,
+		createdAt: result.createdAt,
+		deletedAt: result.deletedAt,
+		isPrivate: result.isPrivate,
+		pollType: result.pollType as PollType,
+		context: result.artefactId
 			? {
-					artefact: await getArtefact(trx, post.artefactId),
-					quote: post.quoteId ? await getQuote(trx, post.quoteId) : null,
+					artefact: await getArtefact(trx, result.artefactId),
+					quote: result.quoteId ? await getQuote(trx, result.quoteId) : null,
 				}
 			: null,
-		oSize: post.oSize,
-		nTransitiveComments: await getDescendantCount(trx, post.id),
-		p: post.p,
+		oSize: result.oSize,
+		nTransitiveComments: await getDescendantCount(trx, result.id),
+		p: result.p,
 	}
 }

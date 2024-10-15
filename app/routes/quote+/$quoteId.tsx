@@ -24,7 +24,7 @@ import {
 } from '#app/modules/claims/claim-types.ts'
 import { getQuoteFallacies } from '#app/modules/claims/quote-fallacy-repository.ts'
 import { getQuote } from '#app/modules/claims/quote-repository.ts'
-import { getPollPost } from '#app/modules/posts/polls/poll-repository.ts'
+import { getFrontPagePoll } from '#app/modules/posts/polls/poll-repository.ts'
 import { type FrontPagePoll, PollType } from '#app/modules/posts/post-types.ts'
 import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
@@ -53,7 +53,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 			.map(claim => claim.postId!) // eslint-disable-line @typescript-eslint/no-non-null-assertion
 		const posts = await Promise.all(
 			submittedClaimsPostIds.map(
-				async postId => await getPollPost(trx, postId),
+				async postId => await getFrontPagePoll(trx, postId),
 			),
 		)
 		const quoteFallacies = await getQuoteFallacies(trx, quoteId)

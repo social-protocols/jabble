@@ -5,11 +5,11 @@ import PollResult from '#app/components/building-blocks/poll-result.tsx'
 import { PostActionBar } from '#app/components/building-blocks/post-action-bar.tsx'
 import { PostContent } from '#app/components/building-blocks/post-content.tsx'
 import { PostInfoBar } from '#app/components/building-blocks/post-info-bar.tsx'
-import { type FallacyList } from '#app/modules/fallacies/fallacy-types.ts'
+import { postIsPoll } from '#app/modules/posts/post-service.ts'
 import {
+	type Poll,
 	PollType,
 	VoteDirection,
-	type Post,
 } from '#app/modules/posts/post-types.ts'
 import {
 	type CommentTreeState,
@@ -21,20 +21,18 @@ import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
 
 export function PostDetails({
-	post,
-	fallacyList,
-	className,
 	replyTree,
 	pathFromTargetPost,
 	treeContext,
+	className,
 }: {
-	post: Post
-	fallacyList: FallacyList
-	className?: string
 	replyTree: ReplyTree
 	pathFromTargetPost: Immutable.List<number>
 	treeContext: TreeContext
+	className?: string
 }) {
+	const post = replyTree.post
+	const fallacyList = replyTree.fallacyList
 	const postState = treeContext.commentTreeState.posts[post.id]
 	invariant(
 		postState !== undefined,
@@ -43,14 +41,12 @@ export function PostDetails({
 
 	const navigate = useNavigate()
 
-	const isDeleted = postState.isDeleted
-
 	const postDetailsRef = useRef<HTMLDivElement>(null) // used for scrolling to this post
 
+	const isPoll = postIsPoll(post)
+	const isDeleted = postState.isDeleted
 	const isTargetPost = treeContext.targetPostId === post.id
-
 	const isTopLevelPost = post.parentId === null
-
 	const userHasVoted = postState.voteState.vote != VoteDirection.Neutral
 
 	return (
@@ -81,16 +77,15 @@ export function PostDetails({
 						This post was deleted.
 					</div>
 				)}
-				{isTargetPost && isTopLevelPost && post.pollType && (
+				{isTargetPost && isTopLevelPost && isPoll && (
 					<PollVoteButtons
-						post={post}
+						poll={post}
 						postState={postState}
 						treeContext={treeContext}
 					/>
 				)}
 				<PostActionBar
 					key={`${post.id}-actionbar`}
-					post={post}
 					replyTree={replyTree}
 					pathFromTargetPost={pathFromTargetPost}
 					postDetailsRef={postDetailsRef}
@@ -99,7 +94,7 @@ export function PostDetails({
 				/>
 			</div>
 
-			{isTargetPost && isTopLevelPost && post.pollType && (
+			{isTargetPost && isTopLevelPost && isPoll && (
 				<PollResult
 					postId={post.id}
 					pCurrent={postState.p || NaN}
@@ -112,11 +107,11 @@ export function PostDetails({
 }
 
 function PollVoteButtons({
-	post,
+	poll,
 	postState,
 	treeContext,
 }: {
-	post: Post
+	poll: Poll
 	postState: PostState
 	treeContext: TreeContext
 }) {
@@ -125,7 +120,7 @@ function PollVoteButtons({
 
 	const submitVote = async function (direction: VoteDirection) {
 		const payLoad = {
-			postId: post.id,
+			postId: poll.id,
 			focussedPostId: treeContext.targetPostId,
 			direction: direction,
 			currentVoteState: postState.voteState.vote,
@@ -142,11 +137,11 @@ function PollVoteButtons({
 	}
 
 	// TODO: handle else case properly
-	const upvoteLabel = post.pollType == PollType.FactCheck ? 'True' : 'Agree'
+	const upvoteLabel = poll.pollType == PollType.FactCheck ? 'True' : 'Agree'
 
 	// todo: handle else case properly
 	const downvoteLabel =
-		post.pollType == PollType.FactCheck ? 'False' : 'Disagree'
+		poll.pollType == PollType.FactCheck ? 'False' : 'Disagree'
 
 	return loggedIn ? (
 		<div className="my-2 space-x-4">

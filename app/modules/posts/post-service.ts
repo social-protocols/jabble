@@ -4,7 +4,7 @@ import { type DB } from '#app/database/types.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { insertPostTag, insertTag } from '../tags/tag-repository.ts'
 import { extractTags } from '../tags/tagger-client.ts'
-import { getPollPost } from './polls/poll-repository.ts'
+import { getFrontPagePoll } from './polls/poll-repository.ts'
 import {
 	getDescendantCount,
 	getPost,
@@ -15,7 +15,8 @@ import {
 	VoteDirection,
 	type FrontPagePost,
 	type FrontPagePoll,
-	type PollType,
+	type Post,
+	type Poll,
 } from './post-types.ts'
 import { vote } from './scoring/vote-service.ts'
 
@@ -101,7 +102,6 @@ export async function getPostsAndPollsByTagId(
 					createdAt: row.createdAt,
 					deletedAt: row.deletedAt,
 					isPrivate: row.isPrivate,
-					pollType: row.pollType as PollType,
 					oSize: stats.oSize,
 					nTransitiveComments: await getDescendantCount(trx, row.id),
 					p: stats.p,
@@ -113,7 +113,7 @@ export async function getPostsAndPollsByTagId(
 		results
 			.filter(row => row.pollType !== null)
 			.map(async row => {
-				return await getPollPost(trx, row.id)
+				return await getFrontPagePoll(trx, row.id)
 			}),
 	)
 
@@ -132,4 +132,8 @@ export async function tagPost(trx: Transaction<DB>, postId: number) {
 	await Promise.all(
 		persistedTags.map(async tag => await insertPostTag(trx, post.id, tag.id)),
 	)
+}
+
+export function postIsPoll(post: Post | Poll): post is Poll {
+	return (post as Poll).pollType !== undefined
 }

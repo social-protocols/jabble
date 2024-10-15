@@ -13,6 +13,7 @@ import { getClaimContextByPollPostId } from '#app/modules/claims/claim-service.t
 import { type ClaimContext } from '#app/modules/claims/claim-types.ts'
 import { updateHN } from '#app/modules/hacker-news/hacker-news-service.ts'
 import { getTransitiveParents } from '#app/modules/posts/post-repository.ts'
+import { postIsPoll } from '#app/modules/posts/post-service.ts'
 import { VoteDirection, type Post } from '#app/modules/posts/post-types.ts'
 import {
 	getCommentTreeState,
@@ -56,7 +57,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 			userId,
 			commentTreeState,
 		)
-		const isPoll = replyTree.post.pollType !== null
+		const isPoll = postIsPoll(replyTree.post)
 		const pollContext = isPoll
 			? await getClaimContextByPollPostId(trx, postId)
 			: null

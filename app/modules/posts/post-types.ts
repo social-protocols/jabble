@@ -1,4 +1,8 @@
-import { type Artefact, type Quote } from '../claims/claim-types.ts'
+import {
+	type ClaimContext,
+	type Artefact,
+	type Quote,
+} from '../claims/claim-types.ts'
 
 export type Post = {
 	id: number
@@ -7,7 +11,11 @@ export type Post = {
 	createdAt: number
 	deletedAt: number | null
 	isPrivate: number
-	pollType: PollType | null
+}
+
+export type Poll = Post & {
+	pollType: PollType
+	context: ClaimContext
 }
 
 export type FrontPagePost = Post & {
@@ -17,6 +25,7 @@ export type FrontPagePost = Post & {
 }
 
 export type FrontPagePoll = FrontPagePost & {
+	pollType: PollType
 	context: {
 		artefact: Artefact
 		quote: Quote | null

@@ -1,7 +1,7 @@
 import moment from 'moment'
 import { useState } from 'react'
 import { type FallacyList } from '#app/modules/fallacies/fallacy-types.ts'
-import { type Post } from '#app/modules/posts/post-types.ts'
+import { type Poll, type Post } from '#app/modules/posts/post-types.ts'
 import { type PostState } from '#app/modules/posts/ranking/ranking-types.ts'
 
 export function PostInfoBar({
@@ -9,7 +9,7 @@ export function PostInfoBar({
 	fallacyList,
 	postState,
 }: {
-	post: Post
+	post: Post | Poll
 	fallacyList: FallacyList
 	postState: PostState
 }) {

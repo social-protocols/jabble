@@ -4,17 +4,18 @@ import {
 	type Effect,
 	type VoteState,
 	type Post,
+	type Poll,
 } from '#app/modules/posts/post-types.ts'
 
 export type MutableReplyTree = {
-	post: Post
+	post: Post | Poll
 	score: number
 	fallacyList: FallacyList
 	replies: MutableReplyTree[]
 }
 
 export type ReplyTree = {
-	post: Post
+	post: Post | Poll
 	score: number
 	fallacyList: FallacyList
 	replies: Immutable.List<ReplyTree>

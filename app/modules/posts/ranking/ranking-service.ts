@@ -12,6 +12,7 @@ import {
 	getReplyIds,
 } from '#app/modules/posts/post-repository.ts'
 import { invariant } from '#app/utils/misc.tsx'
+import { getPollByPostId } from '../polls/poll-repository.ts'
 import {
 	type VoteState,
 	type FrontPagePost,
@@ -100,7 +101,15 @@ export async function getMutableReplyTree(
 	commentTreeState: CommentTreeState,
 ): Promise<MutableReplyTree> {
 	const directReplyIds = await getReplyIds(trx, postId)
-	const post = await getPost(trx, postId)
+	const isPoll = await trx
+		.selectFrom('Poll')
+		.where('Poll.postId', '=', postId)
+		.selectAll()
+		.execute()
+		.then(res => res.length !== 0)
+	const post = isPoll
+		? await getPollByPostId(trx, postId)
+		: await getPost(trx, postId)
 	const score: number = await trx
 		.selectFrom('FullScore')
 		.where('FullScore.postId', '=', postId)
@@ -242,7 +251,7 @@ export async function getChronologicalPolls(
 				createdAt: post.createdAt,
 				deletedAt: post.deletedAt,
 				isPrivate: post.isPrivate,
-				pollType: post.pollType ? (post.pollType as PollType) : null,
+				pollType: post.pollType as PollType,
 				context: post.artefactId
 					? {
 							artefact: await getArtefact(trx, post.artefactId),
