@@ -129,12 +129,12 @@ export async function getFrontPagePoll(
 		deletedAt: result.deletedAt,
 		isPrivate: result.isPrivate,
 		pollType: result.pollType as PollType,
-		context: result.artefactId
-			? {
-					artefact: await getArtefact(trx, result.artefactId),
-					quote: result.quoteId ? await getQuote(trx, result.quoteId) : null,
-				}
-			: null,
+		context: {
+			artefact: result.artefactId
+				? await getArtefact(trx, result.artefactId)
+				: null,
+			quote: result.quoteId ? await getQuote(trx, result.quoteId) : null,
+		},
 		oSize: result.oSize,
 		nTransitiveComments: await getDescendantCount(trx, result.id),
 		p: result.p,

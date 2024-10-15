@@ -29,6 +29,6 @@ export type QuoteFallacy = {
 }
 
 export type ClaimContext = {
-	artefact: Artefact
-	quote: Quote
+	artefact: Artefact | null
+	quote: Quote | null
 }
