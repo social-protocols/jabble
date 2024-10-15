@@ -2,7 +2,6 @@ import { type Transaction } from 'kysely'
 import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { type DB } from '#app/database/types.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { getFallacies } from '../fallacies/fallacy-repository.ts'
 import { insertPostTag, insertTag } from '../tags/tag-repository.ts'
 import { extractTags } from '../tags/tagger-client.ts'
 import { getPollPost } from './polls/poll-repository.ts'
@@ -103,7 +102,6 @@ export async function getPostsAndPollsByTagId(
 					deletedAt: row.deletedAt,
 					isPrivate: row.isPrivate,
 					pollType: row.pollType as PollType,
-					fallacyList: await getFallacies(trx, row.id),
 					oSize: stats.oSize,
 					nTransitiveComments: await getDescendantCount(trx, row.id),
 					p: stats.p,

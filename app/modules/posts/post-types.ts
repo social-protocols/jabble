@@ -1,5 +1,4 @@
 import { type Artefact, type Quote } from '../claims/claim-types.ts'
-import { type FallacyList } from '../fallacies/fallacy-types.ts'
 
 export type Post = {
 	id: number
@@ -14,7 +13,6 @@ export type Post = {
 export type PostWithScore = Post & { score: number }
 
 export type FrontPagePost = Post & {
-	fallacyList: FallacyList
 	oSize: number
 	nTransitiveComments: number
 	p: number
