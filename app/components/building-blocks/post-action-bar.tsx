@@ -8,6 +8,7 @@ import {
 import TextareaAutosize from 'react-textarea-autosize'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { MAX_CHARS_PER_POST } from '#app/constants.ts'
+import { postIsPoll } from '#app/modules/posts/post-service.ts'
 import { VoteDirection, type Post } from '#app/modules/posts/post-types.ts'
 import {
 	type CommentTreeState,
@@ -21,21 +22,21 @@ import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
 
 export function PostActionBar({
-	post,
 	replyTree,
 	pathFromTargetPost,
 	postDetailsRef,
 	treeContext,
 	postState,
 }: {
-	post: Post
 	replyTree: ReplyTree
 	pathFromTargetPost: Immutable.List<number>
 	postDetailsRef: React.RefObject<HTMLDivElement>
 	treeContext: TreeContext
 	postState: PostState
 }) {
+	const post = replyTree.post
 	const user = useOptionalUser()
+	const isPoll = postIsPoll(post)
 	const loggedIn: boolean = user !== null
 	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
 	const [showAdminUI, setShowAdminUI] = useState(false)
@@ -161,7 +162,7 @@ export function PostActionBar({
 							<Icon name="chevron-down" className="ml-[-0.2em]" />
 						</button>
 					))}
-				{loggedIn && (!isTargetPost || !isTopLevelPost || !post.pollType) && (
+				{loggedIn && (!isTargetPost || !isTopLevelPost || !isPoll) && (
 					<>
 						<button
 							title={'Upvote'}

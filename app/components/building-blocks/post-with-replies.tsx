@@ -24,12 +24,10 @@ export function PostWithReplies({
 			<>
 				<PostDetails
 					key={`${postId}-postdetails`}
-					post={replyTree.post}
-					fallacyList={replyTree.fallacyList}
-					className={'mb-4 ' + (className ?? '')}
 					replyTree={replyTree}
 					pathFromTargetPost={pathFromTargetPost}
 					treeContext={treeContext}
+					className={'mb-4 ' + (className ?? '')}
 				/>
 				{!hideChildren && (
 					<div key={`${postId}-subtree`} className={'ml-2 pl-3'}>
