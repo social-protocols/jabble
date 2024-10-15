@@ -252,12 +252,12 @@ export async function getChronologicalPolls(
 				deletedAt: post.deletedAt,
 				isPrivate: post.isPrivate,
 				pollType: post.pollType as PollType,
-				context: post.artefactId
-					? {
-							artefact: await getArtefact(trx, post.artefactId),
-							quote: post.quoteId ? await getQuote(trx, post.quoteId) : null,
-						}
-					: null,
+				context: {
+					artefact: post.artefactId
+						? await getArtefact(trx, post.artefactId)
+						: null,
+					quote: post.quoteId ? await getQuote(trx, post.quoteId) : null,
+				},
 				oSize: post.oSize,
 				nTransitiveComments: await getDescendantCount(trx, post.id),
 				p: post.p,

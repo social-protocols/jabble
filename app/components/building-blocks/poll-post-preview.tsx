@@ -38,7 +38,7 @@ export function PollPostPreview({
 						deactivateLinks={false}
 						linkTo={`/post/${post.id}`}
 					/>
-					{showPollPostContext && post.context && (
+					{showPollPostContext && post.context && post.context.artefact && (
 						<PollPostClaimContext
 							artefact={post.context.artefact}
 							quote={post.context.quote}

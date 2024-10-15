@@ -10,7 +10,11 @@ import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { db } from '#app/database/db.ts'
 import { getClaimContextByPollPostId } from '#app/modules/claims/claim-service.ts'
-import { type ClaimContext } from '#app/modules/claims/claim-types.ts'
+import {
+	type Artefact,
+	type Quote,
+	type ClaimContext,
+} from '#app/modules/claims/claim-types.ts'
 import { updateHN } from '#app/modules/hacker-news/hacker-news-service.ts'
 import { getTransitiveParents } from '#app/modules/posts/post-repository.ts'
 import { postIsPoll } from '#app/modules/posts/post-service.ts'
@@ -222,7 +226,12 @@ export function DiscussionView({
 
 	return (
 		<>
-			{pollContext && <PollContext pollContext={pollContext} />}
+			{pollContext && pollContext.artefact && pollContext.quote && (
+				<PollContext
+					artefact={pollContext.artefact}
+					quote={pollContext.quote}
+				/>
+			)}
 			<ParentThread transitiveParents={transitiveParents} />
 			<PostWithReplies
 				className={
@@ -237,10 +246,14 @@ export function DiscussionView({
 	)
 }
 
-function PollContext({ pollContext }: { pollContext: ClaimContext }) {
-	const isTweet = pollContext
-		? isValidTweetUrl(pollContext?.artefact.url)
-		: false
+function PollContext({
+	artefact,
+	quote,
+}: {
+	artefact: Artefact
+	quote: Quote
+}) {
+	const isTweet = isValidTweetUrl(artefact.url)
 
 	const [showPollContext, setShowPollContext] = useState<boolean>(false)
 	return (
@@ -262,11 +275,11 @@ function PollContext({ pollContext }: { pollContext: ClaimContext }) {
 			{showPollContext && (
 				<div className="flex flex-col items-center p-4">
 					{isTweet ? (
-						<EmbeddedTweet tweetUrl={pollContext.artefact.url} />
+						<EmbeddedTweet tweetUrl={artefact.url} />
 					) : (
 						<>
 							<Icon name="quote" size="xl" className="mb-2 mr-auto" />
-							{pollContext.quote.quote}
+							{quote.quote}
 						</>
 					)}
 				</div>
