@@ -1,9 +1,8 @@
 import { type Transaction } from 'kysely'
 import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
 import { type DB } from '#app/database/types.ts'
+import { matchIntegration } from '#app/integrations/integrations.server.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { extractTweetTextGraphQL } from '#app/utils/tweet_extraction.server.ts'
-import { isValidTweetUrl, parseTweetURL } from '#app/utils/twitter-utils.ts'
 import { fallacyDetection } from '../fallacies/fallacy-detection-client.ts'
 import { getArtefact, getOrCreateArtefact } from './artefact-repository.ts'
 import { extractClaims } from './claim-extraction-client.ts'
@@ -26,10 +25,10 @@ export async function submitArtefact(
 }> {
 	const artefact = await getOrCreateArtefact(trx, url)
 
-	if (isValidTweetUrl(url)) {
-		const tweetId = parseTweetURL(url)
+	const match = matchIntegration(url)
 
-		invariant(tweetId, `Couldn't parse tweet url for url: ${url}`)
+	if (match !== undefined) {
+		const { integration, id } = match
 
 		const existingQuote: Quote | undefined = await trx
 			.selectFrom('Quote')
@@ -44,7 +43,7 @@ export async function submitArtefact(
 			}
 		}
 
-		const quoteContent = await extractTweetTextGraphQL(tweetId)
+		const quoteContent = await integration.extractContent(id)
 		const persistedQuote = await submitQuote(trx, artefact.id, quoteContent)
 
 		return {

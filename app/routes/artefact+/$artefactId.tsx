@@ -3,17 +3,17 @@ import { Link, useLoaderData, useNavigate } from '@remix-run/react'
 import { type ChangeEvent, useState } from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
 import { z } from 'zod'
-import { EmbeddedTweet } from '#app/components/building-blocks/embedded-integration.tsx'
+import { EmbeddedContent } from '#app/components/building-blocks/embedded-content.tsx'
 import { PostContent } from '#app/components/building-blocks/post-content.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { db } from '#app/database/db.ts'
+import { matchIntegration } from '#app/integrations/integrations.ts'
 import { getArtefact } from '#app/modules/claims/artefact-repository.ts'
 import { type Artefact, type Quote } from '#app/modules/claims/claim-types.ts'
 import { getQuotes } from '#app/modules/claims/quote-repository.ts'
 import { useDebounce } from '#app/utils/misc.tsx'
-import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 
 const artefactIdSchema = z.coerce.number()
@@ -41,7 +41,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 export default function ArtefactPage() {
 	const { artefact, quotes } = useLoaderData<typeof loader>()
 	const artefactSubmissionDate = new Date(artefact.createdAt)
-	const isTweet = isValidTweetUrl(artefact.url)
+	const isEmbeddable = matchIntegration(artefact.url) !== undefined
 
 	return (
 		<>
@@ -60,7 +60,7 @@ export default function ArtefactPage() {
 						submitted on: {artefactSubmissionDate.toDateString()}
 					</span>
 				</div>
-				{isTweet ? (
+				{isEmbeddable ? (
 					<>
 						<Link
 							// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -69,7 +69,7 @@ export default function ArtefactPage() {
 						>
 							Go to quote page
 						</Link>
-						<EmbeddedTweet tweetUrl={artefact.url} />
+						<EmbeddedContent url={artefact.url} />
 					</>
 				) : (
 					<NonExhaustiveQuoteListPreview artefact={artefact} quotes={quotes} />

@@ -1,18 +1,18 @@
 import { useNavigate } from '@remix-run/react'
 import { useState } from 'react'
-import { EmbeddedTweet } from '#app/components/building-blocks/embedded-integration.tsx'
+import { EmbeddedContent } from '#app/components/building-blocks/embedded-content.tsx'
 import { Markdown } from '#app/components/markdown.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { Textarea } from '#app/components/ui/textarea.tsx'
+import { matchIntegration } from '#app/integrations/integrations.ts'
 import { type Artefact } from '#app/modules/claims/claim-types.ts'
-import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
 
 export default function SubmitArtefactPage() {
 	const navigate = useNavigate()
 
 	const [originUrlState, setOriginUrlState] = useState<string>('')
 
-	const [isTweetUrl, setIsTweetUrl] = useState<boolean>(false)
+	const [isEmbeddableUrl, setIsEmbeddableUrl] = useState<boolean>(false)
 
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
@@ -68,7 +68,7 @@ Please enter a URL to submit an artefact.
 				value={originUrlState}
 				onChange={event => {
 					setOriginUrlState(event.target.value)
-					setIsTweetUrl(isValidTweetUrl(event.target.value))
+					setIsEmbeddableUrl(matchIntegration(event.target.value) !== undefined)
 					isValidUrl(event.target.value)
 						? setUrlError(false)
 						: setUrlError(true)
@@ -101,9 +101,9 @@ Please enter a URL to submit an artefact.
 					)}
 				</button>
 			</div>
-			{isTweetUrl && (
+			{isEmbeddableUrl && (
 				<div className="flex flex-col items-center">
-					<EmbeddedTweet tweetUrl={originUrlState} />
+					<EmbeddedContent url={originUrlState} />
 				</div>
 			)}
 		</div>
