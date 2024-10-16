@@ -1,36 +1,28 @@
-import { type LoaderFunction } from '@remix-run/node'
+import { json, type LoaderFunction } from '@remix-run/node'
 
 export const loader: LoaderFunction = async ({ request }) => {
-	const apiUrl = `https://publish.twitter.com/oembed${new URL(request.url).search}`
+	const url = new URL(request.url).searchParams.get('url')
+	if (!url) {
+		return json({ error: 'Missing url parameter' }, { status: 400 })
+	}
 
+	const apiUrl = `https://publish.twitter.com/oembed?url=${encodeURIComponent(
+		url,
+	)}`
 	try {
-		const response = await fetch(apiUrl, {
-			method: 'GET',
-			headers: {
-				'User-Agent': request.headers.get('User-Agent') || 'Jabble/1.0',
-			},
-		})
+		const response = await fetch(apiUrl)
 
-		// Return Twitter's response directly
-		return new Response(response.body, {
-			status: response.status,
-			headers: response.headers,
-		})
-	} catch (error: any) {
-		console.error('Error fetching from Twitter API:', error)
-
-		const errorResponse = {
-			error: 'Bad Gateway',
-			message:
-				'The proxy server received an invalid response from the upstream server.',
+		if (!response.ok) {
+			if (response.status === 404) {
+				return json({ error: 'Tweet not found' }, { status: 404 })
+			} else {
+				throw new Error('Failed to fetch oEmbed data')
+			}
 		}
 
-		return new Response(JSON.stringify(errorResponse), {
-			status: 502,
-			headers: {
-				'Content-Type': 'application/json; charset=utf-8',
-				'Cache-Control': 'no-cache, no-store, max-age=0',
-			},
-		})
+		const data = await response.json()
+		return json(data)
+	} catch (error: any) {
+		return json({ error: error.message }, { status: 500 })
 	}
 }
