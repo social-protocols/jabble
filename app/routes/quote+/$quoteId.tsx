@@ -3,7 +3,7 @@ import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { useState } from 'react'
 import { z } from 'zod'
-import { EmbeddedTweet } from '#app/components/building-blocks/embedded-integration.tsx'
+import { EmbeddedContent } from '#app/components/building-blocks/embedded-content.tsx'
 import PollResult from '#app/components/building-blocks/poll-result.tsx'
 import { PostContent } from '#app/components/building-blocks/post-content.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
@@ -14,6 +14,7 @@ import {
 	TabsTrigger,
 } from '#app/components/ui/tabs.tsx'
 import { db } from '#app/database/db.ts'
+import { matchIntegration } from '#app/integrations/integrations.ts'
 import { getArtefact } from '#app/modules/claims/artefact-repository.ts'
 import { getClaims } from '#app/modules/claims/claim-repository.ts'
 import {
@@ -26,7 +27,6 @@ import { getQuoteFallacies } from '#app/modules/claims/quote-fallacy-repository.
 import { getQuote } from '#app/modules/claims/quote-repository.ts'
 import { getFrontPagePoll } from '#app/modules/posts/polls/poll-repository.ts'
 import { type FrontPagePoll, PollType } from '#app/modules/posts/post-types.ts'
-import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
 import { useOptionalUser } from '#app/utils/user.ts'
 
 const quoteIdSchema = z.coerce.number()
@@ -85,15 +85,15 @@ export default function ArtefactQuoteEditingPage() {
 
 	const unsubmittedClaims = claims.filter(claim => claim.postId == null)
 
-	const isTweet = isValidTweetUrl(artefact.url)
+	const isEmbeddable = matchIntegration(artefact.url) !== undefined
 
 	return (
 		<div className="mb-4 flex flex-col space-y-2 text-sm">
 			<div className="mb-2">
 				<div className="flex flex-col rounded-xl border-2 border-solid bg-post p-4 dark:border-gray-700">
-					{isTweet ? (
+					{isEmbeddable ? (
 						<div className="flex flex-col items-center">
-							<EmbeddedTweet tweetUrl={artefact.url} />
+							<EmbeddedContent url={artefact.url} />
 						</div>
 					) : (
 						<QuoteFallback quote={quote} />

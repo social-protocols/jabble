@@ -1,11 +1,11 @@
 import { Link } from '@remix-run/react'
 import moment from 'moment'
 import { useState } from 'react'
+import { matchIntegration } from '#app/integrations/integrations.ts'
 import { type Artefact, type Quote } from '#app/modules/claims/claim-types.ts'
 import { type FrontPagePoll } from '#app/modules/posts/post-types.ts'
-import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
 import { Icon } from '../ui/icon.tsx'
-import { EmbeddedTweet } from './embedded-integration.tsx'
+import { EmbeddedContent } from './embedded-content.tsx'
 import PollResult from './poll-result.tsx'
 import { PostContent } from './post-content.tsx'
 
@@ -87,14 +87,14 @@ function PollPostClaimContext({
 }) {
 	const artefactSubmissionDate = new Date(artefact.createdAt)
 
-	const isTweet = isValidTweetUrl(artefact.url)
+	const isImbeddable = matchIntegration(artefact.url) !== undefined
 
 	return (
 		<div className="my-2 flex flex-col rounded-lg border-2 border-solid bg-background p-4 dark:border-gray-700">
 			{quote && (
 				<>
-					{isTweet && <EmbeddedTweet tweetUrl={artefact.url} />}
-					{!isTweet && (
+					{isImbeddable && <EmbeddedContent url={artefact.url} />}
+					{!isImbeddable && (
 						<>
 							<Icon name="quote" size="xl" className="mb-2 mr-auto" />
 							<PostContent content={quote.quote} deactivateLinks={true} />

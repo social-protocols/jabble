@@ -3,12 +3,13 @@ import { type MetaFunction, useLoaderData, useParams } from '@remix-run/react'
 import Immutable from 'immutable'
 import { type Dispatch, type SetStateAction, useState } from 'react'
 import { z } from 'zod'
-import { EmbeddedTweet } from '#app/components/building-blocks/embedded-integration.tsx'
+import { EmbeddedContent } from '#app/components/building-blocks/embedded-content.tsx'
 import { ParentThread } from '#app/components/building-blocks/parent-thread.tsx'
 import { PostWithReplies } from '#app/components/building-blocks/post-with-replies.tsx'
 import { GeneralErrorBoundary } from '#app/components/error-boundary.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
 import { db } from '#app/database/db.ts'
+import { matchIntegration } from '#app/integrations/integrations.ts'
 import { getClaimContextByPollPostId } from '#app/modules/claims/claim-service.ts'
 import {
 	type Artefact,
@@ -34,7 +35,6 @@ import {
 } from '#app/modules/posts/ranking/ranking-utils.ts'
 import { getUserId } from '#app/utils/auth.server.ts'
 import { invariant } from '#app/utils/misc.tsx'
-import { isValidTweetUrl } from '#app/utils/twitter-utils.ts'
 
 const postIdSchema = z.coerce.number()
 
@@ -253,7 +253,7 @@ function PollContext({
 	artefact: Artefact
 	quote: Quote
 }) {
-	const isTweet = isValidTweetUrl(artefact.url)
+	const isEmbeddable = matchIntegration(artefact.url) !== undefined
 
 	const [showPollContext, setShowPollContext] = useState<boolean>(false)
 	return (
@@ -274,8 +274,8 @@ function PollContext({
 			</button>
 			{showPollContext && (
 				<div className="flex flex-col items-center p-4">
-					{isTweet ? (
-						<EmbeddedTweet tweetUrl={artefact.url} />
+					{isEmbeddable ? (
+						<EmbeddedContent url={artefact.url} />
 					) : (
 						<>
 							<Icon name="quote" size="xl" className="mb-2 mr-auto" />
