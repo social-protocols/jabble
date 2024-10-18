@@ -1,4 +1,5 @@
 import createError from 'http-errors'
+import moment from 'moment'
 import sanitizeHtml from 'sanitize-html'
 import invariant from 'tiny-invariant'
 import hn from './hn.ts'
@@ -7,7 +8,6 @@ import {
 	type OEmbedResponse,
 	errorResponse,
 } from './integrations.common.ts'
-import moment from 'moment'
 
 interface HackerNewsItem {
 	by?: string
