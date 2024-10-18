@@ -87,14 +87,14 @@ function PollPostClaimContext({
 }) {
 	const artefactSubmissionDate = new Date(artefact.createdAt)
 
-	const isImbeddable = matchIntegration(artefact.url) !== undefined
+	const isEmbeddable = matchIntegration(artefact.url) !== undefined
 
 	return (
 		<div className="my-2 flex flex-col rounded-lg border-2 border-solid bg-background p-4 dark:border-gray-700">
 			{quote && (
 				<>
-					{isImbeddable && <EmbeddedContent url={artefact.url} />}
-					{!isImbeddable && (
+					{isEmbeddable && <EmbeddedContent url={artefact.url} />}
+					{!isEmbeddable && (
 						<>
 							<Icon name="quote" size="xl" className="mb-2 mr-auto" />
 							<PostContent content={quote.quote} deactivateLinks={true} />
