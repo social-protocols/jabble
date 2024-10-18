@@ -7,6 +7,7 @@ import {
 	type OEmbedResponse,
 	errorResponse,
 } from './integrations.common.ts'
+import moment from 'moment'
 
 interface HackerNewsItem {
 	by?: string
@@ -19,29 +20,6 @@ interface HackerNewsItem {
 	title?: string // For story items
 	url?: string
 	[key: string]: any
-}
-
-// Utility function to get relative time
-function timeAgo(timestamp: number): string {
-	const now = Date.now()
-	const secondsPast = (now - timestamp * 1000) / 1000
-
-	if (secondsPast < 60) {
-		return `${Math.floor(secondsPast)} seconds ago`
-	}
-	if (secondsPast < 3600) {
-		return `${Math.floor(secondsPast / 60)} minutes ago`
-	}
-	if (secondsPast < 86400) {
-		return `${Math.floor(secondsPast / 3600)} hours ago`
-	}
-	if (secondsPast < 2592000) {
-		return `${Math.floor(secondsPast / 86400)} days ago`
-	}
-	if (secondsPast < 31104000) {
-		return `${Math.floor(secondsPast / 2592000)} months ago`
-	}
-	return `${Math.floor(secondsPast / 31104000)} years ago`
 }
 
 async function getCommentThread(
@@ -103,7 +81,7 @@ function generateStoryHTML(story: HackerNewsItem): string {
 	const title = sanitizeHtml(story.title || '')
 	const url = story.url || ''
 	const author = story.by || '[deleted]'
-	const time = story.time ? timeAgo(story.time) : ''
+	const time = story.time ? moment(story.time * 1000).fromNow() : ''
 	const score = story.score || 0
 	const descendants = story.descendants || 0
 	const storyId = story.id || ''
@@ -162,7 +140,7 @@ function generateThreadHTML(
 			},
 		})
 
-		const relativeTime = comment.time ? timeAgo(comment.time) : ''
+		const relativeTime = comment.time ? moment(comment.time * 1000).fromNow : ''
 
 		const indent = index * 20 // Adjust indentation per level
 
