@@ -2,6 +2,7 @@ import { type Transaction } from 'kysely'
 import { MAX_CHARS_PER_QUOTE } from '#app/constants.ts'
 import { type DB } from '#app/database/types.ts'
 import { matchIntegration } from '#app/integrations/integrations.server.ts'
+import { checkIsAdminOrThrow } from '#app/utils/auth.server.ts'
 import { invariant } from '#app/utils/misc.tsx'
 import { fallacyDetection } from '../fallacies/fallacy-detection-client.ts'
 import { getArtefact, getOrCreateArtefact } from './artefact-repository.ts'
@@ -161,4 +162,14 @@ export async function getClaimContextByPollPostId(
 		artefact: artefact,
 		quote: quote,
 	}
+}
+
+export async function submitClaim(
+	trx: Transaction<DB>,
+	quoteId: number,
+	claimContent: string,
+	userId: string,
+): Promise<Claim> {
+	checkIsAdminOrThrow(userId)
+	return await insertClaim(trx, quoteId, claimContent, null)
 }

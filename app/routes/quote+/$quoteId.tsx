@@ -2,6 +2,7 @@ import { json, type LoaderFunctionArgs } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import moment from 'moment'
 import { useState } from 'react'
+import TextareaAutosize from 'react-textarea-autosize'
 import { z } from 'zod'
 import { EmbeddedContent } from '#app/components/building-blocks/embedded-content.tsx'
 import PollResult from '#app/components/building-blocks/poll-result.tsx'
@@ -13,6 +14,7 @@ import {
 	TabsList,
 	TabsTrigger,
 } from '#app/components/ui/tabs.tsx'
+import { MAX_CHARS_PER_POST } from '#app/constants.ts'
 import { db } from '#app/database/db.ts'
 import { matchIntegration } from '#app/integrations/integrations.ts'
 import { getArtefact } from '#app/modules/claims/artefact-repository.ts'
@@ -81,11 +83,17 @@ export default function ArtefactQuoteEditingPage() {
 	const { artefact, quote, claims, posts, quoteFallacies } =
 		useLoaderData<typeof loader>()
 
+	const user = useOptionalUser()
+	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
+
 	const artefactSubmissionDate = new Date(artefact.createdAt)
 
 	const unsubmittedClaims = claims.filter(claim => claim.postId == null)
 
 	const isEmbeddable = matchIntegration(artefact.url) !== undefined
+
+	const [showManualSubmissionForm, setShowManualSubmissionForm] =
+		useState<boolean>(false)
 
 	return (
 		<div className="mb-4 flex flex-col space-y-2 text-sm">
@@ -132,28 +140,114 @@ export default function ArtefactQuoteEditingPage() {
 					</div>
 				</TabsContent>
 				<TabsContent value="claims">
-					<div className="mt-5">
-						{claims.length == 0 ? (
-							<div>No claims extracted</div>
-						) : (
+					<>
+						{isAdminUser && (
 							<>
-								{unsubmittedClaims.map((claim, index) => {
-									return (
-										<ExtractedClaim
-											key={'claim-' + String(index)}
-											claim={claim}
-										/>
-									)
-								})}
+								<div className="mb-2 flex w-full">
+									<button
+										onClick={() => {
+											setShowManualSubmissionForm(!showManualSubmissionForm)
+											return false
+										}}
+										className="shrink-0 font-bold text-purple-700"
+									>
+										{showManualSubmissionForm ? (
+											<Icon name="chevron-down" className="mt-[-0.1em]" />
+										) : (
+											<Icon name="chevron-right" className="mt-[-0.1em]" />
+										)}
+										<span className="ml-2">Manually submit claim</span>
+									</button>
+								</div>
+								{showManualSubmissionForm && (
+									<ManualClaimSubmissionForm quoteId={quote.id} />
+								)}
 							</>
 						)}
-					</div>
+						<div className="mt-5">
+							{claims.length == 0 ? (
+								<div>No claims extracted</div>
+							) : (
+								<>
+									{unsubmittedClaims.map((claim, index) => {
+										return (
+											<ExtractedClaim
+												key={'claim-' + String(index)}
+												claim={claim}
+											/>
+										)
+									})}
+								</>
+							)}
+						</div>
+					</>
 				</TabsContent>
 				<TabsContent value="fallacies">
 					{quoteFallacies && <DetectedFallacies fallacies={quoteFallacies} />}
 				</TabsContent>
 			</Tabs>
 		</div>
+	)
+}
+
+function ManualClaimSubmissionForm({ quoteId }: { quoteId: number }) {
+	const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+	const [claimContent, setClaimContent] = useState<string>('')
+
+	async function handleSubmit(quoteId: number, claimContent: string) {
+		setIsSubmitting(true)
+		try {
+			const payload = {
+				quoteId: quoteId,
+				claimContent: claimContent,
+			}
+			await fetch('/submit-claim', {
+				method: 'POST',
+				body: JSON.stringify(payload),
+				headers: { 'Content-Type': 'application/json' },
+			})
+		} finally {
+			setIsSubmitting(false)
+			setClaimContent('')
+		}
+	}
+
+	return (
+		<>
+			<TextareaAutosize
+				name="content"
+				className="mb-2 flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 aria-[invalid]:border-input-invalid"
+				style={{
+					resize: 'vertical',
+				}}
+				autoFocus={true}
+				placeholder="Enter a claim made in the quote above"
+				value={claimContent}
+				maxLength={MAX_CHARS_PER_POST}
+				onChange={event => {
+					setClaimContent(event.currentTarget.value)
+				}}
+			/>
+			<div className="flex w-full">
+				<button
+					disabled={isSubmitting}
+					className="ml-auto rounded bg-purple-200 px-2 py-1 text-sm font-bold text-black hover:bg-purple-300"
+					onClick={e => {
+						e.preventDefault()
+						handleSubmit(quoteId, claimContent)
+					}}
+				>
+					{isSubmitting ? (
+						<>
+							Submitting
+							<Icon name="update" className="ml-2 animate-spin" />
+						</>
+					) : (
+						<>Submit</>
+					)}
+				</button>
+			</div>
+		</>
 	)
 }
 
