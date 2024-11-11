@@ -1,0 +1,1397 @@
+[
+  {
+    "title": "Ad Hominem",
+    "category": "Logical Fallacy",
+    "strikingExample": "You can't be serious about climate change if you drive a gas-guzzler.",
+    "akas": [
+      "Personal attack",
+      "attack against the person",
+      "ad hominem attack"
+    ],
+    "description": "Occurs when a counterargument attacks the character or personal traits of the individual making a claim, instead of addressing the argument itself. This shifts the discussion away from the claim, undermining fair debate.",
+    "score": {
+      "logos": 2,
+      "pathos": 8,
+      "ethos": 4
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Ad_hominem"
+      },
+      {
+        "title": "Populismus Online",
+        "url": "https://populismus.online/#adhominem"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/adhomine.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Argumentum_ad_hominem"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/ad-hominem"
+      }
+    ]
+  },
+  {
+    "title": "Ad Populum",
+    "category": "Logical Fallacy",
+    "strikingExample": "Everyone loves clean energy, so wind turbines must be perfect everywhere!",
+    "akas": [
+      "Appeal to the masses",
+      "Appeal to consensus",
+      "bandwagon fallacy",
+      "appeal to popularity"
+    ],
+    "description": "Occurs when an argument claims that something is true or valid simply because it is widely accepted. This appeal to popularity undermines the strength of the claim by substituting consensus for evidence.",
+    "score": {
+      "logos": 2,
+      "pathos": 9,
+      "ethos": 2
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Argumentum_ad_populum"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/bandwagn.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Argumentum_ad_populum"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/bandwagon"
+      }
+    ]
+  },
+  {
+    "title": "Appeal to Anger",
+    "category": "Rhetorical Trick",
+    "strikingExample": "How dare they think of ruining our scenic view with wind turbines! We must stop this nonsense!",
+    "akas": [
+      "Appeal to Emotion",
+      "Appeal to Rage",
+      "Argumentum ad Iracundiam"
+    ],
+    "description": "Occurs when an argument attempts to persuade by evoking anger or outrage, rather than presenting logical reasoning. The claim is framed to provoke emotional reactions, making it difficult for rational counterarguments to take hold.",
+    "score": {
+      "logos": 2,
+      "pathos": 9,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Appeal_to_emotion#Appeal_to_anger"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/emotiona.html"
+      },
+      {
+        "title": "Populismus Online",
+        "url": "https://populismus.online/#appealtoanger"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/appeal-to-emotion"
+      }
+    ]
+  },
+  {
+    "title": "Appeal to Authority",
+    "category": "Rhetorical Trick",
+    "strikingExample": "My favorite celebrity says wind turbines ruin the landscape, so they must be bad.",
+    "akas": [
+      "Appeal to (False) Authority",
+      "Argument from Authority",
+      "Celebrity Endorsement Fallacy"
+    ],
+    "description": "Occurs when an argument relies on the authority of someone who is not an expert in the relevant field, using their reputation to support the claim rather than presenting sound evidence. This weakens the claim by substituting the authority’s status for proper reasoning or data.",
+    "score": {
+      "logos": 3,
+      "pathos": 4,
+      "ethos": 8
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Argument_from_authority"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/authorit.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Autorit%C3%A4tsargument"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/appeal-to-authority"
+      }
+    ]
+  },
+  {
+    "title": "Appeal to Consequences",
+    "category": "Rhetorical Trick",
+    "strikingExample": "If climate change is real, it will ruin the economy, so it can't be true.",
+    "akas": [
+      "Appeal to outcome",
+      "Argument from consequences",
+      "Consequentialism fallacy"
+    ],
+    "description": "Occurs when an argument claims that the truth or falsity of a proposition depends on the consequences of accepting it. This rhetorical trick appeals to fears or hopes about outcomes, rather than evidence for or against the proposition itself.",
+    "score": {
+      "logos": 4,
+      "pathos": 7,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Consequentialism"
+      }
+    ]
+  },
+  {
+    "title": "Appeal to Fear",
+    "category": "Logical Fallacy",
+    "strikingExample": "Wind turbines will lower property values and harm our health.",
+    "akas": [
+      "Appeal to consequence",
+      "scare tactic",
+      "alarmist argument"
+    ],
+    "description": "Occurs when an argument attempts to persuade by evoking fear or anxiety, rather than presenting logical reasoning. The claim is presented alongside exaggerated negative consequences, discouraging rational counterarguments.",
+    "score": {
+      "logos": 2,
+      "pathos": 9,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Appeal_to_fear"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/emotiona.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Argumentum_ad_metur"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/appeal-to-emotion"
+      }
+    ]
+  },
+  {
+    "title": "Appeal to Ignorance",
+    "category": "Rhetorical Trick",
+    "strikingExample": "We’ve never seen evidence of aliens, so they must not exist.",
+    "akas": [
+      "Argument from ignorance",
+      "Argumentum ad ignorantiam"
+    ],
+    "description": "Occurs when an argument claims that something is true because it has not been proven false, or vice versa. This rhetorical trick exploits the lack of evidence as support for a claim, rather than providing actual proof.",
+    "score": {
+      "logos": 4,
+      "pathos": 5,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Argument_from_ignorance"
+      }
+    ]
+  },
+  {
+    "title": "Appeal to Nature",
+    "category": "Rhetorical Trick",
+    "strikingExample": "Wind power is natural, so it must be the best choice for energy everywhere.",
+    "akas": [
+      "Appeal to Naturalism",
+      "Naturalistic Fallacy",
+      "Argument from Nature"
+    ],
+    "description": "Occurs when an argument claims something is better or more valid simply because it is perceived as 'natural.' This weakens the claim by assuming that anything natural is inherently good, without considering evidence or context.",
+    "score": {
+      "logos": 3,
+      "pathos": 6,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Appeal_to_nature"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/adnature.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Argumentum_ad_naturam"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/appeal-to-nature"
+      }
+    ]
+  },
+  {
+    "title": "Appeal to Novelty",
+    "category": "Rhetorical Trick",
+    "strikingExample": "This new method must be better because it's modern and innovative.",
+    "akas": [
+      "Argumentum ad novitatem",
+      "Newer is better fallacy"
+    ],
+    "description": "Occurs when an argument suggests that something is better or more correct simply because it is new or modern. This rhetorical trick equates novelty with truth or improvement without providing substantive reasoning.",
+    "score": {
+      "logos": 3,
+      "pathos": 6,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Appeal_to_novelty"
+      }
+    ]
+  },
+  {
+    "title": "Appeal to Pity",
+    "category": "Rhetorical Trick",
+    "strikingExample": "Sure, solar farms are great, but think of the families who might lose their beautiful view!",
+    "akas": [
+      "Appeal to sympathy",
+      "argumentum ad misericordiam",
+      "emotional appeal"
+    ],
+    "description": "Occurs when an argument seeks to win support by evoking sympathy or emotional pity rather than presenting factual evidence. This rhetorical trick uses emotional appeals to divert attention from the actual merits of the claim, making it difficult to engage in a rational counterargument.",
+    "score": {
+      "logos": 2,
+      "pathos": 9,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Appeal_to_pity"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/emotiona.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Argumentum_ad_misericordiam"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/appeal-to-emotion"
+      }
+    ]
+  },
+  {
+    "title": "Appeal to Positive Emotion",
+    "category": "Rhetorical Trick",
+    "strikingExample": "Wind turbines will save the planet, create thousands of jobs, and secure a brighter future for everyone!",
+    "akas": [
+      "Appeal to Joy",
+      "Emotional Appeal",
+      "Appeal to Happiness"
+    ],
+    "description": "Occurs when an argument seeks to persuade by triggering positive emotions like joy or nostalgia, rather than providing solid reasoning or evidence. The claim may seem appealing due to the emotional response, but it lacks the logical foundation needed for sound argumentation.",
+    "score": {
+      "logos": 3,
+      "pathos": 8,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Appeal_to_emotion"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/emotiona.html"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/appeal-to-emotion"
+      }
+    ]
+  },
+  {
+    "title": "Appeal to Ridicule",
+    "category": "Rhetorical Trick",
+    "strikingExample": "Oh sure, let's definitely build a public train system, as long as it doesn't run near my house!",
+    "akas": [
+      "Appeal to Mockery",
+      "Appeal to Mock",
+      "Ridicule Fallacy"
+    ],
+    "description": "Occurs when an argument mocks or dismisses an opposing claim rather than engaging with its reasoning. This rhetorical trick avoids countering the claim directly by provoking laughter or scorn, diverting attention from valid counterarguments.",
+    "score": {
+      "logos": 2,
+      "pathos": 7,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Appeal_to_ridicule"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/adbacula.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Argumentum_ad_ridiculum"
+      }
+    ]
+  },
+  {
+    "title": "Appeal to Tradition",
+    "category": "Logical Fallacy",
+    "strikingExample": "We’ve always had the festival here, so it must stay.",
+    "akas": [
+      "Appeal to antiquity",
+      "traditionalist fallacy"
+    ],
+    "description": "Occurs when an argument claims something is right or better simply because it has been traditionally accepted or practiced. This rhetorical trick weakens the argument by relying on historical precedent instead of evidence or logical reasoning to support the claim.",
+    "score": {
+      "logos": 3,
+      "pathos": 5,
+      "ethos": 4
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Appeal_to_tradition"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/adtradit.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Traditionsargument"
+      }
+    ]
+  },
+  {
+    "title": "Appeal to Worse Problems",
+    "category": "Rhetorical Trick",
+    "strikingExample": "Why worry about local pollution when climate change is the bigger threat?",
+    "akas": [
+      "Relative privation",
+      "Not as bad as fallacy",
+      "Comparative problem fallacy"
+    ],
+    "description": "Occurs when a claim is dismissed by pointing to a larger or more severe problem, suggesting the current issue is unimportant. This rhetorical trick sidesteps addressing the argument directly by shifting focus away from the immediate concern.",
+    "score": {
+      "logos": 3,
+      "pathos": 7,
+      "ethos": 2
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Relative_privation"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/redherrf.html"
+      },
+      {
+        "title": "Populismus Online",
+        "url": "https://populismus.online/#appealzuworseproblems"
+      }
+    ]
+  },
+  {
+    "title": "Burden of Proof",
+    "category": "Logical Fallacy",
+    "strikingExample": "You can’t prove that ghosts don't exist, so they must be real.",
+    "akas": [
+      "Shifting the burden of proof",
+      "onus probandi"
+    ],
+    "description": "Occurs when someone claims that their position is true unless it is proven false, placing the responsibility of proof on the opposing side. In rational debate, the burden of proof lies with the person making the claim.",
+    "score": {
+      "logos": 6,
+      "pathos": 4,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Burden_of_proof_(philosophy)"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/burden-of-proof"
+      }
+    ]
+  },
+  {
+    "title": "Causal Oversimplification",
+    "category": "Logical Fallacy",
+    "strikingExample": "Wind farms are ugly, so they must be bad for the environment.",
+    "akas": [
+      "Causal reductionism",
+      "oversimplified causation",
+      "causal fallacy"
+    ],
+    "description": "Occurs when a complex problem is reduced to a single cause, overlooking other contributing factors, which weakens the overall argument. This type of argument often ignores the full scope of an issue, leading to incomplete conclusions.",
+    "score": {
+      "logos": 4,
+      "pathos": 5,
+      "ethos": 2
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Causal_sufficiency"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/noncause.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Monokausalit%C3%A4t"
+      }
+    ]
+  },
+  {
+    "title": "Cherry Picking",
+    "category": "Rhetorical Trick",
+    "strikingExample": "Look at this one cold winter, global warming can't be real!",
+    "akas": [
+      "Suppressing evidence",
+      "Fallacy of incomplete evidence",
+      "The Texas Sharpshooter",
+      "Selective evidence fallacy"
+    ],
+    "description": "Occurs when an argument selectively presents only favorable evidence, while ignoring evidence that contradicts the claim. This rhetorical trick creates a misleading or incomplete picture of reality.",
+    "score": {
+      "logos": 4,
+      "pathos": 6,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Cherry_picking"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/onesided.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Best%C3%A4tigungsfehler"
+      }
+    ]
+  },
+  {
+    "title": "Circular Reasoning",
+    "category": "Rhetorical Trick",
+    "strikingExample": "Wind turbines are essential for clean energy because they provide renewable power, and renewable power is vital for a sustainable future.",
+    "akas": [
+      "Begging the question",
+      "circular logic",
+      "tautological reasoning"
+    ],
+    "description": "Occurs when an argument’s conclusion is used as a premise to support itself, resulting in a loop that fails to provide new evidence or reasoning. This weakens the argument by relying solely on the claim rather than offering external support.",
+    "score": {
+      "logos": 5,
+      "pathos": 4,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Circular_reasoning"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/begquest.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Zirkelschluss"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/begging-the-question"
+      }
+    ]
+  },
+  {
+    "title": "Demonization",
+    "category": "Rhetorical Trick",
+    "strikingExample": "Anyone who supports this policy is clearly a traitor!",
+    "akas": [
+      "Villainizing",
+      "Scapegoating",
+      "Maligning fallacy"
+    ],
+    "description": "Occurs when an argument portrays an individual, group, or idea as wicked or evil, rather than addressing the merits of the argument itself. This rhetorical trick stirs emotions and biases, detracting from rational discourse.",
+    "score": {
+      "logos": 2,
+      "pathos": 9,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Demonization"
+      }
+    ]
+  },
+  {
+    "title": "Doomism",
+    "category": "Rhetorical Trick",
+    "strikingExample": "No matter what we do, the planet is doomed. So why bother?",
+    "akas": [
+      "Defeatism fallacy",
+      "Nihilism fallacy",
+      "Hopelessness fallacy"
+    ],
+    "description": "Occurs when an argument suggests that a situation is so bad that nothing can be done to improve it, leading to a defeatist or nihilistic attitude. This rhetorical trick undermines constructive problem-solving by promoting despair and inaction.",
+    "score": {
+      "logos": 2,
+      "pathos": 9,
+      "ethos": 2
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Doomism"
+      }
+    ]
+  },
+  {
+    "title": "Equivocation",
+    "category": "Rhetorical Trick",
+    "strikingExample": "The word 'green' means energy-efficient, so my gas-powered car must be green too.",
+    "akas": [
+      "Ambiguity",
+      "double meaning",
+      "misleading nuance"
+    ],
+    "description": "Occurs when an argument uses ambiguous language to shift the meaning of a key term in a claim. This rhetorical trick relies on the dual meanings of words to mislead the audience and obscure the actual issue being debated.",
+    "score": {
+      "logos": 4,
+      "pathos": 5,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Equivocation"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/equivoqu.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/%C3%84quivokation"
+      }
+    ]
+  },
+  {
+    "title": "Fallacy of Division",
+    "category": "Rhetorical Trick",
+    "strikingExample": "Wind power is good for the planet, so every wind farm must be beneficial too!",
+    "akas": [
+      "Fallacy of incomplete evidence",
+      "part-whole fallacy",
+      "generalization fallacy"
+    ],
+    "description": "Occurs when an argument assumes that what is true for a whole must also be true for its individual parts. This leads to unsupported claims about smaller components based on the characteristics of the entire group, weakening the argument.",
+    "score": {
+      "logos": 5,
+      "pathos": 4,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Fallacy_of_division"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/division.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Divisionsfehlschluss"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/composition-division"
+      }
+    ]
+  },
+  {
+    "title": "False Analogy",
+    "category": "Logical Fallacy",
+    "strikingExample": "We need wind turbines like we need hospitals in every backyard.",
+    "akas": [
+      "False comparison",
+      "misleading analogy",
+      "weak analogy"
+    ],
+    "description": "Occurs when an argument draws an invalid comparison between two unrelated situations, assuming that because they share one characteristic, they are alike in other ways. This weakens the claim by oversimplifying the comparison.",
+    "score": {
+      "logos": 4,
+      "pathos": 6,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/False_analogy"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/wanalogy.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Falscher_Vergleich"
+      }
+    ]
+  },
+  {
+    "title": "False Balance",
+    "category": "Rhetorical Trick",
+    "strikingExample": "Climate scientists say the Earth is warming, but flat-Earthers deserve equal time in the debate.",
+    "akas": [
+      "Both sides fallacy",
+      "Equal time fallacy",
+      "False equivalency fallacy"
+    ],
+    "description": "Occurs when an argument gives equal weight to two sides of a debate, even when one side lacks merit or evidence. This rhetorical trick creates a false sense of equivalence between opposing viewpoints, often obscuring the truth.",
+    "score": {
+      "logos": 3,
+      "pathos": 6,
+      "ethos": 4
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/False_balance"
+      }
+    ]
+  },
+  {
+    "title": "False Causality",
+    "category": "Logical Fallacy",
+    "strikingExample": "Crime dropped after the park was built, so parks prevent crime.",
+    "akas": [
+      "Post hoc reasoning",
+      "false cause",
+      "causation fallacy",
+      "questionable cause"
+    ],
+    "description": "Occurs when an argument assumes that because one event follows another, the first must have caused the second. This oversimplifies the relationship between events, leading to faulty conclusions about cause and effect in the claim.",
+    "score": {
+      "logos": 4,
+      "pathos": 5,
+      "ethos": 2
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Post_hoc_ergo_propter_hoc"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/posthocf.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Fehlschluss"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/false-cause"
+      }
+    ]
+  },
+  {
+    "title": "False Dilemma",
+    "category": "Logical Fallacy",
+    "strikingExample": "We either build this highway or stay stuck in traffic forever.",
+    "akas": [
+      "False dichotomy",
+      "either-or fallacy",
+      "black-and-white thinking"
+    ],
+    "description": "Occurs when an argument presents only two extreme options, ignoring other viable alternatives. This simplification of the claim forces a choice between two extremes, limiting the scope of the discussion and preventing consideration of other possibilities.",
+    "score": {
+      "logos": 4,
+      "pathos": 7,
+      "ethos": 2
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/False_dilemma"
+      },
+      {
+        "title": "Populismus Online",
+        "url": "https://populismus.online/#falschesdilemma"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/eitheror.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Entweder-oder-Irrtum"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/black-or-white"
+      }
+    ]
+  },
+  {
+    "title": "False Equivalence",
+    "category": "Rhetorical Trick",
+    "strikingExample": "Banning straws is like banning all plastic.",
+    "akas": [
+      "False analogy of equality",
+      "Equivocation of equals"
+    ],
+    "description": "Occurs when an argument incorrectly assumes that two things are morally or logically equivalent, even though they are not. This rhetorical trick blurs important distinctions and weakens critical analysis.",
+    "score": {
+      "logos": 3,
+      "pathos": 6,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/False_equivalence"
+      }
+    ]
+  },
+  {
+    "title": "Genetic Fallacy",
+    "category": "Logical Fallacy",
+    "strikingExample": "We shouldn't trust this scientific study because it was funded by a corporation.",
+    "akas": [
+      "Origin fallacy",
+      "fallacy of origins"
+    ],
+    "description": "Occurs when an argument is dismissed or accepted based on its source rather than its merit. This fallacy focuses on where the information came from, rather than the argument itself.",
+    "score": {
+      "logos": 4,
+      "pathos": 4,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Genetic_fallacy"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/genetic"
+      }
+    ]
+  },
+  {
+    "title": "Guilt by Association",
+    "category": "Logical Fallacy",
+    "strikingExample": "He supports climate action, so I can't trust him because he's friends with a known activist.",
+    "akas": [
+      "Guilt by proximity",
+      "association fallacy",
+      "guilt by affiliation"
+    ],
+    "description": "Occurs when an opinion or argument is discredited because of the person or group associated with it, rather than addressing the merits of the claim itself. This shifts focus from the actual issue to irrelevant connections.",
+    "score": {
+      "logos": 3,
+      "pathos": 7,
+      "ethos": 4
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Association_fallacy"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/guiltbya.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Assoziationsfehler"
+      }
+    ]
+  },
+  {
+    "title": "Hasty Generalization",
+    "category": "Logical Fallacy",
+    "strikingExample": "I had one rude cashier, so all cashiers are rude!",
+    "akas": [
+      "Jumping to conclusions",
+      "insufficient sample size",
+      "anecdotal evidence",
+      "anecdotal fallacy"
+    ],
+    "description": "Occurs when a conclusion is drawn about a claim or opinion based on insufficient or biased evidence, leading to broad, unsupported generalizations. This weakens the argument by ignoring the need for more representative data.",
+    "score": {
+      "logos": 3,
+      "pathos": 6,
+      "ethos": 2
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Hasty_generalization"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/hastygen.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Fehlende_Repr%C3%A4sentativit%C3%A4t"
+      }
+    ]
+  },
+  {
+    "title": "Loaded Question",
+    "category": "Rhetorical Trick",
+    "strikingExample": "Have you stopped lying to your customers yet?",
+    "akas": [
+      "Complex question",
+      "Presupposition fallacy",
+      "Entrapment question"
+    ],
+    "description": "Occurs when a question is phrased in a way that assumes a particular answer or implies something without evidence. This rhetorical trick traps the respondent, making it difficult to answer without accepting the hidden premise.",
+    "score": {
+      "logos": 2,
+      "pathos": 7,
+      "ethos": 4
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Loaded_question"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/loadques.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Komplexe_Frage"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/loaded-question"
+      }
+    ]
+  },
+  {
+    "title": "Middle Ground",
+    "category": "Logical Fallacy",
+    "strikingExample": "Some say the Earth is flat, others say it’s round. The truth must be somewhere in between.",
+    "akas": [
+      "False compromise",
+      "argument to moderation"
+    ],
+    "description": "Occurs when someone assumes that the truth lies between two opposing extremes, regardless of whether either extreme is based on fact. This fallacy suggests that compromise, rather than evidence, is the best way to find the truth.",
+    "score": {
+      "logos": 4,
+      "pathos": 5,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Argument_to_moderation"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/middle-ground"
+      }
+    ]
+  },
+  {
+    "title": "Motte & Bailey",
+    "category": "Rhetorical Trick",
+    "strikingExample": "Everyone who disagrees is wrong! Well, I just mean they are misinformed.",
+    "akas": [
+      "Motte-and-Bailey Doctrine",
+      "Defensive Retreat",
+      "Switching Argument"
+    ],
+    "description": "Occurs when someone shifts between an easily defensible position (Motte) and a more controversial one (Bailey). When challenged, they retreat to the Motte, but return to the Bailey when the challenge subsides, creating an illusion of defending a stronger claim than they actually are.",
+    "score": {
+      "logos": 4,
+      "pathos": 5,
+      "ethos": 5
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Motte-and-bailey_fallacy"
+      },
+      {
+        "title": "Populismus Online",
+        "url": "https://populismus.online/#mottebailey"
+      }
+    ]
+  },
+  {
+    "title": "Moving the Goalposts",
+    "category": "Rhetorical Trick",
+    "strikingExample": "Sure, you passed the test, but can you do it again under pressure?",
+    "akas": [
+      "Raising the bar",
+      "Changing the criteria",
+      "Shifting the target"
+    ],
+    "description": "Occurs when an argument shifts the criteria for success or validity after those criteria have been met. This rhetorical trick makes it difficult to win an argument by continually changing the standards.",
+    "score": {
+      "logos": 3,
+      "pathos": 6,
+      "ethos": 4
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Moving_the_goalposts"
+      }
+    ]
+  },
+  {
+    "title": "NIMBY",
+    "category": "Rhetorical Trick",
+    "strikingExample": "Wind turbines are all good, but not here!",
+    "akas": [
+      "Not In My Backyard",
+      "local opposition",
+      "self-interested activism",
+      "placemaking obstruction"
+    ],
+    "description": "Occurs when an argument acknowledges the necessity of a project or policy in theory but opposes it when it affects the speaker personally. This rhetorical trick weakens the claim by placing personal interests above broader societal benefits, limiting the discussion’s scope.",
+    "score": {
+      "logos": 2,
+      "pathos": 8,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/NIMBY"
+      }
+    ]
+  },
+  {
+    "title": "No True Scotsman",
+    "category": "Logical Fallacy",
+    "strikingExample": "No true environmentalist would ever drive a car.",
+    "akas": [
+      "Purity fallacy",
+      "appeal to purity"
+    ],
+    "description": "Occurs when someone avoids criticism of their argument by redefining their group in a way that excludes counterexamples. By changing the criteria, they protect their claim from valid challenges.",
+    "score": {
+      "logos": 4,
+      "pathos": 5,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/No_true_Scotsman"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/no-true-scotsman"
+      }
+    ]
+  },
+  {
+    "title": "Personal Incredulity",
+    "category": "Logical Fallacy",
+    "strikingExample": "I don’t understand how evolution works, so it must not be true.",
+    "akas": [
+      "Argument from incredulity",
+      "appeal to disbelief"
+    ],
+    "description": "Occurs when someone rejects an argument because they personally can’t understand or believe it. This fallacy shifts the focus from the merits of the argument to the speaker’s own lack of knowledge or imagination.",
+    "score": {
+      "logos": 3,
+      "pathos": 5,
+      "ethos": 2
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Argument_from_ignorance#Argument_from_incredulity"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/personal-incredulity"
+      }
+    ]
+  },
+  {
+    "title": "Red Herring",
+    "category": "Rhetorical Trick",
+    "strikingExample": "Why are we discussing climate change when the economy is in trouble?",
+    "akas": [
+      "Distraction fallacy",
+      "Beside the point fallacy",
+      "Irrelevant thesis fallacy"
+    ],
+    "description": "Occurs when an argument introduces an irrelevant topic to divert attention away from the main issue. This rhetorical trick distracts from the original argument by shifting the focus to a different subject.",
+    "score": {
+      "logos": 3,
+      "pathos": 7,
+      "ethos": 2
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Red_herring"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/redherrf.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Red_Herring"
+      }
+    ]
+  },
+  {
+    "title": "Silent Majority",
+    "category": "Rhetorical Trick",
+    "strikingExample": "Despite the vocal minority opposing the new policy, the 'silent majority' of people support it.",
+    "akas": [
+      "Appeal to Silent Support",
+      "Unvoiced Majority",
+      "Hidden Support Fallacy"
+    ],
+    "description": "Occurs when an argument claims that a majority supports a stance but remains silent, suggesting that the lack of vocal opposition means widespread hidden approval. This rhetorical trick attempts to bolster an argument by invoking invisible or unverifiable support.",
+    "score": {
+      "logos": 3,
+      "pathos": 7,
+      "ethos": 4
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Silent_majority"
+      },
+      {
+        "title": "Populismus Online",
+        "url": "https://populismus.online/#schweigendemehrheit"
+      }
+    ]
+  },
+  {
+    "title": "Slippery Slope",
+    "category": "Logical Fallacy",
+    "strikingExample": "If we drop one rule, soon there’ll be no rules at all.",
+    "akas": [
+      "Camel's nose fallacy",
+      "thin edge of the wedge fallacy",
+      "domino fallacy"
+    ],
+    "description": "Occurs when an argument claims that accepting a small step will inevitably lead to a chain of disastrous consequences, without providing a logical link between the initial action and the supposed outcome. This often serves to discredit the initial claim through fear.",
+    "score": {
+      "logos": 4,
+      "pathos": 8,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Slippery_slope"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/slipslop.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Dammbruchargument"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/slippery-slope"
+      }
+    ]
+  },
+  {
+    "title": "Special Pleading",
+    "category": "Logical Fallacy",
+    "strikingExample": "Yes, I know I said everyone should pay taxes, but I have special circumstances, so I shouldn't have to.",
+    "akas": [
+      "Double standard",
+      "exception fallacy"
+    ],
+    "description": "Occurs when someone applies different rules or standards to themselves or their argument without providing adequate justification. This fallacy creates an exception to a rule without a valid reason for doing so.",
+    "score": {
+      "logos": 4,
+      "pathos": 5,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Special_pleading"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/special-pleading"
+      }
+    ]
+  },
+  {
+    "title": "Straw Man",
+    "category": "Logical Fallacy",
+    "strikingExample": "They want to ban plastic, so soon everything will be illegal!",
+    "akas": [
+      "Misrepresentation Fallacy",
+      "Distortion Fallacy",
+      "Oversimplification Fallacy"
+    ],
+    "description": "Occurs when an argument misrepresents an opposing claim in order to refute it more easily. This rhetorical trick oversimplifies or distorts the original argument, making it easier to counter while avoiding the real issue.",
+    "score": {
+      "logos": 3,
+      "pathos": 7,
+      "ethos": 3
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Straw_man"
+      },
+      {
+        "title": "Populismus Online",
+        "url": "https://populismus.online/#strohmann"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/strawman.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Strohmann-Argument"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/strawman"
+      }
+    ]
+  },
+  {
+    "title": "The Fallacy Fallacy",
+    "category": "Logical Fallacy",
+    "strikingExample": "You made a mistake in your reasoning, so your entire argument must be wrong.",
+    "akas": [
+      "Argument from fallacy",
+      "fallacist's fallacy"
+    ],
+    "description": "Occurs when someone assumes that just because an argument contains a fallacy, the entire conclusion is false. While flawed reasoning can weaken a claim, it doesn’t necessarily mean the claim itself is incorrect.",
+    "score": {
+      "logos": 7,
+      "pathos": 3,
+      "ethos": 5
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Argument_from_fallacy"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/fallfall.html"
+      }
+    ]
+  },
+  {
+    "title": "The Gambler's Fallacy",
+    "category": "Logical Fallacy",
+    "strikingExample": "The roulette ball has landed on red five times in a row, so it must land on black next time.",
+    "akas": [
+      "Monte Carlo fallacy",
+      "maturity of chances fallacy"
+    ],
+    "description": "Occurs when someone believes that if something happens more frequently than normal during a given period, it will happen less frequently in the future, or vice versa. This fallacy misunderstands the independence of random events.",
+    "score": {
+      "logos": 5,
+      "pathos": 4,
+      "ethos": 2
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Gambler%27s_fallacy"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/the-gamblers-fallacy"
+      }
+    ]
+  },
+  {
+    "title": "Tu Quoque",
+    "category": "Logical Fallacy",
+    "strikingExample": "You preach healthy eating, but you binge on junk food every weekend.",
+    "akas": [
+      "Appeal to hypocrisy",
+      "two wrongs fallacy",
+      "you too fallacy"
+    ],
+    "description": "Occurs when a counterargument accuses the opponent of hypocrisy instead of addressing the original claim. This rhetorical trick shifts focus from the argument itself to the accuser’s behavior, diverting attention away from the actual issue being debated.",
+    "score": {
+      "logos": 3,
+      "pathos": 7,
+      "ethos": 4
+    },
+    "references": [
+      {
+        "title": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Tu_quoque"
+      },
+      {
+        "title": "MAFALDA: Fallacy Detection Benchmark Study",
+        "url": "https://arxiv.org/abs/2311.09761"
+      },
+      {
+        "title": "Fallacy Files",
+        "url": "https://www.fallacyfiles.org/tuquoque.html"
+      },
+      {
+        "title": "Wikipedia (DE)",
+        "url": "https://de.wikipedia.org/wiki/Tu-quoque-Argument"
+      },
+      {
+        "title": "Your Logical Fallacy Is",
+        "url": "https://yourlogicalfallacyis.com/tu-quoque"
+      }
+    ]
+  }
+]
