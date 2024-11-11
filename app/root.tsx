@@ -298,6 +298,9 @@ function NavigationMenu() {
 			>
 				<Icon name="chat-bubble">Open Discussions</Icon>
 			</Link>
+			<Link to="/rhetorics" className={baseNavigationClassName}>
+				<Icon name="hand">Rhetoric</Icon>
+			</Link>
 			{/*<Link
 				to="/fallacy-detection"
 				className={baseNavigationClassName + ' ' + fallacyDetectionClassName}
