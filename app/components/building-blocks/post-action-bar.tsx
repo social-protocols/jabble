@@ -4,6 +4,7 @@ import {
 	useState,
 	type ChangeEvent,
 	useRef,
+	useEffect,
 } from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
 import { Icon } from '#app/components/ui/icon.tsx'
@@ -25,6 +26,13 @@ import { toImmutableReplyTree } from '#app/modules/posts/ranking/ranking-utils.t
 import { type TreeContext } from '#app/routes/post.$postId.tsx'
 import { invariant } from '#app/utils/misc.tsx'
 import { useOptionalUser } from '#app/utils/user.ts'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from '../ui/dropdown-menu.tsx'
+import { CopyToClipboardButton } from './copy-to-clipboard-button.tsx'
 
 export function PostActionBar({
 	replyTree,
@@ -45,6 +53,7 @@ export function PostActionBar({
 	const loggedIn: boolean = user !== null
 	const isAdminUser: boolean = user ? Boolean(user.isAdmin) : false
 	const [showAdminUI, setShowAdminUI] = useState(false)
+	const isPostInView = treeContext.targetPostId === post.id
 
 	const targetPostState =
 		treeContext.commentTreeState.posts[treeContext.targetPostId]
@@ -150,6 +159,11 @@ export function PostActionBar({
 
 	const focusButtonColor = isFocused ? 'bg-rose-800/100 text-white' : ''
 
+	const [currentUrl, setCurrentUrl] = useState<string>('')
+	useEffect(() => {
+		setCurrentUrl(`${location.origin}${location.pathname}`)
+	}, [])
+
 	return (
 		<>
 			<div className="flex w-full flex-wrap items-start gap-3 text-xl opacity-50 sm:text-base">
@@ -202,6 +216,18 @@ export function PostActionBar({
 					>
 						<Icon name="chat-bubble" className="mt-[-0.1em]" /> Reply
 					</button>
+				)}
+				{isPostInView && (
+					<DropdownMenu>
+						<DropdownMenuTrigger>
+							<Icon name="share" className="mt-[-0.1em]" /> Share
+						</DropdownMenuTrigger>
+						<DropdownMenuContent>
+							<DropdownMenuItem>
+								<CopyToClipboardButton url={currentUrl} />
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				)}
 				{isAdminUser &&
 					(showAdminUI ? (
