@@ -210,7 +210,7 @@ export function RhetoricalElementDetail(element: RhetoricalElement) {
 			<div className="flex flex-row justify-between items-start mb-6">
 
 				<div className="flex-1">
-					<CardTitle className="text-2xl font-bold mb-2">
+					<CardTitle className="text-2xl font-bold mb-2 capitalize">
 						{element.title}
 					</CardTitle>
 					<p className="text-sm text-gray-400">

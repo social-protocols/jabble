@@ -304,6 +304,12 @@ function NavigationMenu() {
 			>
 				<Icon name="hand">Rhetoric</Icon>
 			</Link>
+			<Link 
+				to="/annotate"
+				className={baseNavigationClassName}
+			>
+				<Icon name="pencil-1">Annotate</Icon>
+			</Link>
 			{/*<Link
 				to="/fallacy-detection"
 				className={baseNavigationClassName + ' ' + fallacyDetectionClassName}
