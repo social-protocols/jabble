@@ -1,0 +1,49 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annotate</title>
+    <style>
+        .highlight {
+            background-color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hello World</h1>
+    <p>
+        arbitrary text selection works on simple text
+    </p>
+    <h2>posted text</h2>
+    <p id="text">
+        This 
+        is 
+        a 
+        simple 
+        text 
+        to 
+        experiment 
+        with 
+        text 
+        range 
+        selection 
+        and 
+        highlighting.
+    </p>
+    <button onclick="highlightSelection()">Highlight Selection</button>
+
+    <script>
+        function highlightSelection() {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const span = document.createElement('span');
+                span.className = 'highlight';
+                range.surroundContents(span);
+            }
+        }
+    </script>
+</body>
+</html>

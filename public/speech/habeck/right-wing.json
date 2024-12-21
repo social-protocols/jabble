@@ -1,0 +1,141 @@
+[
+    {
+        "emotions": [
+            "anger"
+        ],
+        "range": {
+            "start": 327,
+            "end": 358
+        }
+    },
+    {
+        "emotions": [
+            "anger"
+        ],
+        "range": {
+            "start": 602,
+            "end": 682
+        }
+    },
+    {
+        "emotions": [
+            "anger"
+        ],
+        "range": {
+            "start": 684,
+            "end": 730
+        }
+    },
+    {
+        "emotions": [
+            "disgust",
+            "anger"
+        ],
+        "range": {
+            "start": 1756,
+            "end": 1801
+        }
+    },
+    {
+        "emotions": [
+            "anger",
+            "disgust"
+        ],
+        "range": {
+            "start": 1803,
+            "end": 1922
+        }
+    },
+    {
+        "emotions": [
+            "fear",
+            "anger"
+        ],
+        "range": {
+            "start": 1959,
+            "end": 2046
+        }
+    },
+    {
+        "emotions": [
+            "sadness"
+        ],
+        "range": {
+            "start": 2316,
+            "end": 2386
+        }
+    },
+    {
+        "emotions": [
+            "disgust",
+            "anger"
+        ],
+        "range": {
+            "start": 2464,
+            "end": 2550
+        }
+    },
+    {
+        "emotions": [
+            "disgust"
+        ],
+        "range": {
+            "start": 2552,
+            "end": 2605
+        }
+    },
+    {
+        "emotions": [
+            "fear"
+        ],
+        "range": {
+            "start": 2725,
+            "end": 2771
+        }
+    },
+    {
+        "emotions": [
+            "joy"
+        ],
+        "range": {
+            "start": 3079,
+            "end": 3113
+        }
+    },
+    {
+        "emotions": [
+            "joy"
+        ],
+        "range": {
+            "start": 3114,
+            "end": 3151
+        }
+    },
+    {
+        "emotions": [
+            "joy"
+        ],
+        "range": {
+            "start": 3152,
+            "end": 3228
+        }
+    },
+    {
+        "emotions": [
+            "joy"
+        ],
+        "range": {
+            "start": 3528,
+            "end": 3586
+        }
+    },
+    {
+        "emotions": [
+            "joy"
+        ],
+        "range": {
+            "start": 3588,
+            "end": 3633
+        }
+    }
+]

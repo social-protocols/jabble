@@ -1,0 +1,60 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annotate</title>
+    <style>
+        .highlight {
+            background-color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hello World</h1>
+    <p>
+        arbitrary text selection breaks on text with spans, but can be restored by using the cloneContents method
+    </p>
+    <h2>posted text</h2>
+    <p id="text">
+        <span id="word1">This </span>
+        <span id="word2">is </span>
+        <span id="word3">a </span>
+        <span id="word4">simple </span>
+        <span id="word5">text </span>
+        <span id="word6">to </span>
+        <span id="word7">experiment </span>
+        <span id="word8">with </span>
+        <span id="word9">text </span>
+        <span id="word10">range </span>
+        <span id="word11">selection </span>
+        <span id="word12">and </span>
+        <span id="word13">highlighting.</span>
+    </p>
+    <button onclick="highlightSelection()">Highlight Selection</button>
+    <p id="selectedRange"></p>
+    <script>
+        document.addEventListener('selectionchange', () => {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const selectedText = range.toString();
+                document.getElementById('selectedRange').textContent = selectedText;
+            }
+        });
+        function highlightSelection() {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const span = document.createElement('span');
+                span.className = 'highlight';
+                const contents = range.cloneContents();
+                span.appendChild(contents);
+                range.deleteContents();
+                range.insertNode(span);
+            }
+        }
+    </script>
+</body>
+</html>

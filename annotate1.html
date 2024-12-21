@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annotate</title>
+    <style>
+        .highlight {
+            background-color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hello World</h1>
+    <p>
+        arbitrary text selection breaks on text with spans, but still works for word selections but not cross word selections
+    </p>
+    <h2>posted text</h2>
+    <p id="text">
+        <span>This </span>
+        <span>is </span>
+        <span>a </span>
+        <span>simple </span>
+        <span>text </span>
+        <span>to </span>
+        <span>experiment </span>
+        <span>with </span>
+        <span>text </span>
+        <span>range </span>
+        <span>selection </span>
+        <span>and </span>
+        <span>highlighting.</span>
+    </p>
+    <button onclick="highlightSelection()">Highlight Selection</button>
+    
+     
+    <script>
+        function highlightSelection() {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const span = document.createElement('span');
+                span.className = 'highlight';
+                range.surroundContents(span);
+            }
+        }
+    </script>
+</body>
+</html>

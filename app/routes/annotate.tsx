@@ -1,28 +1,16 @@
-import React, { useState } from 'react'
 import fs from 'fs/promises'
 import path from 'path'
 import { type LoaderFunction, json } from '@remix-run/node'
-import { Link, useLoaderData } from '@remix-run/react'
+import { useLoaderData } from '@remix-run/react'
+import { useState, useEffect } from 'react'
 import { Markdown } from '#app/components/markdown.tsx'
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from '#app/components/ui/card.tsx'
-import { Toggle } from '#app/components/ui/toggle.tsx'
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-  } from '#app/components/ui/select.tsx'
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from '#app/components/ui/collapsible.tsx'
 import { Icon } from '#app/components/ui/icon.tsx'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '#app/components/ui/collapsible.tsx'
+import { Toggle } from '#app/components/ui/toggle.tsx'
 
 // create type for emotion to be able to annotate text ranges with it
 export type Emotion =
@@ -41,15 +29,44 @@ const potentialEmotions: Emotion[] = [
 	'surprise',
 ]
 const initialDefaultEmotionIndex = 3
-const initialDefaultEmotion: Emotion = potentialEmotions[initialDefaultEmotionIndex] as Emotion
+const initialDefaultEmotion: Emotion = potentialEmotions[
+	initialDefaultEmotionIndex
+] as Emotion
 
-const emotionEmojis: Record<Emotion, string> = {
-	anger: '😠',
-	disgust: '🤢',
-	fear: '😨',
-	joy: '😊',
-	sadness: '😢',
-	surprise: '😲',
+const emotionDetails: Record<
+	Emotion,
+	{ emoji: string; highlightColor: string; outlineColor: string }
+> = {
+	anger: {
+		emoji: '😠',
+		highlightColor: 'bg-red-900 bg-opacity-80',
+		outlineColor: 'outline outline-red-500',
+	},
+	disgust: {
+		emoji: '🤢',
+		highlightColor: 'bg-green-900 bg-opacity-80',
+		outlineColor: 'outline outline-green-500',
+	},
+	fear: {
+		emoji: '😨',
+		highlightColor: 'bg-purple-900 bg-opacity-80',
+		outlineColor: 'outline outline-purple-500',
+	},
+	joy: {
+		emoji: '😊',
+		highlightColor: 'bg-yellow-900 bg-opacity-80',
+		outlineColor: 'outline outline-yellow-500',
+	},
+	sadness: {
+		emoji: '😢',
+		highlightColor: 'bg-blue-900 bg-opacity-80',
+		outlineColor: 'outline outline-blue-500',
+	},
+	surprise: {
+		emoji: '😲',
+		highlightColor: 'bg-pink-900 bg-opacity-80',
+		outlineColor: 'outline outline-pink-500',
+	},
 }
 
 export interface Range {
@@ -57,7 +74,7 @@ export interface Range {
 	end: number
 }
 export interface AnnotatedRange {
-	emotions: Set<Emotion>
+	emotions: Emotion[]
 	range: Range
 }
 
@@ -71,36 +88,108 @@ export interface AnnotatedText {
 	annotations: AnnotatedRange[]
 }
 
-const initialText = 
-	"Wie zerstört man die CDU? " +
-	"Sie zerstört sich selbst. " +
-	"Wie denn? " +
-	"Sie wird ab 2025 eine Koalition mit den Grünen eingehen. " +
-	"Es werden sehr sehr viele Leute, die von der Ampel enttäuscht sind, werden 2025 CDU wählen. " +
-	"Sie werden sagen, AfD, naja, kann man denen das Land anvertrauen, " +
-	"noch zu jung, vielleicht zu radikal, wählen wir doch mal den Merz, " +
-	"der sieht so schön aus wie die alte Bundesrepublik. " +
-	"Und dann wird Herr Merz regieren mit den Grünen. " +
-	"Und die Politik von Schwarz -Grün wird im Wesentlichen dasselbe sein wie die Ampel. " +
-	"Und dann werden wir 2029 erleben, dass viele Leute sagen, " +
-	"wahrscheinlich geht es eben dann doch nur mit der AfD."
-
-const initialAnnotations: Map<string, AnnotatedRange> = new Map<string, AnnotatedRange>([
-	['0-641', { emotions: new Set(['surprise', 'fear']), range: { start: 0, end: 641 } }],
-	['529-641', { emotions: new Set(['disgust', 'fear', 'sadness']), range: { start: 529, end: 641 } }],
+const initialPublicAnnotations: Map<string, PublicAnnotatedRange> = new Map<
+	string,
+	PublicAnnotatedRange
+>([
+	[
+		'0-641',
+		{
+			emotions: new Map([
+				['surprise', 101],
+				['fear', 35],
+			]),
+			range: { start: 0, end: 641 },
+		},
+	],
+	[
+		'529-641',
+		{
+			emotions: new Map([
+				['disgust', 11],
+				['fear', 58],
+				['sadness', 71],
+			]),
+			range: { start: 529, end: 641 },
+		},
+	],
+	[
+		'119-210',
+		{ emotions: new Map([['sadness', 20]]), range: { start: 119, end: 210 } },
+	],
 ])
 
-const initialPublicAnnotations: Map<string, PublicAnnotatedRange> = new Map<string, PublicAnnotatedRange>([
-	['0-641', { emotions: new Map([['surprise', 101], ['fear', 35]]), range: { start: 0, end: 641 } }],
-	['529-641', { emotions: new Map([['disgust', 11], ['fear', 58], ['sadness', 71]]), range: { start: 529, end: 641 } }],
-	['119-210', { emotions: new Map([['sadness', 20]]), range: { start: 119, end: 210 } }],
-])
+export async function loadAnnotations() {
+	const filePrefix = path.join(process.cwd(), 'public', '/speech/merz/')
+	const annotationsFilePath = filePrefix + '/left-wing.json'
+	const annotationsFileContents = await fs.readFile(
+		annotationsFilePath,
+		'utf-8',
+	)
+	const annotations = JSON.parse(annotationsFileContents) as AnnotatedRange[]
+
+	const textFilePath = filePrefix + '/speech.txt'
+	const textFileContents = await fs.readFile(textFilePath, 'utf-8')
+
+	return { annotations, text: textFileContents }
+}
+
+export const loader: LoaderFunction = async () => {
+	const { annotations, text } = await loadAnnotations()
+	return json({ annotations, text })
+}
+
+const getHighlightColor = (emotion: Emotion) => {
+	return emotionDetails[emotion].highlightColor
+}
+
+const getOutlineColor = (emotion: Emotion) => {
+	return emotionDetails[emotion].outlineColor
+}
 
 export default function OverviewPage() {
-	const [annotations, setAnnotations] = useState<Map<string, AnnotatedRange>>(initialAnnotations)
-	const [publicAnnotations, setPublicAnnotations] = useState<Map<string, PublicAnnotatedRange>>(initialPublicAnnotations)
-	const [defaultEmotion, setDefaultEmotion] = useState<Emotion>(initialDefaultEmotion)
-	const [text, setText] = useState<string>(initialText)
+	const data = useLoaderData<{ annotations: AnnotatedRange[]; text: string }>()
+	const [annotations, setAnnotations] = useState<Map<string, AnnotatedRange>>(
+		initializeAnnotations(data.annotations),
+	)
+	function initializeAnnotations(
+		data: AnnotatedRange[],
+	): Map<string, AnnotatedRange> {
+		return new Map(
+			data.map(annotation => [
+				`${annotation.range.start}-${annotation.range.end}`,
+				annotation,
+			]),
+		)
+	}
+	const [publicAnnotations, setPublicAnnotations] = useState<
+		Map<string, PublicAnnotatedRange>
+	>(initialPublicAnnotations)
+	const [defaultEmotion, setDefaultEmotion] = useState<Emotion>(
+		initialDefaultEmotion,
+	)
+	const [highlightedEmotion, setHighlightedEmotion] = useState<Emotion>(
+		initialDefaultEmotion,
+	)
+	const [text, setText] = useState<string>(data.text)
+	const [isPlaying, setIsPlaying] = useState<boolean>(true)
+	const [isHighlighting, setIsHighlighting] = useState<boolean>(true)
+
+	useEffect(() => {
+		let interval: NodeJS.Timeout | undefined
+		if (isPlaying && isHighlighting) {
+			interval = setInterval(() => {
+				setHighlightedEmotion(prevEmotion => {
+					const currentIndex = potentialEmotions.indexOf(prevEmotion)
+					const nextIndex = (currentIndex + 1) % potentialEmotions.length
+					return potentialEmotions[nextIndex] || initialDefaultEmotion
+				})
+			}, 200)
+		} else if (!isPlaying || !isHighlighting) {
+			clearInterval(interval)
+		}
+		return () => clearInterval(interval)
+	}, [isPlaying, isHighlighting])
 
 	const handleMouseUp = () => {
 		const selection = window.getSelection()
@@ -111,15 +200,25 @@ export default function OverviewPage() {
 			if (start !== end) {
 				const rangeKey = `${start}-${end}`
 				const newAnnotation: AnnotatedRange = {
-					emotions: new Set([defaultEmotion]),
+					emotions: [defaultEmotion],
 					range: { start, end },
 				}
 				setAnnotations(new Map(annotations.set(rangeKey, newAnnotation)))
 				const publicAnnotation: PublicAnnotatedRange = {
-					emotions: new Map(Array.from(newAnnotation.emotions).map(emotion => [emotion, 1])),
+					emotions: new Map([[defaultEmotion, 1]]),
 					range: newAnnotation.range,
 				}
-				setPublicAnnotations(new Map(publicAnnotations.set(rangeKey, publicAnnotation)))
+				setPublicAnnotations(
+					new Map(publicAnnotations.set(rangeKey, publicAnnotation)),
+				)
+
+				// Highlight the selected text
+				const span = document.createElement('span')
+				span.className = 'highlight'
+				const contents = range.cloneContents()
+				span.appendChild(contents)
+				range.deleteContents()
+				range.insertNode(span)
 			}
 		}
 	}
@@ -134,10 +233,11 @@ export default function OverviewPage() {
 		const newAnnotations = new Map(annotations)
 		const annotation = newAnnotations.get(rangeKey)
 		if (annotation) {
-			if (annotation.emotions.has(emotion)) {
-				annotation.emotions.delete(emotion)
+			const emotionIndex = annotation.emotions.indexOf(emotion)
+			if (emotionIndex > -1) {
+				annotation.emotions.splice(emotionIndex, 1)
 			} else {
-				annotation.emotions.add(emotion)
+				annotation.emotions.push(emotion)
 			}
 			setAnnotations(new Map(newAnnotations))
 		}
@@ -147,17 +247,56 @@ export default function OverviewPage() {
 		const publicAnnotation = publicAnnotations.get(rangeKey)
 		if (publicAnnotation) {
 			const newAnnotation: AnnotatedRange = {
-				emotions: new Set(publicAnnotation.emotions.keys()),
+				emotions: Array.from(publicAnnotation.emotions.keys()),
 				range: publicAnnotation.range,
 			}
 			setAnnotations(new Map(annotations.set(rangeKey, newAnnotation)))
 		}
 	}
 
+	const handleDefaultEmotionChange = (emotion: Emotion) => {
+		setDefaultEmotion(emotion)
+		setHighlightedEmotion(emotion)
+	}
+
 	const numberOfRanges = annotations.size
 	const numberOfUsedEmotions = new Set(
-		Array.from(annotations.values()).flatMap(annotation => Array.from(annotation.emotions))
+		Array.from(annotations.values()).flatMap(annotation => annotation.emotions),
 	).size
+
+	const wordHeatmap = text.split(' ').map((word, index) => {
+		const start = text.split(' ', index).join(' ').length + (index > 0 ? 1 : 0)
+		const end = start + word.length
+		let heat = 0
+
+		annotations.forEach(annotation => {
+			if (annotation.range.start <= end && annotation.range.end >= start) {
+				heat += annotation.emotions.length
+			}
+		})
+
+		publicAnnotations.forEach(publicAnnotation => {
+			if (
+				publicAnnotation.range.start <= end &&
+				publicAnnotation.range.end >= start
+			) {
+				heat += Array.from(publicAnnotation.emotions.values()).reduce(
+					(a, b) => a + b,
+					0,
+				)
+			}
+		})
+
+		return { word, heat }
+	})
+
+	const getHeatColor = (heat: number) => {
+		console.log(heat)
+		if (heat > 250) return 'bg-red-600'
+		if (heat > 138) return 'bg-red-500'
+		if (heat > 0) return 'bg-red-400'
+		return ''
+	}
 
 	return (
 		<div>
@@ -167,33 +306,71 @@ export default function OverviewPage() {
 						<Markdown deactivateLinks={false}>
 							{'## Emotion Annotation'}
 						</Markdown>
-						<p className="mt-2 mb-2">
-							Default Emotion: 
+						<p className="mb-2 mt-2">
+							Default Emotion:
 							{potentialEmotions.map(emotion => (
 								<Toggle
-									className="ml-1 text-2xl"
+									className={`ml-1 text-2xl ${highlightedEmotion === emotion ? getOutlineColor(emotion) : ''}`}
 									key={emotion}
 									data-state={defaultEmotion === emotion ? 'on' : 'off'}
-									onClick={() => setDefaultEmotion(emotion)}
+									onClick={() => handleDefaultEmotionChange(emotion)}
 								>
-									{emotionEmojis[emotion]}
+									{emotionDetails[emotion].emoji}
 								</Toggle>
 							))}
+							<button className="ml-4" onClick={() => setIsPlaying(!isPlaying)}>
+								{isPlaying ? 'Pause' : 'Play'}
+							</button>
+							<button
+								className="ml-4"
+								onClick={() => setIsHighlighting(!isHighlighting)}
+							>
+								{isHighlighting
+									? 'Disable Highlighting'
+									: 'Enable Highlighting'}
+							</button>
 						</p>
 						<p onMouseUp={handleMouseUp}>
-							{text}
+							{text.split(' ').map((word, index) => {
+								const start =
+									text.split(' ', index).join(' ').length + (index > 0 ? 1 : 0)
+								const end = start + word.length
+								const isHighlighted =
+									isHighlighting &&
+									Array.from(annotations.values()).some(
+										annotation =>
+											annotation.emotions.includes(highlightedEmotion) &&
+											annotation.range.start <= end &&
+											annotation.range.end >= start,
+									)
+								return (
+									<span
+										key={index}
+										className={
+											isHighlighted ? getHighlightColor(highlightedEmotion) : ''
+										}
+									>
+										{word}{' '}
+									</span>
+								)
+							})}
 						</p>
 
 						<Collapsible className="mt-4">
 							<CollapsibleTrigger>
 								<span className="mr-2">
-									Your Annotations (Ranges: {numberOfRanges}, {numberOfUsedEmotions} emotions)
+									Your Annotations (Ranges: {numberOfRanges},{' '}
+									{numberOfUsedEmotions} emotions)
 								</span>
 								{potentialEmotions.map(emotion => (
 									<span className="text-2xl" key={emotion}>
-										{emotionEmojis[emotion]}
+										{emotionDetails[emotion].emoji}
 										<span className="mr-2 text-sm">
-											{Array.from(annotations.values()).filter(annotation => annotation.emotions.has(emotion)).length}
+											{
+												Array.from(annotations.values()).filter(annotation =>
+													annotation.emotions.includes(emotion),
+												).length
+											}
 										</span>
 									</span>
 								))}
@@ -203,21 +380,32 @@ export default function OverviewPage() {
 									{Array.from(annotations.entries()).map(
 										([rangeKey, annotation]) => (
 											<li key={rangeKey}>
-												<br/>
+												<br />
 												<Markdown deactivateLinks={false}>
-														{annotation.range.start === 0 && annotation.range.end === text.length
+													{annotation.range.start === 0 &&
+													annotation.range.end === text.length
 														? '**full post**'
-														: '> ' + text.slice(annotation.range.start, annotation.range.end)}
+														: '> ' +
+															text.slice(
+																annotation.range.start,
+																annotation.range.end,
+															)}
 												</Markdown>
 												<p className="mt-1">
 													{potentialEmotions.map(emotion => (
 														<Toggle
 															className="mr-1 text-2xl"
 															key={emotion}
-															data-state={annotation.emotions.has(emotion) ? 'on' : 'off'}
-															onClick={() => handleToggleEmotion(rangeKey, emotion)}
+															data-state={
+																annotation.emotions.includes(emotion)
+																	? 'on'
+																	: 'off'
+															}
+															onClick={() =>
+																handleToggleEmotion(rangeKey, emotion)
+															}
 														>
-															{emotionEmojis[emotion]}
+															{emotionDetails[emotion].emoji}
 														</Toggle>
 													))}
 													<button
@@ -238,29 +426,32 @@ export default function OverviewPage() {
 						</Collapsible>
 
 						<Collapsible className="mt-4">
-							<CollapsibleTrigger>
-								Public Annotations
-							</CollapsibleTrigger>
+							<CollapsibleTrigger>Public Annotations</CollapsibleTrigger>
 							<CollapsibleContent>
 								<ul>
 									{Array.from(publicAnnotations.entries()).map(
 										([rangeKey, annotation]) => (
 											<li key={rangeKey}>
-												<br/>
+												<br />
 												<Markdown deactivateLinks={false}>
-														{annotation.range.start === 0 && annotation.range.end === text.length
+													{annotation.range.start === 0 &&
+													annotation.range.end === text.length
 														? '**full post**'
-														: '> ' + text.slice(annotation.range.start, annotation.range.end)}
+														: '> ' +
+															text.slice(
+																annotation.range.start,
+																annotation.range.end,
+															)}
 												</Markdown>
 												<p className="mt-1">
-													{Array.from(annotation.emotions.entries()).map(([emotion, count]) => (
-														<span className="mr-1 text-2xl" key={emotion}>
-															{emotionEmojis[emotion]}
-															<span className="mr-2 text-sm">
-																{count}
+													{Array.from(annotation.emotions.entries()).map(
+														([emotion, count]) => (
+															<span className="mr-1 text-2xl" key={emotion}>
+																{emotionDetails[emotion].emoji}
+																<span className="mr-2 text-sm">{count}</span>
 															</span>
-														</span>
-													))}
+														),
+													)}
 													<button
 														className="ml-1"
 														onClick={() => handleCopyPublicAnnotation(rangeKey)}

@@ -301,10 +301,7 @@ function NavigationMenu() {
 			<Link to="/rhetorics" className={baseNavigationClassName}>
 				<Icon name="hand">Rhetoric</Icon>
 			</Link>
-			<Link 
-				to="/annotate"
-				className={baseNavigationClassName}
-			>
+			<Link to="/annotate" className={baseNavigationClassName}>
 				<Icon name="pencil-1">Annotate</Icon>
 			</Link>
 			{/*<Link
