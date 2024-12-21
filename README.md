@@ -241,3 +241,49 @@ In a platform where the number of votes determines how much attention something 
 Social media can be thought of as a protocol for collaboratively determining what content receives attention. Upvotes and downvotes are how the community expresses their intention. And so it's critical that the outcome of the vote be informed and fair.
 
 -->
+
+
+# Prerequesites
+Last tested with:
+
+```shell
+$ direnv version
+2.35.0
+```
+
+```shell
+$ nix --version
+nix (Nix) 2.24.10
+```
+
+```shell
+$ devbox version
+0.13.6
+```
+
+
+# Getting started
+
+Get the global brain algorithm repo and build the global brain as shared library:
+```shell
+git clone git@github.com:social-protocols/GlobalBrain.jl.git
+cd GlobalBrain.jl
+direnv allow
+just build-shared-library
+```
+
+Checkout the actual jabble code and allow it:
+```shell
+git clone git@github.com:social-protocols/jabble.git
+cd jabble
+direnv allow
+```
+
+Afterwards you can start developing with:
+```shell
+just reset-all # creates social protocols directory
+just dev
+```
+
+This is how it can look like:
+![screenshot of locally running jabble](public/img/jabble-running.png)

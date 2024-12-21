@@ -1,0 +1,182 @@
+[
+    {
+        "emotions": [
+            "surprise"
+        ],
+        "range": {
+            "start": 80,
+            "end": 130
+        }
+    },
+    {
+        "emotions": [
+            "surprise"
+        ],
+        "range": {
+            "start": 131,
+            "end": 191
+        }
+    },
+    {
+        "emotions": [
+            "anger"
+        ],
+        "range": {
+            "start": 227,
+            "end": 326
+        }
+    },
+    {
+        "emotions": [
+            "anger"
+        ],
+        "range": {
+            "start": 327,
+            "end": 358
+        }
+    },
+    {
+        "emotions": [
+            "anger"
+        ],
+        "range": {
+            "start": 602,
+            "end": 682
+        }
+    },
+    {
+        "emotions": [
+            "anger"
+        ],
+        "range": {
+            "start": 684,
+            "end": 730
+        }
+    },
+    {
+        "emotions": [
+            "fear"
+        ],
+        "range": {
+            "start": 731,
+            "end": 821
+        }
+    },
+    {
+        "emotions": [
+            "joy"
+        ],
+        "range": {
+            "start": 1250,
+            "end": 1337
+        }
+    },
+    {
+        "emotions": [
+            "disgust"
+        ],
+        "range": {
+            "start": 1844,
+            "end": 1922
+        }
+    },
+    {
+        "emotions": [
+            "fear"
+        ],
+        "range": {
+            "start": 1959,
+            "end": 2046
+        }
+    },
+    {
+        "emotions": [
+            "sadness"
+        ],
+        "range": {
+            "start": 2316,
+            "end": 2386
+        }
+    },
+    {
+        "emotions": [
+            "disgust"
+        ],
+        "range": {
+            "start": 2464,
+            "end": 2550
+        }
+    },
+    {
+        "emotions": [
+            "sadness"
+        ],
+        "range": {
+            "start": 2606,
+            "end": 2724
+        }
+    },
+    {
+        "emotions": [
+            "sadness"
+        ],
+        "range": {
+            "start": 2773,
+            "end": 2800
+        }
+    },
+    {
+        "emotions": [
+            "disgust"
+        ],
+        "range": {
+            "start": 2865,
+            "end": 2931
+        }
+    },
+    {
+        "emotions": [
+            "joy"
+        ],
+        "range": {
+            "start": 2933,
+            "end": 3007
+        }
+    },
+    {
+        "emotions": [
+            "joy"
+        ],
+        "range": {
+            "start": 3079,
+            "end": 3113
+        }
+    },
+    {
+        "emotions": [
+            "joy"
+        ],
+        "range": {
+            "start": 3152,
+            "end": 3228
+        }
+    },
+    {
+        "emotions": [
+            "joy"
+        ],
+        "range": {
+            "start": 3528,
+            "end": 3586
+        }
+    },
+    {
+        "emotions": [
+            "joy"
+        ],
+        "range": {
+            "start": 3588,
+            "end": 3633
+        }
+    }
+]
