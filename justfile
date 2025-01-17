@@ -17,7 +17,7 @@ reset-all:
   rm -rf ~/social-protocols-data/*.db
   rm -rf ~/social-protocols-data/*.db-wal
   rm -rf ~/social-protocols-data/*.db-shm
-  mkdir -p ~/social-protocols-data
+  mkdir -p $SOCIAL_PROTOCOLS_DATADIR
   rm -f "$GB_DATABASE_PATH"
   just reset-db
 
